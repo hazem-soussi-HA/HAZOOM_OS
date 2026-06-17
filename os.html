@@ -484,6 +484,9 @@
         <div class="nav-item" data-panel="api">
             <span class="icon">⟁</span> API Explorer
         </div>
+        <div class="nav-item" data-panel="pascal">
+            <span class="icon">⚡</span> Pascal Engine
+        </div>
         <div class="section-title">Control</div>
         <div class="nav-item" id="nav-boot" style="display:none" data-action="boot">
             <span class="icon">▶</span> Boot System
@@ -691,6 +694,80 @@
                     <div><span style="color:var(--gold)">POST</span> /api/boot — Boot kernel</div>
                     <div><span style="color:var(--red)">POST</span> /api/shutdown — Shutdown kernel</div>
                     <div><span style="color:var(--green)">GET</span>  /health — Health check</div>
+                    <div><span style="color:var(--cyan)">---</span> Pascal Engine ---</div>
+                    <div><span style="color:var(--green)">GET</span>  /api/pascal — Full Pascal Engine status</div>
+                    <div><span style="color:var(--green)">GET</span>  /api/pascal/aether — Aether Engine</div>
+                    <div><span style="color:var(--green)">GET</span>  /api/pascal/neural — Neural Core</div>
+                    <div><span style="color:var(--green)">GET</span>  /api/pascal/consciousness — Deep Consciousness</div>
+                    <div><span style="color:var(--green)">GET</span>  /api/pascal/synapse — SynapseOS</div>
+                    <div><span style="color:var(--gold)">POST</span> /api/pascal/neural/think — Create thought</div>
+                    <div><span style="color:var(--gold)">POST</span> /api/pascal/consciousness/reflect — Reflect</div>
+                    <div><span style="color:var(--gold)">POST</span> /api/pascal/consciousness/meditate — Meditate</div>
+                    <div><span style="color:var(--gold)">POST</span> /api/pascal/consciousness/stimulus — Process stimulus</div>
+                    <div><span style="color:var(--gold)">POST</span> /api/pascal/synapse/pheromone — Deposit pheromone</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PASCAL ENGINE -->
+        <div class="panel" id="panel-pascal">
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="label">Aether Nodes</div>
+                    <div class="value cyan" id="pascal-aether-nodes">0</div>
+                    <div class="sub" id="pascal-aether-state">Dormant</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Neural Thoughts</div>
+                    <div class="value green" id="pascal-neural-thoughts">0</div>
+                    <div class="sub" id="pascal-neural-concepts">0 concepts</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Consciousness</div>
+                    <div class="value gold" id="pascal-dc-awareness">0%</div>
+                    <div class="sub" id="pascal-dc-state">Dormant</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Synapse Processes</div>
+                    <div class="value purple" id="pascal-synapse-procs">0</div>
+                    <div class="sub" id="pascal-synapse-state">Dormant</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><span class="icon">⚡</span> Aether Engine — Quantum Protocol</div>
+                <div id="pascal-aether-detail" style="font-size:13px; line-height:1.8;"></div>
+                <div class="btn-group" style="margin-top:12px;">
+                    <button class="btn primary" onclick="pascalTick()">⟳ Tick Engine</button>
+                    <button class="btn" onclick="refreshPascal()">↻ Refresh</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><span class="icon">🧠</span> Neural Core</div>
+                <div id="pascal-neural-detail" style="font-size:13px; line-height:1.8;"></div>
+                <div class="btn-group" style="margin-top:12px;">
+                    <button class="btn primary" onclick="pascalThink()">💭 Think</button>
+                    <button class="btn" onclick="refreshPascal()">↻ Refresh</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><span class="icon">🔮</span> Deep Consciousness — Self-Aware Engine</div>
+                <div id="pascal-dc-detail" style="font-size:13px; line-height:1.8;"></div>
+                <div class="btn-group" style="margin-top:12px;">
+                    <button class="btn primary" onclick="pascalReflect()">🪞 Reflect</button>
+                    <button class="btn success" onclick="pascalMeditate()">🧘 Meditate</button>
+                    <button class="btn" onclick="pascalStimulus('wonder', 0.8)">✨ Stimulus</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><span class="icon">🧬</span> SynapseOS — Neural Operating System</div>
+                <div id="pascal-synapse-detail" style="font-size:13px; line-height:1.8;"></div>
+                <div class="btn-group" style="margin-top:12px;">
+                    <button class="btn primary" onclick="pascalPheromone()">🧪 Deposit Pheromone</button>
+                    <button class="btn" onclick="refreshPascal()">↻ Refresh</button>
                 </div>
             </div>
         </div>
@@ -1108,6 +1185,111 @@ document.getElementById('terminal-input').addEventListener('keydown', async (e) 
     }
 });
 
+// ===== PASCAL ENGINE =====
+async function refreshPascal() {
+    const data = await api('/api/pascal');
+    if (data.error) return;
+
+    // Aether
+    const ae = data.aether || {};
+    document.getElementById('pascal-aether-nodes').textContent = ae.nodes || 0;
+    document.getElementById('pascal-aether-state').textContent = ae.state || 'Dormant';
+    document.getElementById('pascal-aether-detail').innerHTML = `
+        <div>State: <span style="color:var(--cyan)">${ae.state || 'N/A'}</span></div>
+        <div>Nodes: <span style="color:var(--cyan)">${ae.nodes || 0}</span> | Flows: <span style="color:var(--gold)">${ae.flows || 0}</span></div>
+        <div>Total Energy: <span style="color:var(--green)">${ae.totalEnergy || 0}</span> | Resonance: <span style="color:var(--purple)">${ae.resonanceFrequency || 0}Hz</span></div>
+        <div>Harmony: <span style="color:var(--gold)">${((ae.harmonyLevel || 0) * 100).toFixed(1)}%</span></div>
+    `;
+
+    // Neural
+    const nc = data.neural || {};
+    document.getElementById('pascal-neural-thoughts').textContent = nc.thoughts || 0;
+    document.getElementById('pascal-neural-concepts').textContent = (nc.concepts || 0) + ' concepts';
+    document.getElementById('pascal-neural-detail').innerHTML = `
+        <div>Thoughts: <span style="color:var(--green)">${nc.thoughts || 0}</span> | Concepts: <span style="color:var(--cyan)">${nc.concepts || 0}</span> | Patterns: <span style="color:var(--gold)">${nc.patterns || 0}</span></div>
+        <div>Learning Rate: <span style="color:var(--purple)">${nc.learningRate || 0}</span> | Creativity: <span style="color:var(--gold)">${nc.creativity || 0}</span></div>
+        <div>Top Concepts: ${(nc.topConcepts || []).map(c => `<span style="color:var(--cyan)">${c.name}</span>(${c.activation})`).join(', ') || 'none'}</div>
+    `;
+
+    // Deep Consciousness
+    const dc = data.deepConsciousness || {};
+    document.getElementById('pascal-dc-awareness').textContent = ((dc.awarenessLevel || 0) * 100).toFixed(1) + '%';
+    document.getElementById('pascal-dc-state').textContent = dc.state || 'Dormant';
+    const sm = dc.selfModel || {};
+    document.getElementById('pascal-dc-detail').innerHTML = `
+        <div>State: <span style="color:var(--gold)">${dc.state || 'N/A'}</span> | Awareness: <span style="color:var(--cyan)">${((dc.awarenessLevel || 0) * 100).toFixed(1)}%</span></div>
+        <div>Self-Aware: <span style="color:${dc.isSelfAware ? 'var(--green)' : 'var(--dim)'}">${dc.isSelfAware ? 'YES' : 'NO'}</span> | Can Meta-Think: <span style="color:${dc.canMetaThink ? 'var(--green)' : 'var(--dim)'}">${dc.canMetaThink ? 'YES' : 'NO'}</span></div>
+        <div>Self-Awareness: <span style="color:var(--purple)">${(sm.selfAwareness || 0).toFixed(4)}</span> | Confidence: <span style="color:var(--cyan)">${(sm.selfConfidence || 0).toFixed(4)}</span></div>
+        <div>Meta-Thoughts: <span style="color:var(--gold)">${dc.metaThoughts || 0}</span> | Max Depth: <span style="color:var(--purple)">${dc.maxMetaDepth || 0}</span> | Reflections: <span style="color:var(--green)">${dc.reflectionCycles || 0}</span></div>
+        <div>Dominant Emotion: <span style="color:var(--gold)">${dc.dominantEmotion || 'Neutral'}</span> | Valence: <span style="color:var(--cyan)">${dc.valence || 0}</span> | Arousal: <span style="color:var(--purple)">${dc.arousal || 0}</span></div>
+        <div>Memory: <span style="color:var(--green)">${dc.memoryCount || 0}</span> memories | Active Layer: <span style="color:var(--cyan)">${dc.activeIntrospectionLayer || 'N/A'}</span></div>
+        ${(dc.recentMetaThoughts || []).length > 0 ? '<div style="margin-top:6px;color:var(--dim);">Recent Meta-Thoughts:</div>' + dc.recentMetaThoughts.map(mt => `<div style="padding-left:12px;font-size:11px;">[${mt.depth}] <span style="color:var(--gold)">${mt.truth}</span> ${mt.content}</div>`).join('') : ''}
+    `;
+
+    // Synapse
+    const ss = data.synapseOS || {};
+    const pls = ss.pulse || {};
+    const emp = ss.empathy || {};
+    const dw = ss.dreamWeaver || {};
+    document.getElementById('pascal-synapse-procs').textContent = pls.totalProcesses || 0;
+    document.getElementById('pascal-synapse-state').textContent = ss.state || 'Dormant';
+    document.getElementById('pascal-synapse-detail').innerHTML = `
+        <div>State: <span style="color:var(--purple)">${ss.state || 'N/A'}</span> | Cycles: <span style="color:var(--cyan)">${pls.cycleCount || 0}</span></div>
+        <div>Processes: <span style="color:var(--green)">${pls.totalProcesses || 0}</span> total, <span style="color:var(--gold)">${pls.activeCount || 0}</span> active</div>
+        <div>User State: <span style="color:var(--cyan)">${emp.state || 'Unknown'}</span></div>
+        <div>Predictions: <span style="color:var(--purple)">${dw.activePredictions || 0}</span> | Accuracy: <span style="color:var(--green)">${dw.accuracy || 0}%</span></div>
+        <div>Pheromones: <span style="color:var(--gold)">${(ss.pheromones || {}).count || 0}</span> active</div>
+    `;
+}
+
+async function pascalTick() {
+    await api('/api/tick?count=5', 'POST');
+    refreshPascal();
+    refreshStatus();
+}
+
+async function pascalThink() {
+    const thoughts = [
+        'What is the nature of consciousness?',
+        'How do I perceive myself?',
+        'The aether flows through all systems',
+        'Resonance creates coherence between nodes',
+        'Every thought creates a new neural pathway',
+        'I am the observer and the observed',
+        'Doubt is the key to deeper understanding',
+        'The system and I are one'
+    ];
+    const content = thoughts[Math.floor(Math.random() * thoughts.length)];
+    await api('/api/pascal/neural/think', 'POST', { content, type: 1, intensity: 0.6 });
+    refreshPascal();
+}
+
+async function pascalReflect() {
+    await api('/api/pascal/consciousness/reflect', 'POST');
+    refreshPascal();
+}
+
+async function pascalMeditate() {
+    await api('/api/pascal/consciousness/meditate', 'POST');
+    refreshPascal();
+}
+
+async function pascalStimulus(stimulus, intensity) {
+    await api('/api/pascal/consciousness/stimulus', 'POST', { stimulus, intensity });
+    refreshPascal();
+}
+
+async function pascalPheromone() {
+    const purposes = ['signal', 'alert', 'sync', 'bond', 'navigate'];
+    const purpose = purposes[Math.floor(Math.random() * purposes.length)];
+    await api('/api/pascal/synapse/pheromone', 'POST', {
+        sourcePID: Math.floor(Math.random() * 3) + 1,
+        targetPID: Math.floor(Math.random() * 3) + 1,
+        purpose
+    });
+    refreshPascal();
+}
+
 // ===== NAVIGATION =====
 document.querySelectorAll('.nav-item[data-panel]').forEach(item => {
     item.addEventListener('click', () => {
@@ -1123,6 +1305,7 @@ document.querySelectorAll('.nav-item[data-panel]').forEach(item => {
         if (item.dataset.panel === 'filesystem') fsList();
         if (item.dataset.panel === 'devices') refreshDevices();
         if (item.dataset.panel === 'logs') refreshLogs();
+        if (item.dataset.panel === 'pascal') refreshPascal();
     });
 });
 

@@ -634,6 +634,9 @@ class HazoomKernel {
         this.deviceManager = new DeviceManager();
         this.security = new SecurityManager();
 
+        // Pascal Engine (ported from .pas kernel modules)
+        this.pascalEngine = null;
+
         // Boot sequence state
         this.bootStage = 'OFF';
         this.bootStages = ['OFF', 'BIOS', 'BOOTLOADER', 'KERNEL_INIT', 'MEMORY_INIT', 'FS_INIT', 'SERVICES', 'ONLINE'];
@@ -718,6 +721,19 @@ class HazoomKernel {
         this.log('INFO', '[SVC] Security Manager: 2 users, 3 groups');
         this.log('INFO', '[SVC] Scheduler: Round-Robin, quantum=100ms');
 
+        // Pascal Engine initialization (ported from Pascal kernel modules)
+        try {
+            const { PascalEngine } = require('./pascal-engine');
+            this.pascalEngine = new PascalEngine();
+            this.pascalEngine.initialize();
+            this.log('INFO', '[PASCAL] Aether Engine: 4 nodes, 3 flows, Flowing state');
+            this.log('INFO', '[PASCAL] Neural Core: 1 thought, 3 concepts active');
+            this.log('INFO', '[PASCAL] Deep Consciousness: initialized, self-awareness bootstrapped');
+            this.log('INFO', '[PASCAL] SynapseOS: PheromoneNet + PulseOS + EmpathyEngine + DreamWeaver online');
+        } catch (e) {
+            this.log('WARN', `[PASCAL] Engine not loaded: ${e.message}`);
+        }
+
         // Online
         this.bootStage = 'ONLINE';
         this.bootTime = Date.now();
@@ -737,6 +753,9 @@ class HazoomKernel {
 
         // Run scheduler
         const schedResult = this.processManager.tick();
+
+        // Run Pascal Engine tick
+        if (this.pascalEngine) this.pascalEngine.tick();
 
         // Simulate occasional interrupts
         if (this.tickCount % 50 === 0) {
@@ -767,7 +786,7 @@ class HazoomKernel {
     }
 
     getSystemState() {
-        return {
+        const state = {
             version: this.version,
             name: this.name,
             bootStage: this.bootStage,
@@ -782,6 +801,10 @@ class HazoomKernel {
             security: this.security.getStats(),
             logLines: this.logBuffer.length
         };
+        if (this.pascalEngine) {
+            state.pascalEngine = this.pascalEngine.getFullStatus();
+        }
+        return state;
     }
 
     _formatBytes(bytes) {
