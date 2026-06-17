@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HAZOOM OS — Focus Timer</title>
+<style>
+:root {
+  --bg: #050510; --glass: rgba(255,255,255,0.04); --border: rgba(255,255,255,0.08);
+  --accent: #00f0ff; --gold: #ffd700; --green: #10b981; --red: #ef4444;
+  --purple: #8b5cf6; --text: #e8e8f0; --dim: rgba(232,232,240,0.5);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Inter',system-ui,sans-serif;
+  display:flex; align-items:center; justify-content:center; height:100vh; overflow:hidden; }
+
+/* Animated bg */
+.bg { position:fixed; inset:0; pointer-events:none; z-index:0; }
+.bg::before { content:''; position:absolute; inset:0;
+  background: radial-gradient(ellipse at 30% 20%,rgba(139,92,246,0.08) 0%,transparent 50%),
+              radial-gradient(ellipse at 70% 80%,rgba(0,240,255,0.06) 0%,transparent 50%),
+              radial-gradient(ellipse at 50% 50%,rgba(255,215,0,0.04) 0%,transparent 50%); }
+
+/* Timer container */
+.timer-container { position:relative; z-index:1; text-align:center; padding:40px; }
+
+/* Ring */
+.ring-container { position:relative; width:280px; height:280px; margin:0 auto 30px; }
+.ring-svg { width:100%; height:100%; transform:rotate(-90deg); }
+.ring-bg { fill:none; stroke:var(--glass); stroke-width:6; }
+.ring-progress { fill:none; stroke:var(--accent); stroke-width:6; stroke-linecap:round;
+  stroke-dasharray: 880; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear;
+  filter: drop-shadow(0 0 8px rgba(0,240,255,0.4)); }
+.ring-glow { position:absolute; inset:-20px; border-radius:50%;
+  background: radial-gradient(circle, rgba(0,240,255,0.08) 0%, transparent 70%);
+  animation: pulse 3s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{transform:scale(1);opacity:0.5} 50%{transform:scale(1.05);opacity:1} }
+
+/* Time display */
+.time-display { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.time { font-size:3.5rem; font-weight:800; letter-spacing:4px; font-family:'JetBrains Mono',monospace;
+  background:linear-gradient(135deg,var(--accent),var(--purple),var(--gold));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.label { font-size:0.75rem; color:var(--dim); text-transform:uppercase; letter-spacing:3px; margin-top:8px; }
+
+/* Mode buttons */
+.modes { display:flex; gap:8px; justify-content:center; margin-bottom:24px; flex-wrap:wrap; }
+.mode-btn { padding:8px 16px; border-radius:20px; border:1px solid var(--border); background:var(--glass);
+  color:var(--dim); font-size:0.75rem; cursor:pointer; transition:all 0.3s; }
+.mode-btn:hover { border-color:var(--accent); color:var(--accent); }
+.mode-btn.active { background:var(--accent); color:var(--bg); border-color:var(--accent); font-weight:600; }
+
+/* Controls */
+.controls { display:flex; gap:12px; justify-content:center; }
+.ctrl-btn { width:56px; height:56px; border-radius:50%; border:1px solid var(--border); background:var(--glass);
+  color:var(--text); font-size:1.2rem; cursor:pointer; transition:all 0.3s; display:flex; align-items:center; justify-content:center; }
+.ctrl-btn:hover { border-color:var(--accent); transform:scale(1.1); box-shadow:0 0 20px rgba(0,240,255,0.2); }
+.ctrl-btn.primary { background:linear-gradient(135deg,var(--accent),var(--purple)); border:none; color:white; font-size:1.4rem; }
+.ctrl-btn.primary:hover { box-shadow:0 0 30px rgba(0,240,255,0.4); transform:scale(1.15); }
+
+/* Sessions */
+.sessions { margin-top:24px; display:flex; gap:6px; justify-content:center; }
+.dot { width:8px; height:8px; border-radius:50%; background:var(--border); transition:all 0.3s; }
+.dot.done { background:var(--accent); box-shadow:0 0 6px var(--accent); }
+.dot.current { background:var(--gold); box-shadow:0 0 6px var(--gold); transform:scale(1.3); }
+
+/* Quote */
+.quote { margin-top:20px; font-size:0.8rem; color:var(--dim); font-style:italic; max-width:300px; }
+
+/* Notification overlay */
+.notif { position:fixed; top:20px; right:20px; background:rgba(10,10,26,0.95); border:1px solid var(--accent);
+  border-radius:12px; padding:16px 20px; z-index:999; transform:translateX(120%); transition:transform 0.4s ease;
+  box-shadow:0 8px 32px rgba(0,240,255,0.2); }
+.notif.show { transform:translateX(0); }
+.notif-title { color:var(--accent); font-weight:700; margin-bottom:4px; }
+.notif-msg { color:var(--text); font-size:0.85rem; }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<div class="timer-container">
+  <div class="ring-container">
+    <div class="ring-glow"></div>
+    <svg class="ring-svg" viewBox="0 0 300 300">
+      <circle class="ring-bg" cx="150" cy="150" r="140"/>
+      <circle class="ring-progress" id="ring" cx="150" cy="150" r="140"/>
+    </svg>
+    <div class="time-display">
+      <div class="time" id="time">25:00</div>
+      <div class="label" id="label">Focus Time</div>
+    </div>
+  </div>
+
+  <div class="modes">
+    <button class="mode-btn active" data-mins="25" onclick="setMode(this,25,'Focus')">Focus 25m</button>
+    <button class="mode-btn" data-mins="5" onclick="setMode(this,5,'Short Break')">Break 5m</button>
+    <button class="mode-btn" data-mins="15" onclick="setMode(this,15,'Long Break')">Long 15m</button>
+    <button class="mode-btn" data-mins="50" onclick="setMode(this,50,'Deep Work')">Deep 50m</button>
+  </div>
+
+  <div class="controls">
+    <button class="ctrl-btn" onclick="resetTimer()" title="Reset">↺</button>
+    <button class="ctrl-btn primary" id="playBtn" onclick="toggleTimer()" title="Start/Pause">▶</button>
+    <button class="ctrl-btn" onclick="skipTimer()" title="Skip">⏭</button>
+  </div>
+
+  <div class="sessions" id="sessions">
+    <div class="dot current"></div><div class="dot"></div><div class="dot"></div"><div class="dot"></div>
+  </div>
+
+  <div class="quote" id="quote">"The only way to do great work is to love what you do." — Steve Jobs</div>
+</div>
+
+<div class="notif" id="notif">
+  <div class="notif-title" id="notifTitle">⏰ Time's Up!</div>
+  <div class="notif-msg" id="notifMsg">Great work! Take a break.</div>
+</div>
+
+<script>
+const CIRCUMFERENCE = 2 * Math.PI * 140; // ~880
+let totalSeconds = 25 * 60;
+let remaining = totalSeconds;
+let interval = null;
+let isRunning = false;
+let sessionsDone = 0;
+
+const quotes = [
+  '"The only way to do great work is to love what you do." — Steve Jobs',
+  '"Focus on being productive instead of busy." — Tim Ferriss',
+  '"Concentrate all your thoughts upon the work in hand. The sun\'s rays do not burn until brought to a focus." — Alexander Graham Bell',
+  '"Where focus goes, energy flows." — Tony Robbins',
+  '"The successful warrior is the average man, with laser-like focus." — Bruce Lee',
+  '"It is not enough to be busy. The question is: what are we busy about?" — Henry David Thoreau',
+  '"Focus is about saying no to the hundred other good ideas." — Steve Jobs',
+  '"The mind is everything. What you think, you become." — Buddha',
+  '"Everything is connected and nothing comes from nothing." — Hazoom Philosophy',
+  '"God doesn\'t play dice." — Einstein',
+];
+
+function updateDisplay() {
+  const m = Math.floor(remaining / 60);
+  const s = remaining % 60;
+  document.getElementById('time').textContent =
+    String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const pct = remaining / totalSeconds;
+  document.getElementById('ring').style.strokeDashoffset = CIRCUMFERENCE * (1 - pct);
+  // Color shift based on progress
+  const ring = document.getElementById('ring');
+  if (pct < 0.1) ring.style.stroke = 'var(--red)';
+  else if (pct < 0.3) ring.style.stroke = 'var(--gold)';
+  else ring.style.stroke = 'var(--accent)';
+}
+
+function toggleTimer() {
+  if (isRunning) {
+    clearInterval(interval);
+    isRunning = false;
+    document.getElementById('playBtn').textContent = '▶';
+  } else {
+    isRunning = true;
+    document.getElementById('playBtn').textContent = '⏸';
+    interval = setInterval(() => {
+      remaining--;
+      updateDisplay();
+      if (remaining <= 0) {
+        clearInterval(interval);
+        isRunning = false;
+        document.getElementById('playBtn').textContent = '▶';
+        onComplete();
+      }
+    }, 1000);
+  }
+}
+
+function resetTimer() {
+  clearInterval(interval);
+  isRunning = false;
+  remaining = totalSeconds;
+  document.getElementById('playBtn').textContent = '▶';
+  updateDisplay();
+}
+
+function skipTimer() {
+  clearInterval(interval);
+  isRunning = false;
+  document.getElementById('playBtn').textContent = '▶';
+  onComplete();
+}
+
+function onComplete() {
+  sessionsDone++;
+  updateSessions();
+  // Notification
+  const notif = document.getElementById('notif');
+  const label = document.getElementById('label').textContent;
+  document.getElementById('notifTitle').textContent = '⏰ ' + label + ' Complete!';
+  document.getElementById('notifMsg').textContent =
+    sessionsDone >= 4 ? 'Amazing! 4 sessions done. Take a long break.' :
+    'Great work! ' + (4 - sessionsDone) + ' more to go.';
+  notif.classList.add('show');
+  setTimeout(() => notif.classList.remove('show'), 5000);
+  // Sound
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [523,659,784,1047].forEach((freq,i) => {
+      setTimeout(() => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value = freq;
+        gain.gain.value = 0.15;
+        osc.start(); setTimeout(() => osc.stop(), 200);
+      }, i * 150);
+    });
+  } catch(e) {}
+  // New quote
+  document.getElementById('quote').textContent = quotes[Math.floor(Math.random() * quotes.length)];
+  // Auto-advance
+  if (sessionsDone % 4 === 0) setMode(document.querySelector('[data-mins="15"]'), 15, 'Long Break');
+  else if (sessionsDone % 2 === 0) setMode(document.querySelector('[data-mins="5"]'), 5, 'Short Break');
+  else setMode(document.querySelector('[data-mins="25"]'), 25, 'Focus');
+}
+
+function setMode(btn, mins, label) {
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  totalSeconds = mins * 60;
+  remaining = totalSeconds;
+  document.getElementById('label').textContent = label;
+  document.getElementById('playBtn').textContent = '▶';
+  clearInterval(interval);
+  isRunning = false;
+  updateDisplay();
+}
+
+function updateSessions() {
+  const dots = document.querySelectorAll('.dot');
+  dots.forEach((d,i) => {
+    d.className = 'dot';
+    if (i < sessionsDone % 4) d.classList.add('done');
+    else if (i === sessionsDone % 4) d.classList.add('current');
+  });
+}
+
+// Init
+document.getElementById('ring').style.strokeDasharray = CIRCUMFERENCE;
+updateDisplay();
+</script>
+</body>
+</html>

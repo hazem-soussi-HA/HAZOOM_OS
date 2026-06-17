@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AlphaPony AI Future Lab</title>
+    <style>
+        :root {
+            --bg: #07111f;
+            --bg-deep: #020611;
+            --panel: rgba(10, 18, 34, 0.52);
+            --panel-strong: rgba(19, 29, 52, 0.72);
+            --border: rgba(180, 236, 255, 0.16);
+            --text: #ebf6ff;
+            --muted: #98abc2;
+            --cyan: #69f6ff;
+            --mint: #7bf7c7;
+            --blue: #74a8ff;
+            --amber: #ffd48a;
+            --danger: #ff8b9d;
+            --shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+            --radius-xl: 32px;
+            --radius-lg: 24px;
+            --radius-md: 18px;
+            --grid: rgba(138, 199, 255, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", "SF Pro Display", "Helvetica Neue", sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at 20% 20%, rgba(84, 184, 255, 0.2), transparent 30%),
+                radial-gradient(circle at 80% 15%, rgba(123, 247, 199, 0.18), transparent 24%),
+                radial-gradient(circle at 50% 80%, rgba(121, 93, 255, 0.16), transparent 36%),
+                linear-gradient(160deg, var(--bg-deep), var(--bg));
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(var(--grid) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+            background-size: 72px 72px;
+            mask-image: radial-gradient(circle at center, black 32%, transparent 92%);
+            opacity: 0.9;
+        }
+
+        .ambient,
+        .ambient::before,
+        .ambient::after {
+            position: fixed;
+            inset: auto;
+            border-radius: 50%;
+            filter: blur(14px);
+            pointer-events: none;
+        }
+
+        .ambient {
+            width: 18rem;
+            height: 18rem;
+            top: 8%;
+            right: 10%;
+            background: rgba(105, 246, 255, 0.15);
+            animation: drift 18s ease-in-out infinite;
+        }
+
+        .ambient::before,
+        .ambient::after {
+            content: "";
+        }
+
+        .ambient::before {
+            width: 22rem;
+            height: 22rem;
+            top: 22rem;
+            left: -42rem;
+            background: rgba(116, 168, 255, 0.12);
+            animation: drift 16s ease-in-out infinite reverse;
+        }
+
+        .ambient::after {
+            width: 16rem;
+            height: 16rem;
+            bottom: -18rem;
+            left: -16rem;
+            background: rgba(123, 247, 199, 0.14);
+            animation: drift 14s ease-in-out infinite;
+        }
+
+        .page {
+            width: min(1200px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 24px 0 64px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .glass {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 16px 20px;
+            border-radius: 999px;
+            position: sticky;
+            top: 18px;
+            z-index: 10;
+        }
+
+        .brand,
+        .top-actions,
+        .hero-actions,
+        .mini-chart,
+        .progress,
+        .capability-head,
+        .section-head,
+        .section-title,
+        .footer-row,
+        .signal-list li,
+        .command-line {
+            display: flex;
+            align-items: center;
+        }
+
+        .brand {
+            gap: 14px;
+        }
+
+        .logo {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(105, 246, 255, 0.95), rgba(116, 168, 255, 0.95));
+            box-shadow: 0 12px 28px rgba(105, 246, 255, 0.28);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo::before,
+        .logo::after {
+            content: "";
+            position: absolute;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        .logo::before {
+            width: 28px;
+            height: 4px;
+            left: 7px;
+            top: 10px;
+            transform: rotate(-28deg);
+        }
+
+        .logo::after {
+            width: 18px;
+            height: 4px;
+            right: 8px;
+            bottom: 10px;
+        }
+
+        .brand h1,
+        .hero-copy h2,
+        .section-title h3,
+        .console h3,
+        .insight-stack h3,
+        .network-card h3 {
+            margin: 0;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+        }
+
+        .brand p,
+        .hero-copy p,
+        .eyebrow,
+        .metric-label,
+        .capability-copy p,
+        .network-card p,
+        .insight-stack p,
+        .console-subtitle,
+        .footer-row p {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .top-actions {
+            gap: 10px;
+        }
+
+        .pill,
+        .ghost-button,
+        .primary-button,
+        .mode-button {
+            border: 1px solid var(--border);
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 999px;
+        }
+
+        .pill {
+            padding: 10px 14px;
+            font-size: 0.82rem;
+        }
+
+        .ghost-button,
+        .primary-button,
+        .mode-button {
+            cursor: pointer;
+            transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+        }
+
+        .ghost-button,
+        .primary-button {
+            padding: 12px 18px;
+            font-weight: 600;
+        }
+
+        .mode-button {
+            width: 42px;
+            height: 42px;
+            font-size: 1rem;
+        }
+
+        .primary-button {
+            background: linear-gradient(135deg, rgba(105, 246, 255, 0.22), rgba(123, 247, 199, 0.18));
+            box-shadow: 0 16px 30px rgba(105, 246, 255, 0.16);
+        }
+
+        .ghost-button:hover,
+        .primary-button:hover,
+        .mode-button:hover,
+        .capability:hover,
+        .network-card:hover,
+        .signal-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(105, 246, 255, 0.42);
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 22px;
+            margin-top: 22px;
+        }
+
+        .hero-copy,
+        .hero-dashboard,
+        .capabilities,
+        .network,
+        .console,
+        .signal-card,
+        .footer {
+            border-radius: var(--radius-xl);
+            padding: 26px;
+        }
+
+        .hero-copy {
+            position: relative;
+            overflow: hidden;
+            min-height: 560px;
+        }
+
+        .hero-copy::after {
+            content: "";
+            position: absolute;
+            inset: auto -10% -25% auto;
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(105, 246, 255, 0.18), transparent 70%);
+        }
+
+        .eyebrow {
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            font-size: 0.74rem;
+            margin-bottom: 18px;
+        }
+
+        .eyebrow span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--mint);
+            box-shadow: 0 0 18px var(--mint);
+        }
+
+        .hero-copy h2 {
+            font-size: clamp(2.9rem, 7vw, 5.8rem);
+            line-height: 0.95;
+            max-width: 10ch;
+        }
+
+        .hero-gradient {
+            display: block;
+            background: linear-gradient(90deg, var(--cyan), #d8faff 35%, var(--mint));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero-copy p {
+            max-width: 52ch;
+            font-size: 1.02rem;
+            line-height: 1.7;
+            margin-top: 18px;
+        }
+
+        .hero-actions {
+            gap: 12px;
+            margin-top: 26px;
+            flex-wrap: wrap;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+            margin-top: 26px;
+        }
+
+        .stat {
+            padding: 18px;
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .metric-value {
+            font-size: clamp(1.8rem, 3.4vw, 2.4rem);
+            font-weight: 700;
+            margin: 6px 0;
+        }
+
+        .metric-label {
+            gap: 8px;
+            font-size: 0.86rem;
+        }
+
+        .mini-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--cyan);
+            box-shadow: 0 0 16px rgba(105, 246, 255, 0.9);
+        }
+
+        .hero-dashboard {
+            display: grid;
+            gap: 16px;
+            align-content: start;
+        }
+
+        .dashboard-card,
+        .timeline,
+        .insight-stack,
+        .network-card {
+            padding: 18px;
+            border-radius: var(--radius-lg);
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .dashboard-card h3,
+        .timeline h3 {
+            margin: 0 0 14px;
+            font-size: 1rem;
+        }
+
+        .ring-wrap {
+            display: grid;
+            place-items: center;
+            min-height: 220px;
+        }
+
+        .ring {
+            width: 180px;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background:
+                radial-gradient(circle at center, rgba(2, 6, 17, 0.96) 52%, transparent 54%),
+                conic-gradient(var(--cyan) calc(var(--score) * 1%), rgba(255, 255, 255, 0.08) 0);
+            box-shadow: inset 0 0 40px rgba(105, 246, 255, 0.16), 0 0 30px rgba(105, 246, 255, 0.12);
+            transition: background 300ms ease;
+        }
+
+        .ring-value {
+            text-align: center;
+        }
+
+        .ring-value strong {
+            display: block;
+            font-size: 3rem;
+            line-height: 1;
+        }
+
+        .ring-value span {
+            color: var(--muted);
+            font-size: 0.92rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .timeline {
+            display: grid;
+            gap: 12px;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 18px;
+        }
+
+        .timeline-item::before {
+            content: "";
+            position: absolute;
+            top: 6px;
+            left: 0;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--mint);
+            box-shadow: 0 0 14px rgba(123, 247, 199, 0.78);
+        }
+
+        .timeline-item strong {
+            display: block;
+            font-size: 0.94rem;
+        }
+
+        .timeline-item span {
+            color: var(--muted);
+            font-size: 0.88rem;
+            line-height: 1.5;
+        }
+
+        .section {
+            margin-top: 24px;
+        }
+
+        .section-head {
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 14px;
+        }
+
+        .section-title {
+            gap: 14px;
+        }
+
+        .section-index {
+            width: 40px;
+            height: 40px;
+            display: grid;
+            place-items: center;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--cyan);
+            font-weight: 700;
+        }
+
+        .section-title h3 {
+            font-size: clamp(1.4rem, 2vw, 1.8rem);
+        }
+
+        .section-title p {
+            margin-top: 4px;
+        }
+
+        .capabilities {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .capability,
+        .signal-card {
+            padding: 18px;
+            border-radius: var(--radius-lg);
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+        }
+
+        .capability.active {
+            background: linear-gradient(160deg, rgba(105, 246, 255, 0.12), rgba(255, 255, 255, 0.05));
+            border-color: rgba(105, 246, 255, 0.36);
+        }
+
+        .capability-head {
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .capability-icon {
+            width: 44px;
+            height: 44px;
+            display: grid;
+            place-items: center;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.06);
+            font-size: 1.2rem;
+        }
+
+        .capability button {
+            margin-top: 18px;
+            width: 100%;
+            padding: 11px 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.04);
+            cursor: pointer;
+        }
+
+        .capability-copy p {
+            line-height: 1.6;
+        }
+
+        .progress {
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 12px;
+            font-size: 0.9rem;
+        }
+
+        .progress-bar {
+            position: relative;
+            width: 100%;
+            height: 8px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.08);
+            margin-top: 12px;
+        }
+
+        .progress-bar span {
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: var(--fill, 50%);
+            border-radius: inherit;
+            background: linear-gradient(90deg, var(--cyan), var(--mint));
+            box-shadow: 0 0 24px rgba(105, 246, 255, 0.3);
+        }
+
+        .network {
+            display: grid;
+            grid-template-columns: 1fr 0.95fr;
+            gap: 16px;
+        }
+
+        .network-map {
+            min-height: 380px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .grid-net {
+            position: absolute;
+            inset: 0;
+        }
+
+        .node-point {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ffffff, var(--cyan));
+            box-shadow: 0 0 20px rgba(105, 246, 255, 0.6);
+            transform: translate(-50%, -50%);
+        }
+
+        .node-label {
+            position: absolute;
+            transform: translate(12px, -50%);
+            color: var(--text);
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+
+        .network-svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .network-card {
+            display: grid;
+            gap: 18px;
+            align-content: start;
+        }
+
+        .signal-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            gap: 12px;
+        }
+
+        .signal-list li {
+            justify-content: space-between;
+            gap: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .signal-list li:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .tag {
+            padding: 8px 10px;
+            border-radius: 999px;
+            font-size: 0.76rem;
+            color: var(--bg);
+            background: var(--mint);
+            font-weight: 700;
+        }
+
+        .console-wrap {
+            display: grid;
+            grid-template-columns: 0.9fr 1.1fr;
+            gap: 16px;
+        }
+
+        .insight-stack {
+            display: grid;
+            gap: 16px;
+            align-content: start;
+        }
+
+        .signal-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .signal-card strong {
+            display: block;
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .console {
+            display: grid;
+            gap: 16px;
+        }
+
+        .console-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .console-window {
+            border-radius: var(--radius-lg);
+            padding: 18px;
+            background: rgba(1, 4, 12, 0.74);
+            border: 1px solid rgba(126, 169, 255, 0.12);
+            min-height: 320px;
+            box-shadow: inset 0 0 40px rgba(116, 168, 255, 0.08);
+        }
+
+        .command-log {
+            display: grid;
+            gap: 10px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+            font-size: 0.9rem;
+        }
+
+        .command-line {
+            gap: 10px;
+            opacity: 0;
+            transform: translateY(8px);
+            animation: revealLine 480ms ease forwards;
+        }
+
+        .command-line .prompt {
+            color: var(--mint);
+        }
+
+        .command-line .response {
+            color: var(--muted);
+        }
+
+        .command-input {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .command-input input {
+            flex: 1 1 240px;
+            min-width: 0;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text);
+            padding: 14px 16px;
+            outline: none;
+        }
+
+        .command-input input:focus {
+            border-color: rgba(105, 246, 255, 0.42);
+            box-shadow: 0 0 0 4px rgba(105, 246, 255, 0.08);
+        }
+
+        .footer {
+            margin-top: 24px;
+        }
+
+        .footer-row {
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            text-decoration: none;
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(24px) scale(0.98);
+            transition: opacity 700ms ease, transform 700ms ease;
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .tilt {
+            transform-style: preserve-3d;
+            will-change: transform;
+        }
+
+        @keyframes drift {
+            0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+            50% { transform: translate3d(-22px, 18px, 0) scale(1.06); }
+        }
+
+        @keyframes pulsePath {
+            0%, 100% { stroke-opacity: 0.28; }
+            50% { stroke-opacity: 0.86; }
+        }
+
+        @keyframes revealLine {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 1080px) {
+            .hero,
+            .network,
+            .console-wrap {
+                grid-template-columns: 1fr;
+            }
+
+            .capabilities {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid,
+            .signal-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 720px) {
+            .page {
+                width: min(100% - 20px, 1200px);
+                padding-top: 14px;
+            }
+
+            .topbar {
+                border-radius: 28px;
+                padding: 14px;
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .hero-copy,
+            .hero-dashboard,
+            .capabilities,
+            .network,
+            .console,
+            .signal-card,
+            .footer {
+                padding: 18px;
+            }
+
+            .stats-grid,
+            .signal-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-copy {
+                min-height: auto;
+            }
+
+            .hero-copy h2 {
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient"></div>
+    <main class="page">
+        <nav class="topbar glass reveal">
+            <div class="brand">
+                <div class="logo"></div>
+                <div>
+                    <h1>AlphaPony Future Lab</h1>
+                    <p>Interactive AI showcase for reasoning, generation, and orchestration.</p>
+                </div>
+            </div>
+            <div class="top-actions">
+                <div class="pill">Neural mesh online</div>
+                <button class="mode-button" id="mode-toggle" type="button" aria-label="Toggle accent mode">+</button>
+            </div>
+        </nav>
+
+        <section class="hero">
+            <article class="hero-copy glass reveal tilt">
+                <div class="eyebrow"><span></span>Adaptive intelligence interface</div>
+                <h2>See AI <span class="hero-gradient">sense, decide, and create</span> in real time.</h2>
+                <p>
+                    This concept page simulates an AI control surface with live metrics, animated capability modules,
+                    responsive glassmorphism panels, and a command layer that turns prompts into visual outcomes.
+                </p>
+                <div class="hero-actions">
+                    <button class="primary-button" type="button" data-scroll="#capabilities">Launch capability matrix</button>
+                    <button class="ghost-button" type="button" data-scroll="#console">Open live console</button>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat">
+                        <div class="metric-label"><span class="mini-dot"></span>Inference speed</div>
+                        <div class="metric-value" data-counter="124">0</div>
+                        <p class="metric-label">tokens per second</p>
+                    </div>
+                    <div class="stat">
+                        <div class="metric-label"><span class="mini-dot"></span>Agent sync</div>
+                        <div class="metric-value" data-counter="98">0</div>
+                        <p class="metric-label">distributed reliability</p>
+                    </div>
+                    <div class="stat">
+                        <div class="metric-label"><span class="mini-dot"></span>Modal fusion</div>
+                        <div class="metric-value" data-counter="12">0</div>
+                        <p class="metric-label">active data streams</p>
+                    </div>
+                </div>
+            </article>
+
+            <aside class="hero-dashboard glass reveal">
+                <div class="dashboard-card">
+                    <h3>System confidence</h3>
+                    <div class="ring-wrap">
+                        <div class="ring" id="confidence-ring" style="--score: 87;">
+                            <div class="ring-value">
+                                <strong id="ring-score">87%</strong>
+                                <span>operational trust</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="timeline">
+                    <h3>Live event stream</h3>
+                    <div class="timeline-item">
+                        <strong>Vision model fused with sensor graph</strong>
+                        <span>Context windows are synchronized across image, text, and telemetry inputs.</span>
+                    </div>
+                    <div class="timeline-item">
+                        <strong>Reasoning queue reprioritized</strong>
+                        <span>Agents are reallocating compute toward high-impact user tasks.</span>
+                    </div>
+                    <div class="timeline-item">
+                        <strong>Action plan published to orchestration layer</strong>
+                        <span>Guardrails validate the next sequence before execution.</span>
+                    </div>
+                </div>
+            </aside>
+        </section>
+
+        <section class="section" id="capabilities">
+            <div class="section-head reveal">
+                <div class="section-title">
+                    <div class="section-index">01</div>
+                    <div>
+                        <h3>Capability Matrix</h3>
+                        <p>Dynamic cards expose different AI behaviors and update the surrounding interface.</p>
+                    </div>
+                </div>
+                <div class="pill" id="matrix-status">Adaptive mode: Orchestrating</div>
+            </div>
+            <div class="capabilities glass reveal">
+                <article class="capability active tilt" data-mode="reasoning">
+                    <div class="capability-head">
+                        <div class="capability-icon">R</div>
+                        <div class="tag">Reason</div>
+                    </div>
+                    <div class="capability-copy">
+                        <h4>Strategic reasoning</h4>
+                        <p>Breaks complex goals into validated steps, balancing confidence, latency, and risk.</p>
+                    </div>
+                    <div class="progress"><span>Scenario coverage</span><span>91%</span></div>
+                    <div class="progress-bar" style="--fill: 91%;"><span></span></div>
+                    <button type="button">Activate reasoning mesh</button>
+                </article>
+                <article class="capability tilt" data-mode="vision">
+                    <div class="capability-head">
+                        <div class="capability-icon">V</div>
+                        <div class="tag">Vision</div>
+                    </div>
+                    <div class="capability-copy">
+                        <h4>Multimodal vision</h4>
+                        <p>Reads imagery, interfaces, and physical environments to turn pixels into action.</p>
+                    </div>
+                    <div class="progress"><span>Scene understanding</span><span>84%</span></div>
+                    <div class="progress-bar" style="--fill: 84%;"><span></span></div>
+                    <button type="button">Switch to perception</button>
+                </article>
+                <article class="capability tilt" data-mode="generation">
+                    <div class="capability-head">
+                        <div class="capability-icon">G</div>
+                        <div class="tag">Create</div>
+                    </div>
+                    <div class="capability-copy">
+                        <h4>Generative synthesis</h4>
+                        <p>Produces code, media, and interfaces while preserving structure, style, and intent.</p>
+                    </div>
+                    <div class="progress"><span>Creative throughput</span><span>96%</span></div>
+                    <div class="progress-bar" style="--fill: 96%;"><span></span></div>
+                    <button type="button">Trigger generation pulse</button>
+                </article>
+            </div>
+        </section>
+
+        <section class="section" id="network">
+            <div class="section-head reveal">
+                <div class="section-title">
+                    <div class="section-index">02</div>
+                    <div>
+                        <h3>Neural Network Map</h3>
+                        <p>Animated pathways visualize how specialized systems coordinate decisions.</p>
+                    </div>
+                </div>
+                <button class="ghost-button" id="shuffle-network" type="button">Rewire pathways</button>
+            </div>
+            <div class="network glass reveal">
+                <div class="network-map dashboard-card">
+                    <svg class="network-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                        <path id="p1" d="M16,24 C34,12 46,44 64,32 S82,26 88,18" fill="none" stroke="rgba(105,246,255,0.75)" stroke-width="0.45" stroke-linecap="round" style="animation: pulsePath 4s ease-in-out infinite;"></path>
+                        <path id="p2" d="M10,72 C28,52 44,82 58,64 S82,54 88,70" fill="none" stroke="rgba(123,247,199,0.7)" stroke-width="0.45" stroke-linecap="round" style="animation: pulsePath 3.5s ease-in-out infinite 0.4s;"></path>
+                        <path id="p3" d="M20,26 C22,48 48,48 50,50 S74,52 82,80" fill="none" stroke="rgba(116,168,255,0.65)" stroke-width="0.45" stroke-linecap="round" style="animation: pulsePath 5s ease-in-out infinite 0.8s;"></path>
+                        <path id="p4" d="M16,74 C30,72 34,40 52,42 S68,38 86,24" fill="none" stroke="rgba(255,212,138,0.6)" stroke-width="0.4" stroke-linecap="round" style="animation: pulsePath 4.4s ease-in-out infinite 0.2s;"></path>
+                    </svg>
+                    <div class="grid-net" id="network-grid"></div>
+                </div>
+                <aside class="network-card">
+                    <div>
+                        <h3>Subsystem coordination</h3>
+                        <p id="network-summary">Reasoning core is leading the current orchestration cycle with low-latency routing.</p>
+                    </div>
+                    <ul class="signal-list" id="signal-list">
+                        <li><span>Planning agents</span><strong>14 online</strong></li>
+                        <li><span>Vision endpoints</span><strong>6 active</strong></li>
+                        <li><span>Safety checks</span><strong>31 / min</strong></li>
+                        <li><span>Inference cache</span><strong>89% warm</strong></li>
+                    </ul>
+                </aside>
+            </div>
+        </section>
+
+        <section class="section" id="console">
+            <div class="section-head reveal">
+                <div class="section-title">
+                    <div class="section-index">03</div>
+                    <div>
+                        <h3>Interactive Command Layer</h3>
+                        <p>Type a request and the interface will simulate how an AI control plane responds.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="console-wrap reveal">
+                <aside class="insight-stack glass">
+                    <div>
+                        <h3>Signal telemetry</h3>
+                        <p>These panels pulse based on the current active capability mode.</p>
+                    </div>
+                    <div class="signal-grid">
+                        <div class="signal-card tilt">
+                            <strong id="latency-value">142ms</strong>
+                            <p>Decision latency across planning and execution stages.</p>
+                        </div>
+                        <div class="signal-card tilt">
+                            <strong id="throughput-value">8.4x</strong>
+                            <p>Parallel task amplification through agent orchestration.</p>
+                        </div>
+                        <div class="signal-card tilt">
+                            <strong id="context-value">1.8M</strong>
+                            <p>Context tokens retained across long-horizon reasoning loops.</p>
+                        </div>
+                        <div class="signal-card tilt">
+                            <strong id="alignment-value">99.2%</strong>
+                            <p>Goal alignment after policy and safety validation passes.</p>
+                        </div>
+                    </div>
+                </aside>
+
+                <div class="console glass">
+                    <div class="console-header">
+                        <div>
+                            <h3>Live AI console</h3>
+                            <p class="console-subtitle">Sample prompts generate staged system feedback and visual state changes.</p>
+                        </div>
+                        <div class="pill" id="console-badge">Awaiting prompt</div>
+                    </div>
+                    <div class="console-window">
+                        <div class="command-log" id="command-log">
+                            <div class="command-line" style="animation-delay: 80ms;">
+                                <span class="prompt">system ></span>
+                                <span class="response">Future Lab online. Input a command to orchestrate the mesh.</span>
+                            </div>
+                        </div>
+                    </div>
+                    <form class="command-input" id="command-form">
+                        <input id="command-field" type="text" value="Design an adaptive city powered by AI agents" aria-label="AI command input">
+                        <button class="primary-button" type="submit">Run simulation</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer glass reveal">
+            <div class="footer-row">
+                <div>
+                    <h3>AlphaPony Future Lab</h3>
+                    <p>Glassmorphism interface, animated orchestration, and dynamic AI storytelling in one HTML page.</p>
+                </div>
+                <div class="footer-links">
+                    <a href="#capabilities">Capabilities</a>
+                    <a href="#network">Network</a>
+                    <a href="#console">Console</a>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <script>
+        const counters = document.querySelectorAll("[data-counter]");
+        const revealItems = document.querySelectorAll(".reveal");
+        const capabilityCards = document.querySelectorAll(".capability");
+        const matrixStatus = document.getElementById("matrix-status");
+        const ring = document.getElementById("confidence-ring");
+        const ringScore = document.getElementById("ring-score");
+        const consoleBadge = document.getElementById("console-badge");
+        const commandLog = document.getElementById("command-log");
+        const commandForm = document.getElementById("command-form");
+        const commandField = document.getElementById("command-field");
+        const networkGrid = document.getElementById("network-grid");
+        const networkSummary = document.getElementById("network-summary");
+        const shuffleNetworkButton = document.getElementById("shuffle-network");
+        const modeToggle = document.getElementById("mode-toggle");
+
+        const metricSets = {
+            reasoning: {
+                status: "Adaptive mode: Orchestrating",
+                confidence: 87,
+                latency: "142ms",
+                throughput: "8.4x",
+                context: "1.8M",
+                alignment: "99.2%",
+                summary: "Reasoning core is leading the current orchestration cycle with low-latency routing."
+            },
+            vision: {
+                status: "Adaptive mode: Perceiving",
+                confidence: 92,
+                latency: "118ms",
+                throughput: "6.9x",
+                context: "940K",
+                alignment: "98.7%",
+                summary: "Vision endpoints are prioritizing sensor fusion to identify patterns, interfaces, and motion."
+            },
+            generation: {
+                status: "Adaptive mode: Generating",
+                confidence: 95,
+                latency: "166ms",
+                throughput: "11.2x",
+                context: "2.4M",
+                alignment: "99.5%",
+                summary: "Creative pipelines are synthesizing assets, code, and narrative while preserving constraints."
+            }
+        };
+
+        const simulatedResponses = [
+            {
+                lead: "analysis",
+                body: "Mapped the request into planning, environment simulation, visual identity, and agent choreography."
+            },
+            {
+                lead: "mesh",
+                body: "Allocated specialist agents for urban design, transit intelligence, and energy optimization."
+            },
+            {
+                lead: "output",
+                body: "Generated a city model with responsive mobility lanes, predictive infrastructure, and autonomous service loops."
+            }
+        ];
+
+        const nodes = [
+            { label: "Core", x: 16, y: 24 },
+            { label: "Vision", x: 50, y: 50 },
+            { label: "Agents", x: 88, y: 18 },
+            { label: "Safety", x: 58, y: 66 },
+            { label: "Voice", x: 12, y: 72 },
+            { label: "Memory", x: 88, y: 72 }
+        ];
+
+        function animateCounter(el) {
+            const target = Number(el.dataset.counter);
+            const duration = 1400;
+            const startTime = performance.now();
+
+            function frame(now) {
+                const progress = Math.min((now - startTime) / duration, 1);
+                el.textContent = Math.round(target * (1 - Math.pow(1 - progress, 3)));
+                if (progress < 1) {
+                    requestAnimationFrame(frame);
+                }
+            }
+
+            requestAnimationFrame(frame);
+        }
+
+        function revealOnScroll() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add("visible");
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.16 });
+
+            revealItems.forEach((item) => observer.observe(item));
+        }
+
+        function setMode(mode) {
+            const metrics = metricSets[mode];
+            matrixStatus.textContent = metrics.status;
+            ring.style.setProperty("--score", metrics.confidence);
+            ringScore.textContent = metrics.confidence + "%";
+            document.getElementById("latency-value").textContent = metrics.latency;
+            document.getElementById("throughput-value").textContent = metrics.throughput;
+            document.getElementById("context-value").textContent = metrics.context;
+            document.getElementById("alignment-value").textContent = metrics.alignment;
+            networkSummary.textContent = metrics.summary;
+        }
+
+        function initCapabilities() {
+            capabilityCards.forEach((card) => {
+                card.addEventListener("click", () => {
+                    capabilityCards.forEach((item) => item.classList.remove("active"));
+                    card.classList.add("active");
+                    setMode(card.dataset.mode);
+                });
+            });
+        }
+
+        function addLine(prompt, response) {
+            const line = document.createElement("div");
+            line.className = "command-line";
+            line.innerHTML = "<span class='prompt'>" + prompt + "</span><span class='response'>" + response + "</span>";
+            commandLog.appendChild(line);
+            commandLog.parentElement.scrollTop = commandLog.parentElement.scrollHeight;
+        }
+
+        function runSimulation(command) {
+            const mood = command.toLowerCase();
+            let mode = "reasoning";
+
+            if (mood.includes("image") || mood.includes("visual") || mood.includes("camera")) {
+                mode = "vision";
+            } else if (mood.includes("design") || mood.includes("create") || mood.includes("build")) {
+                mode = "generation";
+            }
+
+            capabilityCards.forEach((item) => {
+                item.classList.toggle("active", item.dataset.mode === mode);
+            });
+            setMode(mode);
+            consoleBadge.textContent = "Executing " + mode + " workflow";
+
+            addLine("user   >", command);
+            simulatedResponses.forEach((step, index) => {
+                window.setTimeout(() => {
+                    addLine(step.lead + " >", step.body);
+                }, 260 * (index + 1));
+            });
+            window.setTimeout(() => {
+                addLine("result >", "Simulation complete. Interface updated to reflect the active " + mode + " pipeline.");
+                consoleBadge.textContent = "Simulation complete";
+            }, 1100);
+        }
+
+        function initConsole() {
+            commandForm.addEventListener("submit", (event) => {
+                event.preventDefault();
+                const command = commandField.value.trim();
+                if (!command) {
+                    return;
+                }
+                runSimulation(command);
+                commandField.select();
+            });
+        }
+
+        function drawNodes() {
+            networkGrid.innerHTML = "";
+            nodes.forEach((node) => {
+                const point = document.createElement("div");
+                point.className = "node-point";
+                point.style.left = node.x + "%";
+                point.style.top = node.y + "%";
+
+                const label = document.createElement("div");
+                label.className = "node-label";
+                label.style.left = node.x + "%";
+                label.style.top = node.y + "%";
+                label.textContent = node.label;
+
+                networkGrid.appendChild(point);
+                networkGrid.appendChild(label);
+            });
+        }
+
+        function randomizePath(id) {
+            const path = document.getElementById(id);
+            const startY = 18 + Math.round(Math.random() * 58);
+            const endY = 18 + Math.round(Math.random() * 58);
+            const c1x = 24 + Math.round(Math.random() * 24);
+            const c1y = 8 + Math.round(Math.random() * 84);
+            const c2x = 54 + Math.round(Math.random() * 18);
+            const c2y = 8 + Math.round(Math.random() * 84);
+            path.setAttribute("d", "M12," + startY + " C" + c1x + "," + c1y + " " + c2x + "," + c2y + " 88," + endY);
+        }
+
+        function initNetworkShuffle() {
+            shuffleNetworkButton.addEventListener("click", () => {
+                ["p1", "p2", "p3", "p4"].forEach(randomizePath);
+                consoleBadge.textContent = "Pathways rewired";
+            });
+        }
+
+        function initTilt() {
+            document.querySelectorAll(".tilt").forEach((card) => {
+                card.addEventListener("pointermove", (event) => {
+                    const rect = card.getBoundingClientRect();
+                    const px = (event.clientX - rect.left) / rect.width;
+                    const py = (event.clientY - rect.top) / rect.height;
+                    const rotateY = (px - 0.5) * 10;
+                    const rotateX = (0.5 - py) * 10;
+                    card.style.transform = "perspective(1000px) rotateX(" + rotateX + "deg) rotateY(" + rotateY + "deg) translateY(-2px)";
+                });
+                card.addEventListener("pointerleave", () => {
+                    card.style.transform = "";
+                });
+            });
+        }
+
+        function initScrollButtons() {
+            document.querySelectorAll("[data-scroll]").forEach((button) => {
+                button.addEventListener("click", () => {
+                    const target = document.querySelector(button.dataset.scroll);
+                    if (target) {
+                        target.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
+                });
+            });
+        }
+
+        function initModeToggle() {
+            let altMode = false;
+            modeToggle.addEventListener("click", () => {
+                altMode = !altMode;
+                document.documentElement.style.setProperty("--cyan", altMode ? "#ff9de1" : "#69f6ff");
+                document.documentElement.style.setProperty("--mint", altMode ? "#ffd48a" : "#7bf7c7");
+                document.documentElement.style.setProperty("--blue", altMode ? "#b59cff" : "#74a8ff");
+                modeToggle.textContent = altMode ? "x" : "+";
+            });
+        }
+
+        counters.forEach(animateCounter);
+        revealOnScroll();
+        initCapabilities();
+        initConsole();
+        drawNodes();
+        initNetworkShuffle();
+        initTilt();
+        initScrollButtons();
+        initModeToggle();
+        setMode("reasoning");
+
+        window.setTimeout(() => runSimulation(commandField.value), 900);
+    </script>
+</body>
+</html>

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Manager - HAZOOM OS</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            color: white;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .button {
+            padding: 8px 15px;
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid #3b82f6;
+            border-radius: 5px;
+            color: #3b82f6;
+            cursor: pointer;
+        }
+
+        .usb-button {
+            padding: 8px 15px;
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid #10b981;
+            border-radius: 5px;
+            color: #10b981;
+            cursor: pointer;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 20px;
+        }
+
+        .item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .icon {
+            font-size: 40px;
+        }
+
+        .name {
+            font-size: 12px;
+            margin-top: 5px;
+            text-align: center;
+            word-break: break-all;
+        }
+
+        .extension {
+            font-size: 10px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        .path-bar {
+            margin-bottom: 20px;
+            color: #94a3b8;
+            font-family: monospace;
+        }
+
+        .usb-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 5px;
+            border: 1px solid #10b981;
+        }
+
+        .usb-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ef4444;
+        }
+
+        .usb-indicator.connected {
+            background: #10b981;
+        }
+
+        .usb-device-list {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 5px;
+        }
+
+        .usb-device-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .usb-device-item:last-child {
+            border-bottom: none;
+        }
+
+        .mount-button {
+            padding: 4px 10px;
+            background: rgba(37, 99, 235, 0.3);
+            border: 1px solid #3b82f6;
+            border-radius: 3px;
+            color: #93c5fd;
+            cursor: pointer;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="path-bar" id="pathBar">/</div>
+
+    <div class="usb-status" id="usbStatus">
+        <div class="usb-indicator" id="usbIndicator"></div>
+        <span>USB Portals: <span id="usbCount">0</span> connected</span>
+        <button class="usb-button" onclick="scanUSB()">🔍 Scan USB</button>
+        <button class="usb-button" onclick="requestUSBAccess()">🔓 Connect USB</button>
+    </div>
+
+    <div class="usb-device-list" id="usbDeviceList" style="display: none;">
+        <h3>Connected USB Devices</h3>
+        <div id="usbDevices"></div>
+    </div>
+
+    <div class="toolbar">
+        <button class="button" onclick="goUp()">⬆️ Up</button>
+        <button class="button" onclick="newFolder()">📁 New Folder</button>
+        <button class="button" onclick="newFile()">📄 New File</button>
+        <button class="button" onclick="refresh()">🔄 Refresh</button>
+        <button class="button" style="border-color:#f43f5e; color:#f43f5e;" onclick="factoryReset()">⚠️ Factory
+            Reset</button>
+    </div>
+    <div class="grid" id="grid"></div>
+
+    <script>
+        const fs = window.parent.FileSystem;
+        const usbManager = window.parent.USBPortalManager;
+        let currentPath = '/';
+
+        // Initialize USB manager if available
+        if (usbManager) {
+            updateUSBStatus();
+
+            // Register for USB events
+            usbManager.on('portalConnected', updateUSBStatus);
+        }
+
+        function getFileExtension(filename) {
+            const parts = filename.split('.');
+            if (parts.length > 1) {
+                return parts[parts.length - 1].toUpperCase();
+            }
+            return '';
+        }
+
+        function getFileIcon(filename) {
+            const ext = getFileExtension(filename).toLowerCase();
+            const icons = {
+                'html': '🌐',
+                'js': '📜',
+                'css': '🎨',
+                'py': '🐍',
+                'json': '📋',
+                'md': '📝',
+                'txt': '📄',
+                'jpg': '🖼️',
+                'jpeg': '🖼️',
+                'png': '🖼️',
+                'gif': '🖼️',
+                'svg': '🎨',
+                'pdf': '📕',
+                'doc': '📘',
+                'docx': '📘',
+                'xls': '📗',
+                'xlsx': '📗',
+                'zip': '📦',
+                'rar': '📦',
+                'tar': '📦',
+                'mp3': '🎵',
+                'mp4': '🎬',
+                'avi': '🎬',
+                'mov': '🎬'
+            };
+            return icons[ext] || '📄';
+        }
+
+        function render() {
+            const grid = document.getElementById('grid');
+            const pathBar = document.getElementById('pathBar');
+            grid.innerHTML = '';
+            pathBar.textContent = currentPath;
+
+            const items = fs.ls(currentPath);
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'item';
+
+                const isFolder = item.type === 'folder';
+                const icon = isFolder ? '📁' : getFileIcon(item.name);
+                const extension = isFolder ? '' : getFileExtension(item.name);
+
+                div.innerHTML = `
+                     <div class="icon">${icon}</div>
+                     <div class="name">${item.name}</div>
+                     ${extension ? `<div class="extension">${extension}</div>` : ''}
+                 `;
+                div.onclick = () => {
+                    if (isFolder) {
+                        currentPath = item.path;
+                        render();
+                    }
+                };
+                grid.appendChild(div);
+            });
+        }
+
+        function goUp() {
+            if (currentPath === '/') return;
+            const parts = currentPath.split('/').filter(p => p);
+            parts.pop();
+            currentPath = '/' + parts.join('/');
+            render();
+        }
+
+        function newFolder() {
+            const name = prompt('Folder name:');
+            if (name) {
+                fs.createFolder(currentPath, name);
+                render();
+            }
+        }
+
+        function newFile() {
+            const name = prompt('File name:');
+            if (name) {
+                fs.createFile(currentPath, name, '');
+                render();
+            }
+        }
+
+        function refresh() {
+            render();
+            if (usbManager) {
+                updateUSBStatus();
+            }
+        }
+
+        function factoryReset() {
+            if (confirm('Are you sure you want to reset the entire file system to defaults? All your current files will be lost.')) {
+                fs.resetToDefault();
+                render();
+            }
+        }
+
+        // USB Portal Functions
+        async function scanUSB() {
+            if (!usbManager) {
+                alert('USB Portal Manager not available');
+                return;
+            }
+
+            try {
+                await usbManager.scanForPortals();
+                updateUSBStatus();
+            } catch (error) {
+                console.error('Error scanning for USB devices:', error);
+                alert('Error scanning for USB devices: ' + error.message);
+            }
+        }
+
+        async function requestUSBAccess() {
+            if (!usbManager) {
+                alert('USB Portal Manager not available');
+                return;
+            }
+
+            try {
+                await usbManager.requestAccess();
+                updateUSBStatus();
+            } catch (error) {
+                console.error('Error requesting USB access:', error);
+                alert('Error requesting USB access: ' + error.message);
+            }
+        }
+
+        function updateUSBStatus() {
+            if (!usbManager) {
+                document.getElementById('usbStatus').style.display = 'none';
+                return;
+            }
+
+            const connectedPortals = usbManager.getConnectedPortals();
+            const count = connectedPortals.length;
+            document.getElementById('usbCount').textContent = count;
+
+            const indicator = document.getElementById('usbIndicator');
+            indicator.className = 'usb-indicator';
+            if (count > 0) {
+                indicator.classList.add('connected');
+            }
+
+            const deviceList = document.getElementById('usbDevices');
+            const listContainer = document.getElementById('usbDeviceList');
+
+            if (count > 0) {
+                listContainer.style.display = 'block';
+
+                deviceList.innerHTML = '';
+                connectedPortals.forEach(portal => {
+                    const item = document.createElement('div');
+                    item.className = 'usb-device-item';
+
+                    item.innerHTML = `
+                        <div>
+                            <strong>${portal.name}</strong><br>
+                            <small>Type: ${portal.type} | Vendor: ${portal.vendorId.toString(16)}</small>
+                        </div>
+                        <button class="mount-button" onclick="mountUSB('${portal.id}', '${portal.name}')">Mount</button>
+                    `;
+                    deviceList.appendChild(item);
+                });
+            } else {
+                listContainer.style.display = 'none';
+            }
+        }
+
+        async function mountUSB(portalId, portalName) {
+            if (!usbManager) {
+                alert('USB Portal Manager not available');
+                return;
+            }
+
+            try {
+                const result = await usbManager.mountPortalToFS(portalId);
+                if (result.success) {
+                    alert(`USB device "${portalName}" mounted at ${result.mountPoint}`);
+                    render(); // Refresh the file view
+                } else {
+                    alert(`Failed to mount USB device: ${result.error}`);
+                }
+            } catch (error) {
+                console.error('Error mounting USB device:', error);
+                alert('Error mounting USB device: ' + error.message);
+            }
+        }
+
+        render();
+    </script>
+</body>
+
+</html>

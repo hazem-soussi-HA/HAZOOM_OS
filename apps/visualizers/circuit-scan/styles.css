@@ -1,0 +1,220 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    min-height: 100vh;
+    color: #fff;
+}
+
+.header {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #e94560;
+}
+
+.header h1 {
+    color: #e94560;
+    font-size: 28px;
+}
+
+.vrinx-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 25px;
+    transition: all 0.3s ease;
+}
+
+.status-dot {
+    width: 12px;
+    height: 12px;
+    background: #00ff88;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+.status-dot.disconnected {
+    background: #ff6b6b;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(1.2);
+    }
+}
+
+.main-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.scan-section {
+    margin-bottom: 40px;
+}
+
+.scan-controls {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.btn-primary {
+    padding: 15px 40px;
+    font-size: 18px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: linear-gradient(135deg, #e94560, #ff6b6b);
+    color: #fff;
+    box-shadow: 0 10px 30px rgba(233, 69, 96, 0.4);
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(233, 69, 96, 0.6);
+}
+
+.btn-secondary {
+    padding: 15px 40px;
+    font-size: 18px;
+    border: 2px solid #e94560;
+    background: transparent;
+    color: #e94560;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-secondary:hover {
+    background: #e94560;
+    color: #fff;
+}
+
+.display-protocols {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 30px;
+}
+
+.display-protocols h2 {
+    margin-bottom: 20px;
+    color: #e94560;
+}
+
+.protocol-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.protocol-card {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    color: #333;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s;
+}
+
+.protocol-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+}
+
+.protocol-card h3 {
+    color: #e94560;
+    margin-bottom: 10px;
+}
+
+.protocol-card p {
+    color: #666;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.status-indicator {
+    display: inline-block;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.status-indicator.connected {
+    background: #E8F5E9;
+    color: #388E3C;
+}
+
+.status-indicator.disconnected {
+    background: #FFEBEE;
+    color: #F57C00;
+}
+
+.scan-results {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 30px;
+}
+
+.scan-results h2 {
+    margin-bottom: 20px;
+    color: #e94560;
+}
+
+.scan-output {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    padding: 25px;
+    min-height: 200px;
+}
+
+.scan-output p {
+    color: #ccc;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.scan-output .result-item {
+    padding: 15px;
+    margin: 10px 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    border-left: 4px solid #e94560;
+}
+
+.scan-output .result-item.success {
+    border-left-color: #4CAF50;
+}
+
+.scan-output .result-item.error {
+    border-left-color: #f44336;
+}
+
+.scan-output .result-title {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.scan-output .result-details {
+    font-size: 14px;
+    color: #aaa;
+}

@@ -1,0 +1,6 @@
+[tool.pytest]
+testpaths = ["hazoom-os-main", "hazoom_os/hazoom-os-main"]
+
+[tool.coverage.run]
+omit = ["hazoom_venv/*", "recover_point-main/*", "purelift/*", "*.venv/*"]
+source = ["hazoom-os-main", "hazoom_os"]

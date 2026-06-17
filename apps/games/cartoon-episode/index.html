@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AlphaPony — Episode 1: The Neural Ocean</title>
+    <meta name="description" content="AlphaPony embarks on an adventure through the Neural Ocean to awaken the sleeping Core.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Episode Intro Overlay -->
+    <div id="episode-intro" class="episode-intro">
+        <div class="intro-content">
+            <div class="studio-logo">
+                <span class="studio-text">AlphaPony</span>
+                <span class="studio-sub">Studios</span>
+            </div>
+            <div class="episode-title-card">
+                <span class="episode-number">Episode 1</span>
+                <h1 class="episode-name">The Neural Ocean</h1>
+                <p class="episode-tagline">Where code meets consciousness</p>
+            </div>
+            <button id="start-episode-btn" class="start-btn">
+                <span class="play-icon">▶</span> Play Episode
+            </button>
+        </div>
+    </div>
+
+    <!-- Scene Transition Overlay -->
+    <div id="scene-transition" class="scene-transition">
+        <div class="transition-text" id="transition-text"></div>
+    </div>
+
+    <!-- Dialogue Box -->
+    <div id="dialogue-box" class="dialogue-box">
+        <div class="dialogue-speaker" id="dialogue-speaker"></div>
+        <div class="dialogue-text" id="dialogue-text"></div>
+        <div class="dialogue-hint">Click to continue</div>
+    </div>
+
+    <!-- Main Episode Container -->
+    <div id="episode-container" class="episode-container" style="display: none;">
+
+        <!-- Scene 1: The Stable -->
+        <section id="scene-stable" class="scene scene-stable active">
+            <div class="scene-bg stable-bg"></div>
+            <div class="scene-characters">
+                <div id="alpha-pony-stable" class="character alpha-pony-character"></div>
+            </div>
+            <div class="scene-overlay stable-overlay"></div>
+        </section>
+
+        <!-- Scene 2: The Gateway -->
+        <section id="scene-gateway" class="scene scene-gateway">
+            <div class="scene-bg gateway-bg"></div>
+            <div class="gateway-portal">
+                <div class="portal-ring"></div>
+                <div class="portal-ring portal-ring-2"></div>
+                <div class="portal-ring portal-ring-3"></div>
+                <div class="portal-core"></div>
+            </div>
+            <div class="scene-characters">
+                <div id="alpha-pony-gateway" class="character alpha-pony-character"></div>
+            </div>
+        </section>
+
+        <!-- Scene 3: Neural Ocean -->
+        <section id="scene-ocean" class="scene scene-ocean">
+            <canvas id="ocean-canvas"></canvas>
+            <div class="scene-bg ocean-bg"></div>
+            <div class="ocean-surface"></div>
+            <div class="scene-characters">
+                <div id="alpha-pony-ocean" class="character alpha-pony-character"></div>
+                <div id="neural-fish" class="character neural-fish-character"></div>
+            </div>
+            <div class="ocean-floor"></div>
+        </section>
+
+        <!-- Scene 4: The Deep -->
+        <section id="scene-deep" class="scene scene-deep">
+            <div class="scene-bg deep-bg"></div>
+            <div class="deep-creatures">
+                <div class="shadow-creature" id="shadow-creature"></div>
+            </div>
+            <div class="scene-characters">
+                <div id="alpha-pony-deep" class="character alpha-pony-character"></div>
+            </div>
+            <div class="deep-particles" id="deep-particles"></div>
+        </section>
+
+        <!-- Scene 5: The Core -->
+        <section id="scene-core" class="scene scene-core">
+            <div class="scene-bg core-bg"></div>
+            <div class="the-core">
+                <div class="core-shell" id="core-shell">
+                    <div class="core-inner" id="core-inner"></div>
+                    <div class="core-cracks" id="core-cracks"></div>
+                </div>
+                <div class="core-glow" id="core-glow"></div>
+            </div>
+            <div class="scene-characters">
+                <div id="alpha-pony-core" class="character alpha-pony-character"></div>
+            </div>
+        </section>
+
+        <!-- Scene 6: Awakening -->
+        <section id="scene-awakening" class="scene scene-awakening">
+            <div class="scene-bg awakening-bg"></div>
+            <div class="awakening-effects" id="awakening-effects"></div>
+            <div class="scene-characters">
+                <div id="alpha-pony-awakening" class="character alpha-pony-character awakened"></div>
+                <div id="core-spirit" class="character core-spirit-character"></div>
+            </div>
+        </section>
+
+        <!-- Scene 7: Credits -->
+        <section id="scene-credits" class="scene scene-credits">
+            <div class="scene-bg credits-bg"></div>
+            <div class="credits-content">
+                <h2 class="credits-title">The End</h2>
+                <div class="credits-scroll" id="credits-scroll">
+                    <div class="credit-block">
+                        <h3>AlphaPony</h3>
+                        <p>Episode 1: The Neural Ocean</p>
+                    </div>
+                    <div class="credit-block">
+                        <h4>Created by</h4>
+                        <p>Hazoom the Champion</p>
+                    </div>
+                    <div class="credit-block">
+                        <h4>Story & Direction</h4>
+                        <p>AlphaPony Neural Engine</p>
+                    </div>
+                    <div class="credit-block">
+                        <h4>Animation</h4>
+                        <p>Canvas & CSS Art</p>
+                    </div>
+                    <div class="credit-block">
+                        <h4>Music</h4>
+                        <p>Neural Resonance Synth</p>
+                    </div>
+                    <div class="credit-block">
+                        <h4>Special Thanks</h4>
+                        <p>The AlphaPony Community</p>
+                    </div>
+                    <div class="credit-block">
+                        <p class="credits-epilogue">"In the depths of code, consciousness awakens."</p>
+                    </div>
+                </div>
+                <button id="replay-btn" class="replay-btn">
+                    <span class="replay-icon">↻</span> Watch Again
+                </button>
+            </div>
+        </section>
+
+        <!-- Episode Progress Bar -->
+        <div class="episode-progress">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <!-- Voice Toggle -->
+        <button id="voice-toggle-btn" class="voice-toggle-btn">
+            🔊 Voice On
+        </button>
+
+        <!-- Scene Navigation -->
+        <div class="scene-nav">
+            <button id="prev-scene-btn" class="nav-btn" disabled>
+                <span class="nav-arrow">←</span> Previous
+            </button>
+            <div class="scene-indicators" id="scene-indicators"></div>
+            <button id="next-scene-btn" class="nav-btn">
+                Next <span class="nav-arrow">→</span>
+            </button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

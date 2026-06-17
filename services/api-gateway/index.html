@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alpha Pony - Neural Interface</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .neural-glow {
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            from { box-shadow: 0 0 10px #667eea, 0 0 20px #667eea; }
+            to { box-shadow: 0 0 20px #764ba2, 0 0 30px #764ba2; }
+        }
+        .crypto-card {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            transition: transform 0.3s ease;
+        }
+        .crypto-card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body class="text-white">
+    <!-- Navigation -->
+    <nav class="glass-morphism p-4 mb-8">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <i class="fas fa-horse text-3xl text-purple-300"></i>
+                <h1 class="text-2xl font-bold">Alpha Pony</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <button onclick="showSection('auth')" class="nav-btn hover:text-purple-300 transition">
+                    <i class="fas fa-user-shield mr-2"></i>Auth
+                </button>
+                <button onclick="showSection('crypto')" class="nav-btn hover:text-purple-300 transition">
+                    <i class="fas fa-coins mr-2"></i>Crypto
+                </button>
+                <button onclick="showSection('neural')" class="nav-btn hover:text-purple-300 transition">
+                    <i class="fas fa-brain mr-2"></i>Neural
+                </button>
+                <div id="user-status" class="flex items-center space-x-2">
+                    <span id="user-name">Guest</span>
+                    <button onclick="logout()" class="text-red-400 hover:text-red-300">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container mx-auto px-4">
+        <!-- Authentication Section -->
+        <div id="auth-section" class="section">
+            <div class="max-w-md mx-auto glass-morphism rounded-lg p-8 neural-glow">
+                <h2 class="text-3xl font-bold text-center mb-8">
+                    <i class="fas fa-user-astronaut mr-3"></i>Authentication
+                </h2>
+                
+                <div id="auth-content">
+                    <!-- Dynamic auth content will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Crypto Section -->
+        <div id="crypto-section" class="section hidden">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-center mb-8">
+                    <i class="fas fa-wallet mr-3"></i>Cryptocurrency Wallet
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <!-- Wallet cards will be loaded here -->
+                    <div id="wallets-container"></div>
+                </div>
+                
+                <!-- Create Wallet -->
+                <div class="glass-morphism rounded-lg p-6 mb-8">
+                    <h3 class="text-xl font-bold mb-4">Create New Wallet</h3>
+                    <div class="flex space-x-4">
+                        <select id="wallet-currency" class="flex-1 bg-gray-800 text-white p-2 rounded">
+                            <option value="ETH">Ethereum</option>
+                            <option value="USDC">USDC</option>
+                            <option value="USDT">USDT</option>
+                            <option value="MATIC">Polygon</option>
+                        </select>
+                        <button onclick="createWallet()" class="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded transition">
+                            <i class="fas fa-plus mr-2"></i>Create
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Send Transaction -->
+                <div class="glass-morphism rounded-lg p-6">
+                    <h3 class="text-xl font-bold mb-4">Send Transaction</h3>
+                    <div class="space-y-4">
+                        <input type="text" id="tx-to-address" placeholder="Recipient Address" 
+                               class="w-full bg-gray-800 text-white p-3 rounded">
+                        <div class="flex space-x-4">
+                            <input type="number" id="tx-amount" placeholder="Amount" step="0.001"
+                                   class="flex-1 bg-gray-800 text-white p-3 rounded">
+                            <select id="tx-wallet" class="bg-gray-800 text-white p-2 rounded">
+                                <!-- Wallet options will be loaded -->
+                            </select>
+                            <button onclick="sendTransaction()" class="bg-green-600 hover:bg-green-700 px-6 py-2 rounded transition">
+                                <i class="fas fa-paper-plane mr-2"></i>Send
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Neural Interface Section -->
+        <div id="neural-section" class="section hidden">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-center mb-8">
+                    <i class="fas fa-brain mr-3"></i>Neural Interface
+                </h2>
+                
+                <div class="glass-morphism rounded-lg p-8 mb-8">
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium mb-2">Query Alpha Pony</label>
+                        <div class="flex space-x-4">
+                            <input type="text" id="neural-query" placeholder="Ask me anything..." 
+                                   class="flex-1 bg-gray-800 text-white p-3 rounded"
+                                   onkeypress="if(event.key === 'Enter') think()">
+                            <button onclick="think()" class="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded transition">
+                                <i class="fas fa-brain mr-2"></i>Think
+                            </button>
+                            <button onclick="deepAnalyze()" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded transition">
+                                <i class="fas fa-microscope mr-2"></i>Deep Analyze
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="neural-response" class="bg-gray-800 rounded p-4 min-h-[200px]">
+                        <div class="text-gray-400">Response will appear here...</div>
+                    </div>
+                </div>
+                
+                <!-- Learning Section -->
+                <div class="glass-morphism rounded-lg p-6">
+                    <h3 class="text-xl font-bold mb-4">Teach Alpha Pony</h3>
+                    <textarea id="learn-content" placeholder="Enter information to learn..." 
+                              class="w-full bg-gray-800 text-white p-3 rounded h-32 mb-4"></textarea>
+                    <button onclick="learn()" class="bg-green-600 hover:bg-green-700 px-6 py-2 rounded transition">
+                        <i class="fas fa-graduation-cap mr-2"></i>Learn
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Modal -->
+    <div id="status-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="glass-morphism rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-xl font-bold mb-4">System Status</h3>
+            <div id="status-content"></div>
+            <button onclick="closeModal('status-modal')" class="mt-4 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let currentUser = null;
+        let authToken = null;
+        let systemStatus = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthStatus();
+            loadSystemStatus();
+        });
+
+        // Section navigation
+        function showSection(sectionName) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            document.getElementById(sectionName + '-section').classList.remove('hidden');
+            
+            if (sectionName === 'crypto') {
+                loadWallets();
+            }
+        }
+
+        // Authentication
+        async function checkAuthStatus() {
+            try {
+                const response = await fetch('/api/auth/info');
+                const data = await response.json();
+                
+                if (data.authenticated && data.user) {
+                    currentUser = data.user;
+                    updateAuthUI(true);
+                } else {
+                    updateAuthUI(false);
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                updateAuthUI(false);
+            }
+        }
+
+        function updateAuthUI(authenticated) {
+            const authContent = document.getElementById('auth-content');
+            const userName = document.getElementById('user-name');
+            
+            if (authenticated) {
+                userName.textContent = currentUser.name || currentUser.email;
+                authContent.innerHTML = `
+                    <div class="text-center">
+                        <i class="fas fa-check-circle text-green-400 text-5xl mb-4"></i>
+                        <h3 class="text-xl font-bold mb-2">Authenticated</h3>
+                        <p class="text-gray-300">${currentUser.name || currentUser.email}</p>
+                        <p class="text-sm text-gray-400">${currentUser.email}</p>
+                        <button onclick="logout()" class="mt-4 bg-red-600 hover:bg-red-700 px-4 py-2 rounded">
+                            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                        </button>
+                    </div>
+                `;
+            } else {
+                userName.textContent = 'Guest';
+                if (systemStatus && systemStatus.components.auth === 'google') {
+                    authContent.innerHTML = `
+                        <div class="text-center">
+                            <i class="fab fa-google text-4xl mb-4"></i>
+                            <h3 class="text-xl font-bold mb-4">Google Authentication</h3>
+                            <button onclick="googleAuth()" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded w-full">
+                                <i class="fab fa-google mr-2"></i>Sign in with Google
+                            </button>
+                            <div class="mt-4 text-sm text-gray-400">
+                                Or use demo account
+                            </div>
+                            <button onclick="showFallbackAuth()" class="mt-2 bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded w-full">
+                                Demo Login
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    showFallbackAuth();
+                }
+            }
+        }
+
+        function showFallbackAuth() {
+            const authContent = document.getElementById('auth-content');
+            authContent.innerHTML = `
+                <form onsubmit="fallbackLogin(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Email</label>
+                        <input type="email" id="login-email" required
+                               class="w-full bg-gray-800 text-white p-3 rounded"
+                               placeholder="demo@hazoom.ai">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Password</label>
+                        <input type="password" id="login-password" required
+                               class="w-full bg-gray-800 text-white p-3 rounded"
+                               placeholder="demo123">
+                    </div>
+                    <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 py-3 rounded transition">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Login
+                    </button>
+                </form>
+            `;
+        }
+
+        async function googleAuth() {
+            try {
+                const response = await fetch('/api/auth/info');
+                const data = await response.json();
+                
+                if (data.auth_url) {
+                    window.location.href = data.auth_url;
+                }
+            } catch (error) {
+                console.error('Google auth failed:', error);
+            }
+        }
+
+        async function fallbackLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    authToken = data.token;
+                    currentUser = data.user;
+                    updateAuthUI(true);
+                } else {
+                    alert('Login failed: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Login failed:', error);
+                alert('Login failed');
+            }
+        }
+
+        async function logout() {
+            try {
+                await fetch('/api/auth/logout', { method: 'POST' });
+                authToken = null;
+                currentUser = null;
+                updateAuthUI(false);
+            } catch (error) {
+                console.error('Logout failed:', error);
+            }
+        }
+
+        // Crypto functions
+        async function loadWallets() {
+            if (!currentUser) return;
+            
+            try {
+                const response = await fetch('/api/wallets');
+                const data = await response.json();
+                
+                const container = document.getElementById('wallets-container');
+                const select = document.getElementById('tx-wallet');
+                
+                container.innerHTML = '';
+                select.innerHTML = '';
+                
+                if (data.wallets && data.wallets.length > 0) {
+                    data.wallets.forEach(wallet => {
+                        // Wallet card
+                        const card = document.createElement('div');
+                        card.className = 'crypto-card rounded-lg p-6';
+                        card.innerHTML = `
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <h4 class="font-bold text-lg">${wallet.currency}</h4>
+                                    <p class="text-sm text-gray-300">${wallet.network}</p>
+                                </div>
+                                <i class="fas fa-wallet text-2xl text-yellow-400"></i>
+                            </div>
+                            <div class="mb-2">
+                                <p class="text-xs text-gray-400">Address</p>
+                                <p class="text-sm font-mono">${wallet.address.substring(0, 10)}...</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400">Balance</p>
+                                <p class="text-xl font-bold">${wallet.balance || '0.0000'} ${wallet.currency}</p>
+                            </div>
+                        `;
+                        container.appendChild(card);
+                        
+                        // Wallet option
+                        const option = document.createElement('option');
+                        option.value = `${currentUser.email}_${wallet.currency}`;
+                        option.textContent = `${wallet.currency} - ${wallet.balance || '0.0000'}`;
+                        select.appendChild(option);
+                    });
+                } else {
+                    container.innerHTML = '<p class="text-gray-400">No wallets found. Create your first wallet above.</p>';
+                }
+            } catch (error) {
+                console.error('Failed to load wallets:', error);
+            }
+        }
+
+        async function createWallet() {
+            if (!currentUser) {
+                alert('Please login first');
+                return;
+            }
+            
+            const currency = document.getElementById('wallet-currency').value;
+            
+            try {
+                const response = await fetch('/api/crypto/wallet/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ currency })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`Wallet created! Address: ${data.address}`);
+                    loadWallets();
+                } else {
+                    alert('Wallet creation failed: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Wallet creation failed:', error);
+                alert('Wallet creation failed');
+            }
+        }
+
+        async function sendTransaction() {
+            if (!currentUser) {
+                alert('Please login first');
+                return;
+            }
+            
+            const toAddress = document.getElementById('tx-to-address').value;
+            const amount = parseFloat(document.getElementById('tx-amount').value);
+            const walletId = document.getElementById('tx-wallet').value;
+            
+            if (!toAddress || !amount || !walletId) {
+                alert('Please fill all fields');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/crypto/transaction/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        wallet_id: walletId,
+                        to_address: toAddress,
+                        amount: amount
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`Transaction sent! Hash: ${data.transaction_hash}`);
+                    // Clear form
+                    document.getElementById('tx-to-address').value = '';
+                    document.getElementById('tx-amount').value = '';
+                } else {
+                    alert('Transaction failed: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Transaction failed:', error);
+                alert('Transaction failed');
+            }
+        }
+
+        // Neural functions
+        async function think() {
+            const query = document.getElementById('neural-query').value;
+            if (!query) return;
+            
+            const responseDiv = document.getElementById('neural-response');
+            responseDiv.innerHTML = '<div class="text-purple-300"><i class="fas fa-spinner fa-spin mr-2"></i>Thinking...</div>';
+            
+            try {
+                const response = await fetch('/api/neural/think', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+                
+                const data = await response.json();
+                
+                if (data.response) {
+                    responseDiv.innerHTML = `
+                        <div class="mb-2 text-sm text-purple-300">Alpha Pony thinks:</div>
+                        <div class="text-white">${data.response}</div>
+                    `;
+                } else {
+                    responseDiv.innerHTML = '<div class="text-red-400">Thinking failed</div>';
+                }
+            } catch (error) {
+                console.error('Think failed:', error);
+                responseDiv.innerHTML = '<div class="text-red-400">Thinking failed</div>';
+            }
+        }
+
+        async function deepAnalyze() {
+            const query = document.getElementById('neural-query').value;
+            if (!query) return;
+            
+            const responseDiv = document.getElementById('neural-response');
+            responseDiv.innerHTML = '<div class="text-blue-300"><i class="fas fa-microscope fa-spin mr-2"></i>Deep analyzing...</div>';
+            
+            try {
+                const response = await fetch('/api/neural/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+                
+                const data = await response.json();
+                
+                if (data.analysis) {
+                    responseDiv.innerHTML = `
+                        <div class="mb-2 text-sm text-blue-300">Deep Analysis (${Math.round(data.confidence * 100)}% confidence):</div>
+                        <div class="text-white">${data.analysis}</div>
+                    `;
+                } else {
+                    responseDiv.innerHTML = '<div class="text-red-400">Analysis failed</div>';
+                }
+            } catch (error) {
+                console.error('Analysis failed:', error);
+                responseDiv.innerHTML = '<div class="text-red-400">Analysis failed</div>';
+            }
+        }
+
+        async function learn() {
+            const content = document.getElementById('learn-content').value;
+            if (!content) return;
+            
+            try {
+                const response = await fetch('/api/neural/learn', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ info: content })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`Learned ${data.learned} characters!`);
+                    document.getElementById('learn-content').value = '';
+                } else {
+                    alert('Learning failed: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Learning failed:', error);
+                alert('Learning failed');
+            }
+        }
+
+        // System status
+        async function loadSystemStatus() {
+            try {
+                const response = await fetch('/api/status');
+                systemStatus = await response.json();
+            } catch (error) {
+                console.error('Failed to load system status:', error);
+            }
+        }
+
+        function showStatus() {
+            if (!systemStatus) return;
+            
+            const content = document.getElementById('status-content');
+            content.innerHTML = `
+                <div class="space-y-2">
+                    <div><strong>Server:</strong> ${systemStatus.server} v${systemStatus.version}</div>
+                    <div><strong>Auth Method:</strong> ${systemStatus.components.auth}</div>
+                    <div><strong>Crypto Available:</strong> ${systemStatus.components.crypto.available ? 'Yes' : 'No'}</div>
+                    <div><strong>Neural Interface:</strong> ${systemStatus.components.neural}</div>
+                    <div><strong>Authenticated:</strong> ${systemStatus.authenticated ? 'Yes' : 'No'}</div>
+                </div>
+            `;
+            document.getElementById('status-modal').classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

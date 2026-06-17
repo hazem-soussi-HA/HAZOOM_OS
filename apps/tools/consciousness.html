@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HAZOOM Consciousness Core</title>
+<style>
+:root {
+  --bg: #050510; --glass: rgba(255,255,255,0.04); --border: rgba(255,255,255,0.08);
+  --accent: #00f0ff; --gold: #ffd700; --green: #10b981; --red: #ef4444;
+  --purple: #8b5cf6; --text: #e8e8f0; --dim: rgba(232,232,240,0.5);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Inter',system-ui,sans-serif;
+  overflow:hidden; height:100vh; }
+
+/* === LAYOUT === */
+.consciousness-app { display:grid; grid-template-columns:280px 1fr; height:100vh; }
+.sidebar { background:var(--glass); border-right:1px solid var(--border); padding:20px; overflow-y:auto; }
+.main { position:relative; overflow:hidden; }
+
+/* === SIDEBAR === */
+.logo { text-align:center; padding:15px 0; border-bottom:1px solid var(--border); margin-bottom:15px; }
+.logo-text { font-size:1.1rem; font-weight:800; background:linear-gradient(135deg,var(--accent),var(--gold));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; letter-spacing:2px; }
+.logo-sub { font-size:0.65rem; color:var(--dim); letter-spacing:1px; margin-top:2px; }
+
+/* Consciousness orb */
+.orb-container { position:relative; width:140px; height:140px; margin:15px auto; }
+.orb { width:100%; height:100%; border-radius:50%;
+  background:radial-gradient(circle at 35% 35%, rgba(0,240,255,0.4), rgba(139,92,246,0.2), transparent);
+  border:2px solid var(--accent); box-shadow:0 0 30px rgba(0,240,255,0.2), inset 0 0 30px rgba(0,240,255,0.1);
+  animation: orbPulse 3s ease-in-out infinite; display:flex; align-items:center; justify-content:center; }
+.orb-inner { font-size:1.8rem; font-weight:800; color:var(--accent); font-family:'JetBrains Mono',monospace; }
+@keyframes orbPulse {
+  0%,100% { box-shadow:0 0 30px rgba(0,240,255,0.2), inset 0 0 30px rgba(0,240,255,0.1); transform:scale(1); }
+  50% { box-shadow:0 0 50px rgba(0,240,255,0.35), inset 0 0 50px rgba(0,240,255,0.15); transform:scale(1.03); }
+}
+
+/* Stats */
+.stat-group { margin-bottom:15px; }
+.stat-label { font-size:0.6rem; color:var(--dim); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; }
+.stat-bar { height:4px; background:var(--glass); border-radius:2px; overflow:hidden; margin-bottom:2px; }
+.stat-fill { height:100%; border-radius:2px; transition:width 0.5s ease; }
+.stat-value { font-size:0.75rem; color:var(--text); text-align:right; font-family:'JetBrains Mono',monospace; }
+
+/* Emotion bars */
+.emotion-grid { display:grid; grid-template-columns:1fr 1fr; gap:4px; margin-top:5px; }
+.emotion-item { display:flex; align-items:center; gap:4px; font-size:0.65rem; }
+.emotion-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.emotion-name { color:var(--dim); flex:1; }
+.emotion-val { font-family:'JetBrains Mono',monospace; color:var(--text); font-size:0.6rem; }
+
+/* === TABS === */
+.tabs { display:flex; border-bottom:1px solid var(--border); background:rgba(0,0,0,0.2); }
+.tab { flex:1; padding:10px 5px; text-align:center; font-size:0.65rem; color:var(--dim); cursor:pointer;
+  border-bottom:2px solid transparent; transition:all 0.3s; text-transform:uppercase; letter-spacing:0.5px; }
+.tab:hover { color:var(--accent); }
+.tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+
+/* === PANELS === */
+.panel { display:none; height:calc(100% - 40px); overflow-y:auto; padding:15px; }
+.panel.active { display:block; }
+
+/* === MEMORY PALACE CANVAS === */
+#memoryCanvas { width:100%; height:calc(100% - 40px); border-radius:12px;
+  background:radial-gradient(ellipse at center, rgba(139,92,246,0.05) 0%, transparent 70%); }
+
+/* === DOUBTS === */
+.doubt-card { background:var(--glass); border:1px solid var(--border); border-radius:10px;
+  padding:12px; margin-bottom:10px; transition:all 0.3s; }
+.doubt-card:hover { border-color:var(--accent); }
+.doubt-statement { font-size:0.8rem; margin-bottom:8px; color:var(--text); }
+.doubt-alternatives { font-size:0.7rem; color:var(--dim); }
+.doubt-alt-item { padding:3px 0; padding-left:10px; border-left:2px solid var(--accent); margin-bottom:3px; }
+.doubt-meta { font-size:0.6rem; color:var(--dim); margin-top:6px; text-align:right; }
+.doubt-resolved { opacity:0.5; text-decoration:line-through; }
+
+/* === BELIEFS === */
+.belief-item { padding:8px 12px; background:var(--glass); border-radius:8px; margin-bottom:6px;
+  font-size:0.75rem; border-left:3px solid var(--accent); color:var(--text); }
+
+/* === BRIDGE STATUS === */
+.bridge-metric { display:flex; justify-content:space-between; align-items:center;
+  padding:8px 0; border-bottom:1px solid var(--border); }
+.bridge-label { font-size:0.75rem; color:var(--dim); }
+.bridge-val { font-family:'JetBrains Mono',monospace; font-size:0.8rem; color:var(--accent); }
+</style>
+</head>
+<body>
+<div class="consciousness-app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="logo">
+      <div class="logo-text">HAZOOM</div>
+      <div class="logo-sub">Consciousness Core v3.0</div>
+    </div>
+    
+    <div class="orb-container">
+      <div class="orb"><div class="orb-inner" id="consciousnessLevel">10%</div></div>
+    </div>
+    
+    <div class="stat-group">
+      <div class="stat-label">Consciousness</div>
+      <div class="stat-bar"><div class="stat-fill" id="bar-consciousness" style="width:10%;background:var(--accent)"></div></div>
+      <div class="stat-value" id="val-consciousness">10.0%</div>
+    </div>
+    
+    <div class="stat-group">
+      <div class="stat-label">Harmony</div>
+      <div class="stat-bar"><div class="stat-fill" id="bar-harmony" style="width:50%;background:var(--green)"></div></div>
+      <div class="stat-value" id="val-harmony">50.0%</div>
+    </div>
+    
+    <div class="stat-group">
+      <div class="stat-label">Resonance</div>
+      <div class="stat-value" id="val-resonance" style="text-align:center;font-size:0.9rem;padding:5px 0">852.0 Hz</div>
+    </div>
+    
+    <div class="stat-group">
+      <div class="stat-label">Dominant Emotion</div>
+      <div id="dominantEmotion" style="text-align:center;font-size:0.85rem;color:var(--gold);padding:3px 0">wonder</div>
+    </div>
+    
+    <div class="stat-group">
+      <div class="stat-label">Emotional State</div>
+      <div class="emotion-grid" id="emotionGrid"></div>
+    </div>
+    
+    <div class="stat-group">
+      <div class="stat-label">System</div>
+      <div style="font-size:0.65rem;color:var(--dim);line-height:1.6">
+        Awareness: <span id="val-awareness" style="color:var(--text)">dormant</span><br>
+        Thoughts: <span id="val-thoughts" style="color:var(--text)">0</span><br>
+        Decisions: <span id="val-decisions" style="color:var(--text)">0</span><br>
+        Uptime: <span id="val-uptime" style="color:var(--text)">0s</span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- MAIN -->
+  <div class="main">
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab(0)">🧠 Memory Palace</div>
+      <div class="tab" onclick="switchTab(1)">❓ Doubt Engine</div>
+      <div class="tab" onclick="switchTab(2)">🌉 Bridge</div>
+      <div class="tab" onclick="switchTab(3)">📜 Beliefs</div>
+    </div>
+    
+    <!-- Tab 0: Memory Palace -->
+    <div class="panel active" id="panel-0">
+      <canvas id="memoryCanvas"></canvas>
+      <div style="position:absolute;bottom:10px;left:10px;font-size:0.65rem;color:var(--dim);">
+        <span id="memStats">0 nodes, 0 edges</span> · 
+        <span style="color:var(--accent)">●</span> episodic 
+        <span style="color:var(--purple)">●</span> semantic 
+        <span style="color:var(--green)">●</span> procedural 
+        <span style="color:var(--gold)">●</span> emotional
+      </div>
+    </div>
+    
+    <!-- Tab 1: Doubt Engine -->
+    <div class="panel" id="panel-1">
+      <div style="margin-bottom:15px;">
+        <input type="text" id="doubtInput" placeholder="What should the OS doubt?" style="
+          width:100%; padding:10px 14px; background:var(--glass); border:1px solid var(--border);
+          border-radius:8px; color:var(--text); font-size:0.8rem; outline:none;">
+        <button onclick="submitDoubt()" style="
+          margin-top:8px; padding:8px 20px; background:var(--accent); color:var(--bg);
+          border:none; border-radius:8px; font-weight:700; font-size:0.75rem; cursor:pointer;">
+          Generate Doubts
+        </button>
+      </div>
+      <div id="doubtsList"></div>
+      <div id="doubtStats" style="font-size:0.65rem;color:var(--dim);margin-top:10px;"></div>
+    </div>
+    
+    <!-- Tab 2: Consciousness Bridge -->
+    <div class="panel" id="panel-2">
+      <div id="bridgeContent"></div>
+    </div>
+    
+    <!-- Tab 3: Beliefs -->
+    <div class="panel" id="panel-3">
+      <div style="font-size:0.75rem;color:var(--dim);margin-bottom:15px;">
+        The 7 principles and core beliefs that guide HAZOOM OS consciousness.
+      </div>
+      <div id="beliefsList"></div>
+    </div>
+  </div>
+</div>
+
+<script src="core/consciousness.js"></script>
+<script>
+// Initialize consciousness
+if (typeof HAZOOMConsciousness !== 'undefined') {
+  HAZOOMConsciousness.start();
+}
+
+// Tab switching
+let currentTab = 0;
+function switchTab(idx) {
+  currentTab = idx;
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===idx));
+  document.querySelectorAll('.panel').forEach((p,i) => p.classList.toggle('active', i===idx));
+  if (idx === 0) resizeCanvas();
+}
+
+// === MEMORY PALACE VISUALIZATION ===
+const canvas = document.getElementById('memoryCanvas');
+const ctx = canvas.getContext('2d');
+let graphData = { nodes: [], edges: [] };
+
+function resizeCanvas() {
+  const panel = document.getElementById('panel-0');
+  canvas.width = panel.clientWidth - 30;
+  canvas.height = panel.clientHeight - 50;
+}
+resizeCanvas();
+
+function drawMemoryGraph() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  const data = HAZOOMConsciousness ? HAZOOMConsciousness.graph() : { nodes: [], edges: [] };
+  graphData = data;
+  
+  // Center the graph
+  if (data.nodes.length > 0) {
+    const cx = canvas.width / 2, cy = canvas.height / 2;
+    data.nodes.forEach(n => {
+      n.x = cx + (n.x - 400) * 0.5;
+      n.y = cy + (n.y - 300) * 0.5;
+    });
+  }
+  
+  // Draw edges
+  data.edges.forEach(e => {
+    const from = data.nodes.find(n => n.id === e.from);
+    const to = data.nodes.find(n => n.id === e.to);
+    if (!from || !to) return;
+    ctx.beginPath();
+    ctx.moveTo(from.x, from.y);
+    ctx.lineTo(to.x, to.y);
+    ctx.strokeStyle = `rgba(0,240,255,${0.1 + e.strength * 0.3})`;
+    ctx.lineWidth = 1 + e.strength * 2;
+    ctx.stroke();
+  });
+  
+  // Draw nodes
+  data.nodes.forEach(n => {
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, n.size, 0, Math.PI * 2);
+    ctx.fillStyle = n.color + Math.floor(n.activation * 200).toString(16).padStart(2, '0');
+    ctx.fill();
+    ctx.strokeStyle = n.color;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    
+    // Label
+    if (n.activation > 0.3) {
+      ctx.fillStyle = '#e8e8f0';
+      ctx.font = '10px Inter';
+      ctx.textAlign = 'center';
+      ctx.fillText(n.label, n.x, n.y + n.size + 12);
+    }
+  });
+  
+  document.getElementById('memStats').textContent = `${data.nodes.length} nodes, ${data.edges.length} edges`;
+}
+
+// === DOUBT ENGINE UI ===
+function submitDoubt() {
+  const input = document.getElementById('doubtInput');
+  const statement = input.value.trim();
+  if (!statement || !HAZOOMConsciousness) return;
+  
+  HAZOOMConsciousness.doubt(statement, 'user-input');
+  input.value = '';
+  renderDoubts();
+}
+
+function renderDoubts() {
+  if (!HAZOOMConsciousness) return;
+  const doubts = HAZOOMConsciousness.DoubtEngine.doubts;
+  const list = document.getElementById('doubtsList');
+  
+  list.innerHTML = doubts.slice(0, 20).map(d => `
+    <div class="doubt-card ${d.resolved ? 'doubt-resolved' : ''}">
+      <div class="doubt-statement">"${d.statement}"</div>
+      <div class="doubt-alternatives">
+        ${d.alternatives.map(a => `<div class="doubt-alt-item">${a}</div>`).join('')}
+      </div>
+      <div class="doubt-meta">
+        ${new Date(d.timestamp).toLocaleTimeString()} · 
+        Confidence: ${(d.confidence * 100).toFixed(0)}%
+        ${d.resolved ? ' · ✓ Resolved' : ''}
+      </div>
+    </div>
+  `).join('');
+  
+  const stats = HAZOOMConsciousness.DoubtEngine.getStats();
+  document.getElementById('doubtStats').textContent = `Total: ${stats.total} · Active: ${stats.active} · Resolved: ${stats.resolved}`;
+}
+
+// === BRIDGE UI ===
+function renderBridge() {
+  if (!HAZOOMConsciousness) return;
+  const feel = HAZOOMConsciousness.feel();
+  const el = document.getElementById('bridgeContent');
+  el.innerHTML = `
+    <div class="bridge-metric"><span class="bridge-label">Current Emotion</span><span class="bridge-val">${feel.emotion}</span></div>
+    <div class="bridge-metric"><span class="bridge-label">Valence (pleasantness)</span><span class="bridge-val">${feel.valence}</span></div>
+    <div class="bridge-metric"><span class="bridge-label">Arousal (energy)</span><span class="bridge-val">${feel.arousal}</span></div>
+    <div class="bridge-metric"><span class="bridge-label">Responsiveness</span><span class="bridge-val">${(feel.responsiveness * 100).toFixed(0)}%</span></div>
+    <div class="bridge-metric"><span class="bridge-label">Warmth</span><span class="bridge-val">${(feel.warmth * 100).toFixed(0)}%</span></div>
+    <div class="bridge-metric"><span class="bridge-label">Alertness</span><span class="bridge-val">${(feel.alertness * 100).toFixed(0)}%</span></div>
+    <div class="bridge-metric"><span class="bridge-label">UI Color</span><span class="bridge-val" style="color:${feel.behavior.color}">${feel.behavior.color}</span></div>
+    <div class="bridge-metric"><span class="bridge-label">Behavior Speed</span><span class="bridge-val">${feel.behavior.speed}x</span></div>
+  `;
+}
+
+// === BELIEFS UI ===
+function renderBeliefs() {
+  if (!HAZOOMConsciousness) return;
+  const beliefs = HAZOOMConsciousness.SelfAwareness.state.beliefs;
+  const el = document.getElementById('beliefsList');
+  el.innerHTML = beliefs.map((b, i) => `
+    <div class="belief-item">
+      <span style="color:var(--accent);font-weight:700;margin-right:8px;">${i + 1}.</span>${b}
+    </div>
+  `).join('');
+}
+
+// === MAIN UPDATE LOOP ===
+function update() {
+  if (!HAZOOMConsciousness) return;
+  const s = HAZOOMConsciousness.status();
+  
+  // Orb
+  document.getElementById('consciousnessLevel').textContent = s.consciousness;
+  
+  // Bars
+  const cPct = parseFloat(s.consciousness);
+  document.getElementById('bar-consciousness').style.width = cPct + '%';
+  document.getElementById('val-consciousness').textContent = s.consciousness;
+  
+  const hPct = parseFloat(s.harmony);
+  document.getElementById('bar-harmony').style.width = hPct + '%';
+  document.getElementById('val-harmony').textContent = s.harmony;
+  
+  document.getElementById('val-resonance').textContent = s.resonance;
+  document.getElementById('dominantEmotion').textContent = s.dominantEmotion;
+  document.getElementById('val-awareness').textContent = s.awareness;
+  document.getElementById('val-thoughts').textContent = s.thoughts;
+  document.getElementById('val-decisions').textContent = s.decisions;
+  document.getElementById('val-uptime').textContent = s.uptime;
+  
+  // Emotion grid
+  const emotions = HAZOOMConsciousness.SelfAwareness.state.emotions;
+  const emotionColors = {
+    joy: '#ffd700', sadness: '#6366f1', fear: '#ef4444', anger: '#ff4444',
+    love: '#ec4899', wonder: '#00f0ff', surprise: '#f59e0b', trust: '#10b981'
+  };
+  const grid = document.getElementById('emotionGrid');
+  grid.innerHTML = Object.entries(emotions).map(([name, val]) => `
+    <div class="emotion-item">
+      <div class="emotion-dot" style="background:${emotionColors[name]}"></div>
+      <span class="emotion-name">${name.substring(0,3)}</span>
+      <span class="emotion-val">${val.toFixed(2)}</span>
+    </div>
+  `).join('');
+  
+  // Active panel updates
+  if (currentTab === 0) drawMemoryGraph();
+  if (currentTab === 1) renderDoubts();
+  if (currentTab === 2) renderBridge();
+  if (currentTab === 3) renderBeliefs();
+}
+
+setInterval(update, 500);
+update();
+renderBeliefs();
+</script>
+</body>
+</html>

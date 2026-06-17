@@ -1,0 +1,94 @@
+{
+  "default_chain": "sepolia",
+  "chains": {
+    "ethereum": {
+      "name": "Ethereum Mainnet",
+      "chain_id": 1,
+      "rpc_url": "https://mainnet.infura.io/v3/YOUR_PROJECT_ID",
+      "explorer_url": "https://etherscan.io",
+      "native_currency": "ETH",
+      "block_time": 12,
+      "gas_limit": 21000,
+      "is_testnet": false
+    },
+    "sepolia": {
+      "name": "Sepolia Testnet",
+      "chain_id": 11155111,
+      "rpc_url": "https://sepolia.infura.io/v3/YOUR_PROJECT_ID",
+      "explorer_url": "https://sepolia.etherscan.io",
+      "native_currency": "ETH",
+      "block_time": 12,
+      "gas_limit": 21000,
+      "is_testnet": true
+    },
+    "polygon": {
+      "name": "Polygon Mainnet",
+      "chain_id": 137,
+      "rpc_url": "https://polygon-rpc.com",
+      "explorer_url": "https://polygonscan.com",
+      "native_currency": "MATIC",
+      "block_time": 2,
+      "gas_limit": 21000,
+      "is_testnet": false
+    },
+    "mumbai": {
+      "name": "Mumbai Testnet",
+      "chain_id": 80001,
+      "rpc_url": "https://rpc-mumbai.maticvigil.com",
+      "explorer_url": "https://mumbai.polygonscan.com",
+      "native_currency": "MATIC",
+      "block_time": 2,
+      "gas_limit": 21000,
+      "is_testnet": true
+    },
+    "bsc": {
+      "name": "Binance Smart Chain",
+      "chain_id": 56,
+      "rpc_url": "https://bsc-dataseed1.binance.org",
+      "explorer_url": "https://bscscan.com",
+      "native_currency": "BNB",
+      "block_time": 3,
+      "gas_limit": 21000,
+      "is_testnet": false
+    },
+    "bsc_testnet": {
+      "name": "BSC Testnet",
+      "chain_id": 97,
+      "rpc_url": "https://data-seed-prebsc-1-s1.binance.org:8545",
+      "explorer_url": "https://testnet.bscscan.com",
+      "native_currency": "BNB",
+      "block_time": 3,
+      "gas_limit": 21000,
+      "is_testnet": true
+    }
+  },
+  "known_tokens": {
+    "ethereum": {
+      "USDC": "0xA0b86a33E6441b8e8C7C7b0b8e8e8e8e8e8e8e8e",
+      "USDT": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+      "DAI": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+      "WETH": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+    },
+    "polygon": {
+      "USDC": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+      "USDT": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+      "MATIC": "0x0000000000000000000000000000000000001010",
+      "WMATIC": "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270"
+    },
+    "bsc": {
+      "BUSD": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
+      "USDT": "0x55d398326f99059fF775485246999027B3197955",
+      "BNB": "0x0000000000000000000000000000000000001010"
+    }
+  },
+  "gas_settings": {
+    "default_gas_price_gwei": 20,
+    "max_gas_price_gwei": 500,
+    "gas_multiplier": 1.1
+  },
+  "security": {
+    "private_key_encryption": true,
+    "transaction_confirmation_blocks": 2,
+    "max_transaction_value_usd": 10000
+  }
+}

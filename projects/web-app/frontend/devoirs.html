@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Devoirs (Homework) - Hazoom</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Fredoka:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+    <style>
+        .upload-section {
+            background: linear-gradient(135deg, var(--pastel-blue), var(--pastel-purple));
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: var(--shadow-md);
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .upload-area {
+            background: white;
+            border: 3px dashed var(--primary-blue);
+            border-radius: 20px;
+            padding: 3rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            background: var(--pastel-blue);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .homework-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .homework-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .homework-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary-blue), var(--soft-yellow), var(--primary-blue));
+            background-size: 200% 100%;
+            animation: gradientShift 3s linear infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        .homework-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .homework-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1.5rem;
+        }
+
+        .homework-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .homework-subject {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .homework-status {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #FFF3E0;
+            color: #F57C00;
+        }
+
+        .status-in-progress {
+            background: #E3F2FD;
+            color: #1976D2;
+        }
+
+        .status-completed {
+            background: #E8F5E9;
+            color: #388E3C;
+        }
+
+        .homework-description {
+            color: var(--text-light);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .homework-meta {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .homework-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .homework-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-homework {
+            flex: 1;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4A90E2;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--pastel-blue);
+            color: var(--text-dark);
+        }
+
+        .btn-secondary:hover {
+            background: #BBDEFB;
+        }
+
+        .ai-suggestion {
+            background: linear-gradient(135deg, #FFF9C4, #FFF59D);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            border-left: 4px solid #FBC02D;
+        }
+
+        .ai-suggestion h4 {
+            color: #F57F17;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .scanner-demo {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            margin-top: 2rem;
+        }
+
+        .scanner-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .step {
+            text-align: center;
+            padding: 1.5rem;
+            background: var(--pastel-blue);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .step:hover {
+            transform: scale(1.05);
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-blue);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin: 0 auto 1rem;
+            font-size: 1.2rem;
+        }
+
+        .step-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="logo-section">
+                <svg class="logo" viewBox="0 0 170.08 170.08">
+                    <path fill="#FFE082" d="M-166.92,24.13c4.1-3,12.6,3.8,14.12,5.07s11.92,8.62,18.43,29.08c0,0,6.08-2.42,8.93-2.21,0,0-2.76-2.51-2.42-4.17s4.64-2.3,10.08-.51c0,0-2.55-4.13-1.23-6.46s7,.69,9.36,2.47,4.34,3.27,7.53,8.04c0,0,3.66.47,8.85,3.06,0,0,4.99-16.13,11.85-22.5,6.86-6.38,15.17-13.8,20.58-11.94,5.41,1.86,1.61,19.53.48,23.32s-5.57,16.22-20.66,24.86c0,0,3.23,7.67,3.31,13.88s1.53,8.15,2.42,9.85,5.57,11.62,0,20.34c-5.57,8.72-15.17,13.15-23.08,16.79s-7.99,5.89-15.41,5.97c-7.42.08-11.78-4.04-13.56-4.76s-15.98-6.21-20.5-11.7-6.46-8.15-7.02-12.59-.4-8.8,3.87-16.06c0,0,2.29-17.42,4.64-21.81,0,0-14.62-8.53-18.6-18.76-3.98-10.23-6.47-25.93-1.95-29.24Z"/>
+                    <circle cx="-113.48" cy="121.86" r="3.18" fill="#4A90E2"/>
+                </svg>
+                <div class="logo-text">
+                    <h1>Hazoom</h1>
+                    <p>Smart Homework Assistant</p>
+                </div>
+            </div>
+            <div class="user-actions">
+                <a href="index.html" class="btn btn-secondary">🏠 Home</a>
+                <a href="#" class="btn btn-primary">📸 Scan Homework</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <ul class="nav-menu">
+                <li class="nav-item" onclick="window.location.href='index.html'">
+                    <span class="nav-icon">🏠</span>
+                    <span>Home</span>
+                </li>
+                <li class="nav-item" onclick="window.location.href='agenda.html'">
+                    <span class="nav-icon">📅</span>
+                    <span>Agenda</span>
+                </li>
+                <li class="nav-item active">
+                    <span class="nav-icon">📚</span>
+                    <span>Devoirs</span>
+                </li>
+                <li class="nav-item" onclick="window.location.href='revisions.html'">
+                    <span class="nav-icon">🔬</span>
+                    <span>Révisions</span>
+                </li>
+                <li class="nav-item" onclick="window.location.href='cosmos.html'">
+                    <span class="nav-icon">🌌</span>
+                    <span>Cosmos</span>
+                </li>
+                <li class="nav-item" onclick="window.location.href='freedom.html'">
+                    <span class="nav-icon">🗽</span>
+                    <span>Freedom</span>
+                </li>
+                <li class="nav-item" onclick="window.location.href='ethics.html'">
+                    <span class="nav-icon">⚖️</span>
+                    <span>Ethics</span>
+                </li>
+                <li class="nav-item" onclick="window.location.href='profil.html'">
+                    <span class="nav-icon">👤</span>
+                    <span>Profile</span>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        <section class="hero-section">
+            <div class="hero-content">
+                <div class="hero-emoji">📚🤖</div>
+                <h2 class="hero-title">Smart Homework Assistant</h2>
+                <p class="hero-subtitle">
+                    Scan your homework with AI and get instant help! Hazoom reads, understands, and guides you through solutions step-by-step.
+                </p>
+            </div>
+        </section>
+
+        <!-- OCR Scanner Section -->
+        <section class="upload-section">
+            <div class="upload-area" onclick="scanHomework()">
+                <div class="upload-icon">📷</div>
+                <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--text-dark);">Scan Your Homework</h3>
+                <p style="color: var(--text-light);">Click to take a photo or upload an image</p>
+                <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-light);">
+                    Supported formats: JPG, PNG, PDF
+                </p>
+            </div>
+
+            <div class="scanner-demo">
+                <h3 style="text-align: center; margin-bottom: 1.5rem; color: var(--text-dark);">How It Works</h3>
+                <div class="scanner-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-icon">📸</div>
+                        <h4>Capture</h4>
+                        <p style="color: var(--text-light); font-size: 0.9rem;">Take a photo or upload your homework</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-icon">🔍</div>
+                        <h4>Scan</h4>
+                        <p style="color: var(--text-light); font-size: 0.9rem;">AI reads and understands the content</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-icon">💡</div>
+                        <h4>Explain</h4>
+                        <p style="color: var(--text-light); font-size: 0.9rem;">Get step-by-step explanations</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-icon">✅</div>
+                        <h4>Learn</h4>
+                        <p style="color: var(--text-light); font-size: 0.9rem;">Master the concepts!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Current Homework -->
+        <section style="margin-bottom: 4rem;">
+            <h2 class="section-title">Your Homework</h2>
+
+            <div class="homework-grid">
+                <div class="homework-card">
+                    <div class="homework-header">
+                        <div>
+                            <h3 class="homework-title">Algebra Equations - Chapter 5</h3>
+                            <p class="homework-subject">📘 Mathematics</p>
+                        </div>
+                        <span class="homework-status status-pending">Due Tomorrow</span>
+                    </div>
+                    <p class="homework-description">
+                        Solve quadratic equations using the quadratic formula. Complete exercises 1-20 on page 147.
+                    </p>
+                    <div class="homework-meta">
+                        <span>📅 Due: Dec 15</span>
+                        <span>⭐ Points: 20</span>
+                    </div>
+                    <div class="homework-actions">
+                        <button class="btn-homework btn-primary" onclick="solveProblem()">Get Help</button>
+                        <button class="btn-homework btn-secondary" onclick="viewDetails()">View Details</button>
+                    </div>
+                </div>
+
+                <div class="homework-card">
+                    <div class="homework-header">
+                        <div>
+                            <h3 class="homework-title">French Verb Conjugation</h3>
+                            <p class="homework-subject">🇫🇷 French</p>
+                        </div>
+                        <span class="homework-status status-in-progress">In Progress</span>
+                    </div>
+                    <p class="homework-description">
+                        Conjugate regular -er, -ir, and -re verbs in present tense. Complete worksheet provided in class.
+                    </p>
+                    <div class="homework-meta">
+                        <span>📅 Due: Dec 18</span>
+                        <span>⭐ Points: 15</span>
+                    </div>
+                    <div class="homework-actions">
+                        <button class="btn-homework btn-primary" onclick="solveProblem()">Practice</button>
+                        <button class="btn-homework btn-secondary" onclick="viewDetails()">View Details</button>
+                    </div>
+                </div>
+
+                <div class="homework-card">
+                    <div class="homework-header">
+                        <div>
+                            <h3 class="homework-title">Solar System Research</h3>
+                            <p class="homework-subject">🔬 Science</p>
+                        </div>
+                        <span class="homework-status status-completed">Completed</span>
+                    </div>
+                    <p class="homework-description">
+                        Research one planet and create a presentation about its characteristics. 5-minute presentation.
+                    </p>
+                    <div class="homework-meta">
+                        <span>📅 Due: Dec 12</span>
+                        <span>⭐ Points: 30</span>
+                    </div>
+                    <div class="homework-actions">
+                        <button class="btn-homework btn-primary" onclick="viewSubmission()">View Work</button>
+                        <button class="btn-homework btn-secondary" onclick="shareResults()">Share Results</button>
+                    </div>
+                </div>
+
+                <div class="homework-card">
+                    <div class="homework-header">
+                        <div>
+                            <h3 class="homework-title">Essay: My Hero</h3>
+                            <p class="homework-subject">✍️ English</p>
+                        </div>
+                        <span class="homework-status status-pending">Not Started</span>
+                    </div>
+                    <p class="homework-description">
+                        Write a 500-word essay about your hero. Include introduction, 3 body paragraphs, and conclusion.
+                    </p>
+                    <div class="homework-meta">
+                        <span>📅 Due: Dec 20</span>
+                        <span>⭐ Points: 25</span>
+                    </div>
+                    <div class="homework-actions">
+                        <button class="btn-homework btn-primary" onclick="startWriting()">Start Writing</button>
+                        <button class="btn-homework btn-secondary" onclick="viewPrompt()">View Prompt</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ai-suggestion">
+                <h4>🤖 Hazoom AI Suggestion</h4>
+                <p style="color: var(--text-dark);">
+                    I noticed you have an algebra assignment due tomorrow! Would you like me to help you review quadratic equations before you start? I can provide practice problems and step-by-step solutions. 📐✨
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>📚 Learning Tools</h3>
+                <p><a href="revisions.html">AI Study Sessions</a></p>
+                <p><a href="cosmos.html">Science Explorations</a></p>
+                <p><a href="#">Practice Quizzes</a></p>
+                <p><a href="#">Writing Assistant</a></p>
+            </div>
+            <div class="footer-section">
+                <h3>🎯 Quick Actions</h3>
+                <p><a href="agenda.html">View Schedule</a></p>
+                <p><a href="profil.html">Track Progress</a></p>
+                <p><a href="#">Request Help</a></p>
+                <p><a href="#">Study Groups</a></p>
+            </div>
+            <div class="footer-section">
+                <h3>📖 Subjects</h3>
+                <p><a href="#">Mathematics</a></p>
+                <p><a href="#">Sciences</a></p>
+                <p><a href="#">Languages</a></p>
+                <p><a href="#">Social Studies</a></p>
+            </div>
+            <div class="footer-section">
+                <h3>ℹ️ Help & Support</h3>
+                <p><a href="#">How It Works</a></p>
+                <p><a href="#">FAQ</a></p>
+                <p><a href="#">Parent Portal</a></p>
+                <p><a href="#">Contact Us</a></p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Hazoom - Super Intelligence Educational Platform | Created by Hazem Soussi (hazem.soussi@gmail.com) | All Rights Reserved</p>
+        </div>
+    </footer>
+
+    <script>
+        function scanHomework() {
+            alert('📸 OCR Scanner Launching!\n\n🔜 Feature coming soon!\n\n• AI-powered text recognition\n• Step-by-step problem solving\n• Interactive hints and tips\n• Real-time feedback');
+        }
+
+        function solveProblem() {
+            alert('🤖 Connecting to Hazoom AI...\n\n💡 Smart assistance will help you solve this problem step-by-step!\n\n🔜 Full solver coming soon!');
+        }
+
+        function viewDetails() {
+            alert('📋 Opening homework details...\n\n🔜 Full view coming soon!');
+        }
+
+        function startWriting() {
+            alert('✍️ Opening AI Writing Assistant...\n\n✨ Get help with:\n• Brainstorming ideas\n• Outlining your essay\n• Grammar and style tips\n• Writing suggestions');
+        }
+
+        function viewPrompt() {
+            alert('📝 Essay Prompt:\n\n"Write about someone who inspires you. This could be a family member, friend, historical figure, or anyone you admire. Explain why they are your hero and what qualities they possess that you would like to develop."\n\nWord count: 500 words minimum');
+        }
+
+        function viewSubmission() {
+            alert('📊 Viewing your completed work:\n\n✅ Solar System Research - Mars\n⭐ Score: 28/30 points\n\nGreat job! Your presentation was informative and creative.');
+        }
+
+        function shareResults() {
+            alert('🎉 Share your achievements!\n\n📱 Coming soon:\n• Share with classmates\n• Save to portfolio\n• Print certificate\n• Post to parent feed');
+        }
+    </script>
+</body>
+</html>

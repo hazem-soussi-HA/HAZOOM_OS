@@ -1,0 +1,25 @@
+{
+  "default_network": "sepolia",
+  "networks": {
+    "mainnet": {
+      "rpc_url": "https://mainnet.infura.io/v3/YOUR_PROJECT_ID",
+      "chain_id": 1
+    },
+    "sepolia": {
+      "rpc_url": "https://sepolia.infura.io/v3/YOUR_PROJECT_ID",
+      "chain_id": 11155111
+    },
+    "polygon": {
+      "rpc_url": "https://polygon-rpc.com",
+      "chain_id": 137
+    }
+  },
+  "gas_limit": 21000,
+  "gas_price_gwei": 20,
+  "supported_currencies": [
+    "ETH",
+    "USDC",
+    "USDT",
+    "MATIC"
+  ]
+}

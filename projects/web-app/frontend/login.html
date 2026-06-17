@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Hazoom</title>
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./hazoom_assets_styles.css">
+</head>
+<body class="login-body">
+    <div class="login-container">
+        <img src="./assets/images/logo_hazoom.png" alt="Hazoom" class="login-logo">
+        <h2>Se connecter</h2>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" required placeholder="votre@email.com">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Mot de passe</label>
+                <input type="password" id="password" required placeholder="••••••••">
+            </div>
+
+            <div id="errorMessage" class="error-message"></div>
+
+            <button type="submit" class="btn btn-primary login-btn">
+                <span id="btnText">Connexion</span>
+                <span id="btnLoader" class="hidden">Chargement...</span>
+            </button>
+        </form>
+
+        <p class="register-link">
+            Pas encore de compte ? <a href="register.html">Inscrivez-vous</a>
+        </p>
+
+        <div class="demo-accounts">
+            <h4>Comptes de démonstration :</h4>
+            <div class="demo-account">
+                <strong>Parent :</strong> parent@hazoom.com / parent123
+            </div>
+            <div class="demo-account">
+                <strong>Enfant :</strong> enfant@hazoom.com / enfant123
+            </div>
+            <div class="demo-account">
+                <strong>Admin :</strong> admin@hazoom.com / admin123
+            </div>
+        </div>
+    </div>
+
+    <script src="./auth.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', handleLogin);
+    </script>
+</body>
+</html>

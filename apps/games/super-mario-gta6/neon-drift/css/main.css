@@ -1,0 +1,152 @@
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:'Inter','Segoe UI',system-ui,sans-serif;cursor:crosshair}
+canvas{display:block;touch-action:none}
+/* Three.js appends the WebGL canvas directly to <body>. Pin it to the
+   back of the page so the #ui overlay (and its HUD canvases) always
+   sit on top, regardless of DOM order. */
+body > canvas{position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;z-index:1!important;outline:none}
+#ui{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5}
+
+/* ===== SIMULATION HUD ===== */
+#hud-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10}
+
+/* Left telemetry panel */
+#telemetry-panel{position:absolute;bottom:30px;left:24px;color:#0cf;font-size:10px;font-family:'Courier New',monospace;text-shadow:0 0 6px rgba(0,204,255,0.3);z-index:20}
+#telemetry-panel .row{display:flex;align-items:center;margin:2px 0;gap:8px}
+#telemetry-panel .label{color:#667;min-width:42px;text-transform:uppercase;letter-spacing:1px}
+#telemetry-panel .value{color:#0cf;min-width:60px;text-align:right}
+#telemetry-panel .unit{color:#445;font-size:8px;min-width:20px}
+
+/* Top bar */
+#top-bar{position:absolute;top:12px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:24px;z-index:20;pointer-events:none}
+#rank-badge{color:#ff0;font-size:20px;font-weight:700;text-shadow:0 0 15px #ff0;letter-spacing:3px;background:rgba(0,0,0,0.5);padding:2px 12px;border:1px solid rgba(255,255,0,0.2);border-radius:4px}
+#delta-display{color:#0f0;font-size:13px;font-family:'Courier New',monospace;text-shadow:0 0 8px rgba(0,255,0,0.3);background:rgba(0,0,0,0.5);padding:2px 10px;border:1px solid rgba(0,255,0,0.15);border-radius:4px;letter-spacing:1px}
+#track-name{color:#f80;font-size:11px;text-shadow:0 0 8px #f80;letter-spacing:2px;background:rgba(0,0,0,0.5);padding:2px 10px;border:1px solid rgba(255,136,0,0.15);border-radius:4px}
+
+/* Lap timer panel */
+#timer-panel{position:absolute;top:60px;left:50%;transform:translateX(-50%);display:flex;gap:20px;z-index:20;pointer-events:none;background:rgba(0,0,0,0.4);padding:4px 16px;border:1px solid rgba(0,255,255,0.1);border-radius:6px}
+#timer-panel .timer-item{text-align:center}
+#timer-panel .timer-label{color:#445;font-size:8px;text-transform:uppercase;letter-spacing:1px}
+#timer-panel .timer-value{color:#0ff;font-size:16px;font-family:'Courier New',monospace;text-shadow:0 0 6px rgba(0,255,255,0.3);letter-spacing:1px}
+#timer-panel .timer-value.best{color:#0f0;text-shadow:0 0 6px rgba(0,255,0,0.3)}
+#timer-panel .timer-value.last{color:#f80;text-shadow:0 0 6px rgba(255,136,0,0.3)}
+
+/* Minimap */
+#minimap{position:absolute;top:80px;right:16px;width:130px;height:130px;border:1px solid rgba(0,255,255,0.2);border-radius:6px;background:rgba(0,0,0,0.6);z-index:20}
+
+/* Sound toggle */
+#sound-toggle{position:absolute;top:12px;right:16px;color:#0ff;font-size:11px;cursor:pointer;pointer-events:all;padding:4px 8px;border:1px solid rgba(0,255,255,0.25);border-radius:4px;background:rgba(0,0,0,0.5);transition:all 0.3s;z-index:30}
+#sound-toggle:hover{background:rgba(0,255,255,0.15)}
+#sound-toggle.muted{color:#444;border-color:#444}
+
+/* Camera view indicator */
+#cam-indicator{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.15);font-size:10px;letter-spacing:2px;z-index:20;pointer-events:none;transition:opacity 0.5s}
+
+/* Speed Lines */
+#speed-lines{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;opacity:0;transition:opacity 0.3s;z-index:5}
+.speed-line{position:absolute;width:1px;background:linear-gradient(to bottom,transparent,rgba(0,255,255,0.3),transparent);animation:speedLine 0.3s linear infinite}
+@keyframes speedLine{0%{transform:translateY(-100%)}100%{transform:translateY(100vh)}}
+
+/* Start Screen */
+#start-screen{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);display:flex;align-items:center;justify-content:center;flex-direction:column;pointer-events:all;z-index:50}
+#start-bg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden}
+.start-particle{position:absolute;width:2px;height:2px;background:#0ff;border-radius:50%;animation:floatUp linear infinite;opacity:0.5}
+@keyframes floatUp{0%{transform:translateY(100vh) scale(0);opacity:0}10%{opacity:0.5}90%{opacity:0.5}100%{transform:translateY(-10vh) scale(1);opacity:0}}
+
+.logo-container{text-align:center;margin-bottom:40px}
+.logo-main{font-size:72px;color:#0ff;text-shadow:0 0 40px #0ff,0 0 80px #0ff,0 0 120px #0ff;letter-spacing:20px;animation:logoPulse 3s ease-in-out infinite}
+.logo-sub{color:#f0f;font-size:16px;letter-spacing:10px;margin-top:5px;text-shadow:0 0 15px #f0f}
+@keyframes logoPulse{0%,100%{text-shadow:0 0 40px #0ff,0 0 80px #0ff}50%{text-shadow:0 0 60px #0ff,0 0 120px #0ff,0 0 180px #0ff}}
+
+#track-select{display:flex;gap:16px;margin-bottom:30px;flex-wrap:wrap;justify-content:center;max-width:850px}
+.track-card{width:250px;background:rgba(0,0,0,0.8);border:1px solid rgba(0,255,255,0.2);border-radius:10px;padding:18px;cursor:pointer;transition:all 0.3s;pointer-events:all}
+.track-card:hover{transform:translateY(-4px);box-shadow:0 0 25px rgba(0,255,255,0.3)}
+.track-card.selected{border-color:#0ff;box-shadow:0 0 35px rgba(0,255,255,0.5),inset 0 0 15px rgba(0,255,255,0.05)}
+.track-card .track-icon{font-size:36px;margin-bottom:8px}
+.track-card .track-name{color:#0ff;font-size:16px;font-weight:bold;margin-bottom:4px;text-shadow:0 0 8px #0ff}
+.track-card .track-desc{color:#666;font-size:10px;line-height:1.5}
+.track-card .track-stats{color:#f80;font-size:9px;margin-top:8px}
+
+#start-btn{padding:16px 50px;background:rgba(0,255,255,0.1);border:2px solid #0ff;color:#0ff;font-size:20px;cursor:pointer;letter-spacing:5px;transition:all 0.3s;pointer-events:all;text-transform:uppercase;border-radius:6px;margin-bottom:12px}
+#start-btn:hover{background:rgba(0,255,255,0.25);box-shadow:0 0 40px rgba(0,255,255,0.5)}
+.ai-toggle{padding:8px 24px;background:rgba(255,255,0,0.08);border:1px solid rgba(255,255,0,0.3);color:#ff0;font-size:12px;cursor:pointer;letter-spacing:3px;transition:all 0.3s;pointer-events:all;text-transform:uppercase;border-radius:4px}
+.ai-toggle.active{background:rgba(255,255,0,0.2);box-shadow:0 0 20px rgba(255,255,0,0.3)}
+#controls-info{color:#555;font-size:10px;margin-top:20px;text-align:center;line-height:1.8}
+
+/* Game Over */
+#game-over{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;flex-direction:column;pointer-events:all;z-index:50}
+#game-over h1{color:#0ff;font-size:42px;text-shadow:0 0 20px #0ff;letter-spacing:6px}
+#game-over .stats{color:#f0f;font-size:16px;margin:6px 0}
+#game-over .stats span{color:#0ff}
+#restart-btn{margin-top:16px;padding:12px 40px;background:rgba(0,255,255,0.15);border:2px solid #0ff;color:#0ff;font-size:16px;cursor:pointer;letter-spacing:3px;border-radius:6px;pointer-events:all}
+#restart-btn:hover{background:rgba(0,255,255,0.3)}
+
+/* Countdown */
+#countdown{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:100px;color:#0ff;text-shadow:0 0 50px #0ff,0 0 100px #0ff;letter-spacing:15px;display:none;pointer-events:none;z-index:40}
+#countdown-instruction{position:absolute;bottom:25%;left:50%;transform:translateX(-50%);color:#f80;font-size:14px;text-shadow:0 0 10px #f80;letter-spacing:3px;display:none;pointer-events:none;z-index:40;animation:instructionPulse 1s ease-in-out infinite}
+@keyframes instructionPulse{0%,100%{opacity:0.4}50%{opacity:1}}
+#go-flash{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,255,0,0.08);pointer-events:none;display:none;z-index:35}
+
+/* Toast messages */
+@keyframes toastPop{0%{transform:translateY(-20px) scale(0.6);opacity:0}10%{transform:translateY(0) scale(1.05);opacity:1}85%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(10px) scale(0.95);opacity:0}}
+
+/* Reward modal */
+@keyframes rewardFadeIn{from{opacity:0;backdrop-filter:blur(0px)}to{opacity:1;backdrop-filter:blur(4px)}}
+@keyframes rewardSlideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes starPulse{0%,100%{text-shadow:0 0 10px #ff0,0 0 20px #ff0}50%{text-shadow:0 0 20px #ff0,0 0 40px #ff0,0 0 60px #ff0}}
+
+/* Powerup indicators (active effects) */
+.active-effects{position:absolute;top:140px;right:16px;display:flex;flex-direction:column;gap:6px;z-index:20;pointer-events:none}
+.active-effect{background:rgba(0,0,0,0.7);padding:6px 10px;border-radius:12px;border:1px solid;font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;display:flex;align-items:center;gap:6px;animation:effectFade 0.3s ease-out}
+.active-effect .label{font-weight:700}
+.active-effect .bar{width:50px;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;overflow:hidden}
+.active-effect .bar-fill{height:100%;transition:width 0.1s}
+@keyframes effectFade{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+/* Combo display */
+.combo-display{position:absolute;top:45%;right:30px;text-align:right;z-index:15;pointer-events:none;transition:opacity 0.3s}
+.combo-display .combo-num{font-family:'Courier New',monospace;font-size:64px;font-weight:900;color:#ff0;line-height:1;text-shadow:0 0 20px #ff0,0 0 40px #ff0;transform:scale(var(--combo-scale,1));transition:transform 0.1s}
+.combo-display .combo-label{font-family:'Courier New',monospace;font-size:11px;letter-spacing:4px;color:#ff0;opacity:0.8}
+.combo-display .combo-multi{font-family:'Courier New',monospace;font-size:14px;color:#0ff;letter-spacing:2px;margin-top:4px}
+
+/* Score display */
+.score-display{position:absolute;top:45%;left:30px;text-align:left;z-index:15;pointer-events:none}
+.score-display .score-label{font-family:'Courier New',monospace;font-size:9px;letter-spacing:3px;color:#888}
+.score-display .score-num{font-family:'Courier New',monospace;font-size:36px;font-weight:700;color:#f0f;text-shadow:0 0 15px #f0f}
+
+/* ========================================================================
+   AR HUD — AUGMENTED REALITY OVERLAYS
+   ======================================================================== */
+
+/* Full-screen red border that pulses when the engine hits the redline.
+   Sits below the canvas HUD (z 10) but above the speed-lines (z 5). */
+#hud-redline-flash{position:absolute;inset:0;pointer-events:none;z-index:12;opacity:0;box-shadow:inset 0 0 0 6px rgba(255,0,60,0.0),inset 0 0 80px 20px rgba(255,0,60,0.0);transition:opacity 0.08s,box-shadow 0.08s}
+#hud-redline-flash.active{animation:redlinePulse 0.45s ease-in-out infinite}
+@keyframes redlinePulse{0%,100%{opacity:0.45;box-shadow:inset 0 0 0 6px rgba(255,0,60,0.85),inset 0 0 90px 25px rgba(255,0,60,0.35)}50%{opacity:0.95;box-shadow:inset 0 0 0 10px rgba(255,30,80,1.0),inset 0 0 140px 40px rgba(255,30,80,0.55)}}
+
+/* Yellow border flash when the car is off the racing line. */
+#hud-offtrack-flash{position:absolute;inset:0;pointer-events:none;z-index:11;opacity:0;box-shadow:inset 0 0 0 4px rgba(255,200,0,0.0)}
+#hud-offtrack-flash.active{animation:offtrackPulse 0.6s ease-in-out infinite}
+@keyframes offtrackPulse{0%,100%{opacity:0.5;box-shadow:inset 0 0 0 4px rgba(255,200,0,0.85),inset 0 0 60px 15px rgba(255,180,0,0.3)}50%{opacity:0.9;box-shadow:inset 0 0 0 6px rgba(255,220,40,1.0),inset 0 0 100px 25px rgba(255,200,0,0.5)}}
+
+/* Lap-delta visual bar — sits below the top bar.
+   Center is "0", bar grows right (losing time, red) or left (gaining, green). */
+#hud-delta-bar{position:absolute;top:36px;left:50%;transform:translateX(-50%);width:280px;height:6px;z-index:20;pointer-events:none;background:rgba(0,0,0,0.4);border:1px solid rgba(0,255,255,0.2);border-radius:3px;overflow:visible}
+#hud-delta-bar::before,#hud-delta-bar::after{content:"";position:absolute;top:-3px;width:1px;height:12px;background:rgba(0,255,255,0.5)}
+#hud-delta-bar::before{left:50%}
+#hud-delta-bar::after{display:none}
+#hud-delta-bar .delta-fill{position:absolute;top:0;height:100%;transition:width 0.12s linear,background 0.2s,left 0.12s linear;background:#0f0;width:0}
+#hud-delta-bar .delta-fill.positive{background:linear-gradient(90deg,#ff3030,#ff8000)}
+#hud-delta-bar .delta-fill.negative{background:linear-gradient(270deg,#00ff66,#0ff)}
+#hud-delta-bar .delta-label{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-family:'Courier New',monospace;font-size:9px;letter-spacing:2px;color:rgba(0,255,255,0.6)}
+
+/* Boost/DRS ready indicator — a small arrow near the top that lights up
+   green and pulses when nitro is full. */
+#hud-boost-ready{position:absolute;top:84px;right:24px;display:flex;align-items:center;gap:6px;z-index:20;pointer-events:none;opacity:0;transition:opacity 0.3s;font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;color:#00ff66}
+#hud-boost-ready.active{opacity:1;animation:boostReady 0.7s ease-in-out infinite}
+#hud-boost-ready .arrow{font-size:18px;text-shadow:0 0 12px #00ff66}
+@keyframes boostReady{0%,100%{transform:translateX(0);text-shadow:0 0 8px #00ff66}50%{transform:translateX(4px);text-shadow:0 0 18px #00ff66,0 0 28px #00ff66}}
+
+/* AR mode toggle hint (bottom-right of the screen) */
+#hud-ar-toggle{position:absolute;bottom:30px;right:24px;z-index:20;pointer-events:none;font-family:'Courier New',monospace;font-size:8px;letter-spacing:2px;color:rgba(0,255,255,0.35)}
+#hud-ar-toggle .dot{display:inline-block;width:6px;height:6px;background:#0ff;border-radius:50%;margin-right:5px;box-shadow:0 0 6px #0ff;vertical-align:middle}

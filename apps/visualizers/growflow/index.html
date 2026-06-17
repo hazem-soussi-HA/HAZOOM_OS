@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GrowFlow - Daily Habit & Gratitude Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0f0f0f;
+            --card-bg: #1a1a1a;
+            --primary: #00d9a5;
+            --secondary: #ff6b6b;
+            --text: #ffffff;
+            --text-muted: #888888;
+            --border: #2a2a2a;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), #00ffb3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .quote {
+            font-style: italic;
+            color: var(--text-muted);
+            font-size: 1rem;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .streak-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, rgba(0, 217, 165, 0.15), rgba(0, 255, 179, 0.05));
+            border: 1px solid var(--primary);
+            padding: 8px 16px;
+            border-radius: 30px;
+            margin-top: 20px;
+            font-weight: 600;
+        }
+
+        .streak-badge span {
+            color: var(--primary);
+        }
+
+        section {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h2.habits::before {
+            content: "✓";
+            color: var(--primary);
+        }
+
+        h2.gratitude::before {
+            content: "♥";
+            color: var(--secondary);
+        }
+
+        .progress {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .progress span {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .habit-list {
+            list-style: none;
+        }
+
+        .habit-item {
+            display: flex;
+            align-items: center;
+            padding: 14px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .habit-item:hover {
+            border-color: var(--border);
+        }
+
+        .habit-item.completed {
+            background: rgba(0, 217, 165, 0.1);
+            border-color: var(--primary);
+        }
+
+        .habit-checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--text-muted);
+            border-radius: 6px;
+            margin-right: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .habit-item.completed .habit-checkbox {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .habit-checkbox::after {
+            content: "✓";
+            color: var(--bg);
+            font-size: 14px;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s ease;
+        }
+
+        .habit-item.completed .habit-checkbox::after {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .habit-text {
+            flex: 1;
+        }
+
+        .habit-item.completed .habit-text {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .add-habit {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .add-habit input {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.95rem;
+        }
+
+        .add-habit input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .add-habit button {
+            padding: 12px 20px;
+            background: var(--primary);
+            border: none;
+            border-radius: 10px;
+            color: var(--bg);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .add-habit button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 217, 165, 0.4);
+        }
+
+        .gratitude-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .gratitude-inputs input {
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .gratitude-inputs input:focus {
+            outline: none;
+            border-color: var(--secondary);
+        }
+
+        .gratitude-inputs input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .gratitude-list {
+            margin-top: 20px;
+        }
+
+        .gratitude-day {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .gratitude-day:last-child {
+            border-bottom: none;
+        }
+
+        .gratitude-date {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .gratitude-items {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .gratitude-items li {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            padding-left: 16px;
+            position: relative;
+        }
+
+        .gratitude-items li::before {
+            content: "•";
+            color: var(--secondary);
+            position: absolute;
+            left: 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 20px;
+            font-size: 0.9rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .encouragement {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        @keyframes confetti {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(1); opacity: 0; }
+        }
+
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: var(--primary);
+            animation: confetti 1s ease-out forwards;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(0, 217, 165, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(0, 217, 165, 0.6); }
+        }
+
+        .glow {
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            .logo {
+                font-size: 2rem;
+            }
+            section {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">GrowFlow</div>
+            <p class="quote" id="quote">Loading inspiration...</p>
+            <div class="streak-badge">
+                🔥 <span id="streak">0</span> day streak
+            </div>
+        </header>
+
+        <section>
+            <h2 class="habits">Today's Habits</h2>
+            <div class="progress"><span id="completed">0</span> / <span id="total">5</span> completed</div>
+            <ul class="habit-list" id="habitList"></ul>
+            <div class="add-habit">
+                <input type="text" id="newHabit" placeholder="Add a new habit...">
+                <button onclick="addHabit()">Add</button>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="gratitude">Today's Gratitude</h2>
+            <div class="gratitude-inputs">
+                <input type="text" id="gratitude1" placeholder="I'm grateful for...">
+                <input type="text" id="gratitude2" placeholder="I'm grateful for...">
+                <input type="text" id="gratitude3" placeholder="I'm grateful for...">
+            </div>
+            <div class="gratitude-list" id="gratitudeHistory">
+                <div class="empty-state">Your gratitude journal is empty. Start today!</div>
+            </div>
+        </section>
+
+        <footer>
+            <p class="encouragement">Every day is a new opportunity to grow 🌱</p>
+        </footer>
+    </div>
+
+    <div class="confetti-container" id="confettiContainer"></div>
+
+    <script>
+        const quotes = [
+            "The secret of getting ahead is getting started.",
+            "Small steps every day lead to big changes.",
+            "Your only limit is your mind.",
+            "Progress, not perfection.",
+            "Be the energy you want to attract.",
+            "Today is a fresh start.",
+            "Embrace the journey, not just the destination.",
+            "You are capable of amazing things.",
+            "Focus on the step in front of you.",
+            "Growth happens outside your comfort zone.",
+            "Every moment is a chance to begin again.",
+            "The best time to start was yesterday. The next best time is now."
+        ];
+
+        const defaultHabits = [
+            "Drink 8 glasses of water",
+            "Exercise for 20 minutes",
+            "Read for 15 minutes",
+            "Practice gratitude",
+            "Sleep by 11 PM"
+        ];
+
+        let habits = [];
+        let gratitudes = {};
+        let streak = 0;
+        let lastVisit = null;
+
+        function init() {
+            loadData();
+            checkDayReset();
+            renderQuote();
+            renderHabits();
+            renderGratitudes();
+            updateStreak();
+        }
+
+        function loadData() {
+            const savedHabits = localStorage.getItem('growflow_habits');
+            const savedGratitudes = localStorage.getItem('growflow_gratitudes');
+            const savedStreak = localStorage.getItem('growflow_streak');
+            const savedLastVisit = localStorage.getItem('growflow_lastvisit');
+
+            if (savedHabits) {
+                habits = JSON.parse(savedHabits);
+            } else {
+                habits = defaultHabits.map(h => ({ text: h, completed: false }));
+            }
+
+            if (savedGratitudes) {
+                gratitudes = JSON.parse(savedGratitudes);
+            }
+
+            if (savedStreak) {
+                streak = parseInt(savedStreak);
+            }
+
+            if (savedLastVisit) {
+                lastVisit = savedLastVisit;
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('growflow_habits', JSON.stringify(habits));
+            localStorage.setItem('growflow_gratitudes', JSON.stringify(gratitudes));
+            localStorage.setItem('growflow_streak', streak.toString());
+            localStorage.setItem('growflow_lastvisit', new Date().toISOString().split('T')[0]);
+        }
+
+        function checkDayReset() {
+            const today = new Date().toISOString().split('T')[0];
+            const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+
+            if (lastVisit && lastVisit !== today && lastVisit !== yesterday) {
+                streak = 0;
+            }
+
+            if (lastVisit !== today) {
+                habits.forEach(h => h.completed = false);
+            }
+        }
+
+        function renderQuote() {
+            const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+            document.getElementById('quote').textContent = `"${randomQuote}"`;
+        }
+
+        function renderHabits() {
+            const list = document.getElementById('habitList');
+            list.innerHTML = habits.map((h, i) => `
+                <li class="habit-item ${h.completed ? 'completed' : ''}" onclick="toggleHabit(${i})">
+                    <div class="habit-checkbox"></div>
+                    <span class="habit-text">${h.text}</span>
+                </li>
+            `).join('');
+
+            const completed = habits.filter(h => h.completed).length;
+            document.getElementById('completed').textContent = completed;
+            document.getElementById('total').textContent = habits.length;
+        }
+
+        function toggleHabit(index) {
+            habits[index].completed = !habits[index].completed;
+            saveData();
+            renderHabits();
+
+            if (habits.every(h => h.completed)) {
+                triggerConfetti();
+                streak++;
+                updateStreak();
+                saveData();
+            }
+        }
+
+        function addHabit() {
+            const input = document.getElementById('newHabit');
+            const text = input.value.trim();
+            if (text) {
+                habits.push({ text, completed: false });
+                input.value = '';
+                saveData();
+                renderHabits();
+            }
+        }
+
+        function saveGratitudes() {
+            const g1 = document.getElementById('gratitude1').value.trim();
+            const g2 = document.getElementById('gratitude2').value.trim();
+            const g3 = document.getElementById('gratitude3').value.trim();
+
+            const today = new Date().toISOString().split('T')[0];
+            const dailyGratitudes = [g1, g2, g3].filter(g => g);
+
+            if (dailyGratitudes.length > 0) {
+                gratitudes[today] = dailyGratitudes;
+                saveData();
+                renderGratitudes();
+            }
+        }
+
+        document.getElementById('gratitude1').addEventListener('blur', saveGratitudes);
+        document.getElementById('gratitude2').addEventListener('blur', saveGratitudes);
+        document.getElementById('gratitude3').addEventListener('blur', saveGratitudes);
+
+        function renderGratitudes() {
+            const today = new Date().toISOString().split('T')[0];
+            const todayG = gratitudes[today] || [];
+
+            document.getElementById('gratitude1').value = todayG[0] || '';
+            document.getElementById('gratitude2').value = todayG[1] || '';
+            document.getElementById('gratitude3').value = todayG[2] || '';
+
+            const historyDiv = document.getElementById('gratitudeHistory');
+            const dates = Object.keys(gratitudes).sort().reverse().slice(0, 7);
+
+            if (dates.length === 0) {
+                historyDiv.innerHTML = '<div class="empty-state">Your gratitude journal is empty. Start today!</div>';
+                return;
+            }
+
+            historyDiv.innerHTML = dates.map(date => {
+                const formattedDate = new Date(date).toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric'
+                });
+                return `
+                    <div class="gratitude-day">
+                        <div class="gratitude-date">${formattedDate}</div>
+                        <ul class="gratitude-items">
+                            ${gratitudes[date].map(g => `<li>${g}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateStreak() {
+            document.getElementById('streak').textContent = streak;
+        }
+
+        function triggerConfetti() {
+            const container = document.getElementById('confettiContainer');
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.top = Math.random() * 100 + '%';
+                confetti.style.background = ['#00d9a5', '#ff6b6b', '#ffd93d', '#6bcf6b'][Math.floor(Math.random() * 4)];
+                confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                container.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 1000);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

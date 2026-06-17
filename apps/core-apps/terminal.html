@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  HAZOOM OS V3 — Terminal App
+  Copyright © 2024-2026 Hazem Soussi. All Rights Reserved.
+  Full command-line interface with virtual filesystem support.
+-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal - HAZOOM OS</title>
+    <style>
+        :root {
+            --bg-primary: #050510;
+            --bg-secondary: #0a0a1a;
+            --accent: #00f0ff;
+            --green: #10b981;
+            --gold: #ffd700;
+            --text: #e8e8f0;
+            --text-dim: rgba(232, 232, 240, 0.5);
+        }
+        body {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            background: var(--bg-primary);
+            color: var(--green);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        #terminal {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 16px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0,240,255,0.2) transparent;
+        }
+        #terminal::-webkit-scrollbar { width: 6px; }
+        #terminal::-webkit-scrollbar-track { background: transparent; }
+        #terminal::-webkit-scrollbar-thumb { background: rgba(0,240,255,0.2); border-radius: 3px; }
+        .output {
+            white-space: pre-wrap;
+            margin-bottom: 2px;
+            line-height: 1.5;
+            font-size: 0.85rem;
+        }
+        .output.error { color: #ef4444; }
+        .output.info { color: var(--accent); }
+        .output.success { color: var(--green); }
+        .output.gold { color: var(--gold); }
+        .command-line { color: var(--gold); }
+        .input-line {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            padding: 4px 16px 8px;
+        }
+        .prompt {
+            color: var(--accent);
+            font-weight: bold;
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+        input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--green);
+            font-family: inherit;
+            font-size: 0.85rem;
+            outline: none;
+            caret-color: var(--accent);
+        }
+        .banner {
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div id="terminal">
+        <div class="banner output info">
+ ██╗  ██╗ █████╗ ███████╗ ██████╗  ██████╗ ███╗   ███╗
+ ██║  ██║██╔══██╗╚══███╔╝██╔═══██╗██╔═══██╗████╗ ████║
+ ███████║███████║  ███╔╝ ██║   ██║██║   ██║██╔████╔██║
+ ██╔══██║██╔══██║ ███╔╝  ██║   ██║██║   ██║██║╚██╔╝██║
+ ██║  ██║██║  ██║███████╗╚██████╔╝╚██████╔╝██║ ╚═╝ ██║
+ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝ ╚═╝     ╚═╝
+        </div>
+        <div class="output">HAZOOM OS Terminal v3.1 — Type 'help' for available commands.</div>
+        <div class="output">&nbsp;</div>
+    </div>
+    <div class="input-line">
+        <span class="prompt" id="prompt">hazom@hazoom:~$</span>
+        <input type="text" id="cmdInput" autofocus autocomplete="off" spellcheck="false">
+    </div>
+
+    <script>
+        var terminal = document.getElementById('terminal');
+        var input = document.getElementById('cmdInput');
+        var promptEl = document.getElementById('prompt');
+        var fs = window.parent.FileSystem;
+        var currentPath = '/';
+        var history = [];
+        var historyIndex = 0;
+
+        // Auto-focus input when clicking anywhere in the terminal
+        document.addEventListener('click', function(e) {
+            input.focus();
+        });
+
+        // Also focus on touch for mobile
+        document.addEventListener('touchstart', function(e) {
+            input.focus();
+        });
+
+        // Focus on load
+        window.addEventListener('load', function() {
+            input.focus();
+        });
+
+        function print(text, className) {
+            var div = document.createElement('div');
+            div.className = 'output ' + (className || '');
+            div.textContent = text;
+            terminal.appendChild(div);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        function getPrompt() {
+            var shortPath = currentPath;
+            if (shortPath === '/') shortPath = '~';
+            else shortPath = '~' + shortPath;
+            return 'hazom@hazoom:' + shortPath + '$';
+        }
+
+        function updatePrompt() {
+            promptEl.textContent = getPrompt() + ' ';
+        }
+
+        var commands = {
+            help: function(args) {
+                if (args[0]) {
+                    var helpTopics = {
+                        'ls': 'ls [path] — List directory contents',
+                        'cd': 'cd <path> — Change directory (use .. for parent, / for root)',
+                        'cat': 'cat <file> — Display file contents',
+                        'echo': 'echo <text> — Print text to terminal',
+                        'clear': 'clear — Clear terminal screen',
+                        'pwd': 'pwd — Print working directory',
+                        'whoami': 'whoami — Display current user',
+                        'date': 'date — Display current date and time',
+                        'history': 'history — Show command history',
+                        'mkdir': 'mkdir <name> — Create a new directory',
+                        'touch': 'touch <name> — Create a new empty file',
+                        'rm': 'rm <name> — Remove a file',
+                        'rmdir': 'rmdir <name> — Remove an empty directory',
+                        'cp': 'cp <src> <dest> — Copy a file',
+                        'mv': 'mv <src> <dest> — Move/rename a file',
+                        'head': 'head <file> — Show first 10 lines of a file',
+                        'tail': 'tail <file> — Show last 10 lines of a file',
+                        'grep': 'grep <pattern> <file> — Search for pattern in file',
+                        'ps': 'ps — List running processes',
+                        'df': 'df — Display disk usage',
+                        'du': 'du [path] — Display directory size',
+                        'uname': 'uname [-a] — Print system information',
+                        'neofetch': 'neofetch — Display system info with ASCII art',
+                        'tree': 'tree [path] — Show directory tree',
+                        'write': 'write <file> <text> — Write text to a file',
+                        'append': 'append <file> <text> — Append text to a file',
+                        'find': 'find <pattern> — Find files matching pattern',
+                        'stat': 'stat <file> — Show file/directory info',
+                        'chmod': 'chmod <mode> <file> — Change permissions (simulated)',
+                        'ping': 'ping <host> — Ping a host (simulated)',
+                        'ipconfig': 'ipconfig — Display network configuration',
+                        'heat': 'heat — Display quantum heat sensor readings',
+                        'fullscreen': 'fullscreen — Toggle distraction-free mode',
+                        'sudo': 'sudo elevate <token> — Elevate privileges',
+                        'cls': 'cls — Clear screen (alias for clear)',
+                        'exit': 'exit — Close terminal'
+                    };
+                    return helpTopics[args[0]] || 'No help for: ' + args[0];
+                }
+                return 'Available commands:\n' +
+                    '  Navigation:  ls, cd, pwd, tree\n' +
+                    '  Files:       cat, head, tail, grep, write, append, find, stat\n' +
+                    '  File Mgmt:   mkdir, touch, rm, rmdir, cp, mv, chmod\n' +
+                    '  System:      help, clear, whoami, date, history, ps, df, du, uname\n' +
+                    '  Network:     ping, ipconfig\n' +
+                    '  Info:        neofetch, heat\n' +
+                    '  Other:       echo, fullscreen, sudo, cls, exit\n' +
+                    'Use \'help <command>\' for detailed info.';
+            },
+            ls: function(args) {
+                if (!fs) return 'Error: File system not available';
+                var path = args[0] || currentPath;
+                if (path !== currentPath) {
+                    var target = path;
+                    if (target !== '/' && !target.startsWith('/')) {
+                        target = currentPath === '/' ? '/' + target : currentPath + '/' + target;
+                    }
+                    var node = fs.traverse(target);
+                    if (!node) return 'ls: cannot access \'' + args[0] + '\': No such file or directory';
+                    if (node.type !== 'folder') return args[0];
+                    var items = fs.ls(target);
+                    return items.map(function(i) { return i.type === 'folder' ? i.name + '/' : i.name; }).join('  ');
+                }
+                var items = fs.ls(currentPath);
+                if (items.length === 0) return '(empty directory)';
+                return items.map(function(i) { return i.type === 'folder' ? i.name + '/' : i.name; }).join('  ');
+            },
+            pwd: function() { return currentPath; },
+            cd: function(args) {
+                if (!fs) return 'Error: File system not available';
+                var target = args[0] || '/';
+                if (target === '/') { currentPath = '/'; updatePrompt(); return ''; }
+                if (target === '..') {
+                    if (currentPath !== '/') {
+                        var parts = currentPath.split('/').filter(function(p) { return p; });
+                        parts.pop();
+                        currentPath = '/' + parts.join('/');
+                        if (currentPath === '') currentPath = '/';
+                    }
+                    updatePrompt();
+                    return '';
+                }
+                if (target === '~') { currentPath = '/'; updatePrompt(); return ''; }
+                var full = target.startsWith('/') ? target : (currentPath === '/' ? '/' + target : currentPath + '/' + target);
+                var node = fs.traverse(full);
+                if (!node) return 'cd: no such directory: ' + target;
+                if (node.type !== 'folder') return 'cd: not a directory: ' + target;
+                currentPath = full;
+                updatePrompt();
+                return '';
+            },
+            cat: function(args) {
+                if (!fs) return 'Error: File system not available';
+                if (!args[0]) return 'cat: missing operand';
+                var full = args[0].startsWith('/') ? args[0] : (currentPath === '/' ? '/' + args[0] : currentPath + '/' + args[0]);
+                var node = fs.traverse(full);
+                if (!node) return 'cat: ' + args[0] + ': No such file or directory';
+                if (node.type === 'folder') return 'cat: ' + args[0] + ': Is a directory';
+                return node.content || '';
+            },
+            echo: function(args) { return args.join(' '); },
+            clear: function() { terminal.innerHTML = ''; return ''; },
+            cls: function() { terminal.innerHTML = ''; return ''; },
+            whoami: function() { return 'hazem — Creator & System Authority (LEVEL_3)'; },
+            date: function() { return new Date().toString(); },
+            history: function() {
+                return history.map(function(cmd, i) { return '  ' + (i + 1) + '  ' + cmd; }).join('\n');
+            },
+            pwd: function() { return currentPath; },
+            mkdir: function(args) {
+                if (!fs) return 'Error: File system not available';
+                if (!args[0]) return 'mkdir: missing operand';
+                fs.createFolder(currentPath, args[0]);
+                return '';
+            },
+            touch: function(args) {
+                if (!fs) return 'Error: File system not available';
+                if (!args[0]) return 'touch: missing operand';
+                fs.createFile(currentPath, args[0], '');
+                return '';
+            },
+            rm: function(args) {
+                if (!fs) return 'Error: File system not available';
+                if (!args[0]) return 'rm: missing operand';
+                var full = args[0].startsWith('/') ? args[0] : (currentPath === '/' ? '/' + args[0] : currentPath + '/' + args[0]);
+                var node = fs.traverse(full);
+                if (!node) return 'rm: cannot remove \'' + args[0] + '\': No such file or directory';
+                if (node.type === 'folder') return 'rm: cannot remove \'' + args[0] + '\': Is a directory (use rmdir)';
+                var parentPath = full.substring(0, full.lastIndexOf('/')) || '/';
+                var parentNode = fs.traverse(parentPath);
+                if (parentNode && parentNode.children) {
+                    delete parentNode.children[args[0]];
+                    fs.save();
+                }
+                return '';
+            },
+            rmdir: function(args) {
+                if (!fs) return 'Error: File system not available';
+                if (!args[0]) return 'rmdir: missing operand';
+                var full = args[0].startsWith('/') ? args[0] : (currentPath === '/' ? '/' + args[0] : currentPath + '/' + args[0]);
+                var node = fs.traverse(full);
+                if (!node) return 'rmdir: failed to remove \'' + args[0] + '\': No such directory';
+                if (node.type !== 'folder') return 'rmdir: failed to remove \'' + args[0] + '\': Not a directory';
+                var childCount = node.children ? Object.keys(node.children).length : 0;
+                if (childCount > 0) return 'rmdir: failed to remove \'' + args[0] + '\': Directory not empty';
+                var parentPath = full.substring(0, full.lastIndexOf('/')) || '/';
+                var parentNode = fs.traverse(parentPath);
+                if (parentNode && parentNode.children) {
+                    delete parentNode.children[args[0]];
+                    fs.save();
+                }
+                return '';
+            },
+            cp: function(args) {
+                if (!fs) return 'Error: File system not available';
+                if (args.length < 2) return 'cp: missing operand';
+                var src = args[0].startsWith('/') ? args[0] : (currentPath === '/' ? '/' + args[0] : currentPath + '/' + args[0]);
+                var srcNode = fs.traverse(src);
+                if (!srcNode) return 'cp: cannot stat \'' + args[0] + '\': No such file or directory';
+                var dest = args[1].startsWith('/') ? args[1] : (currentPath === '/' ? '/' + args[1] : currentPath + '/' + args[1]);
+                var destNode = fs.traverse(dest);
+                if (destNode && destNode.type === 'folder') {
+                    fs.createFile(dest, srcNode.name, srcNode.content || '');
+                } else {
+                    var destParent = dest.substring(0, dest.lastIndexOf('/')) || '/';
+                    var destName = dest.substring(dest.lastIndexOf('/') + 1);
+                    fs.createFile(destParent, destName, srcNode.content || '');
+                }
+                return '';
+            },
+            mv: function(args) {
+                if (!fs) return 'Error: File system not available';
+                if (args.length < 2) return 'mv: missing operand';
+                var src = args[0].startsWith('/') ? args[0] : (currentPath === '/' ? '/' + args[0] : currentPath + '/' + args[0]);
+                var srcNode = fs.traverse(src);
+                if (!srcNode) return 'mv: cannot stat \'' + args[0] + '\': No such file or directory';
+                var dest = args[1].startsWith('/') ? args[1] : (currentPath === '/' ? '/' + args[1] : currentPath + '/' + args[1]);
+                var destNode = fs.traverse(dest);
+                if (destNode && destNode.type === 'folder') {
+                    fs.createFile(dest, srcNode.name, srcNode.content || '');
+                } else {
+                    var destParent = dest.substring(0, dest.lastIndexOf('/')) || '/';
+                    var destName = dest.substring(dest.lastIndexOf('/') + 1);
+                    fs.createFile(destParent, destName, srcNode.content || '');
+                }
+                // Remove source
+                var srcParent = src.substring(0, src.lastIndexOf('/')) || '/';
+                var srcName = src.substring(src.lastIndexOf('/') + 1);
+                var srcParentNode = fs.traverse(srcParent);
+                if (srcParentNode && srcParentNode.children) {
+                    delete srcParentNode.children[srcName];
+                    fs.save();
+                }
+                return '';
+            },
+            head: function(args) {
+                if (!fs) return 'Error: File system not available';
+                if (!args[0]) return 'head: missing operand';
+                var full = args[0].startsWith('/') ? args[0] : (currentPath === '/' ? '/' + args[0] : currentPath + '/' + args[0]);
+                var node = fs.traverse(full);
+                if (!node) return 'head: cannot open \'' + args[0] + '\' for reading: No such file or directory';
+                if (node.type === 'folder') return 'head: cannot open \'' + args[0] + '\' for reading: Is a directory';
+                var lines = (node.content || '').split('\n');
+                var n = 10;
+                for (var i = 0; i < args.length; i++) {
+                    if (args[i].startsWith('-n')) n = parseInt(args[i].substring(2)) || 10;
+                }
+                return lines.slice(0, n).join('\n');
+            },
+            tail: function(args) {
+                if (!fs) return 'Error: File system not available';
+                if (!args[0]) return 'tail: missing operand';
+                var full = args[0].startsWith('/') ? args[0] : (currentPath === '/' ? '/' + args[0] : currentPath + '/' + args[0]);
+                var node = fs.traverse(full);
+                if (!node) return 'tail: cannot open \'' + args[0] + '\' for reading: No such file or directory';
+                if (node.type === 'folder') return 'tail: cannot open \'' + args[0] + '\' for reading: Is a directory';
+                var lines = (node.content || '').split('\n');
+                var n = 10;
+                for (var i = 0; i < args.length; i++) {
+                    if (args[i].startsWith('-n')) n = parseInt(args[i].substring(2)) || 10;
+                }
+                return lines.slice(-n).join('\n');
+            },
+            grep: function(args) {
+                if (!fs) return 'Error: File system not available';
+                if (args.length < 2) return 'grep: missing operand';
+                var pattern = args[0];
+                var file = args[1];
+                var full = file.startsWith('/') ? file : (currentPath === '/' ? '/' + file : currentPath + '/' + file);
+                var node = fs.traverse(full);
+                if (!node) return 'grep: ' + file + ': No such file or directory';
+                if (node.type === 'folder') return 'grep: ' + file + ': Is a directory';
+                var lines = (node.content || '').split('\n');
+                var regex = new RegExp(pattern, 'i');
+                var matches = lines.filter(function(line) { return regex.test(line); });
+                return matches.join('\n') || '';
+            },
+            write: function(args) {
+                if (!fs) return 'Error: File system not available';
+                if (args.length < 2) return 'write: missing operand';
+                var file = args[0];
+                var content = args.slice(1).join(' ');
+                fs.createFile(currentPath, file, content);
+                return '';
+            },
+            append: function(args) {
+                if (!fs) return 'Error: File system not available';
+                if (args.length < 2) return 'append: missing operand';
+                var file = args[0];
+                var text = args.slice(1).join(' ');
+                var full = file.startsWith('/') ? file : (currentPath === '/' ? '/' + file : currentPath + '/' + file);
+                var node = fs.traverse(full);
+                if (node && node.type === 'file') {
+                    node.content = (node.content || '') + text;
+                    fs.save();
+                } else {
+                    fs.createFile(currentPath, file, text);
+                }
+                return '';
+            },
+            find: function(args) {
+                if (!fs) return 'Error: File system not available';
+                if (!args[0]) return 'find: missing operand';
+                var pattern = args[0].toLowerCase();
+                var results = [];
+                function search(node, path) {
+                    if (!node || !node.children) return;
+                    Object.keys(node.children).forEach(function(name) {
+                        var child = node.children[name];
+                        var childPath = path === '/' ? '/' + name : path + '/' + name;
+                        if (name.toLowerCase().indexOf(pattern) !== -1) {
+                            results.push(childPath + (child.type === 'folder' ? '/' : ''));
+                        }
+                        if (child.type === 'folder') search(child, childPath);
+                    });
+                }
+                var startNode = fs.traverse(currentPath);
+                search(startNode, currentPath);
+                return results.join('\n') || 'No matches found';
+            },
+            stat: function(args) {
+                if (!fs) return 'Error: File system not available';
+                if (!args[0]) return 'stat: missing operand';
+                var full = args[0].startsWith('/') ? args[0] : (currentPath === '/' ? '/' + args[0] : currentPath + '/' + args[0]);
+                var node = fs.traverse(full);
+                if (!node) return 'stat: cannot stat \'' + args[0] + '\': No such file or directory';
+                var size = node.type === 'file' ? (node.content || '').length : 0;
+                var childCount = node.children ? Object.keys(node.children).length : 0;
+                return 'Type: ' + node.type + '\nPath: ' + full + '\nSize: ' + size + ' bytes' +
+                    (node.type === 'folder' ? '\nChildren: ' + childCount : '') +
+                    '\nModified: ' + new Date().toISOString();
+            },
+            tree: function(args) {
+                if (!fs) return 'Error: File system not available';
+                var path = args[0] || currentPath;
+                if (!path.startsWith('/')) path = currentPath === '/' ? '/' + path : currentPath + '/' + path;
+                var lines = [];
+                function buildTree(node, prefix) {
+                    if (!node || !node.children) return;
+                    var names = Object.keys(node.children).sort();
+                    names.forEach(function(name, i) {
+                        var child = node.children[name];
+                        var isLast = i === names.length - 1;
+                        var connector = isLast ? '└── ' : '├── ';
+                        lines.push(prefix + connector + name + (child.type === 'folder' ? '/' : ''));
+                        if (child.type === 'folder') {
+                            buildTree(child, prefix + (isLast ? '    ' : '│   '));
+                        }
+                    });
+                }
+                var rootNode = fs.traverse(path);
+                if (!rootNode) return 'tree: \'' + path + '\': No such directory';
+                lines.push(path);
+                buildTree(rootNode, '');
+                return lines.join('\n');
+            },
+            neofetch: function() {
+                var uptime = window.parent.HAZOOM ? window.parent.HAZOOM.state.uptime : 0;
+                var cpu = window.parent.HAZOOM ? Math.round(window.parent.HAZOOM.state.cpu) : 12;
+                var mem = window.parent.HAZOOM ? window.parent.HAZOOM.state.memory : 450;
+                return '        ╔══════════════╗\n' +
+                    '        ║  HAZOOM OS   ║\n' +
+                    '        ╚══════════════╝\n' +
+                    '  OS:      HAZOOM OS v3.1.0\\n' +
+                    '  Kernel:  Quantum Kernel v3\n' +
+                    '  Shell:   hazoom-terminal v3\n' +
+                    '  CPU:     ' + cpu + '% load\n' +
+                    '  Memory:  ' + mem + 'MB / 16384MB\n' +
+                    '  Uptime:  ' + formatUptime(uptime) + '\n' +
+                    '  Theme:   Dark (mood-adaptive)\n' +
+                    '  AI:      ' + (window.parent.HAZOOM && window.parent.HAZOOM.aiOrchestrator ? 'Online' : 'Offline');
+            },
+            ps: function() {
+                var wins = window.parent.HAZOOM ? window.parent.HAZOOM.windows.length : 0;
+                return 'PID   USER     STATUS    COMMAND\n' +
+                    '1     root     running   init\n' +
+                    '2     root     running   kernel\n' +
+                    '3     root     running   consciousness\n' +
+                    '1000  hazem    running   desktop\n' +
+                    '1001  hazem    running   window-manager\n' +
+                    (wins > 0 ? '1002  hazem    running   (' + wins + ' windows)\n' : '') +
+                    '2000  hazem    idle      terminal';
+            },
+            df: function() {
+                var mem = window.parent.HAZOOM ? window.parent.HAZOOM.state.memory : 450;
+                var total = window.parent.HAZOOM ? window.parent.HAZOOM.state.totalMemory : 16384;
+                var used = mem;
+                var avail = total - used;
+                var pct = Math.round((used / total) * 100);
+                return 'Filesystem      Size     Used    Avail  Use%  Mounted on\n' +
+                    '/dev/virtual    ' + total + 'MB   ' + used + 'MB   ' + avail + 'MB   ' + pct + '%   /';
+            },
+            du: function(args) {
+                if (!fs) return 'Error: File system not available';
+                var path = args[0] || currentPath;
+                if (!path.startsWith('/')) path = currentPath === '/' ? '/' + path : currentPath + '/' + path;
+                var node = fs.traverse(path);
+                if (!node) return 'du: cannot access \'' + path + '\': No such file or directory';
+                function countSize(n) {
+                    var size = 0;
+                    if (n.type === 'file') { size = (n.content || '').length; }
+                    else if (n.children) { Object.keys(n.children).forEach(function(k) { size += countSize(n.children[k]); }); }
+                    return size;
+                }
+                var size = countSize(node);
+                return (size / 1024).toFixed(1) + 'K\t' + path;
+            },
+            uname: function(args) {
+                if (args[0] === '-a') return 'HAZOOM hazoom 3.0.0-hazoom #1 SMP PREEMPT x86_64 GNU/HAZOOM';
+                return 'HAZOOM';
+            },
+            chmod: function(args) {
+                if (args.length < 2) return 'chmod: missing operand';
+                return 'chmod: permissions of \'' + args[1] + '\' changed to ' + args[0] + ' (simulated)';
+            },
+            ping: function(args) {
+                var host = args[0] || '8.8.8.8';
+                print('PING ' + host + ' (simulated):');
+                for (var i = 0; i < 4; i++) {
+                    var time = Math.floor(Math.random() * 20) + 10;
+                    print('  Reply from ' + host + ': bytes=32 time=' + time + 'ms TTL=118');
+                }
+                print('  --- ' + host + ' ping statistics ---');
+                print('  4 packets transmitted, 4 received, 0% packet loss');
+                return '';
+            },
+            ipconfig: function() {
+                return '\nVirtual Ethernet Adapter Aether:\n\n' +
+                    '  Connection-specific DNS Suffix  . : aether.local\n' +
+                    '  IPv4 Address. . . . . . . . . . . : 192.168.1.105\n' +
+                    '  Subnet Mask . . . . . . . . . . . : 255.255.255.0\n' +
+                    '  Default Gateway . . . . . . . . . : 192.168.1.1';
+            },
+            heat: function() {
+                var components = ['CPU Core 0', 'CPU Core 1', 'GPU', 'RAM Bank 0', 'RAM Bank 1', 'SSD Controller', 'Network'];
+                var out = 'COMPONENT             HEAT LEVEL\n' +
+                    '────────────────────────────────────\n';
+                components.forEach(function(c) {
+                    var val = Math.floor(Math.random() * 40) + 30;
+                    var status = val > 70 ? 'CRITICAL' : (val > 50 ? 'HIGH' : 'NORMAL');
+                    out += c.padEnd(20) + ' ' + val + '% [' + status + ']\n';
+                });
+                return out;
+            },
+            fullscreen: function() {
+                if (document.fullscreenElement) {
+                    document.exitFullscreen();
+                    return 'Exited distraction-free mode.';
+                } else {
+                    document.documentElement.requestFullscreen();
+                    return 'Entered distraction-free mode (Zen).';
+                }
+            },
+            sudo: function(args) {
+                if (!args[0]) return 'Usage: sudo elevate <security_token>';
+                if (args[0] === 'elevate' && args[1]) {
+                    if (window.parent.HAZOOM && window.parent.HAZOOM.QuantumKernel) {
+                        var success = window.parent.HAZOOM.QuantumKernel.elevateToRoot();
+                        if (success) return '✅ Authority elevated to ROOT. Welcome, Architect.';
+                    }
+                    return '❌ Invalid security token or kernel not available.';
+                }
+                return 'Usage: sudo elevate <security_token>';
+            },
+            exit: function() {
+                if (window.parent.HAZOOM) {
+                    var wins = window.parent.HAZOOM.windows;
+                    for (var i = 0; i < wins.length; i++) {
+                        var iframe = wins[i].element.querySelector('iframe');
+                        if (iframe && iframe.contentWindow === window) {
+                            window.parent.HAZOOM.closeWindow(wins[i].id);
+                            return '';
+                        }
+                    }
+                }
+                return 'Cannot close terminal from this context.';
+            }
+        };
+
+        function formatUptime(seconds) {
+            var h = Math.floor(seconds / 3600);
+            var m = Math.floor((seconds % 3600) / 60);
+            var s = seconds % 60;
+            if (h > 0) return h + 'h ' + m + 'm ' + s + 's';
+            if (m > 0) return m + 'm ' + s + 's';
+            return s + 's';
+        }
+
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                var cmdLine = input.value.trim();
+                if (cmdLine) {
+                    history.push(cmdLine);
+                    historyIndex = history.length;
+                }
+                print(getPrompt() + ' ' + (cmdLine || ''), 'command-line');
+                if (cmdLine) {
+                    var parts = cmdLine.split(/\s+/);
+                    var cmd = parts[0].toLowerCase();
+                    var args = parts.slice(1);
+                    if (commands[cmd]) {
+                        var result = commands[cmd](args);
+                        if (result) {
+                            var cls = '';
+                            if (cmd === 'neofetch') cls = 'info';
+                            else if (cmd === 'whoami') cls = 'gold';
+                            else if (cmd === 'help') cls = 'info';
+                            print(result, cls);
+                        }
+                    } else {
+                        print('Command not found: ' + cmd + ' — Type \'help\' for available commands.', 'error');
+                    }
+                }
+                input.value = '';
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (history.length > 0) {
+                    historyIndex = Math.max(0, historyIndex - 1);
+                    input.value = history[historyIndex] || '';
+                }
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (historyIndex < history.length - 1) {
+                    historyIndex++;
+                    input.value = history[historyIndex] || '';
+                } else {
+                    historyIndex = history.length;
+                    input.value = '';
+                }
+            } else if (e.key === 'Tab') {
+                e.preventDefault();
+                var val = input.value.trim();
+                if (val) {
+                    var matches = Object.keys(commands).filter(function(c) { return c.indexOf(val) === 0; });
+                    if (matches.length === 1) input.value = matches[0] + ' ';
+                    else if (matches.length > 1) print(matches.join('  '), 'info');
+                }
+            }
+        });
+
+        document.addEventListener('click', function() { input.focus(); });
+        input.focus();
+    </script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+{
+  "environment": "development",
+  "services": {
+    "unified_server": {
+      "enabled": true,
+      "port": 8080,
+      "host": "0.0.0.0",
+      "script": "src/web/unified_server.py"
+    },
+    "auth_server": {
+      "enabled": false,
+      "port": 8081,
+      "script": "alpha_auth.py"
+    },
+    "neural_bridge": {
+      "enabled": true,
+      "script": "neural_bridge.py"
+    },
+    "pascal_core": {
+      "enabled": false,
+      "executable": "alpha.exe"
+    }
+  },
+  "features": {
+    "google_oauth": {
+      "enabled": false,
+      "client_id": "",
+      "client_secret": "",
+      "redirect_uri": "http://localhost:8080/auth/callback"
+    },
+    "crypto": {
+      "enabled": true,
+      "default_network": "sepolia",
+      "infura_project_id": ""
+    },
+    "neural": {
+      "enabled": true,
+      "model_path": "models/",
+      "knowledge_path": "knowledge/"
+    }
+  },
+  "security": {
+    "encryption_enabled": true,
+    "session_timeout": 3600,
+    "cors_origins": [
+      "http://localhost:8080",
+      "http://127.0.0.1:8080"
+    ]
+  }
+}

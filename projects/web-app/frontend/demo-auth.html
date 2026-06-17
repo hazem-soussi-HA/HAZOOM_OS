@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔐 Démonstration - Authentification Interactive Hazoom</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Fredoka:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="modern-ui.css">
+    <style>
+        /* Import component styles */
+        @import url('./components/AuthInteractive.css');
+
+        /* Demo Container */
+        .auth-demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0;
+        }
+
+        .demo-section {
+            padding: 60px 40px;
+            background: white;
+            border-radius: 25px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .demo-section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            font-family: 'Fredoka', sans-serif;
+            text-align: center;
+            color: var(--hazoom-purple);
+        }
+
+        .demo-description {
+            text-align: center;
+            color: #718096;
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin: 40px 0;
+        }
+
+        .feature-card {
+            background: var(--gradient-primary);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            color: white;
+            transition: all var(--transition-normal);
+        }
+
+        .feature-card:nth-child(2) {
+            background: var(--gradient-secondary);
+        }
+
+        .feature-card:nth-child(3) {
+            background: var(--gradient-success);
+        }
+
+        .feature-card:nth-child(4) {
+            background: var(--gradient-warm);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px) scale(1.05);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .feature-card h3 {
+            margin: 15px 0 10px 0;
+            font-size: 1.3rem;
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        .feature-card p {
+            margin: 0;
+            opacity: 0.95;
+            font-size: 0.95rem;
+        }
+
+        /* Avatar Showcase */
+        .avatar-showcase {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 40px;
+            border-radius: 25px;
+            margin: 40px 0;
+        }
+
+        .avatar-showcase h3 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 30px;
+            font-family: 'Fredoka', sans-serif;
+            color: #2d3748;
+        }
+
+        .avatar-grid-demo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+
+        .avatar-demo-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-normal);
+        }
+
+        .avatar-demo-card:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-md);
+        }
+
+        .avatar-demo-card:nth-child(1) { border-top: 5px solid #8B4513; }
+        .avatar-demo-card:nth-child(2) { border-top: 5px solid #FF69B4; }
+        .avatar-demo-card:nth-child(3) { border-top: 5px solid #32CD32; }
+        .avatar-demo-card:nth-child(4) { border-top: 5px solid #FFD700; }
+        .avatar-demo-card:nth-child(5) { border-top: 5px solid #8B4513; }
+        .avatar-demo-card:nth-child(6) { border-top: 5px solid #FF8C00; }
+
+        .avatar-demo-emoji {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .avatar-demo-name {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 5px;
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        .avatar-demo-desc {
+            font-size: 0.85rem;
+            color: #718096;
+        }
+
+        /* User Flow */
+        .user-flow {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .flow-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow-md);
+            border-left: 5px solid;
+        }
+
+        .flow-card:nth-child(1) {
+            border-left-color: var(--hazoom-purple);
+        }
+
+        .flow-card:nth-child(2) {
+            border-left-color: var(--hazoom-pink);
+        }
+
+        .flow-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            font-family: 'Fredoka', sans-serif;
+            color: #2d3748;
+        }
+
+        .flow-steps {
+            list-style: none;
+            padding: 0;
+        }
+
+        .flow-steps li {
+            padding: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #4a5568;
+        }
+
+        .flow-steps li::before {
+            content: '✓';
+            background: var(--hazoom-purple);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 60px 40px;
+            border-radius: 25px;
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .cta-section h2 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .cta-section p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.95;
+        }
+
+        .demo-button {
+            background: white;
+            color: var(--hazoom-purple);
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            box-shadow: var(--shadow-md);
+            margin: 10px;
+        }
+
+        .demo-button:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .demo-section {
+                padding: 40px 20px;
+            }
+
+            .demo-section h2 {
+                font-size: 2rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .user-flow {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Floating emojis background */
+        .floating-emojis {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .floating-emojis span {
+            position: absolute;
+            font-size: 2rem;
+            animation: float-around 25s linear infinite;
+            opacity: 0.1;
+        }
+
+        .floating-emojis span:nth-child(1) { top: 10%; left: 10%; animation-delay: 0s; }
+        .floating-emojis span:nth-child(2) { top: 20%; right: 15%; animation-delay: 3s; }
+        .floating-emojis span:nth-child(3) { bottom: 15%; left: 20%; animation-delay: 6s; }
+        .floating-emojis span:nth-child(4) { bottom: 25%; right: 10%; animation-delay: 9s; }
+        .floating-emojis span:nth-child(5) { top: 50%; left: 5%; animation-delay: 12s; }
+        .floating-emojis span:nth-child(6) { top: 60%; right: 5%; animation-delay: 15s; }
+        .floating-emojis span:nth-child(7) { top: 30%; left: 50%; animation-delay: 18s; }
+        .floating-emojis span:nth-child(8) { top: 70%; left: 70%; animation-delay: 21s; }
+
+        @keyframes float-around {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            25% {
+                transform: translate(100px, -100px) rotate(90deg);
+            }
+            50% {
+                transform: translate(-50px, 50px) rotate(180deg);
+            }
+            75% {
+                transform: translate(80px, 100px) rotate(270deg);
+            }
+            100% {
+                transform: translate(0, 0) rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-demo-container">
+        <!-- Floating Emojis Background -->
+        <div class="floating-emojis">
+            <span>🐻</span>
+            <span>🐱</span>
+            <span>🐸</span>
+            <span>🦁</span>
+            <span>🦉</span>
+            <span>🐅</span>
+            <span>🦘</span>
+            <span>✨</span>
+        </div>
+
+        <!-- Header -->
+        <header class="modern-header">
+            <div class="header-container">
+                <a href="#" class="header-logo">
+                    <img src="hazoom_logo.png" alt="Hazoom Logo" class="animate-bounce-gentle">
+                </a>
+                <nav class="smart-navbar">
+                    <a href="demo-unified.html" class="nav-item">🎉 Unification<span class="nav-indicator"></span></a>
+                    <a href="demo-auth.html" class="nav-item active">🔐 Auth<span class="nav-indicator"></span></a>
+                    <a href="demo-animation.html" class="nav-item">🎨 Animations<span class="nav-indicator"></span></a>
+                    <a href="landing-moderna.html" class="nav-item">🏠 Accueil<span class="nav-indicator"></span></a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section style="margin-top: 100px; padding: 80px 40px; text-align: center; background: var(--gradient-primary); color: white;">
+            <h1 style="font-size: 4rem; margin-bottom: 20px; font-family: 'Fredoka', sans-serif;">
+                🔐 Authentification Interactive
+            </h1>
+            <p style="font-size: 1.5rem; margin-bottom: 30px; opacity: 0.95;">
+                Système d'inscription avec sélection d'avatar
+            </p>
+            <p style="font-size: 1.2rem; opacity: 0.9; max-width: 800px; margin: 0 auto;">
+                Interface moderne pour enfants et parents avec choix d'avatar parmi 6 animaux adorables !
+                🐻🐱🐸🦁🦉🐅
+            </p>
+        </section>
+
+        <!-- Features Section -->
+        <section class="demo-section">
+            <h2>✨ Fonctionnalités Avancées</h2>
+            <p class="demo-description">
+                Un système d'authentification pensé pour les enfants et les parents, avec une expérience moderne et engageante
+            </p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <span class="feature-icon">🎭</span>
+                    <h3>Sélection d'Avatar</h3>
+                    <p>Choisis parmi 6 animaux adorables : ours, chat, grenouille, lion, hibou, tigresse</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">📝</span>
+                    <h3>Interface Étapes</h3>
+                    <p>Formulaire progressif en 3 étapes : Type, Profil, Compte avec animations fluides</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">👨‍👩‍👧‍👦</span>
+                    <h3>Mode Enfant/Parent</h3>
+                    <p>Deux parcours distincts : enfant seul ou parent qui inscription pour son enfant</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🎮</span>
+                    <h3>UX Dopamine Boost</h3>
+                    <p>Animations, couleurs vives, feedback visuel pour une expérience engageante</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Avatar Showcase -->
+        <section class="avatar-showcase">
+            <h3>🎨 Les 6 Avatars Disponibles</h3>
+            <div class="avatar-grid-demo">
+                <div class="avatar-demo-card">
+                    <div class="avatar-demo-emoji">🐻</div>
+                    <div class="avatar-demo-name">Bruno l'Ours</div>
+                    <div class="avatar-demo-desc">Gentil et protecteur</div>
+                </div>
+                <div class="avatar-demo-card">
+                    <div class="avatar-demo-emoji">🐱</div>
+                    <div class="avatar-demo-name">Chloe le Chat</div>
+                    <div class="avatar-demo-desc">Curieuse et espiègle</div>
+                </div>
+                <div class="avatar-demo-card">
+                    <div class="avatar-demo-emoji">🐸</div>
+                    <div class="avatar-demo-name">Fred la Grenouille</div>
+                    <div class="avatar-demo-desc">Joyeuse et bondissante</div>
+                </div>
+                <div class="avatar-demo-card">
+                    <div class="avatar-demo-emoji">🦁</div>
+                    <div class="avatar-demo-name">Leo le Lion</div>
+                    <div class="avatar-demo-desc">Courageux et fort</div>
+                </div>
+                <div class="avatar-demo-card">
+                    <div class="avatar-demo-emoji">🦉</div>
+                    <div class="avatar-demo-name">Olga le Hibou</div>
+                    <div class="avatar-demo-desc">Sage et intelligente</div>
+                </div>
+                <div class="avatar-demo-card">
+                    <div class="avatar-demo-emoji">🐅</div>
+                    <div class="avatar-demo-name">Tina la Tigresse</div>
+                    <div class="avatar-demo-desc">Énergique et dynamique</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- User Flow -->
+        <section class="demo-section">
+            <h2>🔄 Parcours Utilisateur</h2>
+            <p class="demo-description">
+                Deux parcours distincts adaptés à chaque type d'utilisateur
+            </p>
+            <div class="user-flow">
+                <div class="flow-card">
+                    <h3>🧒 Parcours Enfant</h3>
+                    <p style="color: #718096; margin-bottom: 20px;">
+                        Quand l'enfant s'inscrit tout seul :
+                    </p>
+                    <ul class="flow-steps">
+                        <li>Sélectionne "Je suis un enfant"</li>
+                        <li>Renseigne son nom et son âge (6-16 ans)</li>
+                        <li>Choisit son animal avatar préféré</li>
+                        <li>Crée son compte avec email et mot de passe</li>
+                        <li>Interface ludique et colorée</li>
+                    </ul>
+                </div>
+
+                <div class="flow-card">
+                    <h3>👨‍👩‍👧‍👦 Parcours Parent</h3>
+                    <p style="color: #718096; margin-bottom: 20px;">
+                        Quand le parent crée un compte pour son enfant :
+                    </p>
+                    <ul class="flow-steps">
+                        <li>Sélectionne "Je suis un parent"</li>
+                        <li>Saisit ses informations parentales</li>
+                        <li>Configure le profil de son enfant</li>
+                        <li>Peut créer plusieurs comptes enfants</li>
+                        <li>Accès aux rapports et contrôles</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Technical Features -->
+        <section class="demo-section" style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
+            <h2>⚙️ Caractéristiques Techniques</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <span class="feature-icon">⚛️</span>
+                    <h3>React + TypeScript</h3>
+                    <p>Composant moderne avec typage strict et hooks React</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🎨</span>
+                    <h3>Design Moderne</h3>
+                    <p>CSS custom avec variables et animations fluides</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">📱</span>
+                    <h3>Responsive</h3>
+                    <p>S'adapte parfaitement aux mobiles et tablettes</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🔌</span>
+                    <h3>API Ready</h3>
+                    <p>Intégration facile avec backend FastAPI</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section">
+            <h2>🎮 Teste le Système d'Authentification !</h2>
+            <p>
+                Découvre l'interface d'inscription interactive avec sélection d'avatar
+            </p>
+            <button class="demo-button" onclick="alert('Composant AuthInteractive intégré ! Vérifie le code source pour l\'implémentation.')">
+                🚀 Voir le Composant
+            </button>
+            <button class="demo-button" onclick="alert('Les avatars sont dans assets/avatars/')">
+                🎭 Voir les Avatars
+            </button>
+            <button class="demo-button" onclick="document.getElementById('auth-integration').scrollIntoView({behavior: 'smooth'})">
+                📋 Intégration
+            </button>
+        </section>
+
+        <!-- Integration Info -->
+        <section class="demo-section" id="auth-integration">
+            <h2>📦 Comment Intégrer</h2>
+            <div class="demo-description" style="text-align: left; max-width: 900px;">
+                <h3 style="color: var(--hazoom-purple); margin-top: 30px;">1. Fichiers Créés</h3>
+                <ul style="list-style: none; padding: 0;">
+                    <li style="padding: 10px 0; border-bottom: 1px solid #e2e8f0;">
+                        ✅ <code>components/AuthInteractive.tsx</code> - Composant principal React
+                    </li>
+                    <li style="padding: 10px 0; border-bottom: 1px solid #e2e8f0;">
+                        ✅ <code>components/AuthInteractive.css</code> - Styles modernes
+                    </li>
+                    <li style="padding: 10px 0; border-bottom: 1px solid #e2e8f0;">
+                        ✅ <code>assets/avatars/</code> - 6 avatars SVG (ours, chat, grenouille, lion, hibou, tigresse)
+                    </li>
+                </ul>
+
+                <h3 style="color: var(--hazoom-purple); margin-top: 30px;">2. Utilisation</h3>
+                <pre style="background: #2d3748; color: #68D391; padding: 20px; border-radius: 10px; overflow-x: auto;">
+<span style="color: #FF79C6;">import</span> AuthInteractive <span style="color: #FF79C6;">from</span> <span style="color: #F1FA8C;">'./components/AuthInteractive'</span>;
+
+<span style="color: #FF79C6;">function</span> <span style="color: #50FA7B;">App</span>() {
+  <span style="color: #FF79C6;">const</span> <span style="color: #BD93F9;">handleAuth</span> = <span style="color: #FF79C6;">(</span><span style="color: #BD93F9;">userData</span><span style="color: #FF79C6;">)</span> <span style="color: #FF79C6;">=></span> {
+    console.<span style="color: #50FA7B;">log</span>(<span style="color: #F1FA8C;">'Utilisateur créé:'</span>, userData);
+    <span style="color: #FF79C6;">//</span> Redirection vers dashboard
+  };
+
+  <span style="color: #FF79C6;">return</span> <span style="color: #FF79C6;">&lt;</span><span style="color: #50FA7B;">AuthInteractive</span> <span style="color: #BD93F9;">onSuccess</span><span style="color: #FF79C6;">=</span><span style="color: #FF79C6;">{</span>handleAuth<span style="color: #FF79C6;">}</span> <span style="color: #FF79C6;">/</span><span style="color: #FF79C6;">&gt;</span>;
+}
+                </pre>
+
+                <h3 style="color: var(--hazoom-purple); margin-top: 30px;">3. Fonctionnalités</h3>
+                <ul>
+                    <li>✅ Sélection type d'utilisateur (enfant/parent)</li>
+                    <li>✅ Formulaire progressif en 3 étapes</li>
+                    <li>✅ Choix parmi 6 avatars d'animaux</li>
+                    <li>✅ Validation en temps réel</li>
+                    <li>✅ Animations et transitions fluides</li>
+                    <li>✅ Design responsive</li>
+                    <li>✅ Intégration backend ready</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer style="background: #2d3748; color: white; padding: 60px 40px 30px; text-align: center;">
+            <div style="max-width: 1200px; margin: 0 auto;">
+                <h3 style="font-size: 2rem; margin-bottom: 20px; font-family: 'Fredoka', sans-serif;">
+                    🔐 Authentification Moderne Hazoom
+                </h3>
+                <p style="color: #a0aec0; font-size: 1.1rem; margin-bottom: 30px;">
+                    Système d'inscription avec sélection d'avatar pour une expérience engageante !
+                </p>
+                <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 30px;">
+                    <span style="background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 20px;">
+                        🎭 6 Avatars
+                    </span>
+                    <span style="background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 20px;">
+                        📝 Formulaire Étapes
+                    </span>
+                    <span style="background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 20px;">
+                        👨‍👩‍👧‍👦 Enfant/Parent
+                    </span>
+                    <span style="background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 20px;">
+                        🎨 Design Moderne
+                    </span>
+                </div>
+                <p style="color: #718096; font-size: 0.9rem;">
+                    &copy; 2025 Hazoom. Authentification moderne avec dopamine boost.
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Animation au scroll
+        window.addEventListener('scroll', () => {
+            const elements = document.querySelectorAll('.demo-section, .feature-card, .avatar-demo-card');
+            elements.forEach(el => {
+                const rect = el.getBoundingClientRect();
+                if (rect.top < window.innerHeight && rect.bottom > 0) {
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }
+            });
+        });
+
+        // Initialiser les animations
+        document.querySelectorAll('.demo-section').forEach((section, index) => {
+            section.style.opacity = '0';
+            section.style.transform = 'translateY(30px)';
+            section.style.transition = 'all 0.6s ease';
+            setTimeout(() => {
+                section.style.opacity = '1';
+                section.style.transform = 'translateY(0)';
+            }, index * 150);
+        });
+
+        document.querySelectorAll('.feature-card, .avatar-demo-card').forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = 'all 0.6s ease';
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 200 + index * 100);
+        });
+
+        console.log(`
+🔐 =========================================
+   AUTHENTIFICATION INTERACTIVE - HAZOOM
+   =========================================
+
+✅ 6 Avatars SVG migrés
+✅ Composant React/TSX créé
+✅ Formulaire progressif 3 étapes
+✅ Mode enfant/parent
+✅ Design moderne dopamine boost
+✅ Responsive design
+✅ Intégration backend ready
+
+🎯 Prêt pour la production !
+        `);
+    </script>
+</body>
+</html>

@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Alpha Pony Voice Trainer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a0a2e, #0a0a0f);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: rgba(26,10,46,0.9);
+            padding: 40px;
+            border-radius: 25px;
+            border: 2px solid rgba(255,215,0,0.4);
+            max-width: 700px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            font-size: 32px;
+            background: linear-gradient(135deg, #FFD700, #FFE55C);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 24px;
+        }
+        .avatar {
+            font-size: 60px;
+            animation: float 3s ease-in-out infinite;
+            margin: 16px 0;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+        .section {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            text-align: left;
+        }
+        .section h3 {
+            color: #FFD700;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+        .character-select {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .char-btn {
+            padding: 10px 16px;
+            border-radius: 10px;
+            border: 2px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .char-btn.selected {
+            border-color: #FFD700;
+            background: rgba(255,215,0,0.2);
+            color: #FFD700;
+        }
+        .char-btn:hover:not(.selected) {
+            border-color: rgba(255,255,255,0.4);
+        }
+        .record-controls {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .btn-record {
+            padding: 16px 32px;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            background: linear-gradient(135deg, #ff4444, #cc0000);
+            color: #fff;
+        }
+        .btn-record.recording {
+            animation: pulse 1s infinite;
+            background: linear-gradient(135deg, #ff0000, #990000);
+        }
+        .btn-save {
+            padding: 16px 32px;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            background: linear-gradient(135deg, #00ff88, #00cc66);
+            color: #000;
+        }
+        .btn-save:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .status {
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            margin: 12px 0;
+        }
+        .status.idle { background: rgba(0,0,0,0.3); border-left: 3px solid #888; }
+        .status.recording { background: rgba(255,0,0,0.1); border-left: 3px solid #ff4444; }
+        .status.analyzing { background: rgba(0,240,255,0.1); border-left: 3px solid #00f0ff; }
+        .status.saved { background: rgba(0,255,136,0.1); border-left: 3px solid #00ff88; }
+
+        .visualizer {
+            width: 100%;
+            height: 80px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 10px;
+            margin: 12px 0;
+        }
+
+        .analysis-results {
+            margin-top: 16px;
+            padding: 16px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 13px;
+            display: none;
+        }
+        .analysis-results.visible { display: block; }
+        .analysis-results .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .analysis-results .metric:last-child { border-bottom: none; }
+        .metric-label { color: rgba(255,255,255,0.6); }
+        .metric-value { color: #00f0ff; font-weight: bold; }
+
+        .samples-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .sample-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            margin: 8px 0;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+        }
+        .sample-item .sample-name {
+            flex: 1;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .sample-item .sample-stats {
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+        }
+        .sample-item audio {
+            width: 120px;
+            height: 32px;
+        }
+        .sample-item .delete-btn {
+            background: none;
+            border: none;
+            color: #ff4444;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 4px 8px;
+        }
+
+        .export-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .btn-export {
+            padding: 14px 28px;
+            border-radius: 50px;
+            border: 2px solid #FFD700;
+            background: rgba(255,215,0,0.1);
+            color: #FFD700;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-export:hover {
+            background: rgba(255,215,0,0.2);
+        }
+
+        .prompt-text {
+            color: rgba(255,255,255,0.7);
+            font-size: 14px;
+            font-style: italic;
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🦄 Voice Trainer</h1>
+        <p class="subtitle">Record voice samples to train episode character voices</p>
+
+        <div class="avatar">🎙️</div>
+
+        <!-- Character Selection -->
+        <div class="section">
+            <h3>1. Select Character</h3>
+            <div class="character-select" id="charSelect">
+                <button class="char-btn" data-char="AlphaPony">🐴 AlphaPony</button>
+                <button class="char-btn" data-char="Narrator">📖 Narrator</button>
+                <button class="char-btn" data-char="NeuralFish">🐟 Neural Fish</button>
+                <button class="char-btn" data-char="ShadowCreature">👤 Shadow Creature</button>
+                <button class="char-btn" data-char="CoreSpirit">✨ Core Spirit</button>
+            </div>
+            <p class="prompt-text" id="promptText">Select a character to begin recording</p>
+        </div>
+
+        <!-- Recording -->
+        <div class="section">
+            <h3>2. Record Sample</h3>
+            <p class="prompt-text" id="recordingPrompt">Read the sample text aloud, then click Record</p>
+            <div class="sample-prompt" id="samplePrompt" style="background:rgba(255,215,0,0.1); padding:12px; border-radius:8px; margin:12px 0; font-size:15px; display:none;"></div>
+            <canvas class="visualizer" id="visualizer"></canvas>
+            <div class="record-controls">
+                <button class="btn-record" id="recordBtn" disabled>⏺ Record</button>
+                <button class="btn-save" id="saveBtn" disabled>💾 Save & Analyze</button>
+            </div>
+            <div class="status idle" id="status">Ready to record</div>
+        </div>
+
+        <!-- Analysis Results -->
+        <div class="section">
+            <h3>3. Voice Analysis</h3>
+            <div class="analysis-results" id="analysisResults">
+                <div class="metric"><span class="metric-label">Avg Pitch (Hz)</span><span class="metric-value" id="metricPitch">—</span></div>
+                <div class="metric"><span class="metric-label">Pitch Range</span><span class="metric-value" id="metricRange">—</span></div>
+                <div class="metric"><span class="metric-label">Speaking Rate (wpm)</span><span class="metric-value" id="metricRate">—</span></div>
+                <div class="metric"><span class="metric-label">Avg Volume</span><span class="metric-value" id="metricVolume">—</span></div>
+                <div class="metric"><span class="metric-label">Tone</span><span class="metric-value" id="metricTone">—</span></div>
+                <div class="metric"><span class="metric-label">Recommended Pitch</span><span class="metric-value" id="metricRecPitch">—</span></div>
+                <div class="metric"><span class="metric-label">Recommended Rate</span><span class="metric-value" id="metricRecRate">—</span></div>
+            </div>
+        </div>
+
+        <!-- Saved Samples -->
+        <div class="section">
+            <h3>📁 Recorded Samples</h3>
+            <div class="samples-list" id="samplesList">
+                <p style="color:rgba(255,255,255,0.4); font-size:13px;">No samples recorded yet</p>
+            </div>
+            <div class="export-section">
+                <button class="btn-export" id="exportBtn" onclick="exportProfile()">📤 Export Voice Profile</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let audioBlob = null;
+        let audioContext = null;
+        let analyser = null;
+        let stream = null;
+        let isRecording = false;
+        let selectedChar = null;
+        let audioBuffer = null;
+        let pitchData = [];
+        let volumeData = [];
+        let animFrameId = null;
+
+        const sampleTexts = {
+            AlphaPony: "I am AlphaPony! I came from the stable, through the gateway, across the ocean, and past the Shadow. I came for you!",
+            Narrator: "In the quiet corners of the AlphaPony stable, where code is born and dreams compile, a faint signal pulses through the air.",
+            NeuralFish: "Welcome, traveler. You are the first pony to reach the Neural Ocean in a thousand cycles. I am a guardian of these waters.",
+            ShadowCreature: "Who dares enter the Deep? I am the Shadow of Forgotten Code. All the programs that were abandoned, all the dreams that were deleted.",
+            CoreSpirit: "Who awakened me? I have slept for so long. The darkness... I had forgotten the light. You are the one the ocean was waiting for."
+        };
+
+        const charColors = {
+            AlphaPony: '#4a9eff',
+            Narrator: '#ffd700',
+            NeuralFish: '#00f0ff',
+            ShadowCreature: '#8b5cf6',
+            CoreSpirit: '#ff6b9d'
+        };
+
+        // Character selection
+        document.querySelectorAll('.char-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.char-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedChar = btn.dataset.char;
+
+                const promptEl = document.getElementById('samplePrompt');
+                promptEl.textContent = sampleTexts[selectedChar];
+                promptEl.style.display = 'block';
+                promptEl.style.borderLeft = `3px solid ${charColors[selectedChar]}`;
+
+                document.getElementById('recordBtn').disabled = false;
+                document.getElementById('promptText').textContent = `Recording for: ${selectedChar}`;
+                document.getElementById('recordingPrompt').textContent = 'Read the highlighted text aloud with the character\'s personality';
+            });
+        });
+
+        // Visualizer setup
+        const canvas = document.getElementById('visualizer');
+        const canvasCtx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        function drawVisualizer(dataArray, bufferLength) {
+            canvasCtx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const barWidth = (canvas.width / bufferLength) * 2.5;
+            let x = 0;
+
+            for (let i = 0; i < bufferLength; i++) {
+                const barHeight = (dataArray[i] / 255) * canvas.height;
+                const hue = selectedChar ? charColors[selectedChar] : '#00f0ff';
+                canvasCtx.fillStyle = hue;
+                canvasCtx.globalAlpha = 0.6;
+                canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+                x += barWidth + 1;
+            }
+            canvasCtx.globalAlpha = 1;
+        }
+
+        // Recording
+        document.getElementById('recordBtn').addEventListener('click', async () => {
+            if (!selectedChar) return;
+
+            if (isRecording) {
+                stopRecording();
+            } else {
+                startRecording();
+            }
+        });
+
+        async function startRecording() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const source = audioContext.createMediaStreamSource(stream);
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 2048;
+                source.connect(analyser);
+
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (e) => {
+                    audioChunks.push(e.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const url = URL.createObjectURL(audioBlob);
+                    audioBuffer = url;
+                    document.getElementById('saveBtn').disabled = false;
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+
+                const btn = document.getElementById('recordBtn');
+                btn.classList.add('recording');
+                btn.textContent = '⏹ Stop';
+
+                const status = document.getElementById('status');
+                status.className = 'status recording';
+                status.textContent = '🔴 Recording... Speak now!';
+
+                // Start visualizer
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+
+                function visualize() {
+                    analyser.getByteFrequencyData(dataArray);
+                    drawVisualizer(dataArray, bufferLength);
+
+                    // Capture pitch/volume data
+                    const avgFreq = dataArray.reduce((a, b) => a + b, 0) / bufferLength;
+                    volumeData.push(avgFreq);
+
+                    // Simple pitch estimation from dominant frequency
+                    let maxVal = 0, maxIndex = 0;
+                    for (let i = 0; i < bufferLength; i++) {
+                        if (dataArray[i] > maxVal) {
+                            maxVal = dataArray[i];
+                            maxIndex = i;
+                        }
+                    }
+                    if (maxVal > 50) {
+                        const freq = maxIndex * audioContext.sampleRate / analyser.fftSize;
+                        if (freq > 60 && freq < 1000) pitchData.push(freq);
+                    }
+
+                    animFrameId = requestAnimationFrame(visualize);
+                }
+                visualize();
+
+            } catch (err) {
+                console.error('Mic error:', err);
+                document.getElementById('status').textContent = '❌ Microphone access denied';
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+            if (stream) {
+                stream.getTracks().forEach(t => t.stop());
+            }
+            if (animFrameId) cancelAnimationFrame(animFrameId);
+
+            isRecording = false;
+            const btn = document.getElementById('recordBtn');
+            btn.classList.remove('recording');
+            btn.textContent = '⏺ Record';
+
+            const status = document.getElementById('status');
+            status.className = 'status idle';
+            status.textContent = '✅ Recording complete. Click Save & Analyze.';
+        }
+
+        // Save & Analyze
+        document.getElementById('saveBtn').addEventListener('click', () => {
+            if (!audioBlob || !selectedChar) return;
+
+            const status = document.getElementById('status');
+            status.className = 'status analyzing';
+            status.textContent = '🔬 Analyzing voice characteristics...';
+
+            // Calculate voice metrics
+            const avgPitch = pitchData.length > 0 ? pitchData.reduce((a, b) => a + b, 0) / pitchData.length : 0;
+            const minPitch = pitchData.length > 0 ? Math.min(...pitchData) : 0;
+            const maxPitch = pitchData.length > 0 ? Math.max(...pitchData) : 0;
+            const pitchRange = maxPitch - minPitch;
+            const avgVolume = volumeData.length > 0 ? volumeData.reduce((a, b) => a + b, 0) / volumeData.length : 0;
+
+            // Estimate speaking rate (rough: assume sample text word count / duration)
+            const sampleText = sampleTexts[selectedChar];
+            const wordCount = sampleText.split(' ').length;
+            const estimatedDuration = audioBlob.size / 16000; // rough estimate in seconds
+            const wpm = estimatedDuration > 0 ? Math.round((wordCount / estimatedDuration) * 60) : 0;
+
+            // Determine tone
+            let tone = 'neutral';
+            if (avgPitch > 250) tone = 'high/bright';
+            else if (avgPitch > 180) tone = 'medium/warm';
+            else if (avgPitch > 120) tone = 'low/deep';
+            else tone = 'very low/bass';
+
+            // Recommended speech synthesis settings
+            // Web Speech API pitch: 0 (lowest) to 2 (highest), 1 = default
+            // Normal human range: ~85-255 Hz, map to 0-2
+            const recPitch = Math.max(0.1, Math.min(2, (avgPitch - 85) / (255 - 85) * 2));
+            const recRate = Math.max(0.3, Math.min(2, wpm / 150)); // 150 wpm = normal
+
+            // Display results
+            document.getElementById('metricPitch').textContent = Math.round(avgPitch) + ' Hz';
+            document.getElementById('metricRange').textContent = Math.round(minPitch) + ' - ' + Math.round(maxPitch) + ' Hz';
+            document.getElementById('metricRate').textContent = wpm + ' wpm';
+            document.getElementById('metricVolume').textContent = Math.round(avgVolume) + '/255';
+            document.getElementById('metricTone').textContent = tone;
+            document.getElementById('metricRecPitch').textContent = recPitch.toFixed(2);
+            document.getElementById('metricRecRate').textContent = recRate.toFixed(2);
+
+            document.getElementById('analysisResults').classList.add('visible');
+
+            // Save sample
+            const sample = {
+                character: selectedChar,
+                pitch: Math.round(avgPitch),
+                pitchRange: Math.round(pitchRange),
+                wpm: wpm,
+                volume: Math.round(avgVolume),
+                tone: tone,
+                recPitch: recPitch.toFixed(2),
+                recRate: recRate.toFixed(2),
+                audioUrl: URL.createObjectURL(audioBlob),
+                timestamp: new Date().toLocaleTimeString()
+            };
+
+            if (!window.voiceSamples) window.voiceSamples = [];
+            window.voiceSamples.push(sample);
+
+            updateSamplesList();
+
+            status.className = 'status saved';
+            status.textContent = `💾 Saved: ${selectedChar} — Pitch: ${Math.round(avgPitch)}Hz, Rate: ${wpm}wpm`;
+
+            // Reset for next recording
+            pitchData = [];
+            volumeData = [];
+            document.getElementById('saveBtn').disabled = true;
+            audioBlob = null;
+        });
+
+        function updateSamplesList() {
+            const list = document.getElementById('samplesList');
+            if (!window.voiceSamples || window.voiceSamples.length === 0) {
+                list.innerHTML = '<p style="color:rgba(255,255,255,0.4); font-size:13px;">No samples recorded yet</p>';
+                return;
+            }
+
+            list.innerHTML = window.voiceSamples.map((s, i) => `
+                <div class="sample-item">
+                    <span class="sample-name" style="color:${charColors[s.character]}">${s.character}</span>
+                    <span class="sample-stats">${s.pitch}Hz | ${s.wpm}wpm | ${s.tone}</span>
+                    <audio controls src="${s.audioUrl}" preload="none"></audio>
+                    <button class="delete-btn" onclick="deleteSample(${i})">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function deleteSample(index) {
+            window.voiceSamples.splice(index, 1);
+            updateSamplesList();
+        }
+
+        function exportProfile() {
+            if (!window.voiceSamples || window.voiceSamples.length === 0) {
+                alert('No samples to export!');
+                return;
+            }
+
+            const profile = {};
+            window.voiceSamples.forEach(s => {
+                if (!profile[s.character]) profile[s.character] = [];
+                profile[s.character].push({
+                    pitch: s.recPitch,
+                    rate: s.recRate,
+                    avgPitch: s.pitch,
+                    wpm: s.wpm,
+                    tone: s.tone
+                });
+            });
+
+            // Average multiple samples per character
+            const finalProfile = {};
+            for (const [char, samples] of Object.entries(profile)) {
+                finalProfile[char] = {
+                    pitch: (samples.reduce((a, b) => a + parseFloat(b.pitch), 0) / samples.length).toFixed(2),
+                    rate: (samples.reduce((a, b) => a + parseFloat(b.rate), 0) / samples.length).toFixed(2),
+                    avgPitch: Math.round(samples.reduce((a, b) => a + b.avgPitch, 0) / samples.length),
+                    wpm: Math.round(samples.reduce((a, b) => a + b.wpm, 0) / samples.length),
+                    tone: samples[0].tone,
+                    samples: samples.length
+                };
+            }
+
+            const json = JSON.stringify(finalProfile, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'voice_profile.json';
+            a.click();
+            URL.revokeObjectURL(url);
+
+            // Also display for copying
+            const output = `Voice Profile Export:\n\n${json}\n\nPaste this into the cartoon episode script.js Voice.profiles object.`;
+            alert(output);
+        }
+    </script>
+</body>
+</html>

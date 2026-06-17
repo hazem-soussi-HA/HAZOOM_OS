@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum AI - HAZOOM OS</title>
+    <link rel="stylesheet" href="../styles/hazoom-os.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --q-primary: #0ea5e9;
+            --q-secondary: #8b5cf6;
+            --q-accent: #f43f5e;
+            --q-bg: #020617;
+            --q-glass: rgba(15, 23, 42, 0.6);
+            --q-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--q-bg);
+            color: #f8fafc;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .quantum-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.05), transparent);
+            z-index: -1;
+        }
+
+        .app-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .quantum-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding: 16px;
+            background: var(--q-glass);
+            border: 1px solid var(--q-border);
+            border-radius: 20px;
+            backdrop-filter: blur(12px);
+        }
+
+        .brain-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-orb {
+            width: 12px;
+            height: 12px;
+            background: var(--q-primary);
+            border-radius: 50%;
+            box-shadow: 0 0 15px var(--q-primary);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.2);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .quantum-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--q-primary), var(--q-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+        }
+
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            overflow: hidden;
+        }
+
+        .messages-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding-right: 8px;
+        }
+
+        .messages-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .messages-list::-webkit-scrollbar-thumb {
+            background: var(--q-border);
+            border-radius: 10px;
+        }
+
+        .msg {
+            max-width: 85%;
+            padding: 16px 20px;
+            border-radius: 18px;
+            line-height: 1.5;
+            font-size: 1rem;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(10px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .msg.user {
+            align-self: flex-end;
+            background: var(--q-primary);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .msg.ai {
+            align-self: flex-start;
+            background: var(--q-glass);
+            border: 1px solid var(--q-border);
+            color: #cbd5e1;
+            border-bottom-left-radius: 4px;
+        }
+
+        .quantum-thought {
+            font-size: 0.8rem;
+            color: var(--q-primary);
+            margin-bottom: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            opacity: 0.8;
+        }
+
+        .input-wrapper {
+            margin-top: 24px;
+            position: relative;
+        }
+
+        #userInput {
+            width: 100%;
+            padding: 18px 24px;
+            background: var(--q-glass);
+            border: 1px solid var(--q-border);
+            border-radius: 16px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            backdrop-filter: blur(20px);
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+
+        #userInput:focus {
+            border-color: var(--q-primary);
+            box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.2);
+        }
+
+        .send-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--q-primary);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .send-btn:hover {
+            background: var(--q-secondary);
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        .system-context-badge {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(34, 197, 94, 0.4);
+            color: #4ade80;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="quantum-overlay"></div>
+
+    <div class="app-container">
+        <div class="quantum-header">
+            <div class="brain-status">
+                <div class="status-orb"></div>
+                <div>
+                    <div class="quantum-title">HAZoom Quantum LLM</div>
+                    <div style="font-size: 0.8rem; opacity: 0.6;">Active Model: Neural-Q v4.2</div>
+                </div>
+            </div>
+            <div class="system-context-badge" id="ctxBadge">Context: System Sync On</div>
+        </div>
+
+        <div class="chat-area">
+            <div class="messages-list" id="msgList">
+                <div class="msg ai">
+                    <div class="quantum-thought">// Syncing with HAZoom Kernel...</div>
+                    Greetings, architect. I am the Quantum Intelligence layer of HAZoom OS. I have a direct link to the
+                    system state and can answer questions about your environment or help you orchestrate OS tasks.
+                    <br><br>What shall we discover today?
+                </div>
+            </div>
+
+            <div class="input-wrapper">
+                <input type="text" id="userInput" placeholder="Synthesize a request..." autocomplete="off">
+                <button class="send-btn" onclick="askAi()">✦</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const msgList = document.getElementById('msgList');
+        const userInput = document.getElementById('userInput');
+        const OS = window.parent;
+        let mcpInitialized = false;
+        let mcpRouter = null;
+
+        async function initMCP() {
+            // Try to access MCP router from parent
+            if (window.parent && window.parent.mcp) {
+                mcpRouter = window.parent.mcp;
+                mcpInitialized = true;
+                console.log('✅ [Quantum AI] MCP Context Router connected');
+                addMessage('ai', '✅ MCP Context Router online. Context-aware intelligence active.', '// MCP Initialized');
+                return;
+            }
+
+            // Try to load local MCP router
+            try {
+                const mcpScript = document.createElement('script');
+                mcpScript.src = '../core/mcp_context_router.js';
+                document.head.appendChild(mcpScript);
+                
+                await new Promise(resolve => mcpScript.onload = resolve);
+                
+                if (window.MCPContextRouter) {
+                    mcpRouter = new window.MCPContextRouter();
+                    mcpInitialized = true;
+                    console.log('✅ [Quantum AI] MCP Context Router loaded locally');
+                    addMessage('ai', '✅ MCP Context Router loaded. Context-aware intelligence active.', '// MCP Loaded Locally');
+                }
+            } catch (error) {
+                console.warn('⚠️ [Quantum AI] MCP Context Router not available');
+            }
+        }
+
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') askAi();
+        });
+
+        async function askAi() {
+            const query = userInput.value.trim();
+            if (!query) return;
+
+            addMessage('user', query);
+            userInput.value = '';
+
+            // Show thinking state
+            const thinking = document.createElement('div');
+            thinking.className = 'msg ai';
+            thinking.innerHTML = `<div class="quantum-thought">// Processing quantum vectors...</div><span id="typing-eff">. . .</span>`;
+            msgList.appendChild(thinking);
+            msgList.scrollTop = msgList.scrollHeight;
+
+            // Gather System Context
+            const ctx = {
+                apps: OS.WindowManager ? OS.WindowManager.windows.map(w => w.title) : [],
+                time: new Date().toLocaleTimeString(),
+                files: OS.FileSystem ? OS.FileSystem.files : {}
+            };
+
+            // Gather MCP Context if available
+            if (mcpInitialized && mcpRouter) {
+                try {
+                    thinking.innerHTML = `<div class="quantum-thought">// Resolving MCP context across all servers...</div><span id="typing-eff">. . .</span>`;
+                    
+                    const mcpContext = await mcpRouter.nanoSearch(query);
+                    ctx.mcp = mcpContext;
+                    ctx.mcp_sources = mcpContext.sources;
+                    console.log('✓ [Quantum AI] MCP context resolved:', mcpContext);
+                } catch (error) {
+                    console.warn('⚠️ [Quantum AI] MCP context error:', error);
+                }
+            }
+
+            // Simulate Intelligence based on HAZoom Architecture
+            setTimeout(() => {
+                thinking.remove();
+                const response = generateQuantumResponse(query, ctx);
+                addMessage('ai', response.text, response.thought);
+            }, mcpInitialized ? 1800 : 1200); // Slightly slower with MCP context gathering
+        }
+
+        function addMessage(type, text, thought = null) {
+            const div = document.createElement('div');
+            div.className = `msg ${type}`;
+            let html = '';
+            if (thought) html += `<div class="quantum-thought">${thought}</div>`;
+            html += text;
+            div.innerHTML = html;
+            msgList.appendChild(div);
+            msgList.scrollTop = msgList.scrollHeight;
+        }
+
+        function generateQuantumResponse(query, ctx) {
+            const q = query.toLowerCase();
+
+            // MCP-aware responses
+            if (ctx.mcp_sources && ctx.mcp_sources.length > 0) {
+                if (q.includes('mcp') || q.includes('context')) {
+                    return {
+                        thought: '// Accessing MCP Context Router... // Active: ' + ctx.mcp_sources.join(', '),
+                        text: `🧬 **MCP Context Active**
+
+I have access to ${ctx.mcp_sources.length} context sources:
+${ctx.mcp_sources.map(s => `  • ${s}`).join('\n')}
+
+This means I can:
+  • Remember your preferences across sessions
+  • Search your codebase intelligently
+  • Execute tools autonomously
+  • Learn from your project patterns
+
+This is "giving life to our LLMs" in action!`
+                    };
+                }
+            }
+
+            if (q.includes('app') || q.includes('running')) {
+                const count = ctx.apps.length;
+                return {
+                    thought: '// Scanning WindowManager memory... // Found ' + count + ' active threads',
+                    text: `You have ${count} processes active right now. These are: ${ctx.apps.join(', ') || 'None'}. I can help you minimize or close them if you're feeling overloaded.`
+                };
+            }
+
+            if (q.includes('who') || q.includes('what') || q.includes('hazoom')) {
+                let thought = '// Accessing Project Manifest... // Identity: HAZOOM OS';
+                let text = "I am the central intelligence of HAZOOM OS, an advanced agentic coding environment created by Google DeepMind's Antigravity team. My purpose is to bridge human creativity with machine precision across quantum boundaries.";
+
+                if (mcpInitialized) {
+                    thought += ' // MCP Context: Enabled';
+                    text += "\n\n🧬 **MCP-Powered**: I can now access context from Memory, FileSystem, VertexAI, and OpenCode servers to provide context-aware responses.";
+                }
+
+                return { thought, text };
+            }
+
+            if (q.includes('search') || q.includes('find')) {
+                let thought = '// Calibrating Global Search Engine... // Path: core/quantum_search';
+                let text = "I recommend using the **Quantum Search** app (`Ctrl+F`). I can also trigger it for you if you tell me exactly what name you are looking for.";
+
+                if (ctx.mcp_sources && ctx.mcp_sources.includes('filesystem')) {
+                    thought += ' // MCP: Nano Search available';
+                    text += "\n\n🔍 **MCP Nano Search**: I can also search your codebase and documents automatically using the MCP FileSystem server.";
+                }
+
+                return { thought, text };
+            }
+
+            // Default "intelligent" response
+            return {
+                thought: '// Synthesizing across quantum probability fields...' + (mcpInitialized ? ' // MCP Context: Available' : ''),
+                text: "My neural pathways suggest this is a high-entropy query. Based on your current system state at " + ctx.time + ", I recommend we focus on optimizing your workflow. Would you like me to run a diagnostic on your active memory modules?" + (mcpInitialized ? "\n\n🧬 Context-aware responses enabled via MCP." : "")
+            };
+        }
+
+        // Initialize on load
+        window.addEventListener('load', initMCP);
+    </script>
+</body>
+
+</html>

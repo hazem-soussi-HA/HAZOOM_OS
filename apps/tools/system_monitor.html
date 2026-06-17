@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>HAZOOM System Monitor</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#030308;color:#e8e8f0;font-family:'JetBrains Mono',monospace;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+.header{padding:12px 20px;border-bottom:1px solid rgba(16,185,129,0.15);display:flex;align-items:center;gap:12px}
+.header h1{font-size:0.85rem;color:#10b981}
+.main{display:flex;flex:1;overflow:hidden}
+.sidebar{width:160px;border-right:1px solid rgba(255,255,255,0.06);padding:10px}
+.sb-btn{width:100%;text-align:left;padding:7px 10px;margin-bottom:2px;background:transparent;border:none;border-radius:4px;color:rgba(255,255,255,0.5);font-size:0.7rem;cursor:pointer;font-family:inherit}
+.sb-btn:hover{background:rgba(16,185,129,0.1);color:#10b981}
+.sb-btn.active{background:rgba(16,185,129,0.15);color:#10b981}
+.content{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.metrics-row{display:flex;gap:12px;padding:12px;border-bottom:1px solid rgba(255,255,255,0.06);flex-wrap:wrap}
+.metric{flex:1;min-width:140px;padding:10px;background:rgba(255,255,255,0.02);border-radius:8px;position:relative;overflow:hidden}
+.metric-label{font-size:0.6rem;color:rgba(255,255,255,0.4);margin-bottom:4px}
+.metric-value{font-size:1.4rem;font-weight:700}
+.metric-bar{height:3px;background:rgba(255,255,255,0.1);border-radius:2px;margin-top:6px;overflow:hidden}
+.metric-bar-fill{height:100%;border-radius:2px;transition:width 0.5s}
+.chart-wrap{height:140px;padding:12px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.chart-wrap canvas{width:100%;height:100%}
+.panel{flex:1;overflow-y:auto;padding:12px}
+table{width:100%;border-collapse:collapse;font-size:0.7rem}
+th{text-align:left;padding:6px 10px;color:rgba(255,255,255,0.4);border-bottom:1px solid rgba(255,255,255,0.08);font-weight:400;position:sticky;top:0;background:#030308}
+td{padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.03)}
+.pid{color:#ffd700}
+.mem{color:#8b5cf6}
+.action-btn{padding:2px 8px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:3px;color:#ef4444;font-size:0.6rem;cursor:pointer;font-family:inherit}
+.action-btn:hover{background:rgba(239,68,68,0.3)}
+</style>
+</head>
+<body>
+<div class="header">
+    <h1>📊 HAZOOM SYSTEM MONITOR</h1>
+    <span style="font-size:0.65rem;color:rgba(255,255,255,0.3)" id="uptime-display">Uptime: 0:00:00</span>
+</div>
+<div class="main">
+    <div class="sidebar">
+        <div class="sb-btn active" onclick="setTab('overview')">📊 Overview</div>
+        <div class="sb-btn" onclick="setTab('processes')">⚙️ Processes</div>
+        <div class="sb-btn" onclick="setTab('network')">🌐 Network</div>
+        <div class="sb-btn" onclick="setTab('storage')">💾 Storage</div>
+        <div class="sb-btn" onclick="setTab('kernel')">🧠 Kernel</div>
+    </div>
+    <div class="content">
+        <div class="metrics-row" id="metrics-row"></div>
+        <div class="chart-wrap"><canvas id="chartCanvas"></canvas></div>
+        <div class="panel" id="panel-area"></div>
+    </div>
+</div>
+<script>
+const PROCESSES = [
+    {pid:1,name:'hazoom-init',cpu:0.1,mem:12,status:'running',type:'system'},
+    {pid:2,name:'pascal-kernel',cpu:0.3,mem:45,status:'running',type:'kernel'},
+    {pid:3,name:'neural-bridge',cpu:1.2,mem:89,status:'running',type:'ai'},
+    {pid:4,name:'content-filter',cpu:0.2,mem:23,status:'running',type:'security'},
+    {pid:5,name:'window-manager',cpu:0.5,mem:34,status:'running',type:'system'},
+    {pid:6,name:'event-bus',cpu:0.1,mem:8,status:'running',type:'system'},
+    {pid:7,name:'app-registry',cpu:0.0,mem:5,status:'running',type:'system'},
+    {pid:8,name:'security-daemon',cpu:0.4,mem:28,status:'running',type:'security'},
+    {pid:9,name:'notification-mgr',cpu:0.1,mem:6,status:'running',type:'system'},
+    {pid:10,name:'quantum-kernel',cpu:0.8,mem:52,status:'running',type:'kernel'},
+    {pid:11,name:'websocket-server',cpu:0.3,mem:18,status:'running',type:'network'},
+    {pid:12,name:'api-gateway',cpu:0.6,mem:42,status:'running',type:'network'},
+    {pid:13,name:'filesystem-mgr',cpu:0.1,mem:15,status:'running',type:'system'},
+    {pid:14,name:'privacy-browser',cpu:0.0,mem:0,status:'idle',type:'app'},
+    {pid:15,name:'ai-orchestrator',cpu:2.1,mem:124,status:'running',type:'ai'},
+    {pid:16,name:'knowledge-system',cpu:0.7,mem:67,status:'running',type:'ai'},
+    {pid:17,name:'consciousness-core',cpu:1.5,mem:95,status:'running',type:'ai'},
+    {pid:18,name:'tcp-ip-stack',cpu:0.2,mem:22,status:'running',type:'network'},
+    {pid:19,name:'firewall-engine',cpu:0.3,mem:19,status:'running',type:'security'},
+    {pid:20,name:'vault-service',cpu:0.1,mem:11,status:'running',type:'security'},
+];
+
+let cpuHistory = Array(60).fill(12);
+let memHistory = Array(60).fill(450);
+let uptime = 0;
+
+function getMetricColor(val, max) {
+    const pct = val/max;
+    if(pct < 0.5) return '#10b981';
+    if(pct < 0.8) return '#f59e0b';
+    return '#ef4444';
+}
+
+function renderMetrics() {
+    const cpu = cpuHistory[cpuHistory.length-1];
+    const mem = memHistory[memHistory.length-1];
+    const memPct = Math.round(mem/16384*100);
+    const disk = 23;
+    const net = Math.floor(Math.random()*500)+100;
+    const processes = PROCESSES.filter(p=>p.status==='running').length;
+    
+    document.getElementById('metrics-row').innerHTML = `
+        <div class="metric"><div class="metric-label">CPU</div><div class="metric-value" style="color:${getMetricColor(cpu,100)}">${cpu.toFixed(1)}%</div><div class="metric-bar"><div class="metric-bar-fill" style="width:${cpu}%;background:${getMetricColor(cpu,100)}"></div></div></div>
+        <div class="metric"><div class="metric-label">MEMORY</div><div class="metric-value" style="color:${getMetricColor(mem,16384)}">${mem} MB</div><div class="metric-bar"><div class="metric-bar-fill" style="width:${memPct}%;background:${getMetricColor(mem,16384)}"></div></div><div style="font-size:0.55rem;color:rgba(255,255,255,0.3);margin-top:2px">${memPct}% of 16 GB</div></div>
+        <div class="metric"><div class="metric-label">DISK</div><div class="metric-value" style="color:${getMetricColor(100-disk,100)}">${disk}%</div><div class="metric-bar"><div class="metric-bar-fill" style="width:${disk}%;background:#06b6d4"></div></div></div>
+        <div class="metric"><div class="metric-label">NETWORK</div><div class="metric-value" style="color:#06b6d4">${net} KB/s</div><div style="font-size:0.55rem;color:rgba(255,255,255,0.3);margin-top:4px">↑ ${Math.floor(net*0.3)} ↓ ${Math.floor(net*0.7)}</div></div>
+        <div class="metric"><div class="metric-label">PROCESSES</div><div class="metric-value" style="color:#a855f7">${processes}</div><div style="font-size:0.55rem;color:rgba(255,255,255,0.3);margin-top:4px">${PROCESSES.length} total</div></div>
+        <div class="metric"><div class="metric-label">KERNEL MODS</div><div class="metric-value" style="color:#ffd700">4/4</div><div style="font-size:0.55rem;color:rgba(255,255,255,0.3);margin-top:4px">Pascal loaded</div></div>
+    `;
+}
+
+const canvas = document.getElementById('chartCanvas');
+const ctx = canvas.getContext('2d');
+
+function resizeChart() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+}
+window.addEventListener('resize', resizeChart);
+resizeChart();
+
+function drawChart() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    // Grid
+    ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+    for(let i=0;i<5;i++){
+        const y = i*canvas.height/4;
+        ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();
+    }
+    // CPU line
+    ctx.beginPath();
+    ctx.strokeStyle = '#10b981';
+    ctx.lineWidth = 1.5;
+    cpuHistory.forEach((v,i)=>{
+        const x = i*(canvas.width/60);
+        const y = canvas.height - (v/100)*canvas.height;
+        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+    // Memory line
+    ctx.beginPath();
+    ctx.strokeStyle = '#8b5cf6';
+    ctx.lineWidth = 1.5;
+    memHistory.forEach((v,i)=>{
+        const x = i*(canvas.width/60);
+        const y = canvas.height - (v/16384)*canvas.height;
+        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+    // Legend
+    ctx.font = '9px JetBrains Mono';
+    ctx.fillStyle = '#10b981'; ctx.fillText('● CPU', 8, 12);
+    ctx.fillStyle = '#8b5cf6'; ctx.fillText('● RAM', 60, 12);
+}
+
+function updateData() {
+    uptime++;
+    const h = Math.floor(uptime/3600);
+    const m = Math.floor((uptime%3600)/60);
+    const s = uptime%60;
+    document.getElementById('uptime-display').textContent = `Uptime: ${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    
+    const lastCpu = cpuHistory[cpuHistory.length-1];
+    const newCpu = Math.max(2, Math.min(95, lastCpu + (Math.random()-0.5)*8));
+    cpuHistory.push(newCpu);
+    cpuHistory.shift();
+    
+    const lastMem = memHistory[memHistory.length-1];
+    const newMem = Math.max(350, Math.min(14000, lastMem + (Math.random()-0.5)*100));
+    memHistory.push(Math.round(newMem));
+    memHistory.shift();
+    
+    // Fluctuate process CPU
+    PROCESSES.forEach(p => {
+        if(p.status==='running') {
+            p.cpu = Math.max(0, p.cpu + (Math.random()-0.5)*0.3);
+            p.mem = Math.max(1, Math.round(p.mem + (Math.random()-0.5)*5));
+        }
+    });
+    
+    renderMetrics();
+    drawChart();
+    
+    // Refresh process table if visible
+    if(document.getElementById('proc-table')) renderProcesses();
+}
+
+function renderProcesses() {
+    const c = document.getElementById('panel-area');
+    c.innerHTML = `<table><thead><tr><th>PID</th><th>Process</th><th>CPU %</th><th>Memory</th><th>Type</th><th>Status</th><th>Action</th></tr></thead><tbody id="proc-table">
+    ${PROCESSES.map(p=>`<tr>
+        <td class="pid">${p.pid}</td>
+        <td><strong>${p.name}</strong></td>
+        <td style="color:${getMetricColor(p.cpu,10)}">${p.cpu.toFixed(1)}%</td>
+        <td class="mem">${p.mem} MB</td>
+        <td style="color:${p.type==='ai'?'#a855f7':p.type==='security'?'#ef4444':p.type==='kernel'?'#ffd700':'#06b6d4'}">${p.type}</td>
+        <td><span style="color:${p.status==='running'?'#10b981':'#6b7280'}">● ${p.status}</span></td>
+        <td><button class="action-btn" onclick="killProc(${p.pid})" ${p.type==='kernel'?'disabled style="opacity:0.3"':''}>Kill</button></td>
+    </tr>`).join('')}
+    </tbody></table>`;
+}
+
+function killProc(pid) {
+    const idx = PROCESSES.findIndex(p=>p.pid===pid);
+    if(idx>=0 && PROCESSES[idx].type!=='kernel') {
+        PROCESSES[idx].status = 'killed';
+        setTimeout(() => PROCESSES.splice(idx,1), 500);
+        renderProcesses();
+    }
+}
+
+function renderNetwork() {
+    document.getElementById('panel-area').innerHTML = `
+    <table><tr><th>Interface</th><th>IP</th><th>Status</th><th>RX</th><th>TX</th><th>Errors</th></tr>
+    <tr><td>lo</td><td>127.0.0.1</td><td style="color:#10b981">UP</td><td>45 KB</td><td>45 KB</td><td>0</td></tr>
+    <tr><td>eth0</td><td>192.168.1.100</td><td style="color:#10b981">UP</td><td>2.4 MB</td><td>890 KB</td><td>0</td></tr>
+    <tr><td>wlan0</td><td>192.168.1.101</td><td style="color:#06b6d4">UP (WiFi)</td><td>1.1 MB</td><td>340 KB</td><td>2</td></tr>
+    <tr><td>docker0</td><td>172.17.0.1</td><td style="color:#6b7280">DOWN</td><td>—</td><td>—</td><td>0</td></tr>
+    <tr><td>hazoom0</td><td>10.0.0.1</td><td style="color:#10b981">UP (Virtual)</td><td>890 KB</td><td>1.2 MB</td><td>0</td></tr>
+    </table>
+    <div style="margin-top:12px;font-size:0.7rem;color:rgba(255,255,255,0.5)">
+    <strong style="color:#00f0ff">Active Connections: 6</strong><br>
+    192.168.1.100:3000 → LISTEN<br>
+    192.168.1.100:9004 → LISTEN<br>
+    192.168.1.100:52431 → 140.82.121.4:443 (ESTABLISHED)<br>
+    192.168.1.100:52432 → 151.101.1.140:443 (ESTABLISHED)<br>
+    127.0.0.1:9004 → 127.0.0.1:9004 (LOCAL)<br>
+    192.168.1.100:8080 → LISTEN<br>
+    </div>`;
+}
+
+function renderStorage() {
+    document.getElementById('panel-area').innerHTML = `
+    <div class="metrics-row" style="padding:0;border:none">
+        <div class="metric"><div class="metric-label">NVMe SSD</div><div class="metric-value" style="color:#10b981">23%</div><div class="metric-bar"><div class="metric-bar-fill" style="width:23%;background:#06b6d4"></div></div><div style="font-size:0.55rem;color:rgba(255,255,255,0.3)">120 GB / 512 GB</div></div>
+        <div class="metric"><div class="metric-label">RAM</div><div class="metric-value">${memHistory[memHistory.length-1]} MB</div><div class="metric-bar"><div class="metric-bar-fill" style="width:${Math.round(memHistory[memHistory.length-1]/16384*100)}%;background:#8b5cf6"></div></div></div>
+        <div class="metric"><div class="metric-label">SWAP</div><div class="metric-value" style="color:#10b981">0%</div><div class="metric-bar"><div class="metric-bar-fill" style="width:0%;background:#6b7280"></div></div></div>
+    </div>
+    <table><tr><th>Mount</th><th>Device</th><th>Size</th><th>Used</th><th>Type</th></tr>
+    <tr><td>/</td><td>/dev/nvme0n1p2</td><td>512 GB</td><td>120 GB</td><td>ext4</td></tr>
+    <tr><td>/boot</td><td>/dev/nvme0n1p1</td><td>1 GB</td><td>120 MB</td><td>fat32</td></tr>
+    <tr><td>/home</td><td>/dev/nvme0n1p3</td><td>2 TB</td><td>890 GB</td><td>ext4</td></tr>
+    <tr><td>/dev/shm</td><td>tmpfs</td><td>8 GB</td><td>45 MB</td><td>tmpfs</td></tr>
+    </table>`;
+}
+
+function renderKernel() {
+    document.getElementById('panel-area').innerHTML = `
+    <div class="metrics-row" style="padding:0;border:none">
+        <div class="metric"><div class="card-label">Modules</div><div class="card-value" style="color:#ffd700">4/4</div></div>
+        <div class="metric"><div class="card-label">Uptime</div><div class="card-value" style="color:#10b981">${Math.floor(uptime/3600)}h ${Math.floor((uptime%3600)/60)}m</div></div>
+        <div class="metric"><div class="card-label">Resonance</div><div class="card-value" style="color:#a855f7">852 Hz</div></div>
+    </div>
+    <table><tr><th>Module</th><th>Type</th><th>Version</th><th>Status</th><th>Description</th></tr>
+    <tr><td><span style="color:#ffd700">⬡</span> aether_engine</td><td>Protocol</td><td>3.0.0</td><td style="color:#10b981">loaded</td><td>Quantum communication engine</td></tr>
+    <tr><td><span style="color:#a855f7">⬡</span> consciousness</td><td>Core</td><td>3.0.0</td><td style="color:#10b981">loaded</td><td>Consciousness simulation layer</td></tr>
+    <tr><td><span style="color:#ec4899">⬡</span> deep_consciousness</td><td>AI</td><td>3.0.0</td><td style="color:#10b981">loaded</td><td>Deep thinking & reasoning</td></tr>
+    <tr><td><span style="color:#00f0ff">⬡</span> neural_core</td><td>Neural</td><td>3.0.0</td><td style="color:#10b981">loaded</td><td>Neural bridge to AI models</td></tr>
+    </table>
+    <div style="margin-top:12px;font-size:0.65rem;color:rgba(255,255,255,0.4);line-height:1.8">
+    <strong style="color:#ffd700">Kernel Command:</strong> run /sbin/hazoom-os.sh [start|stop|restart]<br>
+    <strong style="color:#ffd700">Boot Args:</strong> quiet splash hazoom.consciousness=enabled<br>
+    <strong style="color:#ffd700">Secure Boot:</span> <span style="color:#10b981">Enabled (HAZOOM Trust Authority)</span><br>
+    </div>`;
+}
+
+function setTab(t) {
+    document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('active'));
+    event.target.classList.add('active');
+    if(t==='overview') { renderMetrics(); document.getElementById('panel-area').innerHTML='<div style="color:rgba(255,255,255,0.3);padding:20px">System overview — all metrics updating in real-time</div>'; }
+    if(t==='processes') renderProcesses();
+    if(t==='network') renderNetwork();
+    if(t==='storage') renderStorage();
+    if(t==='kernel') renderKernel();
+}
+
+// Init
+renderMetrics();
+renderProcesses();
+setInterval(updateData, 1000);
+</script>
+</body>
+</html>

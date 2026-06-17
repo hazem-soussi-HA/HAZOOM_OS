@@ -1,0 +1,23 @@
+{
+  "name": "neon-drift",
+  "version": "2.0.0",
+  "description": "NEON DRIFT — SKY RACER (Rust Wasm + TypeScript)",
+  "type": "module",
+  "scripts": {
+    "build:wasm": "cd wasm && wasm-pack build --target web --out-dir ../src/wasm-pkg",
+    "build:wasm:dev": "cd wasm && wasm-pack build --target web --dev --out-dir ../src/wasm-pkg",
+    "dev": "npm run build:wasm:dev && vite",
+    "build": "npm run build:wasm && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "^0.160.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.160.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.12",
+    "vite-plugin-top-level-await": "^1.4.1",
+    "vite-plugin-wasm": "^3.3.0"
+  }
+}

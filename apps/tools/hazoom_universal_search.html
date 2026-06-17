@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hazoom Universal Search</title>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary: #8b5cf6;
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #475569;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --glass: rgba(15, 23, 42, 0.4);
+            --glass-heavy: rgba(15, 23, 42, 0.8);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-accent: rgba(59, 130, 246, 0.4);
+            --window-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            --primary-glow: 0 0 20px rgba(59, 130, 246, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .search-header {
+            background: var(--glass-heavy);
+            backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+        }
+
+        .tagline {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .search-container {
+            width: 100%;
+            max-width: 700px;
+            position: relative;
+        }
+
+        .search-box {
+            display: flex;
+            width: 100%;
+        }
+
+        #searchInput {
+            flex: 1;
+            padding: 15px 20px;
+            padding-right: 50px;
+            font-size: 1.1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        #searchInput:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+
+        .search-button {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+        }
+
+        .search-button:hover {
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .search-options {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .option-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 8px 16px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover, .option-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            margin-bottom: 20px;
+        }
+
+        .sidebar-title {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .context-item {
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .context-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .context-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .results-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .results-count {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .view-options {
+            display: flex;
+            gap: 10px;
+        }
+
+        .view-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 12px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .view-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .result-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.2s;
+        }
+
+        .result-item:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .result-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .result-url {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            word-break: break-all;
+        }
+
+        .result-snippet {
+            color: var(--text-primary);
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .result-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .result-source {
+            display: inline-block;
+            padding: 2px 8px;
+            background: rgba(139, 92, 246, 0.2);
+            border-radius: 10px;
+            font-size: 0.7rem;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--bg-tertiary);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .ai-insights {
+            background: rgba(139, 92, 246, 0.1);
+            border-left: 3px solid var(--secondary);
+            padding: 12px;
+            border-radius: 0 4px 4px 0;
+            margin: 15px 0;
+        }
+
+        .ai-insight-title {
+            font-weight: 600;
+            color: var(--secondary);
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ai-insight-content {
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .search-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .suggestion-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .suggestion-highlight {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .page-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .page-btn:hover, .page-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="search-header">
+        <div class="logo">🔍 Hazoom Search</div>
+        <div class="tagline">MCP-Powered Universal Search Engine</div>
+        
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search across web, local files, and AI context...">
+                <button class="search-button" id="searchButton">🔍</button>
+            </div>
+            <div class="search-suggestions" id="searchSuggestions"></div>
+        </div>
+        
+        <div class="search-options">
+            <button class="option-btn active" data-type="all">All</button>
+            <button class="option-btn" data-type="web">Web</button>
+            <button class="option-btn" data-type="local">Local</button>
+            <button class="option-btn" data-type="ai">AI Context</button>
+            <button class="option-btn" data-type="apps">Apps</button>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Context Sources</div>
+                <div class="context-item active" data-source="all">All Sources</div>
+                <div class="context-item" data-source="online">Online Search</div>
+                <div class="context-item" data-source="filesystem">File System</div>
+                <div class="context-item" data-source="memory">User Memory</div>
+                <div class="context-item" data-source="ai">AI Insights</div>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">Recent Searches</div>
+                <div class="context-item" data-search="Hazoom OS">Hazoom OS</div>
+                <div class="context-item" data-search="MCP Protocol">MCP Protocol</div>
+                <div class="context-item" data-search="Web Navigation">Web Navigation</div>
+                <div class="context-item" data-search="AI Assistant">AI Assistant</div>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">Quick Actions</div>
+                <div class="context-item" data-action="indexer">Open Indexer</div>
+                <div class="context-item" data-action="navigator">Open Navigator</div>
+                <div class="context-item" data-action="assistant">Open AI Assistant</div>
+                <div class="context-item" data-action="settings">Search Settings</div>
+            </div>
+        </div>
+        
+        <div class="results-container">
+            <div class="results-header">
+                <div class="results-count" id="resultsCount">0 results</div>
+                <div class="view-options">
+                    <button class="view-btn active" data-view="list">List</button>
+                    <button class="view-btn" data-view="grid">Grid</button>
+                    <button class="view-btn" data-view="compact">Compact</button>
+                </div>
+            </div>
+            
+            <div id="resultsArea">
+                <div class="no-results" id="initialMessage">
+                    <h2>Welcome to Hazoom Universal Search!</h2>
+                    <p>Search across web, local files, and AI context with MCP-powered intelligence</p>
+                    <p>Try searching for "Hazoom OS", "MCP Protocol", or "Web Navigation"</p>
+                </div>
+            </div>
+            
+            <div class="pagination" id="pagination" style="display: none;">
+                <button class="page-btn active">1</button>
+                <button class="page-btn">2</button>
+                <button class="page-btn">3</button>
+                <button class="page-btn">Next →</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class HazoomUniversalSearch {
+            constructor() {
+                this.searchHistory = JSON.parse(localStorage.getItem('hazoom_search_history') || '[]');
+                this.bookmarks = JSON.parse(localStorage.getItem('hazoom_bookmarks') || '[]');
+                this.mcp = null;
+                this.currentResults = [];
+                this.currentPage = 1;
+                this.resultsPerPage = 10;
+                
+                this.initializeElements();
+                this.bindEvents();
+                this.initializeMCP();
+            }
+            
+            initializeElements() {
+                this.elements = {
+                    searchInput: document.getElementById('searchInput'),
+                    searchButton: document.getElementById('searchButton'),
+                    searchSuggestions: document.getElementById('searchSuggestions'),
+                    resultsArea: document.getElementById('resultsArea'),
+                    resultsCount: document.getElementById('resultsCount'),
+                    initialMessage: document.getElementById('initialMessage'),
+                    optionBtns: document.querySelectorAll('.option-btn'),
+                    contextItems: document.querySelectorAll('.context-item'),
+                    pagination: document.getElementById('pagination')
+                };
+            }
+            
+            bindEvents() {
+                this.elements.searchButton.addEventListener('click', () => this.performSearch());
+                this.elements.searchInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.performSearch();
+                    }
+                });
+                
+                this.elements.searchInput.addEventListener('input', (e) => {
+                    this.showSearchSuggestions(e.target.value);
+                });
+                
+                // Bind option buttons
+                this.elements.optionBtns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        this.setSearchType(e.target.dataset.type);
+                    });
+                });
+                
+                // Bind context items
+                this.elements.contextItems.forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        const source = e.target.dataset.source;
+                        const search = e.target.dataset.search;
+                        const action = e.target.dataset.action;
+                        
+                        if (source) {
+                            this.setContextSource(source);
+                        } else if (search) {
+                            this.elements.searchInput.value = search;
+                            this.performSearch();
+                        } else if (action) {
+                            this.performAction(action);
+                        }
+                    });
+                });
+                
+                // Bind view options
+                document.querySelectorAll('.view-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.changeView(e.target.dataset.view);
+                    });
+                });
+            }
+            
+            initializeMCP() {
+                // Try to access parent MCP
+                if (window.parent && window.parent.mcp) {
+                    this.mcp = window.parent.mcp;
+                    console.log('🔗 Connected to parent MCP Context Router');
+                } else {
+                    // Try to load MCP if not available
+                    const mcpScript = document.createElement('script');
+                    mcpScript.src = '../core/mcp_context_router.js';
+                    document.head.appendChild(mcpScript);
+                    
+                    mcpScript.onload = () => {
+                        if (window.mcp) {
+                            this.mcp = window.mcp;
+                            console.log('🧬 Initialized local MCP Context Router');
+                        }
+                    };
+                }
+            }
+            
+            setSearchType(type) {
+                document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelector(`.option-btn[data-type="${type}"]`).classList.add('active');
+            }
+            
+            setContextSource(source) {
+                document.querySelectorAll('.context-item').forEach(item => item.classList.remove('active'));
+                document.querySelector(`.context-item[data-source="${source}"]`).classList.add('active');
+            }
+            
+            performAction(action) {
+                switch(action) {
+                    case 'indexer':
+                        // Try to open the indexer app
+                        if (window.parent && window.parent.HAZOOM) {
+                            window.parent.HAZOOM.openApp('hazoom_search_indexer');
+                        } else {
+                            alert('Hazoom Search Indexer: Would open in Hazoom OS');
+                        }
+                        break;
+                    case 'navigator':
+                        if (window.parent && window.parent.HAZOOM) {
+                            window.parent.HAZOOM.openApp('advanced_navigator');
+                        } else {
+                            alert('Advanced Navigator: Would open in Hazoom OS');
+                        }
+                        break;
+                    case 'assistant':
+                        if (window.parent && window.parent.HAZOOM) {
+                            window.parent.HAZOOM.openApp('hazoom_ai_assistant');
+                        } else {
+                            alert('Hazoom AI Assistant: Would open in Hazoom OS');
+                        }
+                        break;
+                    case 'settings':
+                        alert('Search Settings would open here');
+                        break;
+                }
+            }
+            
+            changeView(view) {
+                // In a real implementation, this would change the results display
+                console.log('Changing view to:', view);
+            }
+            
+            async performSearch() {
+                const query = this.elements.searchInput.value.trim();
+                if (!query) return;
+                
+                // Show loading state
+                this.elements.initialMessage.style.display = 'none';
+                this.elements.resultsArea.innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                    </div>
+                `;
+                
+                try {
+                    // Get results from MCP if available
+                    let results = [];
+                    if (this.mcp) {
+                        try {
+                            const mcpResults = await this.mcp.nanoSearch(query);
+                            results = this.processMCPResults(mcpResults, query);
+                        } catch (error) {
+                            console.warn('MCP search failed:', error);
+                            // Fallback to local search
+                            results = this.localSearch(query);
+                        }
+                    } else {
+                        // Fallback to local search
+                        results = this.localSearch(query);
+                    }
+                    
+                    // Add to search history
+                    this.addToSearchHistory(query);
+                    
+                    // Display results
+                    this.displayResults(results);
+                } catch (error) {
+                    console.error('Search error:', error);
+                    this.showError('Search failed: ' + error.message);
+                }
+            }
+            
+            processMCPResults(mcpResults, query) {
+                let results = [];
+                
+                // Process results from different MCP servers
+                for (const [source, data] of Object.entries(mcpResults)) {
+                    if (data.error) {
+                        console.warn(`MCP ${source} server error:`, data.error);
+                        continue;
+                    }
+                    
+                    if (source === 'online' && data.results) {
+                        // Process online search results
+                        const onlineResults = data.results.results || [];
+                        results.push(...onlineResults.map(result => ({
+                            ...result,
+                            source: 'online',
+                            type: result.type || 'web'
+                        })));
+                    } else if (source === 'filesystem' && data.files) {
+                        // Process file system results
+                        results.push(...data.files.map(file => ({
+                            title: file.name,
+                            url: `file://${file.path}`,
+                            snippet: `Local file: ${file.path}`,
+                            source: 'filesystem',
+                            type: file.type
+                        })));
+                    } else if (source === 'memory' && data.preferences) {
+                        // Process memory results
+                        results.push({
+                            title: 'User Preferences',
+                            url: '#',
+                            snippet: `User preferences related to "${query}"`,
+                            source: 'memory',
+                            type: 'preference'
+                        });
+                    } else {
+                        // Generic processing for other sources
+                        results.push({
+                            title: `${source.charAt(0).toUpperCase() + source.slice(1)} Results`,
+                            url: '#',
+                            snippet: JSON.stringify(data, null, 2).substring(0, 200) + '...',
+                            source: source,
+                            type: 'context'
+                        });
+                    }
+                }
+                
+                return results;
+            }
+            
+            localSearch(query) {
+                // Simulate local search across different data sources
+                const results = [];
+                
+                // Simulate web search results
+                results.push({
+                    title: `Hazoom OS - Web-based Operating System`,
+                    url: 'https://github.com/hazem-soussi-HA/hazoom-os-unified',
+                    snippet: 'Hazoom OS is a comprehensive web-based operating system created with the strategic intention of promoting peace, understanding, and human betterment. It integrates Conscious Intent values as core design principles.',
+                    source: 'online',
+                    type: 'web',
+                    relevance: 0.95
+                });
+                
+                results.push({
+                    title: 'MCP (Model Context Protocol) Architecture',
+                    url: 'https://hazoom-os.com/docs/mcp-architecture',
+                    snippet: 'MCP is Hazoom OS\'s system for giving life to LLMs by providing persistent context, memory, and tool agency. It includes servers for Memory, File System, Vertex AI, OpenCode, and Sentinel.',
+                    source: 'online',
+                    type: 'documentation',
+                    relevance: 0.90
+                });
+                
+                results.push({
+                    title: 'Advanced Web Navigation in Hazoom OS',
+                    url: 'https://hazoom-os.com/features/navigation',
+                    snippet: 'Hazoom OS features an advanced navigator with AI-powered capabilities including summarization, translation, and information extraction. The system integrates seamlessly with MCP for context-aware browsing.',
+                    source: 'online',
+                    type: 'feature',
+                    relevance: 0.85
+                });
+                
+                // Simulate file system results
+                if (query.toLowerCase().includes('file') || query.toLowerCase().includes('doc')) {
+                    results.push({
+                        title: 'Project Documentation',
+                        url: 'file:///docs/project-overview.md',
+                        snippet: 'Comprehensive documentation for the Hazoom OS project including architecture, features, and implementation details.',
+                        source: 'filesystem',
+                        type: 'document',
+                        relevance: 0.80
+                    });
+                }
+                
+                // Sort by relevance
+                results.sort((a, b) => (b.relevance || 0) - (a.relevance || 0));
+                
+                return results;
+            }
+            
+            displayResults(results) {
+                this.currentResults = results;
+                
+                if (results.length === 0) {
+                    this.elements.resultsArea.innerHTML = `
+                        <div class="no-results">
+                            <h3>No results found</h3>
+                            <p>Try a different search query or check your spelling</p>
+                        </div>
+                    `;
+                    this.elements.resultsCount.textContent = '0 results';
+                    return;
+                }
+                
+                // Calculate pagination
+                const totalPages = Math.ceil(results.length / this.resultsPerPage);
+                const startIndex = (this.currentPage - 1) * this.resultsPerPage;
+                const endIndex = Math.min(startIndex + this.resultsPerPage, results.length);
+                const pageResults = results.slice(startIndex, endIndex);
+                
+                // Display results
+                this.elements.resultsArea.innerHTML = pageResults.map(result => `
+                    <div class="result-item">
+                        <div class="result-title">
+                            <span>${this.getSourceIcon(result.source)}</span>
+                            ${result.title}
+                        </div>
+                        <div class="result-url">${result.url}</div>
+                        <div class="result-snippet">${result.snippet}</div>
+                        <div class="result-meta">
+                            <span class="result-source">${result.source}</span>
+                            <span>${result.type}</span>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Update results count
+                this.elements.resultsCount.textContent = `${results.length} results (showing ${startIndex + 1}-${endIndex})`;
+                
+                // Show pagination if needed
+                if (totalPages > 1) {
+                    this.elements.pagination.style.display = 'flex';
+                    this.renderPagination(totalPages);
+                } else {
+                    this.elements.pagination.style.display = 'none';
+                }
+            }
+            
+            getSourceIcon(source) {
+                switch(source) {
+                    case 'online': return '🌐';
+                    case 'filesystem': return '📁';
+                    case 'memory': return '🧠';
+                    case 'ai': return '🤖';
+                    case 'web': return '🌐';
+                    case 'local': return '🏠';
+                    default: return '🔍';
+                }
+            }
+            
+            renderPagination(totalPages) {
+                let paginationHTML = '';
+                
+                // Previous button
+                if (this.currentPage > 1) {
+                    paginationHTML += `<button class="page-btn" data-page="${this.currentPage - 1}">← Prev</button>`;
+                }
+                
+                // Page numbers
+                for (let i = 1; i <= totalPages; i++) {
+                    if (i === 1 || i === totalPages || (i >= this.currentPage - 1 && i <= this.currentPage + 1)) {
+                        paginationHTML += `<button class="page-btn ${i === this.currentPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
+                    } else if (i === this.currentPage - 2 || i === this.currentPage + 2) {
+                        paginationHTML += `<span class="page-btn">...</span>`;
+                    }
+                }
+                
+                // Next button
+                if (this.currentPage < totalPages) {
+                    paginationHTML += `<button class="page-btn" data-page="${this.currentPage + 1}">Next →</button>`;
+                }
+                
+                this.elements.pagination.innerHTML = paginationHTML;
+                
+                // Add event listeners to page buttons
+                this.elements.pagination.querySelectorAll('.page-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const page = e.target.dataset.page;
+                        if (page && !isNaN(page)) {
+                            this.currentPage = parseInt(page);
+                            this.displayResults(this.currentResults);
+                        }
+                    });
+                });
+            }
+            
+            addToSearchHistory(query) {
+                // Add to search history
+                if (!this.searchHistory.includes(query)) {
+                    this.searchHistory.unshift(query);
+                    // Keep only last 50 searches
+                    if (this.searchHistory.length > 50) {
+                        this.searchHistory = this.searchHistory.slice(0, 50);
+                    }
+                    localStorage.setItem('hazoom_search_history', JSON.stringify(this.searchHistory));
+                }
+            }
+            
+            showSearchSuggestions(input) {
+                if (!input.trim()) {
+                    this.elements.searchSuggestions.style.display = 'none';
+                    return;
+                }
+                
+                // Filter search history for suggestions
+                const suggestions = this.searchHistory.filter(query => 
+                    query.toLowerCase().includes(input.toLowerCase())
+                ).slice(0, 8);
+                
+                if (suggestions.length > 0) {
+                    this.elements.searchSuggestions.innerHTML = suggestions.map(suggestion => {
+                        const highlighted = this.highlightMatch(suggestion, input);
+                        return `<div class="suggestion-item" data-query="${suggestion}">
+                                  <span>🔍</span>
+                                  ${highlighted}
+                                </div>`;
+                    }).join('');
+                    
+                    this.elements.searchSuggestions.style.display = 'block';
+                    
+                    // Add click handlers to suggestions
+                    this.elements.searchSuggestions.querySelectorAll('.suggestion-item').forEach(item => {
+                        item.addEventListener('click', () => {
+                            const query = item.getAttribute('data-query');
+                            this.elements.searchInput.value = query;
+                            this.performSearch();
+                            this.elements.searchSuggestions.style.display = 'none';
+                        });
+                    });
+                } else {
+                    this.elements.searchSuggestions.style.display = 'none';
+                }
+            }
+            
+            highlightMatch(text, query) {
+                const regex = new RegExp(`(${query})`, 'gi');
+                return text.replace(regex, '<span class="suggestion-highlight">$1</span>');
+            }
+            
+            showError(message) {
+                this.elements.resultsArea.innerHTML = `
+                    <div class="result-item">
+                        <div class="result-title">❌ Error</div>
+                        <div class="result-snippet">${message}</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize the universal search when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.universalSearch = new HazoomUniversalSearch();
+        });
+    </script>
+</body>
+</html>

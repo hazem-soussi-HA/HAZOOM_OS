@@ -1,0 +1,22 @@
+/* hazoom-os/showtime/static/style.css */
+body {
+    background-color: #f8f9fa;
+}
+
+h1 {
+    color: #343a40;
+}
+
+#search-input {
+    border-radius: 20px;
+    padding: 10px 20px;
+}
+
+#results-list .list-group-item {
+    border: none;
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}

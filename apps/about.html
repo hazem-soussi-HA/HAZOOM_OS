@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About HAZOOM OS - HAZOOM OS</title>
+    <link rel="stylesheet" href="../hazoom-os.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #0a1a2e 100%);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .logo {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .title {
+            font-size: 48px;
+            font-weight: 800;
+            background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 20px;
+            color: #94a3b8;
+            margin-bottom: 10px;
+        }
+
+        .version {
+            font-size: 18px;
+            color: #64748b;
+            padding: 8px 20px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #3b82f6;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+            border-radius: 2px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            background: rgba(59, 130, 246, 0.05);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .info-label {
+            color: #94a3b8;
+            font-size: 14px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .info-value {
+            color: #e2e8f0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: #3b82f6;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, #3b82f6, #8b5cf6);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 30px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -29px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            background: #3b82f6;
+            border-radius: 50%;
+            border: 3px solid #0f172a;
+        }
+
+        .timeline-date {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .timeline-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 10px;
+        }
+
+        .timeline-description {
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+
+        .credits {
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 16px;
+        }
+
+        .avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            margin-bottom: 20px;
+        }
+
+        .team-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #e2e8f0;
+            margin-bottom: 5px;
+        }
+
+        .team-role {
+            color: #3b82f6;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .team-bio {
+            color: #94a3b8;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .social-link {
+            padding: 10px 20px;
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 25px;
+            color: #e2e8f0;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .social-link:hover {
+            background: rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #64748b;
+            font-size: 14px;
+            border-top: 1px solid rgba(59, 130, 246, 0.1);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 15px;
+            background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+            border-radius: 20px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🚀</div>
+            <div class="title">HAZOOM OS</div>
+            <div class="subtitle">The Web-Based Operating System of the Future</div>
+            <div class="version">Version 2.1.0 <span class="badge">Production</span></div>
+        </div>
+
+        <div class="content">
+            <div class="section">
+                <div class="section-title">About HAZOOM OS</div>
+                <p style="color: #e2e8f0; font-size: 18px; line-height: 1.8; margin-bottom: 20px;">
+                    HAZOOM OS is a revolutionary web-based operating system that brings the power of
+                    artificial intelligence, quantum computing concepts, and modern web technologies
+                    together in a single, cohesive platform.
+                </p>
+                <p style="color: #94a3b8; line-height: 1.6;">
+                    Built with a vision to democratize advanced computing, HAZOOM OS provides users
+                    with a complete desktop environment accessible from any modern web browser.
+                    It combines Hazoom AI Ecosystem, Hazem Co-Pilot, and Quantum Consciousness
+                    features into an intuitive and powerful interface.
+                </p>
+            </div>
+
+            <div class="section" style="border-left: 4px solid var(--primary);">
+                <div class="section-title">The HAZOOM Philosophy</div>
+                <p style="color: #e2e8f0; font-style: italic; line-height: 1.8; margin-bottom: 15px;">
+                    "Operating Systems Thinking"
+                </p>
+                <p style="color: #94a3b8; line-height: 1.8;">
+                    Academics enjoy the luxury of being able to study what is interesting about operating
+                    systems, especially clever algorithms, data structures and occasionally, areas that lend
+                    themselves nicely to mathematical analysis. Industry professionals must build real
+                    systems that work and meet the demanding cost, performance and reliability requirements
+                    of customers.
+                </p>
+                <p style="color: #94a3b8; line-height: 1.8;">
+                    Both kinds of thinking are rich with interesting issues. There are
+                    considerable overlaps as well as significant differences in what academics and industry
+                    professionals think about. <strong>Hazoom</strong> aims to present a balanced treatment of both
+                    the academic and industry sides of operating systems theory and practice.
+                </p>
+            </div>
+
+            <div class="section">
+                <div class="section-title">System Statistics</div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">12</div>
+                        <div class="stat-label">Applications</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">3</div>
+                        <div class="stat-label">AI Systems</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">4</div>
+                        <div class="stat-label">Security Layers</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">2.1</div>
+                        <div class="stat-label">Version</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">23KB</div>
+                        <div class="stat-label">Core Size</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">761</div>
+                        <div class="stat-label">Total Lines</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">100%</div>
+                        <div class="stat-label">Uptime</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Technical Details</div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Architecture</div>
+                        <div class="info-value">Modular</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Frontend</div>
+                        <div class="info-value">Vanilla JavaScript</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Styling</div>
+                        <div class="info-value">CSS3 + Variables</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Storage</div>
+                        <div class="info-value">localStorage</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Server</div>
+                        <div class="info-value">Python HTTP</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Security</div>
+                        <div class="info-value">10 Headers + CSP</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Window Manager</div>
+                        <div class="info-value">Full Drag/Resize</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">File System</div>
+                        <div class="info-value">Virtual FS</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Development Timeline</div>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-date">December 31, 2025</div>
+                        <div class="timeline-title">🎉 Project Inception</div>
+                        <div class="timeline-description">
+                            HAZOOM OS concept born. Vision of a web-based operating system
+                            with AI integration and quantum consciousness features.
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-date">January 1, 2026</div>
+                        <div class="timeline-title">🛡️ Security Implementation</div>
+                        <div class="timeline-description">
+                            Comprehensive security system implemented with 10 security headers,
+                            rate limiting, directory traversal prevention, and XSS protection.
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-date">January 1, 2026</div>
+                        <div class="timeline-title">🔧 Critical Bug Fixes</div>
+                        <div class="timeline-description">
+                            Resolved 4 critical bugs including variable shadowing,
+                            syntax errors, and undefined references. Full system control restored.
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-date">January 1, 2026</div>
+                        <div class="timeline-title">🚀 Modular Architecture</div>
+                        <div class="timeline-description">
+                            Transitioned from monolithic 2122-line JavaScript to modular
+                            architecture with separate app HTML files and dynamic loading.
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-date">January 1, 2026</div>
+                        <div class="timeline-title">💰 Monetization Framework</div>
+                        <div class="timeline-description">
+                            Complete 4-tier pricing system implemented with €6M+
+                            revenue potential. Stripe integration ready.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Features</div>
+                <div style="color: #94a3b8; line-height: 1.8;">
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: #3b82f6;">🤖 AI Integration:</strong><br>
+                        OpenAI GPT-4, Anthropic Claude 3, Google Gemini Pro, and Local Ollama support
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: #3b82f6;">🌌 Quantum Features:</strong><br>
+                        Interactive Quantum Travel, Consciousness Portal, and Quantum Monitor with real-time
+                        visualizations
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: #3b82f6;">🔒 Security:</strong><br>
+                        10 security headers, rate limiting, XSS protection, CSRF tokens, and input validation
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: #3b82f6;">💰 Monetization:</strong><br>
+                        4-tier pricing (Free €0 → Basic €19 → Pro €49 → Enterprise €199) with €6M+ revenue potential
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: #3b82f6;">🖥️ Desktop Environment:</strong><br>
+                        Full window management with drag, resize, minimize, maximize, and close functionality
+                    </div>
+                    <div>
+                        <strong style="color: #3b82f6;">📁 Virtual File System:</strong><br>
+                        localStorage-based persistent file system with folders, files, and full CRUD operations
+                    </div>
+                </div>
+            </div>
+
+            <div class="credits">
+                <div class="avatar">👨‍💻</div>
+                <div class="team-name">Hazem Soussi</div>
+                <div class="team-role">Founder & Lead Developer</div>
+                <div class="team-bio">
+                    Visionary technologist passionate about democratizing advanced computing.
+                    Building the future of web-based operating systems with AI integration
+                    and quantum consciousness concepts.
+                </div>
+                <div class="social-links">
+                    <a href="#" class="social-link">GitHub</a>
+                    <a href="#" class="social-link">LinkedIn</a>
+                    <a href="#" class="social-link">Twitter</a>
+                    <a href="#" class="social-link">Email</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>© 2026 HAZOOM OS. All rights reserved.</p>
+            <p style="color: #64748b; font-size: 12px; margin-top: 10px;">
+                Built with ❤️ using modern web technologies and advanced AI concepts.
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,88 @@
+MIT License
+
+Copyright (c) 2026 Hazem Soussi (HA) <https://github.com/hazem-soussi-HA>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+═══════════════════════════════════════════════════════════════════
+SCOPE OF THIS LICENSE
+═══════════════════════════════════════════════════════════════════
+
+This MIT license covers ONLY the original source code, sprite-drawing
+functions, level definitions, sound-generation code, and documentation
+authored by Hazem Soussi (HA) in this repository.
+
+This license does NOT grant any rights to:
+
+  • The "Super Mario"® name or any "Mario" trademarks, which are
+    registered trademarks of Nintendo Co., Ltd.
+  • The "Grand Theft Auto"® / "GTA"® names, which are registered
+    trademarks of Take-Two Interactive Software, Inc. and/or its
+    subsidiaries, including Rockstar Games, Inc.
+  • Character names, character designs, level designs, sound effects,
+    music, or any other creative elements derived from works owned by
+    Nintendo Co., Ltd. or Rockstar Games, Inc.
+  • The trademarks "Super Mario GTA6" and "Mario GTA6", which are
+    claimed by the project author (Hazem Soussi, HA) only insofar as
+    they do not infringe on the prior trademarks listed above. See
+    TRADEMARKS.md for the full attribution and disclaimer.
+
+For a complete description of the relationship between this fan project
+and the IP holders whose work inspired it, see:
+
+  • PRE_PARTNERSHIP_STATEMENT.md  — the author's intent and good-faith
+    position
+  • NOTICE_TO_IP_HOLDERS.md       — direct invitation to Nintendo and
+    Rockstar Games to review this work
+  • TRADEMARKS.md                 — required attribution and ®/™ marks
+
+═══════════════════════════════════════════════════════════════════
+STATEMENT OF ORIGINALITY (CODE ONLY)
+═══════════════════════════════════════════════════════════════════
+
+The following elements of this repository are original works authored
+by Hazem Soussi (HA):
+
+  ✓ All Python, JavaScript, HTML, and CSS source code
+  ✓ Procedural sprite-drawing routines (Mario, hearts, tiles, particles)
+  ✓ Procedural audio (Web Audio API tones, no sampled assets)
+  ✓ The level layout string in `mario_gta6_2d.py` and its parser
+  ✓ The two-currency (coins + credits) reward system
+  ✓ The game-loop, physics integrator, and HUD composition
+  ✓ The website design, build system, and module organization
+  ✓ The documentation, audit report, and contributor workflow
+
+The following elements are DERIVATIVE — they recreate gameplay patterns
+that are part of the public vocabulary of the platformer genre and
+specifically reference the works listed in TRADEMARKS.md. They are
+included under fair use for educational, non-commercial fan purposes,
+and would be reworked or removed under any future licensing agreement
+with the relevant IP holders:
+
+  • The protagonist's cap-and-overalls silhouette and red/blue palette
+  • The mushroom, fire-flower, and star power-up progression
+  • Question-mark blocks, breakable brick blocks, and pipe geometry
+  • The koopa-troopa and goomba enemy archetypes and their stomping
+    resolution
+  • The "1-1" style horizontal-scrolling level structure
+  • The coin pickup SFX (E5→G5 square-wave arpeggio)
+
+This distinction is intentional and is offered in good faith so that
+any future partnership discussion has a clear picture of what is
+original code versus what is respectfully-inspired homage.

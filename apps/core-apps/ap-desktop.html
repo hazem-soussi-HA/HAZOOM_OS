@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alpha Pony Desktop</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a15 0%, #1a0a2e 50%, #0f1525 100%);
+            color: #e8e8f0;
+            min-height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+        
+        .desktop {
+            position: relative;
+            height: 100vh;
+            padding: 20px;
+        }
+        
+        .desktop-icons {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+        
+        .desktop-icon {
+            width: 100px;
+            text-align: center;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        
+        .desktop-icon:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .desktop-icon:active {
+            transform: scale(0.95);
+        }
+        
+        .icon-img {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+        }
+        
+        .icon-label {
+            color: #fff;
+            font-size: 12px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+            word-wrap: break-word;
+        }
+        
+        /* Taskbar */
+        .taskbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: rgba(10,10,25,0.95);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            z-index: 1000;
+        }
+        
+        .start-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            background: linear-gradient(135deg, #b87fff, #00d4ff);
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            margin-right: 20px;
+        }
+        
+        .taskbar-apps {
+            display: flex;
+            gap: 5px;
+            flex: 1;
+        }
+        
+        .taskbar-app {
+            padding: 8px 15px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 5px;
+            color: #888;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .taskbar-app.active {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(0,212,255,0.5);
+            color: #00d4ff;
+        }
+        
+        .system-tray {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 5px 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 5px;
+        }
+        
+        .tray-time {
+            color: #888;
+            font-size: 12px;
+        }
+        
+        /* Windows */
+        .window {
+            position: absolute;
+            background: #1a1a2e;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            min-width: 400px;
+            min-height: 300px;
+            display: none;
+        }
+        
+        .window.active {
+            display: block;
+        }
+        
+        .window-header {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px 10px 0 0;
+            cursor: move;
+        }
+        
+        .window-title {
+            flex: 1;
+            color: #fff;
+            font-size: 14px;
+        }
+        
+        .window-controls {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .window-btn {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .window-btn.minimize { background: #ffcc00; }
+        .window-btn.maximize { background: #00ff88; }
+        .window-btn.close { background: #ff4466; }
+        
+        .window-content {
+            padding: 20px;
+            height: calc(100% - 45px);
+            overflow: auto;
+        }
+        
+        /* Desktop Background */
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: rgba(184,127,255,0.5);
+            border-radius: 50%;
+            animation: float 20s linear infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(100vh); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh); opacity: 0; }
+        }
+        
+        /* Clock Widget */
+        .clock-widget {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            text-align: right;
+            color: #fff;
+        }
+        
+        .clock-time {
+            font-size: 48px;
+            font-weight: bold;
+            background: linear-gradient(90deg, #b87fff, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .clock-date {
+            font-size: 14px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-particles" id="bgParticles"></div>
+    
+    <div class="desktop">
+        <!-- Desktop Icons -->
+        <div class="desktop-icons">
+            <div class="desktop-icon" ondblclick="openWindow('neural')">
+                <div class="icon-img">🦄</div>
+                <div class="icon-label">Alpha Pony</div>
+            </div>
+            <div class="desktop-icon" ondblclick="openWindow('arcade')">
+                <div class="icon-img">🎮</div>
+                <div class="icon-label">Arcade</div>
+            </div>
+            <div class="desktop-icon" ondblclick="openWindow('ai')">
+                <div class="icon-img">🤖</div>
+                <div class="icon-label">AI Chat</div>
+            </div>
+            <div class="desktop-icon" ondblclick="openWindow('settings')">
+                <div class="icon-img">⚙️</div>
+                <div class="icon-label">Settings</div>
+            </div>
+        </div>
+        
+        <!-- Clock -->
+        <div class="clock-widget">
+            <div class="clock-time" id="clockTime">00:00</div>
+            <div class="clock-date" id="clockDate">Loading...</div>
+        </div>
+    </div>
+    
+    <!-- Taskbar -->
+    <div class="taskbar">
+        <button class="start-btn" onclick="toggleStartMenu()">
+            🦄 Alpha Pony
+        </button>
+        <div class="taskbar-apps" id="taskbarApps"></div>
+        <div class="system-tray">
+            <span class="tray-time" id="trayTime">00:00</span>
+        </div>
+    </div>
+    
+    <!-- Windows -->
+    <div class="window" id="win-neural" style="top:50px; left:150px; width:800px; height:500px;">
+        <div class="window-header">
+            <span class="window-title">🦄 Alpha Pony - Neural Interface</span>
+            <div class="window-controls">
+                <button class="window-btn minimize" onclick="minimizeWindow('neural')"></button>
+                <button class="window-btn maximize" onclick="maximizeWindow('neural')"></button>
+                <button class="window-btn close" onclick="closeWindow('neural')"></button>
+            </div>
+        </div>
+        <div class="window-content">
+            <iframe src="alpha_pony.html" style="width:100%; height:100%; border:none; border-radius:0 0 10px 10px;"></iframe>
+        </div>
+    </div>
+    
+    <div class="window" id="win-arcade" style="top:80px; left:200px; width:900px; height:600px;">
+        <div class="window-header">
+            <span class="window-title">🎮 Alpha Pony Arcade</span>
+            <div class="window-controls">
+                <button class="window-btn minimize" onclick="minimizeWindow('arcade')"></button>
+                <button class="window-btn maximize" onclick="maximizeWindow('arcade')"></button>
+                <button class="window-btn close" onclick="closeWindow('arcade')"></button>
+            </div>
+        </div>
+        <div class="window-content">
+            <iframe src="arcade.html" style="width:100%; height:100%; border:none; border-radius:0 0 10px 10px;"></iframe>
+        </div>
+    </div>
+    
+    <div class="window" id="win-ai" style="top:100px; left:250px; width:700px; height:500px;">
+        <div class="window-header">
+            <span class="window-title">🤖 AI Chat - OpenRouter</span>
+            <div class="window-controls">
+                <button class="window-btn minimize" onclick="minimizeWindow('ai')"></button>
+                <button class="window-btn maximize" onclick="maximizeWindow('ai')"></button>
+                <button class="window-btn close" onclick="closeWindow('ai')"></button>
+            </div>
+        </div>
+        <div class="window-content">
+            <iframe src="alpha_pony.html" style="width:100%; height:100%; border:none; border-radius:0 0 10px 10px;"></iframe>
+        </div>
+    </div>
+    
+    <div class="window" id="win-settings" style="top:120px; left:300px; width:500px; height:400px;">
+        <div class="window-header">
+            <span class="window-title">⚙️ Settings</span>
+            <div class="window-controls">
+                <button class="window-btn minimize" onclick="minimizeWindow('settings')"></button>
+                <button class="window-btn maximize" onclick="maximizeWindow('settings')"></button>
+                <button class="window-btn close" onclick="closeWindow('settings')"></button>
+            </div>
+        </div>
+        <div class="window-content">
+            <h2 style="color:#b87fff; margin-bottom:20px;">⚙️ Alpha Pony Settings</h2>
+            <div style="margin:15px 0;">
+                <label style="color:#888;">Theme</label><br>
+                <select style="width:100%; padding:10px; background:#0a0a15; border:1px solid #333; color:#fff; border-radius:5px;">
+                    <option>Dark Purple (Default)</option>
+                    <option>Bitcoin Orange</option>
+                    <option>Neon Blue</option>
+                    <option>Matrix Green</option>
+                </select>
+            </div>
+            <div style="margin:15px 0;">
+                <label style="color:#888;">Startup App</label><br>
+                <select style="width:100%; padding:10px; background:#0a0a15; border:1px solid #333; color:#fff; border-radius:5px;">
+                    <option>Neural Interface</option>
+                    <option>Arcade</option>
+                    <option>AI Chat</option>
+                </select>
+            </div>
+            <div style="margin:15px 0;">
+                <label style="color:#888;">Bitcoin Budget</label><br>
+                <input type="range" min="1000" max="10000" value="5000" style="width:100%;">
+                <span id="budgetDisplay" style="color:#f7931a;">5000 sats/day</span>
+            </div>
+            <button style="background:linear-gradient(135deg,#b87fff,#00d4ff); border:none; color:#fff; padding:12px 25px; border-radius:5px; cursor:pointer; margin-top:20px;">
+                Save Settings
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Initialize
+        function init() {
+            createParticles();
+            updateClock();
+            setInterval(updateClock, 1000);
+        }
+        
+        function createParticles() {
+            const bg = document.getElementById('bgParticles');
+            for (let i = 0; i < 30; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDelay = Math.random() * 20 + 's';
+                bg.appendChild(p);
+            }
+        }
+        
+        function updateClock() {
+            const now = new Date();
+            const time = now.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit'});
+            const date = now.toLocaleDateString('en-US', {weekday: 'short', month: 'short', day: 'numeric'});
+            
+            document.getElementById('clockTime').textContent = time;
+            document.getElementById('clockDate').textContent = date;
+            document.getElementById('trayTime').textContent = time;
+        }
+        
+        // Window Management
+        let activeWindow = null;
+        let windowZIndex = 100;
+        
+        function openWindow(name) {
+            const win = document.getElementById('win-' + name);
+            if (win) {
+                win.classList.add('active');
+                win.style.zIndex = ++windowZIndex;
+                activeWindow = name;
+                updateTaskbar(name, true);
+            }
+        }
+        
+        function closeWindow(name) {
+            const win = document.getElementById('win-' + name);
+            if (win) {
+                win.classList.remove('active');
+                updateTaskbar(name, false);
+            }
+        }
+        
+        function minimizeWindow(name) {
+            const win = document.getElementById('win-' + name);
+            if (win) {
+                win.classList.remove('active');
+            }
+        }
+        
+        function maximizeWindow(name) {
+            const win = document.getElementById('win-' + name);
+            if (win) {
+                if (win.style.width === '100%') {
+                    win.style.width = '800px';
+                    win.style.height = '500px';
+                    win.style.top = '50px';
+                    win.style.left = '150px';
+                } else {
+                    win.style.width = '100%';
+                    win.style.height = 'calc(100vh - 50px)';
+                    win.style.top = '0';
+                    win.style.left = '0';
+                    win.style.borderRadius = '0';
+                }
+            }
+        }
+        
+        function updateTaskbar(name, active) {
+            const taskbar = document.getElementById('taskbarApps');
+            const existing = document.getElementById('task-' + name);
+            
+            if (active && !existing) {
+                const btn = document.createElement('div');
+                btn.id = 'task-' + name;
+                btn.className = 'taskbar-app active';
+                btn.textContent = ['neural', 'arcade', 'ai', 'settings'][name === 'neural' ? 0 : name === 'arcade' ? 1 : name === 'ai' ? 2 : 3];
+                btn.onclick = () => openWindow(name);
+                taskbar.appendChild(btn);
+            } else if (!active && existing) {
+                existing.remove();
+            }
+        }
+        
+        function toggleStartMenu() {
+            alert('🦄 Alpha Pony Desktop v3.0\n\n© 2024-2026 Hazem Soussi\nAll Rights Reserved');
+        }
+        
+        // Make windows draggable
+        document.querySelectorAll('.window-header').forEach(header => {
+            const win = header.parentElement;
+            let isDragging = false;
+            let startX, startY, startLeft, startTop;
+            
+            header.addEventListener('mousedown', (e) => {
+                if (e.target.classList.contains('window-btn')) return;
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                startLeft = win.offsetLeft;
+                startTop = win.offsetTop;
+                win.style.zIndex = ++windowZIndex;
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                win.style.left = (startLeft + e.clientX - startX) + 'px';
+                win.style.top = (startTop + e.clientY - startY) + 'px';
+            });
+            
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+        });
+        
+        init();
+    </script>
+</body>
+</html>

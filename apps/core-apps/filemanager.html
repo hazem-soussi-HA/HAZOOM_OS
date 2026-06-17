@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  HAZOOM OS V3 — File Manager App
+  Copyright © 2024-2026 Hazem Soussi. All Rights Reserved.
+  Virtual filesystem browser with navigation, file creation, and deletion.
+-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Manager - HAZOOM OS</title>
+    <style>
+        :root {
+            --bg-primary: #050510;
+            --bg-secondary: #0a0a1a;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-hover: rgba(255, 255, 255, 0.08);
+            --accent: #00f0ff;
+            --gold: #ffd700;
+            --purple: #8b5cf6;
+            --green: #10b981;
+            --red: #ef4444;
+            --text: #e8e8f0;
+            --text-dim: rgba(232, 232, 240, 0.5);
+            --radius: 12px;
+        }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--glass-border);
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .btn {
+            padding: 8px 14px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-family: inherit;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn:hover { background: var(--glass-hover); border-color: var(--accent); }
+        .btn.danger { border-color: rgba(239,68,68,0.3); color: var(--red); }
+        .btn.danger:hover { border-color: var(--red); background: rgba(239,68,68,0.1); }
+        .btn.primary { border-color: rgba(0,240,255,0.3); color: var(--accent); }
+        .btn.primary:hover { border-color: var(--accent); background: rgba(0,240,255,0.1); }
+        .path-bar {
+            flex: 1;
+            padding: 8px 14px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            min-width: 200px;
+        }
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 12px;
+        }
+        .item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            padding: 12px 8px;
+            border-radius: var(--radius);
+            transition: all 0.2s;
+            position: relative;
+        }
+        .item:hover { background: var(--glass-hover); }
+        .item.selected { background: rgba(0,240,255,0.1); border: 1px solid rgba(0,240,255,0.2); }
+        .item-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            margin-bottom: 6px;
+        }
+        .item-name {
+            font-size: 0.7rem;
+            text-align: center;
+            word-break: break-all;
+            max-width: 90px;
+            line-height: 1.3;
+        }
+        .item-ext {
+            font-size: 0.6rem;
+            color: var(--text-dim);
+            margin-top: 2px;
+        }
+        .item-actions {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            display: none;
+        }
+        .item:hover .item-actions { display: block; }
+        .item-action-btn {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: none;
+            background: rgba(239,68,68,0.8);
+            color: white;
+            cursor: pointer;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            color: var(--text-dim);
+        }
+        .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+        .status-bar {
+            padding: 6px 16px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--glass-border);
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            display: flex;
+            justify-content: space-between;
+        }
+        .context-menu {
+            position: fixed;
+            background: rgba(10,10,26,0.95);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            padding: 6px;
+            z-index: 1000;
+            min-width: 160px;
+            display: none;
+            backdrop-filter: blur(20px);
+        }
+        .context-menu.show { display: block; }
+        .ctx-item {
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: var(--text);
+            transition: background 0.15s;
+        }
+        .ctx-item:hover { background: var(--glass-hover); }
+        .ctx-item.danger { color: var(--red); }
+        .ctx-separator { height: 1px; background: var(--glass-border); margin: 4px 0; }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <button class="btn" onclick="goUp()">⬆ Up</button>
+        <button class="btn" onclick="goHome()">🏠 Home</button>
+        <div class="path-bar" id="pathBar">/</div>
+        <button class="btn primary" onclick="newFolder()">📁 Folder</button>
+        <button class="btn primary" onclick="newFile()">📄 File</button>
+        <button class="btn" onclick="refresh()">🔄 Refresh</button>
+        <button class="btn danger" onclick="factoryReset()">⚠ Reset</button>
+    </div>
+    <div class="content">
+        <div class="grid" id="grid"></div>
+    </div>
+    <div class="status-bar">
+        <span id="statusItems">0 items</span>
+        <span id="statusPath">/</span>
+    </div>
+    <div class="context-menu" id="ctxMenu">
+        <div class="ctx-item" id="ctxOpen" onclick="ctxOpen()">📂 Open</div>
+        <div class="ctx-item" id="ctxRename" onclick="ctxRename()">✏️ Rename</div>
+        <div class="ctx-separator"></div>
+        <div class="ctx-item danger" id="ctxDelete" onclick="ctxDelete()">🗑️ Delete</div>
+    </div>
+
+    <script>
+        var fs = window.parent.FileSystem;
+        var currentPath = '/';
+        var selectedItem = null;
+        var ctxTarget = null;
+
+        if (!fs) {
+            document.body.innerHTML = '<div style="padding:40px;text-align:center;color:#ef4444;font-family:Inter,sans-serif;"><h2>⚠️ File System Not Available</h2><p>The HAZOOM OS file system is not loaded. Please open this app from the desktop.</p></div>';
+        } else {
+            function getFileExtension(filename) {
+                var parts = filename.split('.');
+                if (parts.length > 1) return parts[parts.length - 1].toUpperCase();
+                return '';
+            }
+
+            function getFileIcon(filename) {
+                var ext = getFileExtension(filename).toLowerCase();
+                var icons = {
+                    'html': '🌐', 'js': '📜', 'css': '🎨', 'py': '🐍', 'json': '📋',
+                    'md': '📝', 'txt': '📄', 'jpg': '🖼️', 'jpeg': '🖼️', 'png': '🖼️',
+                    'gif': '🖼️', 'svg': '🎨', 'pdf': '📕', 'doc': '📘', 'docx': '📘',
+                    'xls': '📗', 'xlsx': '📗', 'zip': '📦', 'rar': '📦', 'tar': '📦',
+                    'mp3': '🎵', 'mp4': '🎬', 'avi': '🎬', 'mov': '🎬', 'sh': '⚙️',
+                    'bash': '⚙️', 'env': '🔑', 'yml': '⚙️', 'yaml': '⚙️', 'toml': '⚙️'
+                };
+                return icons[ext] || '📄';
+            }
+
+            function render() {
+                var grid = document.getElementById('grid');
+                var pathBar = document.getElementById('pathBar');
+                var statusItems = document.getElementById('statusItems');
+                var statusPath = document.getElementById('statusPath');
+                grid.innerHTML = '';
+                pathBar.textContent = currentPath;
+                statusPath.textContent = currentPath;
+                var items = fs.ls(currentPath);
+                statusItems.textContent = items.length + ' item' + (items.length !== 1 ? 's' : '');
+                if (items.length === 0) {
+                    grid.innerHTML = '<div class="empty-state"><div class="icon">📂</div><div>This folder is empty</div></div>';
+                    return;
+                }
+                items.forEach(function(item) {
+                    var div = document.createElement('div');
+                    div.className = 'item';
+                    var isFolder = item.type === 'folder';
+                    var icon = isFolder ? '📁' : getFileIcon(item.name);
+                    var extension = isFolder ? '' : getFileExtension(item.name);
+                    div.innerHTML = '<div class="item-icon">' + icon + '</div>' +
+                        '<div class="item-name">' + item.name + '</div>' +
+                        (extension ? '<div class="item-ext">' + extension + '</div>' : '') +
+                        '<div class="item-actions"><button class="item-action-btn" onclick="deleteItem(\'' + item.name + '\', ' + isFolder + ')">✕</button></div>';
+                    div.addEventListener('click', function(e) {
+                        if (e.target.closest('.item-actions')) return;
+                        if (isFolder) { currentPath = item.path; render(); }
+                    });
+                    div.addEventListener('contextmenu', function(e) {
+                        e.preventDefault();
+                        ctxTarget = item;
+                        showCtxMenu(e.clientX, e.clientY, isFolder);
+                    });
+                    grid.appendChild(div);
+                });
+            }
+
+            function showCtxMenu(x, y, isFolder) {
+                var menu = document.getElementById('ctxMenu');
+                document.getElementById('ctxOpen').textContent = isFolder ? '📂 Open' : '📄 Open';
+                menu.style.left = x + 'px';
+                menu.style.top = y + 'px';
+                menu.classList.add('show');
+            }
+
+            function hideCtxMenu() {
+                document.getElementById('ctxMenu').classList.remove('show');
+                ctxTarget = null;
+            }
+
+            function ctxOpen() {
+                if (ctxTarget && ctxTarget.type === 'folder') {
+                    currentPath = ctxTarget.path;
+                    render();
+                }
+                hideCtxMenu();
+            }
+
+            function ctxRename() {
+                if (ctxTarget) {
+                    var newName = prompt('Rename to:', ctxTarget.name);
+                    if (newName && newName !== ctxTarget.name) {
+                        var parentNode = fs.traverse(currentPath);
+                        if (parentNode && parentNode.children) {
+                            parentNode.children[newName] = parentNode.children[ctxTarget.name];
+                            parentNode.children[newName].name = newName;
+                            delete parentNode.children[ctxTarget.name];
+                            fs.save();
+                            render();
+                        }
+                    }
+                }
+                hideCtxMenu();
+            }
+
+            function ctxDelete() {
+                if (ctxTarget) {
+                    deleteItem(ctxTarget.name, ctxTarget.type === 'folder');
+                }
+                hideCtxMenu();
+            }
+
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('#ctxMenu')) hideCtxMenu();
+            });
+
+            function goUp() {
+                if (currentPath === '/') return;
+                var parts = currentPath.split('/').filter(function(p) { return p; });
+                parts.pop();
+                currentPath = '/' + parts.join('/');
+                if (currentPath === '') currentPath = '/';
+                render();
+            }
+
+            function goHome() { currentPath = '/'; render(); }
+
+            function newFolder() {
+                var name = prompt('Folder name:');
+                if (name) { fs.createFolder(currentPath, name); render(); }
+            }
+
+            function newFile() {
+                var name = prompt('File name:');
+                if (name) { fs.createFile(currentPath, name, ''); render(); }
+            }
+
+            function deleteItem(name, isFolder) {
+                if (!confirm('Delete \'' + name + '\'?')) return;
+                var full = currentPath === '/' ? '/' + name : currentPath + '/' + name;
+                var node = fs.traverse(full);
+                if (!node) return;
+                if (isFolder && node.children && Object.keys(node.children).length > 0) {
+                    if (!confirm('Directory is not empty. Delete all contents?')) return;
+                }
+                var parentNode = fs.traverse(currentPath);
+                if (parentNode && parentNode.children) {
+                    delete parentNode.children[name];
+                    fs.save();
+                    render();
+                }
+            }
+
+            function refresh() { render(); }
+
+            function factoryReset() {
+                if (confirm('Reset file system to defaults? All files will be lost.')) {
+                    fs.resetToDefault();
+                    currentPath = '/';
+                    render();
+                }
+            }
+
+            render();
+        }
+    </script>
+</body>
+</html>

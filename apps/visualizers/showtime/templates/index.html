@@ -1,0 +1,27 @@
+<!-- hazoom-os/showtime/templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Showtime Real-Time Search</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Showtime Real-Time Search</h1>
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-8">
+                <div class="input-group mb-3">
+                    <input type="text" id="search-input" class="form-control" placeholder="Start typing to search...">
+                </div>
+                <ul id="results-list" class="list-group">
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+    "_comment": "SECURE CONFIG - This file should be gitignored and never committed",
+    "email": {
+        "address": "",
+        "app_password": "",
+        "imap_server": "imap.gmail.com",
+        "imap_port": 993,
+        "smtp_server": "smtp.gmail.com",
+        "smtp_port": 587
+    },
+    "oauth": {
+        "client_id": "",
+        "client_secret": "",
+        "redirect_uris": []
+    },
+    "api_keys": {},
+    "encryption_key": "",
+    "version": "3.0.0"
+}

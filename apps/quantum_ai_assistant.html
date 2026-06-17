@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ Quantum AI Assistant - HAZOOM OS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --q-primary: #8b5cf6;
+            --q-secondary: #06b6d4;
+            --q-accent: #f59e0b;
+            --q-success: #10b981;
+            --q-danger: #ef4444;
+            --q-bg: #0f172a;
+            --q-surface: #1e293b;
+            --q-text: #f1f5f9;
+            --q-text-muted: #94a3b8;
+            --q-border: rgba(255, 255, 255, 0.1);
+            --q-glass: rgba(15, 23, 42, 0.8);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--q-bg);
+            color: var(--q-text);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Quantum Particles Background */
+        #quantum-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        /* Header */
+        .header {
+            position: relative;
+            z-index: 10;
+            padding: 20px 30px;
+            background: var(--q-glass);
+            border-bottom: 1px solid var(--q-border);
+            backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--q-primary), var(--q-secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
+            animation: pulse-glow 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(139, 92, 246, 0.5); }
+        }
+
+        .logo-text h1 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--q-primary), var(--q-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+        }
+
+        .logo-text p {
+            font-size: 0.75rem;
+            color: var(--q-text-muted);
+            font-weight: 400;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(139, 92, 246, 0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--q-success);
+            border-radius: 50%;
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .status-text {
+            font-size: 0.8rem;
+            color: var(--q-text-muted);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .model-selector {
+            background: var(--q-surface);
+            border: 1px solid var(--q-border);
+            color: var(--q-text);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .model-selector:hover {
+            border-color: var(--q-primary);
+        }
+
+        .clear-btn {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: var(--q-danger);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .clear-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Main Container */
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 5;
+            padding: 20px 30px;
+            gap: 20px;
+        }
+
+        /* Chat Area */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            overflow: hidden;
+        }
+
+        .messages-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding-right: 10px;
+        }
+
+        .messages-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .messages-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .messages-list::-webkit-scrollbar-thumb {
+            background: var(--q-border);
+            border-radius: 10px;
+        }
+
+        .message {
+            display: flex;
+            gap: 16px;
+            animation: message-appear 0.5s ease-out;
+        }
+
+        @keyframes message-appear {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .message.ai .avatar {
+            background: linear-gradient(135deg, var(--q-primary), var(--q-secondary));
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+        }
+
+        .message.user .avatar {
+            background: var(--q-surface);
+            border: 1px solid var(--q-border);
+        }
+
+        .message-content {
+            max-width: 70%;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .quantum-thought {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--q-primary);
+            background: rgba(139, 92, 246, 0.1);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border-left: 3px solid var(--q-primary);
+            font-style: italic;
+            opacity: 0;
+            animation: thought-appear 0.5s ease-out forwards;
+        }
+
+        @keyframes thought-appear {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .message-bubble {
+            padding: 16px 20px;
+            border-radius: 18px;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .message.ai .message-bubble {
+            background: var(--q-surface);
+            border: 1px solid var(--q-border);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, var(--q-primary), var(--q-secondary));
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-typing {
+            display: flex;
+            gap: 6px;
+            padding: 16px 20px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--q-primary);
+            border-radius: 50%;
+            animation: typing-bounce 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing-bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        /* Input Area */
+        .input-area {
+            background: var(--q-surface);
+            border: 1px solid var(--q-border);
+            border-radius: 16px;
+            padding: 12px 16px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        #userInput {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--q-text);
+            font-size: 1rem;
+            padding: 12px;
+            outline: none;
+            resize: none;
+            max-height: 120px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        #userInput::placeholder {
+            color: var(--q-text-muted);
+        }
+
+        .send-btn {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--q-primary), var(--q-secondary));
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Context Panel */
+        .context-panel {
+            position: fixed;
+            right: 30px;
+            top: 100px;
+            width: 280px;
+            background: var(--q-glass);
+            border: 1px solid var(--q-border);
+            border-radius: 16px;
+            padding: 20px;
+            backdrop-filter: blur(20px);
+            z-index: 100;
+        }
+
+        .context-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--q-text-muted);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .context-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--q-border);
+            font-size: 0.85rem;
+        }
+
+        .context-item:last-child {
+            border-bottom: none;
+        }
+
+        .context-label {
+            color: var(--q-text-muted);
+        }
+
+        .context-value {
+            color: var(--q-text);
+            font-weight: 500;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .context-panel {
+                display: none;
+            }
+            .message-content {
+                max-width: 85%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="quantum-bg"></canvas>
+
+    <div class="header">
+        <div class="header-left">
+            <div class="logo">
+                <div class="logo-icon">✨</div>
+                <div class="logo-text">
+                    <h1>Quantum AI Assistant</h1>
+                    <p>Powered by HAZOOM OS</p>
+                </div>
+            </div>
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span class="status-text" id="statusText">Connecting...</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <select class="model-selector" id="modelSelector">
+                <option value="qwen2.5-coder:quantum">Qwen 2.5 Coder</option>
+                <option value="llama3.2:latest">Llama 3.2</option>
+                <option value="mistral:latest">Mistral</option>
+                <option value="phi:latest">Phi</option>
+            </select>
+            <button class="clear-btn" onclick="clearConversation()">Clear</button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="chat-area">
+            <div class="messages-list" id="messagesList">
+                <div class="message ai">
+                    <div class="avatar">🤖</div>
+                    <div class="message-content">
+                        <div class="quantum-thought">Initializing quantum neural network...</div>
+                        <div class="message-bubble">
+                            Greetings! I'm the Quantum AI Assistant of HAZOOM OS. I have access to your system state and can help you with development, system tasks, and intelligent assistance. What would you like to explore today?
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <div class="input-wrapper">
+                <textarea id="userInput" placeholder="Ask me anything about HAZOOM OS or your system..." rows="1"></textarea>
+            </div>
+            <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+        </div>
+    </div>
+
+    <div class="context-panel">
+        <div class="context-title">System Context</div>
+        <div class="context-item">
+            <span class="context-label">Model</span>
+            <span class="context-value" id="ctxModel">Loading...</span>
+        </div>
+        <div class="context-item">
+            <span class="context-label">Response Time</span>
+            <span class="context-value" id="ctxTime">--</span>
+        </div>
+        <div class="context-item">
+            <span class="context-label">Messages</span>
+            <span class="context-value" id="ctxMessages">0</span>
+        </div>
+    </div>
+
+    <script src="../core/llm_engine.js"></script>
+    <script>
+        // Initialize LLM Engine
+        const llm = new LLMEngine({
+            baseUrl: 'http://localhost:11434',
+            model: 'qwen2.5-coder:quantum',
+            temperature: 0.7,
+            maxTokens: 2048
+        });
+
+        // DOM Elements
+        const messagesList = document.getElementById('messagesList');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const statusText = document.getElementById('statusText');
+        const modelSelector = document.getElementById('modelSelector');
+        const ctxModel = document.getElementById('ctxModel');
+        const ctxTime = document.getElementById('ctxTime');
+        const ctxMessages = document.getElementById('ctxMessages');
+
+         // Initialize MCP Context Router
+         let mcpRouter = null;
+         let mcpInitialized = false;
+
+         async function initMCP() {
+             // Try to access MCP router from parent
+             if (window.parent && window.parent.mcp) {
+                 mcpRouter = window.parent.mcp;
+                 mcpInitialized = true;
+                 console.log('✅ [Quantum AI Assistant] MCP Context Router connected');
+                 return;
+             }
+
+             // Try to load local MCP router
+             try {
+                 const mcpScript = document.createElement('script');
+                 mcpScript.src = '../core/mcp_context_router.js';
+                 document.head.appendChild(mcpScript);
+
+                 await new Promise(resolve => mcpScript.onload = resolve);
+
+                 if (window.MCPContextRouter) {
+                     mcpRouter = new window.MCPContextRouter();
+                     mcpInitialized = true;
+                     console.log('✅ [Quantum AI Assistant] MCP Context Router loaded locally');
+                 }
+             } catch (error) {
+                 console.warn('⚠️ [Quantum AI Assistant] MCP Context Router not available');
+             }
+         }
+
+         // Initialize
+         async function init() {
+             // Initialize MCP
+             await initMCP();
+
+             // Update system context
+             if (window.parent && window.parent.WindowManager) {
+                 const apps = window.parent.WindowManager.windows || [];
+                 llm.setSystemContext({
+                     activeApps: apps.map(w => w.title),
+                     osVersion: '2.2.0',
+                     systemTime: new Date().toISOString(),
+                     mcpEnabled: mcpInitialized
+                 });
+             }
+
+            // Fetch available models
+            const models = await llm.getAvailableModels();
+            updateModelSelector(models);
+
+            // Update status
+            statusText.textContent = 'Ready';
+            ctxModel.textContent = llm.currentModel;
+        }
+
+        // Update model selector
+        function updateModelSelector(models) {
+            modelSelector.innerHTML = '';
+            models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model.name;
+                option.textContent = model.name;
+                modelSelector.appendChild(option);
+            });
+            modelSelector.value = llm.currentModel;
+        }
+
+         // Send message
+         async function sendMessage() {
+             const message = userInput.value.trim();
+             if (!message) return;
+
+             // Add user message
+             addMessage('user', message);
+             userInput.value = '';
+
+             // Show typing indicator
+             const typingId = addTypingIndicator();
+             sendBtn.disabled = true;
+             statusText.textContent = 'Processing...';
+
+             const startTime = Date.now();
+
+             try {
+                 // Gather MCP Context if available
+                 if (mcpInitialized && mcpRouter) {
+                     updateTypingThought(typingId, '🔍 Resolving MCP context...');
+                     try {
+                         const mcpContext = await mcpRouter.nanoSearch(message);
+                         console.log('✓ [Quantum AI] MCP context resolved:', mcpContext);
+                         // Add MCP context to system context
+                         llm.setSystemContext({
+                             ...llm.systemContext,
+                             mcp_context: mcpContext,
+                             mcp_sources: mcpContext.sources
+                         });
+                         updateTypingThought(typingId, '✅ MCP context loaded. Generating response...');
+                     } catch (error) {
+                         console.warn('⚠️ [Quantum AI] MCP context error:', error);
+                     }
+                 }
+
+                 // Generate AI response
+                 await llm.generateResponse(message, {
+                     stream: true,
+                     onThought: (thought) => {
+                         updateTypingThought(typingId, thought);
+                     },
+                     onProgress: (chunk, fullResponse) => {
+                         updateStreamingMessage(typingId, fullResponse);
+                     },
+                     onComplete: (fullResponse) => {
+                         removeTypingIndicator(typingId);
+                         addMessage('ai', fullResponse);
+                         const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+                         ctxTime.textContent = `${duration}s`;
+                         ctxMessages.textContent = messagesList.children.length -1;
+                     }
+                 });
+             } catch (error) {
+                 removeTypingIndicator(typingId);
+                 addErrorMessage(error.message);
+             } finally {
+                 sendBtn.disabled = false;
+                 statusText.textContent = 'Ready';
+             }
+         }
+                });
+            } catch (error) {
+                removeTypingIndicator(typingId);
+                addErrorMessage(error.message);
+            } finally {
+                sendBtn.disabled = false;
+                statusText.textContent = 'Ready';
+            }
+        }
+
+        // Add message to chat
+        function addMessage(role, content, thought = null) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar';
+            avatar.textContent = role === 'user' ? '👤' : '🤖';
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+
+            if (thought) {
+                const thoughtDiv = document.createElement('div');
+                thoughtDiv.className = 'quantum-thought';
+                thoughtDiv.textContent = thought;
+                contentDiv.appendChild(thoughtDiv);
+            }
+
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = 'message-bubble';
+            bubbleDiv.textContent = content;
+            contentDiv.appendChild(bubbleDiv);
+
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(contentDiv);
+            messagesList.appendChild(messageDiv);
+
+            scrollToBottom();
+        }
+
+        // Add typing indicator
+        function addTypingIndicator() {
+            const id = 'typing-' + Date.now();
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message ai';
+            messageDiv.id = id;
+
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar';
+            avatar.textContent = '🤖';
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+
+            const thoughtDiv = document.createElement('div');
+            thoughtDiv.className = 'quantum-thought';
+            thoughtDiv.id = id + '-thought';
+            thoughtDiv.textContent = 'Processing quantum vectors...';
+
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = 'message-bubble message-typing';
+            bubbleDiv.innerHTML = `
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            `;
+
+            contentDiv.appendChild(thoughtDiv);
+            contentDiv.appendChild(bubbleDiv);
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(contentDiv);
+            messagesList.appendChild(messageDiv);
+
+            scrollToBottom();
+            return id;
+        }
+
+        // Update typing thought
+        function updateTypingIndicator(id, thought) {
+            const thoughtDiv = document.getElementById(id + '-thought');
+            if (thoughtDiv) {
+                thoughtDiv.textContent = thought;
+            }
+        }
+
+        // Update streaming message
+        function updateStreamingMessage(id, content) {
+            const bubbleDiv = document.querySelector(`#${id} .message-bubble`);
+            if (bubbleDiv) {
+                bubbleDiv.innerHTML = content.replace(/\n/g, '<br>');
+                scrollToBottom();
+            }
+        }
+
+        // Remove typing indicator
+        function removeTypingIndicator(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.remove();
+            }
+        }
+
+        // Add error message
+        function addErrorMessage(error) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message ai';
+            messageDiv.innerHTML = `
+                <div class="avatar">⚠️</div>
+                <div class="message-content">
+                    <div class="message-bubble" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2);">
+                        Error: ${error}
+                    </div>
+                </div>
+            `;
+            messagesList.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Clear conversation
+        function clearConversation() {
+            messagesList.innerHTML = `
+                <div class="message ai">
+                    <div class="avatar">🤖</div>
+                    <div class="message-content">
+                        <div class="quantum-thought">Quantum memory cleared...</div>
+                        <div class="message-bubble">
+                            Conversation cleared. How can I assist you now?
+                        </div>
+                    </div>
+                </div>
+            `;
+            llm.clearHistory();
+            ctxMessages.textContent = '0';
+        }
+
+        // Scroll to bottom
+        function scrollToBottom() {
+            messagesList.scrollTop = messagesList.scrollHeight;
+        }
+
+        // Model selection
+        modelSelector.addEventListener('change', (e) => {
+            llm.setCurrentModel(e.target.value);
+            ctxModel.textContent = e.target.value;
+        });
+
+        // Enter key to send
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Auto-resize textarea
+        userInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+
+        // Initialize on load
+        window.addEventListener('load', init);
+
+        // Quantum background animation
+        const canvas = document.getElementById('quantum-bg');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function createParticle() {
+            return {
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.5,
+                vy: (Math.random() - 0.5) * 0.5,
+                radius: Math.random() * 2 + 1,
+                alpha: Math.random() * 0.5 + 0.2
+            };
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < 50; i++) {
+                particles.push(createParticle());
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            particles.forEach((p, i) => {
+                p.x += p.vx;
+                p.y += p.vy;
+
+                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(139, 92, 246, ${p.alpha})`;
+                ctx.fill();
+
+                // Draw connections
+                particles.forEach((p2, j) => {
+                    if (i >= j) return;
+                    const dx = p.x - p2.x;
+                    const dy = p.y - p2.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 150) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.strokeStyle = `rgba(139, 92, 246, ${0.1 * (1 - dist / 150)})`;
+                        ctx.stroke();
+                    }
+                });
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        initParticles();
+        animate();
+    </script>
+</body>
+</html>

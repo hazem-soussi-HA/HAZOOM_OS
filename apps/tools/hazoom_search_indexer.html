@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hazoom Search Indexer</title>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary: #8b5cf6;
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #475569;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --glass: rgba(15, 23, 42, 0.4);
+            --glass-heavy: rgba(15, 23, 42, 0.8);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-accent: rgba(59, 130, 246, 0.4);
+            --window-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            --primary-glow: 0 0 20px rgba(59, 130, 246, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .indexer-header {
+            background: var(--glass-heavy);
+            backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 15px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .progress-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px;
+        }
+
+        .progress-bar {
+            height: 20px;
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 0 15px 15px 15px;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .log-container {
+            flex: 1;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin: 0 15px 15px 15px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .log-header {
+            padding: 10px 15px;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+        }
+
+        .log-content {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .log-time {
+            color: var(--text-secondary);
+            margin-right: 8px;
+        }
+
+        .log-info {
+            color: var(--primary);
+        }
+
+        .log-warn {
+            color: var(--warning);
+        }
+
+        .log-error {
+            color: var(--error);
+        }
+
+        .log-success {
+            color: var(--success);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin: 15px;
+            align-items: center;
+        }
+
+        .input-group label {
+            min-width: 120px;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 8px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+        }
+
+        .input-group button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 15px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="indexer-header">
+        <div class="header-title">
+            <span>🔍</span> Hazoom Search Indexer
+        </div>
+        <div class="controls">
+            <button class="control-btn" id="startIndexing">Start Indexing</button>
+            <button class="control-btn" id="stopIndexing" disabled>Stop</button>
+            <button class="control-btn" id="clearIndex">Clear Index</button>
+            <button class="control-btn" id="exportIndex">Export Index</button>
+            <button class="control-btn" id="importIndex">Import Index</button>
+        </div>
+    </div>
+
+    <div class="input-group">
+        <label for="startIndexUrl">Start URL:</label>
+        <input type="text" id="startIndexUrl" value="https://example.com" placeholder="Enter starting URL for indexing...">
+        <button id="addSeedUrl">Add to Queue</button>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-info">
+            <span id="progressText">Ready to start indexing</span>
+            <span id="progressPercent">0%</span>
+        </div>
+    </div>
+
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-value" id="pagesIndexed">0</div>
+            <div class="stat-label">Pages Indexed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="linksDiscovered">0</div>
+            <div class="stat-label">Links Discovered</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="wordsIndexed">0</div>
+            <div class="stat-label">Words Indexed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="indexSize">0 KB</div>
+            <div class="stat-label">Index Size</div>
+        </div>
+    </div>
+
+    <div class="log-container">
+        <div class="log-header">Indexing Log</div>
+        <div class="log-content" id="logContent">
+            <div class="log-entry"><span class="log-time">[12:00:00]</span> <span class="log-info">Indexer initialized and ready</span></div>
+        </div>
+    </div>
+
+    <script>
+        class HazoomSearchIndexer {
+            constructor() {
+                this.isIndexing = false;
+                this.pagesIndexed = 0;
+                this.linksDiscovered = 0;
+                this.wordsIndexed = 0;
+                this.index = {};
+                this.crawlQueue = [];
+                this.visitedUrls = new Set();
+                this.indexSize = 0;
+                
+                this.initializeElements();
+                this.bindEvents();
+                this.loadIndex();
+            }
+            
+            initializeElements() {
+                this.elements = {
+                    startIndexing: document.getElementById('startIndexing'),
+                    stopIndexing: document.getElementById('stopIndexing'),
+                    clearIndex: document.getElementById('clearIndex'),
+                    exportIndex: document.getElementById('exportIndex'),
+                    importIndex: document.getElementById('importIndex'),
+                    progressFill: document.getElementById('progressFill'),
+                    progressText: document.getElementById('progressText'),
+                    progressPercent: document.getElementById('progressPercent'),
+                    pagesIndexed: document.getElementById('pagesIndexed'),
+                    linksDiscovered: document.getElementById('linksDiscovered'),
+                    wordsIndexed: document.getElementById('wordsIndexed'),
+                    indexSize: document.getElementById('indexSize'),
+                    logContent: document.getElementById('logContent'),
+                    startIndexUrl: document.getElementById('startIndexUrl'),
+                    addSeedUrl: document.getElementById('addSeedUrl')
+                };
+            }
+            
+            bindEvents() {
+                this.elements.startIndexing.addEventListener('click', () => this.startIndexing());
+                this.elements.stopIndexing.addEventListener('click', () => this.stopIndexing());
+                this.elements.clearIndex.addEventListener('click', () => this.clearIndex());
+                this.elements.exportIndex.addEventListener('click', () => this.exportIndex());
+                this.elements.importIndex.addEventListener('click', () => this.importIndex());
+                this.elements.addSeedUrl.addEventListener('click', () => this.addSeedUrl());
+            }
+            
+            log(message, type = 'info') {
+                const now = new Date();
+                const timeStr = `[${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}]`;
+                
+                const logEntry = document.createElement('div');
+                logEntry.className = 'log-entry';
+                logEntry.innerHTML = `<span class="log-time">${timeStr}</span> <span class="log-${type}">${message}</span>`;
+                
+                this.elements.logContent.appendChild(logEntry);
+                this.elements.logContent.scrollTop = this.elements.logContent.scrollHeight;
+            }
+            
+            async startIndexing() {
+                if (this.isIndexing) return;
+                
+                this.isIndexing = true;
+                this.elements.startIndexing.disabled = true;
+                this.elements.stopIndexing.disabled = false;
+                
+                this.log('Starting indexing process...', 'info');
+                
+                // If queue is empty, add the start URL
+                if (this.crawlQueue.length === 0) {
+                    const startUrl = this.elements.startIndexUrl.value.trim();
+                    if (startUrl) {
+                        this.crawlQueue.push(startUrl);
+                        this.log(`Added seed URL: ${startUrl}`, 'info');
+                    } else {
+                        this.log('No seed URL provided', 'error');
+                        this.stopIndexing();
+                        return;
+                    }
+                }
+                
+                // Start crawling
+                await this.processCrawlQueue();
+            }
+            
+            async processCrawlQueue() {
+                while (this.isIndexing && this.crawlQueue.length > 0) {
+                    const url = this.crawlQueue.shift();
+                    
+                    if (this.visitedUrls.has(url)) {
+                        continue;
+                    }
+                    
+                    this.visitedUrls.add(url);
+                    this.log(`Crawling: ${url}`, 'info');
+                    
+                    try {
+                        // Simulate fetching and parsing content
+                        const content = await this.fetchPageContent(url);
+                        if (content) {
+                            this.indexPage(url, content);
+                            
+                            // Extract and add new links to queue
+                            const newLinks = this.extractLinks(content, url);
+                            newLinks.forEach(link => {
+                                if (!this.visitedUrls.has(link) && !this.crawlQueue.includes(link)) {
+                                    this.crawlQueue.push(link);
+                                    this.linksDiscovered++;
+                                    this.updateStats();
+                                }
+                            });
+                        }
+                    } catch (error) {
+                        this.log(`Error crawling ${url}: ${error.message}`, 'error');
+                    }
+                    
+                    // Update progress
+                    this.updateProgress();
+                    
+                    // Small delay to be respectful to servers
+                    await this.delay(100);
+                }
+                
+                this.stopIndexing();
+            }
+            
+            async fetchPageContent(url) {
+                // In a real implementation, this would make actual HTTP requests
+                // For this client-side demo, we'll simulate content
+                return this.simulatePageContent(url);
+            }
+            
+            simulatePageContent(url) {
+                // Simulate different types of content based on URL
+                const domain = new URL(url).hostname;
+                
+                return `
+                    <html>
+                    <head>
+                        <title>Sample Page from ${domain}</title>
+                        <meta name="description" content="This is a sample page for indexing demonstration">
+                    </head>
+                    <body>
+                        <h1>Welcome to ${domain}</h1>
+                        <p>This is sample content for the Hazoom Search Indexer demonstration. 
+                        The indexer would normally crawl real web content and extract meaningful information.</p>
+                        <p>Keywords: search, indexing, web crawler, Hazoom OS, MCP, artificial intelligence</p>
+                        <a href="https://${domain}/page1">Link 1</a>
+                        <a href="https://${domain}/page2">Link 2</a>
+                        <a href="https://example.com/external">External Link</a>
+                    </body>
+                    </html>
+                `;
+            }
+            
+            indexPage(url, content) {
+                // Extract text content and basic metadata
+                const textContent = this.extractTextFromHTML(content);
+                const title = this.extractTitle(content) || 'Untitled';
+                const description = this.extractDescription(content) || 'No description available';
+                
+                // Create index entry
+                this.index[url] = {
+                    title: title,
+                    description: description,
+                    content: textContent,
+                    timestamp: new Date().toISOString(),
+                    wordCount: textContent.split(/\s+/).length
+                };
+                
+                // Update statistics
+                this.pagesIndexed++;
+                this.wordsIndexed += this.index[url].wordCount;
+                this.indexSize = JSON.stringify(this.index).length / 1024; // KB
+                
+                this.updateStats();
+                this.log(`Indexed: ${title} (${this.index[url].wordCount} words)`, 'success');
+            }
+            
+            extractTextFromHTML(html) {
+                // Simple text extraction (in real implementation, would be more sophisticated)
+                const temp = document.createElement('div');
+                temp.innerHTML = html;
+                return temp.textContent || temp.innerText || '';
+            }
+            
+            extractTitle(html) {
+                const match = html.match(/<title[^>]*>(.*?)<\/title>/i);
+                return match ? match[1].trim() : null;
+            }
+            
+            extractDescription(html) {
+                const match = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']*)["'][^>]*>/i);
+                return match ? match[1].trim() : null;
+            }
+            
+            extractLinks(html, baseUrl) {
+                // Extract links from HTML content
+                const linkMatches = html.match(/href=["']([^"']*)["']/gi) || [];
+                const links = [];
+                
+                linkMatches.forEach(match => {
+                    const url = match.match(/href=["']([^"']*)["']/i)[1];
+                    try {
+                        const fullUrl = new URL(url, baseUrl).href;
+                        // Only add HTTP/HTTPS URLs
+                        if (fullUrl.startsWith('http')) {
+                            links.push(fullUrl);
+                        }
+                    } catch (e) {
+                        // Invalid URL, skip
+                    }
+                });
+                
+                return links;
+            }
+            
+            updateProgress() {
+                const totalEstimated = 100; // For demo purposes
+                const progress = Math.min(100, (this.pagesIndexed / totalEstimated) * 100);
+                
+                this.elements.progressFill.style.width = `${progress}%`;
+                this.elements.progressPercent.textContent = `${Math.round(progress)}%`;
+                this.elements.progressText.textContent = `Indexed ${this.pagesIndexed} pages`;
+            }
+            
+            updateStats() {
+                this.elements.pagesIndexed.textContent = this.pagesIndexed;
+                this.elements.linksDiscovered.textContent = this.linksDiscovered;
+                this.elements.wordsIndexed.textContent = this.wordsIndexed.toLocaleString();
+                this.elements.indexSize.textContent = `${Math.round(this.indexSize)} KB`;
+            }
+            
+            stopIndexing() {
+                this.isIndexing = false;
+                this.elements.startIndexing.disabled = false;
+                this.elements.stopIndexing.disabled = true;
+                this.log('Indexing stopped', 'info');
+            }
+            
+            clearIndex() {
+                if (confirm('Are you sure you want to clear the entire index?')) {
+                    this.index = {};
+                    this.crawlQueue = [];
+                    this.visitedUrls = new Set();
+                    this.pagesIndexed = 0;
+                    this.linksDiscovered = 0;
+                    this.wordsIndexed = 0;
+                    this.indexSize = 0;
+                    
+                    this.updateStats();
+                    this.updateProgress();
+                    this.log('Index cleared', 'info');
+                }
+            }
+            
+            exportIndex() {
+                const dataStr = JSON.stringify(this.index, null, 2);
+                const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+                
+                const exportFileDefaultName = `hazoom-index-${new Date().toISOString().split('T')[0]}.json`;
+                
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', exportFileDefaultName);
+                linkElement.click();
+                
+                this.log('Index exported successfully', 'success');
+            }
+            
+            importIndex() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json';
+                
+                input.onchange = e => {
+                    const file = e.target.files[0];
+                    const reader = new FileReader();
+                    
+                    reader.onload = e => {
+                        try {
+                            const importedIndex = JSON.parse(e.target.result);
+                            this.index = importedIndex;
+                            this.updateStats();
+                            this.log('Index imported successfully', 'success');
+                        } catch (error) {
+                            this.log(`Error importing index: ${error.message}`, 'error');
+                        }
+                    };
+                    
+                    reader.readAsText(file);
+                };
+                
+                input.click();
+            }
+            
+            addSeedUrl() {
+                const url = this.elements.startIndexUrl.value.trim();
+                if (url && !this.crawlQueue.includes(url) && !this.visitedUrls.has(url)) {
+                    this.crawlQueue.push(url);
+                    this.log(`Added to crawl queue: ${url}`, 'info');
+                } else if (this.visitedUrls.has(url)) {
+                    this.log(`URL already visited: ${url}`, 'warn');
+                } else if (this.crawlQueue.includes(url)) {
+                    this.log(`URL already in queue: ${url}`, 'warn');
+                }
+            }
+            
+            loadIndex() {
+                const savedIndex = localStorage.getItem('hazoom_search_index');
+                if (savedIndex) {
+                    try {
+                        this.index = JSON.parse(savedIndex);
+                        this.updateStats();
+                        this.log('Index loaded from localStorage', 'success');
+                    } catch (error) {
+                        this.log(`Error loading index: ${error.message}`, 'error');
+                    }
+                }
+            }
+            
+            saveIndex() {
+                try {
+                    localStorage.setItem('hazoom_search_index', JSON.stringify(this.index));
+                    this.log('Index saved to localStorage', 'success');
+                } catch (error) {
+                    this.log(`Error saving index: ${error.message}`, 'error');
+                }
+            }
+            
+            delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        }
+
+        // Initialize the indexer when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.searchIndexer = new HazoomSearchIndexer();
+        });
+    </script>
+</body>
+</html>

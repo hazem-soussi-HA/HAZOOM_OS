@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Monitor — HAZOOM OS</title>
+<style>
+:root{--bg:#050510;--card:rgba(255,255,255,0.03);--border:rgba(255,255,255,0.08);--accent:#00f0ff;--text:#e8e8f0;--dim:rgba(232,232,240,0.5);--green:#10b981;--amber:#f59e0b;--red:#ef4444;--purple:#8b5cf6;--blue:#3b82f6}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:20px;-webkit-font-smoothing:antialiased}
+h1{font-size:1.4rem;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:10px}
+.subtitle{color:var(--dim);font-size:0.8rem;margin-bottom:24px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;transition:border-color 0.3s}
+.card:hover{border-color:var(--accent)}
+.card-title{font-size:0.75rem;text-transform:uppercase;letter-spacing:2px;color:var(--dim);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-value{font-size:2rem;font-weight:800;margin-bottom:4px}
+.card-sub{font-size:0.75rem;color:var(--dim)}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:0.8rem}
+.bar-label{width:80px;color:var(--dim);font-size:0.75rem}
+.bar-track{flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width 0.5s ease}
+.bar-val{width:40px;text-align:right;font-size:0.75rem;color:var(--dim)}
+.metric-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:0.8rem}
+.metric-row:last-child{border-bottom:none}
+.metric-name{color:var(--dim)}
+.metric-value{font-weight:600}
+.status-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600}
+.status-badge.ok{background:rgba(16,185,129,0.1);color:var(--green)}
+.status-badge.warn{background:rgba(245,158,11,0.1);color:var(--amber)}
+.status-badge.err{background:rgba(239,68,68,0.1);color:var(--red)}
+.ring-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:16px;margin-top:12px}
+.ring-item{text-align:center}
+.ring-chart{width:70px;height:70px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;position:relative;background:conic-gradient(var(--ring-color,var(--accent)) calc(var(--score) * 1%), rgba(255,255,255,0.05) 0)}
+.ring-chart::before{content:'';position:absolute;width:54px;height:54px;background:var(--bg);border-radius:50%}
+.ring-value{position:relative;z-index:1;font-weight:800;font-size:0.85rem;color:var(--ring-color,var(--accent))}
+.ring-label{font-size:0.7rem;color:var(--dim)}
+.log-output{margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--dim);max-height:120px;overflow-y:auto;white-space:pre-wrap;line-height:1.6}
+.log-output .info{color:var(--accent)}.log-output .warn{color:var(--amber)}.log-output .err{color:var(--red)}
+.refresh-btn{background:var(--accent);color:#000;border:none;border-radius:8px;padding:6px 14px;font-size:0.75rem;font-weight:600;cursor:pointer;transition:all 0.3s}
+.refresh-btn:hover{box-shadow:0 0 15px var(--accent-glow)}
+</style>
+</head>
+<body>
+<h1>📊 System Monitor</h1>
+<p class="subtitle">HAZOOM OS v3.0.0 — Real-time system telemetry</p>
+
+<div class="grid">
+  <div class="card">
+    <div class="card-title">⚡ CPU Load</div>
+    <div class="card-value" id="cpu-val" style="color:var(--green)">--</div>
+    <div class="card-sub">Processor utilization</div>
+    <div class="bar-row" style="margin-top:12px"><div class="bar-label">Usage</div><div class="bar-track"><div class="bar-fill" id="cpu-bar" style="width:0%;background:var(--green)"></div></div><div class="bar-val" id="cpu-pct">0%</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">💾 Memory</div>
+    <div class="card-value" id="mem-val" style="color:var(--purple)">--</div>
+    <div class="card-sub">RAM usage</div>
+    <div class="bar-row" style="margin-top:12px"><div class="bar-label">Used</div><div class="bar-track"><div class="bar-fill" id="mem-bar" style="width:0%;background:var(--purple)"></div></div><div class="bar-val" id="mem-pct">0%</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">🤖 AI Agents</div>
+    <div class="card-value" id="agents-val" style="color:var(--blue)">3</div>
+    <div class="card-sub">Active agents</div>
+    <div class="metric-row" style="margin-top:8px"><span class="metric-name">Main</span><span class="status-badge ok">● Online</span></div>
+    <div class="metric-row"><span class="metric-name">Deep Think</span><span class="status-badge ok">● Online</span></div>
+    <div class="metric-row"><span class="metric-name">Code</span><span class="status-badge ok">● Online</span></div>
+  </div>
+  <div class="card">
+    <div class="card-title">🛡️ System Health</div>
+    <div id="health-score" style="display:flex;justify-content:center;margin:8px 0">
+      <div class="ring-chart" style="width:90px;height:90px;--score:95;--ring-color:var(--green)"><span class="ring-value" style="font-size:1.1rem">95</span></div>
+    </div>
+    <div class="card-sub" style="text-align:center" id="health-status">Excellent</div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:16px">
+  <div class="card-title">📈 Health Checks</div>
+  <div class="ring-grid" id="health-rings"></div>
+</div>
+
+<div class="card" style="margin-top:16px">
+  <div class="card-title" style="justify-content:space-between">
+    <span>📋 Activity Log</span>
+    <button class="refresh-btn" onclick="location.reload()">Refresh</button>
+  </div>
+  <div class="log-output" id="log-output"></div>
+</div>
+
+<script>
+var metrics={cpu:12,memory:400,agents:3,tasks:0,uptime:0};
+var health={status:'excellent',score:95,checks:[
+  {name:'CPU',status:'ok',value:88},
+  {name:'Memory',status:'ok',value:72},
+  {name:'Network',status:'ok',value:91},
+  {name:'Storage',status:'ok',value:85},
+  {name:'AI Engine',status:'ok',value:97},
+  {name:'Security',status:'ok',value:99}
+]};
+var logs=[
+  {t:'11:34:29',l:'info',m:'System monitor initialized'},
+  {t:'11:34:29',l:'info',m:'AI Orchestrator connected — 3 agents registered'},
+  {t:'11:34:30',l:'info',m:'Deep Think Engine loaded (maxPaths=3)'},
+  {t:'11:34:30',l:'info',m:'System health check: all green'},
+  {t:'11:34:31',l:'info',m:'Auto-save enabled (60s interval)'}
+];
+
+function render(){
+  // Simulate live metrics
+  metrics.cpu=Math.round(10+Math.random()*30);
+  metrics.memory=Math.round(350+Math.random()*150);
+  metrics.uptime+=5;
+  document.getElementById('cpu-val').textContent=metrics.cpu+'%';
+  document.getElementById('cpu-bar').style.width=metrics.cpu+'%';
+  document.getElementById('cpu-pct').textContent=metrics.cpu+'%';
+  document.getElementById('cpu-val').style.color=metrics.cpu>70?'var(--red)':metrics.cpu>40?'var(--amber)':'var(--green)';
+  document.getElementById('cpu-bar').style.background=metrics.cpu>70?'var(--red)':metrics.cpu>40?'var(--amber)':'var(--green)';
+  document.getElementById('mem-val').textContent=metrics.memory+' MB';
+  var memPct=Math.round((metrics.memory/16384)*100);
+  document.getElementById('mem-bar').style.width=memPct+'%';
+  document.getElementById('mem-pct').textContent=memPct+'%';
+  // Health
+  health.score=Math.round(85+Math.random()*15);
+  var hEl=document.getElementById('health-score');
+  var hColor=health.score>85?'var(--green)':health.score>70?'var(--amber)':'var(--red)';
+  hEl.innerHTML='<div class="ring-chart" style="width:90px;height:90px;--score:'+health.score+';--ring-color:'+hColor+'"><span class="ring-value" style="font-size:1.1rem">'+health.score+'</span></div>';
+  document.getElementById('health-status').textContent=health.score>85?'Excellent':health.score>70?'Good':'Warning';
+  document.getElementById('health-status').style.color=hColor;
+  // Health rings
+  var ringsHtml='';
+  for(var c of health.checks){
+    c.value=Math.round(70+Math.random()*30);
+    var clr=c.value>85?'var(--green)':c.value>70?'var(--amber)':'var(--red)';
+    ringsHtml+='<div class="ring-item"><div class="ring-chart" style="--score:'+c.value+';--ring-color:'+clr+'"><span class="ring-value">'+c.value+'</span></div><div class="ring-label">'+c.name+'</div></div>';
+  }
+  document.getElementById('health-rings').innerHTML=ringsHtml;
+  // Logs
+  var logHtml='';
+  for(var lg of logs){
+    logHtml+='<span class="info">['+lg.t+']</span> <span class="'+lg.l+'">'+lg.m+'</span>\n';
+  }
+  document.getElementById('log-output').innerHTML=logHtml;
+}
+render();
+setInterval(render,5000);
+</script>
+</body>
+</html>

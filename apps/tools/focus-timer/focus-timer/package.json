@@ -1,0 +1,7 @@
+{
+  "name": "focus-timer",
+  "version": "1.0.0",
+  "description": "Pomodoro focus timer with ambient WebGL visuals and stats export",
+  "scripts": { "start": "python3 -m http.server 8080" },
+  "license": "MIT"
+}

@@ -1,0 +1,11 @@
+{
+  "client_id": "",
+  "client_secret": "",
+  "redirect_uri": "http://localhost:8080/auth/callback",
+  "scopes": [
+    "openid",
+    "https://www.googleapis.com/auth/userinfo.email",
+    "https://www.googleapis.com/auth/userinfo.profile"
+  ],
+  "session_duration": 3600
+}

@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HAZOOM NET — TCP/IP & OSI Model</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#03030a;color:#e8e8f0;font-family:'JetBrains Mono',monospace;height:100vh;overflow:hidden;display:flex;flex-direction:column;background-image:radial-gradient(ellipse at 50% 0%, rgba(0,240,255,0.03) 0%, transparent 60%)}
+.header{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-bottom:1px solid rgba(0,240,255,0.1);background:rgba(5,5,16,0.9)}
+.header h1{font-size:0.9rem;color:#00f0ff}
+.header h1 span{color:#ffd700}
+.stats{display:flex;gap:20px;font-size:0.7rem;color:rgba(232,232,240,0.6)}
+.stats span{color:#00f0ff}
+.main{display:flex;flex:1;overflow:hidden}
+.sidebar{width:220px;border-right:1px solid rgba(0,240,255,0.1);overflow-y:auto;padding:10px}
+.sidebar h3{font-size:0.7rem;color:#00f0ff;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+.Layer-btn{width:100%;text-align:left;padding:8px 12px;margin-bottom:4px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;color:var(--text);font-size:0.75rem;cursor:pointer;transition:all 0.3s;font-family:'JetBrains Mono',monospace}
+.layer-btn:hover{background:rgba(0,240,255,0.1);border-color:rgba(0,240,255,0.3)}
+.layer-btn.active{background:rgba(0,240,255,0.15);border-color:#00f0ff;color:#00f0ff}
+.layer-btn .num{color:#ffd700;margin-right:6px}
+.content{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.toolbar{display:flex;gap:8px;padding:8px 16px;border-bottom:1px solid rgba(0,240,255,0.08);flex-wrap:wrap}
+.btn{padding:4px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:var(--text);font-size:0.7rem;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all 0.3s}
+.btn:hover{background:rgba(0,240,255,0.15);border-color:#00f0ff}
+.btn.active{background:rgba(0,240,255,0.2);border-color:#00f0ff;color:#00f0ff}
+.btn.red:hover{background:rgba(239,68,68,0.2);border-color:#ef4444}
+.view{flex:1;display:flex;overflow:hidden}
+.osi-view{width:55%;padding:20px;overflow-y:auto}
+.packet-view{width:45%;border-left:1px solid rgba(0,240,255,0.1);display:flex;flex-direction:column}
+.packet-header{padding:10px 16px;border-bottom:1px solid rgba(0,240,255,0.08);font-size:0.75rem;color:#00f0ff}
+.packet-data{flex:1;padding:12px 16px;overflow-y:auto;font-size:0.65rem;line-height:1.6}
+.osi-stack{display:flex;flex-direction:column;gap:6px}
+.osi-layer{display:flex;border-radius:8px;overflow:hidden;transition:all 0.3s;border:1px solid transparent}
+.osi-layer:hover{border-color:rgba(0,240,255,0.3)}
+.osi-layer.active-layer{box-shadow:0 0 20px rgba(0,240,255,0.15)}
+.layer-num{width:32px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:#000;flex-shrink:0}
+.layer-info{flex:1;padding:10px 14px}
+.layer-name{font-size:0.85rem;font-weight:600;margin-bottom:2px}
+.layer-proto{font-size:0.65rem;color:rgba(255,255,255,0.5);margin-bottom:4px}
+.layer-desc{font-size:0.65rem;color:rgba(255,255,255,0.4)}
+.layer-status{font-size:0.6rem;padding:4px 8px;border-radius:4px;display:inline-block;margin-top:4px}
+.status-active{background:rgba(16,185,129,0.2);color:#10b981}
+.status-secured{background:rgba(139,92,246,0.2);color:#8b5cf6}
+.status-routing{background:rgba(6,182,212,0.2);color:#06b6d4}
+.status-physical{background:rgba(245,158,11,0.2);color:#f59e0b}
+.hex-row{display:flex;gap:2px;margin-bottom:2px;flex-wrap:wrap}
+.hex-byte{padding:2px 5px;background:rgba(255,255,255,0.05);border-radius:2px;font-size:0.6rem;cursor:pointer;transition:all 0.2s}
+.hex-byte:hover{background:rgba(0,240,255,0.3)}
+.hex-byte.highlight{background:rgba(0,240,255,0.3)}
+.packet-section{margin-bottom:16px}
+.packet-section h4{font-size:0.7rem;color:#00f0ff;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid rgba(0,240,255,0.1)}
+.flow-canvas{width:100%;height:200px;border:1px solid rgba(255,255,255,0.05);border-radius:8px;margin-top:10px}
+.terminal-output{margin-top:10px;padding:8px;background:rgba(0,0,0,0.4);border-radius:6px;font-size:0.65rem;line-height:1.8;max-height:180px;overflow-y:auto}
+.term-line{display:flex;gap:8px}
+.term-time{color:rgba(255,255,255,0.2);font-size:0.6rem}
+.term-msg{color:rgba(232,232,240,0.7)}
+.term-ok{color:#10b981}
+.term-warn{color:#f59e0b}
+.term-info{color:#06b6d4}
+</style>
+</head>
+<body>
+<div class="header">
+    <h1>🌐 HAZOOM <span>NET</span> — TCP/IP & OSI Model</h1>
+    <div class="stats">
+        <div>PING: <span id="stat-ping">-- ms</span></div>
+        <div>PACKETS: <span id="stat-packets">0</span></div>
+        <div>PROTOCOLS: <span>TCP UDP ICMP ARP DNS HTTP HTTPS SSH FTP DHCP</span></div>
+    </div>
+</div>
+<div class="main">
+    <div class="sidebar">
+        <h3>OSI Layers</h3>
+        <div id="layer-buttons"></div>
+        <h3 style="margin-top:16px">TCP/IP Stack</h3>
+        <div id="tcpip-buttons"></div>
+        <h3 style="margin-top:16px">Security</h3>
+        <button class="layer-btn" onclick="showSecurityScan()">🛡️ Security Scan</button>
+        <button class="layer-btn" onclick="showEncryption()">🔐 Encryption</button>
+        <button class="layer-btn" onclick="showFirewall()">🔥 Firewall</button>
+    </div>
+    <div class="content">
+        <div class="toolbar">
+            <button class="btn active" onclick="setView('osi')" id="btn-osi">OSI Model</button>
+            <button class="btn" onclick="setView('tcpip')" id="btn-tcpip">TCP/IP Stack</button>
+            <button class="btn" onclick="setView('packet')" id="btn-packet">Packet Analyzer</button>
+            <button class="btn" onclick="setView('flow')" id="btn-flow">Data Flow</button>
+            <button class="btn" onclick="pingTest()" id="btn-ping">Ping Test</button>
+            <button class="btn" onclick="traceroute()" id="btn-trace">Traceroute</button>
+            <button class="btn" onclick="startCapture()" id="btn-capt">📡 Capture</button>
+            <button class="btn red" onclick="stopCapture()" id="btn-stop">⏹ Stop</button>
+        </div>
+        <div class="view">
+            <div class="osi-view" id="osi-view">
+                <div class="osi-stack" id="osi-stack"></div>
+                <canvas id="flowCanvas" class="flow-canvas"></canvas>
+            </div>
+            <div class="packet-view">
+                <div class="packet-header">📦 Packet Inspector — <span id="packet-type">TCP Segment</span></div>
+                <div class="packet-data" id="packet-data"></div>
+                <div class="terminal-output" id="terminal-output"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+const OSI_LAYERS = [
+    {num:7,name:"Application",proto:"HTTP, FTP, DNS, SSH, SMTP",desc:"End-user services & application protocols",color:"#8b5cf6",status:"active",icon:"🌐"},
+    {num:6,name:"Presentation",proto:"SSL/TLS, JPEG, ASCII, MPEG",desc:"Data translation, encryption, compression",color:"#a855f7",status:"secured",icon:"🔐"},
+    {num:5,name:"Session",proto:"NetBIOS, RPC, PPTP, SCP",desc:"Session management & control",color:"#c084fc",status:"active",icon:"🔗"},
+    {num:4,name:"Transport",proto:"TCP, UDP, SCTP",desc:"Reliable delivery, flow control, multiplexing",color:"#06b6d4",status:"active",icon:"📦"},
+    {num:3,name:"Network",proto:"IP, ICMP, ARP, OSPF, BGP",desc:"Logical addressing & routing",color:"#0ea5e9",status:"routing",icon:"🗺️"},
+    {num:2,name:"Data Link",proto:"Ethernet, WiFi (802.11), PPP",desc:"Physical addressing, framing, error detection",color:#f59e0b,status:"active",icon:"📡"},
+    {num:1,name:"Physical",proto:"RJ45, Fiber,无线电, DSL",desc:"Raw bit transmission over medium",color:"#ef4444",status:"physical",icon:"⚡"}
+];
+
+const TCPIP_LAYERS = [
+    {name:"Application",proto:"HTTP/3, DNS, SSH, FTP, WebSocket",maps:"OSI 5-7",color:"#8b5cf6"},
+    {name:"Transport",proto:"TCP, UDP, QUIC, SCTP",maps:"OSI 4",color:"#06b6d4"},
+    {name:"Internet",proto:"IPv4, IPv6, ICMP, IGMP",maps:"OSI 3",color:"#0ea5e9"},
+    {name:"Network Access",proto:"Ethernet, WiFi, ARP, PPP",maps:"OSI 1-2",color:"#f59e0b"}
+];
+
+const SECURITY_PROTOCOLS = [
+    {name:"TLS 1.3",layer:"Presentation",strength:"AES-256-GCM",status:"secure"},
+    {name:"IPsec",layer:"Network",strength:"ESP/AH",status:"secure"},
+    {name:"WPA3",layer:"Data Link",strength:"SAE",status:"secure"},
+    {name:"SSH",layer:"Application",strength:"Ed25519",status:"secure"},
+    {name:"DNSSEC",layer:"Application",strength:"RSA-2048",status:"warning"},
+];
+
+let currentView = 'osi';
+let captureActive = false;
+let packetCount = 0;
+let pingHistory = [];
+let terminalLines = [];
+
+function log(msg, type='info') {
+    const t = new Date().toLocaleTimeString();
+    const el = document.getElementById('terminal-output');
+    const cls = type==='ok'?'term-ok':type==='warn'?'term-warn':'term-info';
+    el.innerHTML += `<div class="term-line"><span class="term-time">${t}</span><span class="term-msg ${cls}">${msg}</span></div>`;
+    el.scrollTop = el.scrollHeight;
+}
+
+function renderOSI() {
+    const c = document.getElementById('osi-stack');
+    c.innerHTML = '';
+    OSI_LAYERS.forEach((l,i) => {
+        const div = document.createElement('div');
+        div.className = 'osi-layer';
+        div.id = `layer-${i}`;
+        div.innerHTML = `
+            <div class="layer-num" style="background:${l.color}">${l.num}</div>
+            <div class="layer-info">
+                <div class="layer-name">${l.icon} ${l.name} Layer</div>
+                <div class="layer-proto">${l.proto}</div>
+                <div class="layer-desc">${l.desc}</div>
+                <div class="layer-status status-${l.status}">${l.status.toUpperCase()}</div>
+            </div>
+        `;
+        div.onclick = () => selectLayer(i);
+        c.appendChild(div);
+    });
+}
+
+function renderTCPIP() {
+    const c = document.getElementById('osi-stack');
+    c.innerHTML = '';
+    TCPIP_LAYERS.forEach((l,i) => {
+        const div = document.createElement('div');
+        div.className = 'osi-layer';
+        div.innerHTML = `
+            <div class="layer-num" style="background:${l.color}">${4-i}</div>
+            <div class="layer-info">
+                <div class="layer-name">📡 ${l.name}</div>
+                <div class="layer-proto">${l.proto}</div>
+                <div class="layer-desc">Maps to: ${l.maps}</div>
+            </div>
+        `;
+        c.appendChild(div);
+    });
+}
+
+function selectLayer(i) {
+    document.querySelectorAll('.osi-layer').forEach(e => e.classList.remove('active-layer'));
+    const el = document.getElementById(`layer-${i}`);
+    if(el) el.classList.add('active-layer');
+    const l = OSI_LAYERS[i];
+    renderPacketForLayer(l);
+    log(`Selected ${l.name} Layer (OSI ${l.num}) — Protocols: ${l.proto}`, 'info');
+}
+
+function renderPacketForLayer(layer) {
+    const data = document.getElementById('packet-data');
+    if (layer.num === 4) { // Transport - TCP
+        document.getElementById('packet-type').textContent = 'TCP Segment';
+        data.innerHTML = renderTCPPacket();
+    } else if (layer.num === 3) { // Network - IP
+        document.getElementById('packet-type').textContent = 'IPv4 Datagram';
+        data.innerHTML = renderIPPacket();
+    } else if (layer.num === 2) { // Data Link - Ethernet
+        document.getElementById('packet-type').textContent = 'Ethernet Frame';
+        data.innerHTML = renderEthernetFrame();
+    } else if (layer.num === 7) { // Application - HTTP
+        document.getElementById('packet-type').textContent = 'HTTP/2 Frame';
+        data.innerHTML = renderHTTPFrame();
+    } else {
+        data.innerHTML = `<div style="color:rgba(255,255,255,0.3);padding:20px;">${layer.name} layer payload preview — select Transport, Network, Data Link, or Application for detailed packet view.</div>`;
+    }
+}
+
+function renderTCPPacket() {
+    const srcPort = Math.floor(Math.random()*60000)+1024;
+    const dstPort = 443;
+    const seq = Math.floor(Math.random()*999999);
+    const ack = Math.floor(Math.random()*999999);
+    const flags = ['SYN','SYN-ACK','ACK','FIN','PSH-ACK'];
+    const flag = flags[Math.floor(Math.random()*flags.length)];
+    const header = [
+        {label:'Source Port',value:srcPort,bytes:2,color:'#00f0ff'},
+        {label:'Dest Port',value:dstPort,bytes:2,color:'#ffd700'},
+        {label:'Seq Number',value:seq,bytes:4,color:'#10b981'},
+        {label:'Ack Number',value:ack,bytes:4,color:'#8b5cf6'},
+        {label:'Data Offset',value:'5',bytes:1,color:'#06b6d4'},
+        {label:'Flags',value:flag,bytes:1,color:flag.includes('SYN')?'#f59e0b':'#10b981'},
+        {label:'Window Size',value:Math.floor(Math.random()*65535),bytes:2,color:'#ec4899'},
+        {label:'Checksum',value:'0x'+Math.random().toString(16).substr(2,4),bytes:2,color:'#6b7280'},
+        {label:'Urgent Ptr',value:'0',bytes:2,color:'#6b7280'},
+    ];
+    let html = '<div class="packet-section"><h4>TCP Header (20 bytes minimum)</h4>';
+    html += '<div class="hex-row">';
+    header.forEach(f => {
+        const hex = f.bytes === 2 ? 'XXXX' : 'XXXXXXXX';
+        html += `<span class="hex-byte" title="${f.label}: ${f.value}" style="color:${f.color}">${hex}</span>`;
+    });
+    html += '</div>';
+    html += '<table>';
+    header.forEach(f => {
+        html += `<tr style="font-size:0.6rem"><td style="color:rgba(255,255,255,0.4);padding:2px 8px 2px 0">${f.label}</td><td style="color:${f.color}">${f.value}</td></tr>`;
+    });
+    html += '</table></div>';
+    return html;
+}
+
+function renderIPPacket() {
+    const src = `192.168.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`;
+    const dst = `10.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`;
+    const fields = [
+        {label:'Version',value:'4',tip:'IPv4'},
+        {label:'IHL',value:'5',tip:'Header Length'},
+        {label:'TOS',value:'0x00',tip:'Type of Service'},
+        {label:'Total Length',value:Math.floor(Math.random()*1000)+400,tip:''},
+        {label:'Identification',value:'0x'+Math.random().toString(16).substr(2,4),tip:''},
+        {label:'Flags/Offset',value:'0x4000',tip:'DF set'},
+        {label:'TTL',value:Math.floor(Math.random()*64)+64,tip:''},
+        {label:'Protocol',value:'6',tip:'TCP'},
+        {label:'Source IP',value:src,tip:''},
+        {label:'Dest IP',value:dst,tip:''},
+    ];
+    let html = '<div class="packet-section"><h4>IPv4 Header (20 bytes)</h4><class="hex-row">';
+    for(let i=0;i<40;i++) html += `<span class="hex-byte">${Math.random()>0.5?'XX':'__'}</span>`;
+    html += '</div><table>';
+    fields.forEach(f => html += `<tr style="font-size:0.6rem"><td style="color:rgba(255,255,255,0.4);padding:2px 8px 2px 0">${f.label}</td><td style="color:#06b6d4">${f.value}</td></tr>`);
+    html += '</table></div>';
+    return html;
+}
+
+function renderEthernetFrame() {
+    const mac1 = Array.from({length:6},()=>Math.floor(Math.random()*256).toString(16).padStart(2,'0')).join(':');
+    const mac2 = Array.from({length:6},()=>Math.floor(Math.random()*256).toString(16).padStart(2,'0')).join(':');
+    return `<div class="packet-section"><h4>Ethernet II Frame</h4>
+    <div style="font-size:0.65rem">
+    <div style="margin-bottom:4px">Preamble (8 bytes) | <span style="color:#6b7280">10101010...10101011</span></div>
+    <div style="margin-bottom:4px">Dst MAC: <span style="color:#ffd700">${mac1}</span></div>
+    <div style="margin-bottom:4px">Src MAC: <span style="color:#00f0ff">${mac2}</span></div>
+    <div style="margin-bottom:4px">EtherType: <span style="color:#10b981">0x0800 (IPv4)</span></div>
+    <div style="margin-bottom:4px">Payload: [IP Datagram]</div>
+    <div style="margin-bottom:4px">FCS (CRC32): <span style="color:#6b7280">0x${Math.random().toString(16).substr(2,8)}</span></div>
+    </div></div>`;
+}
+
+function renderHTTPFrame() {
+    const methods = ['GET','POST','PUT','DELETE'];
+    const method = methods[Math.floor(Math.random()*methods.length)];
+    const paths = ['/api/v3/chat','/api/v3/search','/os/status','/api/neural/bridge','/api/knowledge/query'];
+    const path = paths[Math.floor(Math.random()*paths.length)];
+    return `<div class="packet-section"><h4>HTTP/2 Request</h4>
+    <div style="font-size:0.65rem">
+    <div style="margin-bottom:4px;color:#8b5cf6">${method} ${path} HTTP/2</div>
+    <div style="margin-bottom:4px">Host: <span style="color:#00f0ff">localhost:3000</span></div>
+    <div style="margin-bottom:4px">Authorization: <span style="color:#ffd700">Bearer HZM-****-****</span></div>
+    <div style="margin-bottom:4px">Content-Type: <span style="color:#10b981">application/json</span></div>
+    <div style="margin-bottom:4px">User-Agent: <span style="color:#06b6d4">HAZOOM-OS/3.0</span></div>
+    <div style="margin-bottom:4px">X-Hazoom-Consciousness: <span style="color:#a855f7">active</span></div>
+    </div></div>`;
+}
+
+function renderLayerButtons() {
+    const c = document.getElementById('layer-buttons');
+    c.innerHTML = '';
+    OSI_LAYERS.forEach((l,i) => {
+        const btn = document.createElement('button');
+        btn.className = 'layer-btn';
+        btn.innerHTML = `<span class="num">${l.num}</span> ${l.name}`;
+        btn.onclick = () => selectLayer(i);
+        c.appendChild(btn);
+    });
+}
+
+function renderTCPIPButtons() {
+    const c = document.getElementById('tcpip-buttons');
+    c.innerHTML = '';
+    TCPIP_LAYERS.forEach((l,i) => {
+        const btn = document.createElement('button');
+        btn.className = 'layer-btn';
+        btn.innerHTML = `<span class="num">${4-i}</span> ${l.name}`;
+        btn.onclick = () => {
+            document.getElementById('packet-type').textContent = l.name + ' Packet';
+            const data = document.getElementById('packet-data');
+            data.innerHTML = `<div style="padding:20px;color:rgba(255,255,255,0.4)">${l.name} layer — Protocols: ${l.proto}</div><div style="padding:0 20px;font-size:0.65rem;color:rgba(255,255,255,0.3)">Maps to ${l.maps}</div>`;
+        };
+        c.appendChild(btn);
+    });
+}
+
+function setView(v) {
+    currentView = v;
+    document.querySelectorAll('.toolbar .btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-'+v)?.classList.add('active');
+    if(v==='osi') renderOSI();
+    if(v==='tcpip') renderTCPIP();
+    if(v==='packet') { renderOSI(); selectLayer(3); }
+    if(v==='flow') { renderOSI(); drawDataFlow(); }
+}
+
+function pingTest() {
+    log('Initiating ping sequence to gateway...', 'info');
+    const results = [];
+    let i = 0;
+    const interval = setInterval(() => {
+        const ms = Math.floor(Math.random()*30)+5;
+        results.push(ms);
+        log(`Reply from 192.168.1.1: bytes=32 time=${ms}ms TTL=64`, 'ok');
+        document.getElementById('stat-ping').textContent = ms + ' ms';
+        i++;
+        if(i>=4) {
+            clearInterval(interval);
+            const avg = Math.round(results.reduce((a,b)=>a+b)/results.length);
+            log(`Ping statistics: 4 sent, 4 received, 0% loss, avg=${avg}ms`, 'ok');
+            // Update connection status
+            updateConnectionStatus(true, ms);
+        }
+    }, 600);
+}
+
+function traceroute() {
+    log('Tracing route to github.com...', 'info');
+    const hops = [
+        {ip:'192.168.1.1',name:'gateway.local',ms:2},
+        {ip:'10.0.0.1',name:'isp-gw.net',ms:12},
+        {ip:'172.16.0.5',name:'backbone-1.isp.net',ms:25},
+        {ip:'154.12.34.56',name:'core-router.level3.net',ms:45},
+        {ip:'140.82.121.4',name:'github.com',ms:52},
+    ];
+    let i = 0;
+    hops.forEach((hop, idx) => {
+        setTimeout(() => {
+            log(`  ${idx+1}   ${hop.ms}ms   ${hop.ms*2}ms   ${hop.ms*1.5}ms   ${hop.ip}  ${hop.name}`, 'info');
+            if(idx === hops.length-1) log('Trace complete.', 'ok');
+        }, idx*700);
+    });
+}
+
+function startCapture() {
+    captureActive = true;
+    log('📡 Packet capture started on interface eth0...', 'info');
+    const protocols = ['TCP','UDP','ICMP','ARP','DNS','HTTP','HTTPS'];
+    window._captureInterval = setInterval(() => {
+        if(!captureActive) return;
+        packetCount++;
+        document.getElementById('stat-packets').textContent = packetCount;
+        const proto = protocols[Math.floor(Math.random()*protocols.length)];
+        const src = `192.168.1.${Math.floor(Math.random()*254)+1}`;
+        const dst = `${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`;
+        const size = Math.floor(Math.random()*1400)+64;
+        if(packetCount % 5 === 0) {
+            log(`${proto} ${src} → ${dst} [${size}B]`, 'info');
+        }
+        // Animate flow
+        animatePacketFlow(proto);
+    }, 300);
+}
+
+function stopCapture() {
+    captureActive = false;
+    if(window._captureInterval) clearInterval(window._captureInterval);
+    log(`⏹ Capture stopped. ${packetCount} packets captured.`, 'warn');
+}
+
+function showSecurityScan() {
+    log('🛡️ Initiating security scan...', 'info');
+    const checks = [
+        'Checking TLS certificates...',
+        'Scanning open ports...',
+        'Testing firewall rules...',
+        'Analyzing ARP table...',
+        'Checking DNS security...',
+        'Verifying content filter...',
+        'Testing encryption protocols...',
+    ];
+    checks.forEach((c,i) => {
+        setTimeout(() => {
+            log(`  ✅ ${c} OK`, 'ok');
+            if(i === checks.length-1) {
+                log('🛡️ All security checks PASSED. System is secure.', 'ok');
+            }
+        }, i*500);
+    });
+}
+
+function showEncryption() {
+    const data = document.getElementById('packet-data');
+    document.getElementById('packet-type').textContent = 'Encryption Protocols';
+    data.innerHTML = `
+    <div class="packet-section"><h4>🔐 Active Encryption</h4>
+    <table style="font-size:0.65rem">
+    <tr><td>TLS 1.3</td><td style="color:#10b981">AES-256-GCM</td></tr>
+    <tr><td>IPsec ESP</td><td style="color:#10b981">ChaCha20-Poly1305</td></tr>
+    <tr><td>SSH</td><td style="color:#10b981">Ed25519 / Curve25519</td></tr>
+    <tr><td>WPA3</td><td style="color:#10b981">SAE (Dragonfly)</td></tr>
+    <tr><td>DNSSEC</td><td style="color:#f59e0b">RSA-2048 (partial)</td></tr>
+    <tr><td>Hazoom Vault</td><td style="color:#10b981">XOR + AES-256</td></tr>
+    </table></div>
+    <div class="packet-section"><h4>Certificate Chain</h4>
+    <div style="font-size:0.6rem;color:rgba(255,255,255,0.6)">
+    📜 Root CA: HAZOOM Trust Authority v3<br>
+    📜 Intermediate: Hazoom OS Network CA<br>
+    📜 localhost: self-signed RSA-4096 (expires 2027)<br>
+    </div></div>`;
+}
+
+function showFirewall() {
+    document.getElementById('packet-type').textContent = 'Firewall Rules';
+    const data = document.getElementById('packet-data');
+    data.innerHTML = `<div class="packet-section"><h4>🔥 Active Firewall Rules</h4>
+    <div style="font-size:0.65rem;line-height:2">
+    <div style="color:#10b981">ALLOW  TCP  *:3000    ← Main Server</div>
+    <div style="color:#10b981">ALLOW  TCP  *:9004    ← Ollama Chat</div>
+    <div style="color:#10b981">ALLOW  TCP  *:8080    ← API Gateway</div>
+    <div style="color:#10b981">ALLOW  TCP  *:8443    ← HTTPS Server</div>
+    <div style="color:#10b981">ALLOW  TCP  *:80      ← HTTP (redirect)</div>
+    <div style="color:#f59e0b">ALLOW  TCP  *:2222    ← SSH (restricted)</div>
+    <div style="color:#ef4444">DENY   TCP  *:23      ← Telnet (blocked)</div>
+    <div style="color:#ef4444">DENY   TCP  *:445     ← SMB (blocked)</div>
+    <div style="color:#ef4444">DENY   TCP  *:3389    ← RDP (blocked)</div>
+    <div style="color:#10b981">ALLOW  ICMP *         ← Ping</div>
+    <div style="color:#06b6d4">LOG    ALL  suspicious ← Intrusion Detection</div>
+    </div></div>`;
+}
+
+// Data flow animation
+const canvas = document.getElementById('flowCanvas');
+const ctx = canvas.getContext('2d');
+let flowParticles = [];
+
+function resizeCanvas() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+function drawDataFlow() {
+    animatePacketFlow();
+}
+
+function animatePacketFlow(proto) {
+    if(!proto) proto = '';
+    const colors = {TCP:'#06b6d4',UDP:'#8b5cf6',ICMP:'#f59e0b',ARP:'#10b981',DNS:'#0ea5e9',HTTP:'#ec4899',HTTPS:'#10b981'};
+    flowParticles.push({
+        x: 20,
+        y: Math.random() * canvas.height,
+        targetX: canvas.width - 20,
+        speed: 1 + Math.random() * 2,
+        color: colors[proto] || '#00f0ff',
+        size: 2 + Math.random() * 3,
+        layer: Math.floor(Math.random() * 7),
+        alpha: 1
+    });
+    if(flowParticles.length > 50) flowParticles.shift();
+}
+
+function renderFrame() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw OSI layer lines
+    const layerH = canvas.height / 7;
+    OSI_LAYERS.forEach((l, i) => {
+        const y = i * layerH + layerH/2;
+        ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(255,255,255,0.15)';
+        ctx.font = '9px JetBrains Mono';
+        ctx.fillText(`${l.num}:${l.name}`, 4, y - 4);
+    });
+    
+    // Draw particles
+    flowParticles.forEach((p, i) => {
+        p.x += p.speed;
+        if(p.x > p.targetX) {
+            p.alpha -= 0.05;
+        }
+        if(p.alpha <= 0) { flowParticles.splice(i,1); return; }
+        
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color + Math.floor(p.alpha * 255).toString(16).padStart(2,'0');
+        ctx.fill();
+        
+        // Glow
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
+        ctx.fillStyle = p.color + '20';
+        ctx.fill();
+    });
+    
+    requestAnimationFrame(renderFrame);
+}
+
+function updateConnectionStatus(online, ping) {
+    const el = document.getElementById('topbar-status');
+    if(el) {
+        el.textContent = online ? `● Online (${ping}ms)` : '● Offline';
+        el.style.color = online ? 'var(--green)' : 'var(--red)';
+    }
+}
+
+// Init
+renderOSI();
+renderLayerButtons();
+renderTCPIPButtons();
+renderFrame();
+log('HAZOOM NET initialized — TCP/IP stack online', 'ok');
+log('All 7 OSI layers active. 4-layer TCP/IP stack ready.', 'ok');
+
+// Auto ping every 30s
+setInterval(pingTest, 30000);
+pingTest();
+</script>
+</body>
+</html>

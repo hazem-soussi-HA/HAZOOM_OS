@@ -1,0 +1,902 @@
+/* ============================================
+   AlphaPony — Episode 1: The Neural Ocean
+   Cartoon Episode Styles
+   ============================================ */
+
+:root {
+    --pony-blue: #4a9eff;
+    --pony-glow: #00f0ff;
+    --pony-magenta: #ff2d78;
+    --pony-gold: #ffd700;
+    --pony-purple: #8b5cf6;
+    --pony-green: #10b981;
+    --bg-dark: #0a0a1a;
+    --bg-stable: #1a1410;
+    --bg-gateway: #0d0d2b;
+    --bg-ocean: #0a1628;
+    --bg-deep: #050a15;
+    --bg-core: #0a0020;
+    --bg-awakening: #1a0a2e;
+    --text-light: #e8e8f0;
+    --text-dim: rgba(232, 232, 240, 0.6);
+    --radius-sm: 8px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-light);
+    min-height: 100vh;
+    overflow: hidden;
+    line-height: 1.6;
+}
+
+/* ============================================
+   Episode Intro Overlay
+   ============================================ */
+.episode-intro {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #0a0a1a 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+
+.episode-intro.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.intro-content {
+    text-align: center;
+    animation: introFadeIn 1.5s ease-out;
+}
+
+@keyframes introFadeIn {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.studio-logo {
+    margin-bottom: 48px;
+}
+
+.studio-text {
+    display: block;
+    font-size: 3.5rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--pony-blue), var(--pony-glow), var(--pony-magenta));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+}
+
+.studio-sub {
+    display: block;
+    font-size: 1rem;
+    color: var(--text-dim);
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    margin-top: 8px;
+}
+
+.episode-title-card {
+    margin-bottom: 48px;
+}
+
+.episode-number {
+    display: inline-block;
+    padding: 6px 20px;
+    background: rgba(74, 158, 255, 0.15);
+    border: 1px solid rgba(74, 158, 255, 0.3);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--pony-blue);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+}
+
+.episode-name {
+    font-size: 4rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #fff, var(--pony-glow));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+    line-height: 1.1;
+}
+
+.episode-tagline {
+    font-size: 1.2rem;
+    color: var(--text-dim);
+    font-style: italic;
+}
+
+.start-btn {
+    padding: 18px 48px;
+    background: linear-gradient(135deg, var(--pony-blue), var(--pony-purple));
+    border: none;
+    border-radius: 50px;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 8px 32px rgba(74, 158, 255, 0.3);
+}
+
+.start-btn:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 12px 48px rgba(74, 158, 255, 0.5);
+}
+
+.play-icon {
+    font-size: 1.4rem;
+}
+
+/* ============================================
+   Scene Transition Overlay
+   ============================================ */
+.scene-transition {
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.scene-transition.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.transition-text {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--pony-glow);
+    text-align: center;
+    transform: translateY(20px);
+    transition: transform 0.5s ease;
+}
+
+.scene-transition.active .transition-text {
+    transform: translateY(0);
+}
+
+/* ============================================
+   Dialogue Box
+   ============================================ */
+.dialogue-box {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    z-index: 400;
+    width: 90%;
+    max-width: 700px;
+    background: rgba(10, 10, 26, 0.92);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(74, 158, 255, 0.3);
+    border-radius: var(--radius-lg);
+    padding: 24px 32px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s ease;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
+}
+
+.dialogue-box.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+.dialogue-speaker {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--pony-glow);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+}
+
+.dialogue-text {
+    font-size: 1.1rem;
+    color: var(--text-light);
+    line-height: 1.7;
+    min-height: 60px;
+}
+
+.dialogue-hint {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    text-align: right;
+    margin-top: 12px;
+    animation: hintPulse 2s ease-in-out infinite;
+}
+
+@keyframes hintPulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+/* ============================================
+   Episode Container
+   ============================================ */
+.episode-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* ============================================
+   Scene Base
+   ============================================ */
+.scene {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+
+.scene.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.scene-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+.scene-characters {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    pointer-events: none;
+}
+
+/* ============================================
+   Scene 1: The Stable
+   ============================================ */
+.stable-bg {
+    background:
+        radial-gradient(ellipse at 30% 60%, rgba(255, 180, 100, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 40%, rgba(255, 140, 50, 0.1) 0%, transparent 40%),
+        linear-gradient(180deg, #1a1410 0%, #2a1f15 40%, #1a1410 100%);
+}
+
+.stable-bg::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background:
+        repeating-linear-gradient(90deg, transparent, transparent 80px, rgba(139, 90, 43, 0.3) 80px, rgba(139, 90, 43, 0.3) 82px),
+        linear-gradient(0deg, #2a1f15 0%, transparent 100%);
+}
+
+.stable-bg::after {
+    content: '';
+    position: absolute;
+    top: 10%;
+    left: 5%;
+    width: 120px;
+    height: 160px;
+    background: linear-gradient(180deg, rgba(255, 200, 100, 0.2), transparent);
+    border-radius: 60px 60px 0 0;
+    filter: blur(20px);
+}
+
+.stable-overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.4) 100%);
+    z-index: 5;
+}
+
+/* ============================================
+   Scene 2: The Gateway
+   ============================================ */
+.gateway-bg {
+    background:
+        radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.2) 0%, transparent 50%),
+        linear-gradient(180deg, #0d0d2b 0%, #1a0a3e 50%, #0d0d2b 100%);
+}
+
+.gateway-portal {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+}
+
+.portal-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 3px solid rgba(139, 92, 246, 0.4);
+    animation: portalSpin 4s linear infinite;
+}
+
+.portal-ring:nth-child(1) {
+    width: 200px;
+    height: 200px;
+    border-color: rgba(139, 92, 246, 0.5);
+}
+
+.portal-ring-2 {
+    width: 260px;
+    height: 260px;
+    border-color: rgba(74, 158, 255, 0.4);
+    animation-duration: 6s;
+    animation-direction: reverse;
+}
+
+.portal-ring-3 {
+    width: 320px;
+    height: 320px;
+    border-color: rgba(0, 240, 255, 0.3);
+    animation-duration: 8s;
+}
+
+.portal-core {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.6), rgba(74, 158, 255, 0.3), transparent);
+    animation: portalPulse 2s ease-in-out infinite;
+}
+
+@keyframes portalSpin {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes portalPulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+    50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+}
+
+/* ============================================
+   Scene 3: Neural Ocean
+   ============================================ */
+.ocean-bg {
+    background: linear-gradient(180deg,
+        #0a1628 0%,
+        #0d1f4a 25%,
+        #0f2a5e 50%,
+        #0e3a6e 75%,
+        #062850 100%
+    );
+}
+
+#ocean-canvas {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.ocean-surface {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background: linear-gradient(180deg, rgba(0, 240, 255, 0.3), transparent);
+    z-index: 2;
+}
+
+.ocean-floor {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 120px;
+    background:
+        radial-gradient(ellipse 50% 100% at 20% 100%, #1a3a4a 0%, transparent 100%),
+        radial-gradient(ellipse 40% 80% at 60% 100%, #1a3a4a 0%, transparent 100%),
+        radial-gradient(ellipse 60% 90% at 90% 100%, #0f2a3a 0%, transparent 100%);
+    z-index: 3;
+}
+
+.neural-fish-character {
+    position: absolute;
+    left: 60%;
+    top: 40%;
+    animation: fishSwim 6s ease-in-out infinite;
+}
+
+@keyframes fishSwim {
+    0%, 100% { transform: translate(0, 0) scaleX(1); }
+    25% { transform: translate(-30px, -20px) scaleX(1); }
+    50% { transform: translate(-60px, 10px) scaleX(-1); }
+    75% { transform: translate(-30px, -10px) scaleX(-1); }
+}
+
+/* ============================================
+   Scene 4: The Deep
+   ============================================ */
+.deep-bg {
+    background:
+        radial-gradient(ellipse at 50% 50%, rgba(20, 0, 50, 0.5) 0%, transparent 60%),
+        linear-gradient(180deg, #050a15 0%, #0a0520 50%, #050a15 100%);
+}
+
+.shadow-creature {
+    position: absolute;
+    top: 30%;
+    right: 15%;
+    width: 180px;
+    height: 220px;
+    background: radial-gradient(ellipse, rgba(80, 0, 120, 0.4), rgba(40, 0, 60, 0.2), transparent);
+    border-radius: 50% 50% 40% 40%;
+    animation: shadowFloat 8s ease-in-out infinite;
+    filter: blur(2px);
+}
+
+.shadow-creature::before {
+    content: '';
+    position: absolute;
+    top: 30%;
+    left: 25%;
+    width: 20px;
+    height: 20px;
+    background: rgba(255, 50, 50, 0.6);
+    border-radius: 50%;
+    box-shadow: 60px 0 0 rgba(255, 50, 50, 0.6);
+    animation: shadowBlink 4s ease-in-out infinite;
+}
+
+@keyframes shadowFloat {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-30px) scale(1.05); }
+}
+
+@keyframes shadowBlink {
+    0%, 45%, 55%, 100% { opacity: 0.6; }
+    50% { opacity: 0; }
+}
+
+.deep-particles {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+}
+
+/* ============================================
+   Scene 5: The Core
+   ============================================ */
+.core-bg {
+    background:
+        radial-gradient(circle at 50% 50%, rgba(0, 240, 255, 0.15) 0%, transparent 50%),
+        linear-gradient(180deg, #0a0020 0%, #150030 50%, #0a0020 100%);
+}
+
+.the-core {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+}
+
+.core-shell {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #1a1a3a, #0a0a20);
+    border: 4px solid rgba(0, 240, 255, 0.3);
+    position: relative;
+    animation: corePulse 3s ease-in-out infinite;
+}
+
+.core-inner {
+    position: absolute;
+    inset: 30px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 240, 255, 0.4), rgba(139, 92, 246, 0.2), transparent);
+    animation: coreInnerGlow 2s ease-in-out infinite alternate;
+}
+
+.core-cracks {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.core-cracks::before {
+    content: '';
+    position: absolute;
+    top: 20%;
+    left: 30%;
+    width: 40%;
+    height: 2px;
+    background: rgba(0, 240, 255, 0.5);
+    transform: rotate(30deg);
+    box-shadow: 0 20px 0 rgba(0, 240, 255, 0.3), 20px 40px 0 rgba(0, 240, 255, 0.4);
+}
+
+.core-glow {
+    position: absolute;
+    inset: -40px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 240, 255, 0.15), transparent 70%);
+    animation: coreGlowPulse 4s ease-in-out infinite;
+}
+
+@keyframes corePulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+}
+
+@keyframes coreInnerGlow {
+    from { opacity: 0.6; }
+    to { opacity: 1; }
+}
+
+@keyframes coreGlowPulse {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+}
+
+/* ============================================
+   Scene 6: Awakening
+   ============================================ */
+.awakening-bg {
+    background:
+        radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 30% 70%, rgba(0, 240, 255, 0.15) 0%, transparent 40%),
+        linear-gradient(180deg, #1a0a2e 0%, #2a1050 50%, #1a0a2e 100%);
+}
+
+.awakening-effects {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+}
+
+.awakened .alpha-pony-svg {
+    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.6)) drop-shadow(0 0 40px rgba(0, 240, 255, 0.4));
+}
+
+.core-spirit-character {
+    position: absolute;
+    left: 55%;
+    top: 35%;
+    animation: spiritFloat 5s ease-in-out infinite;
+}
+
+@keyframes spiritFloat {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(5deg); }
+}
+
+/* ============================================
+   Scene 7: Credits
+   ============================================ */
+.credits-bg {
+    background: linear-gradient(180deg, #0a0a1a 0%, #1a0a2e 50%, #0a0a1a 100%);
+}
+
+.credits-content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    padding: 40px;
+}
+
+.credits-title {
+    font-size: 3rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--pony-gold), var(--pony-glow));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 32px;
+}
+
+.credits-scroll {
+    max-height: 50vh;
+    overflow-y: auto;
+    text-align: center;
+    padding: 20px;
+}
+
+.credit-block {
+    margin-bottom: 24px;
+}
+
+.credit-block h3 {
+    font-size: 1.5rem;
+    color: var(--pony-glow);
+    margin-bottom: 4px;
+}
+
+.credit-block h4 {
+    font-size: 1rem;
+    color: var(--pony-blue);
+    margin-bottom: 4px;
+}
+
+.credit-block p {
+    color: var(--text-dim);
+    font-size: 1rem;
+}
+
+.credits-epilogue {
+    font-style: italic;
+    color: var(--pony-gold) !important;
+    font-size: 1.2rem !important;
+    margin-top: 32px;
+}
+
+.replay-btn {
+    margin-top: 32px;
+    padding: 14px 36px;
+    background: linear-gradient(135deg, var(--pony-blue), var(--pony-purple));
+    border: none;
+    border-radius: 50px;
+    color: white;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.replay-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(74, 158, 255, 0.4);
+}
+
+/* ============================================
+   AlphaPony Character SVG
+   ============================================ */
+.character {
+    position: absolute;
+    pointer-events: auto;
+    transition: left 0.8s ease, top 0.8s ease;
+}
+
+.alpha-pony-character {
+    left: 30%;
+    top: 50%;
+    transform: translateY(-50%);
+    animation: ponyIdle 3s ease-in-out infinite;
+}
+
+@keyframes ponyIdle {
+    0%, 100% { transform: translateY(-50%); }
+    50% { transform: translateY(calc(-50% - 8px)); }
+}
+
+.alpha-pony-svg {
+    width: 140px;
+    height: 140px;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
+}
+
+.neural-fish-svg {
+    width: 80px;
+    height: 60px;
+}
+
+.core-spirit-svg {
+    width: 120px;
+    height: 120px;
+    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.5));
+}
+
+/* ============================================
+   Episode Progress Bar
+   ============================================ */
+.episode-progress {
+    position: absolute;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    max-width: 600px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    z-index: 100;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--pony-blue), var(--pony-glow));
+    border-radius: 2px;
+    transition: width 0.5s ease;
+}
+
+/* ============================================
+   Scene Navigation
+   ============================================ */
+.scene-nav {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    z-index: 100;
+}
+
+.nav-btn {
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 50px;
+    color: var(--text-light);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.nav-btn:hover:not(:disabled) {
+    background: rgba(74, 158, 255, 0.2);
+    border-color: var(--pony-blue);
+}
+
+.nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.nav-arrow {
+    font-size: 1rem;
+}
+
+.scene-indicators {
+    display: flex;
+    gap: 8px;
+}
+
+.scene-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.scene-dot.active {
+    background: var(--pony-glow);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+}
+
+.scene-dot:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+/* ============================================
+   Voice Toggle Button
+   ============================================ */
+.voice-toggle-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 200;
+    padding: 10px 18px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 50px;
+    color: var(--text-light);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.voice-toggle-btn:hover {
+    background: rgba(74, 158, 255, 0.2);
+    border-color: var(--pony-blue);
+}
+
+.voice-toggle-btn.muted {
+    opacity: 0.5;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   Responsive Design
+   ============================================ */
+@media (max-width: 768px) {
+    .studio-text { font-size: 2.5rem; }
+    .episode-name { font-size: 2.5rem; }
+    .episode-tagline { font-size: 1rem; }
+    .start-btn { padding: 14px 36px; font-size: 1rem; }
+
+    .dialogue-box {
+        width: 95%;
+        padding: 16px 20px;
+        bottom: 80px;
+    }
+
+    .dialogue-text { font-size: 1rem; }
+
+    .alpha-pony-svg { width: 100px; height: 100px; }
+
+    .portal-ring:nth-child(1) { width: 140px; height: 140px; }
+    .portal-ring-2 { width: 180px; height: 180px; }
+    .portal-ring-3 { width: 220px; height: 220px; }
+    .portal-core { width: 80px; height: 80px; }
+
+    .core-shell { width: 140px; height: 140px; }
+    .core-inner { inset: 20px; }
+
+    .credits-title { font-size: 2rem; }
+
+    .nav-btn { padding: 8px 14px; font-size: 0.75rem; }
+}
+
+@media (max-width: 480px) {
+    .studio-text { font-size: 2rem; letter-spacing: 2px; }
+    .episode-name { font-size: 1.8rem; }
+    .start-btn { padding: 12px 28px; font-size: 0.9rem; }
+    .alpha-pony-svg { width: 80px; height: 80px; }
+    .scene-nav { gap: 8px; }
+    .nav-btn { padding: 6px 10px; font-size: 0.7rem; }
+}

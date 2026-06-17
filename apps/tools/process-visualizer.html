@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SynapseOS - Neural Operating System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0f;
+            color: #00ff88;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .neural-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse at 20% 80%, rgba(0,255,136,0.03) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(0,100,255,0.03) 0%, transparent 50%),
+                linear-gradient(180deg, #0a0a0f 0%, #0f0a15 100%);
+            z-index: -1;
+        }
+        
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        
+        header {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 1px solid rgba(0,255,136,0.2);
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, #00ff88, #00aaff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 10px rgba(0,255,136,0.5)); }
+            to { filter: drop-shadow(0 0 20px rgba(0,170,255,0.5)); }
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-top: 10px;
+            letter-spacing: 4px;
+        }
+        
+        .neural-pathway {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 30px;
+            margin: 30px 0;
+            background: rgba(0,255,136,0.02);
+            border: 1px solid rgba(0,255,136,0.1);
+            border-radius: 10px;
+            position: relative;
+        }
+        
+        .neural-pathway::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: linear-gradient(90deg, 
+                transparent, #00ff88, #00aaff, #ff00aa, transparent);
+            animation: flow 3s linear infinite;
+        }
+        
+        @keyframes flow {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .system-node {
+            text-align: center;
+            z-index: 1;
+        }
+        
+        .node-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-size: 24px;
+            transition: all 0.3s;
+        }
+        
+        .node-icon.active {
+            box-shadow: 0 0 30px currentColor;
+            animation: pulse 1s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .node-label { font-size: 12px; color: #888; }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .card {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(0,255,136,0.1);
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        
+        .card:hover {
+            border-color: rgba(0,255,136,0.3);
+            transform: translateY(-5px);
+        }
+        
+        .card h3 {
+            font-size: 14px;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            color: #00aaff;
+        }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .metric-label { color: #666; font-size: 12px; }
+        .metric-value { color: #00ff88; font-size: 14px; font-weight: bold; }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        
+        button {
+            background: transparent;
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            padding: 12px 30px;
+            font-family: inherit;
+            font-size: 14px;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+        
+        button:hover {
+            background: #00ff88;
+            color: #0a0a0f;
+            box-shadow: 0 0 20px rgba(0,255,136,0.5);
+        }
+        
+        button.danger {
+            border-color: #ff4466;
+            color: #ff4466;
+        }
+        
+        button.danger:hover {
+            background: #ff4466;
+            color: #0a0a0f;
+        }
+        
+        .cycle-display {
+            text-align: center;
+            padding: 20px;
+            font-size: 48px;
+            font-weight: bold;
+            color: #00ff88;
+            text-shadow: 0 0 30px rgba(0,255,136,0.5);
+        }
+        
+        .prediction-queue {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .prediction-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: rgba(0,170,255,0.1);
+            border-left: 3px solid #00aaff;
+            font-size: 12px;
+        }
+        
+        .state-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 10px;
+            animation: blink 1s ease-in-out infinite;
+        }
+        
+        .state-focused .state-indicator { background: #00ff88; }
+        .state-stressed .state-indicator { background: #ff4466; }
+        .state-calm .state-indicator { background: #00aaff; }
+        .state-curious .state-indicator { background: #ffaa00; }
+        .state-tired .state-indicator { background: #666; }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.9);
+            border-top: 1px solid rgba(0,255,136,0.2);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .log-output {
+            background: #000;
+            border: 1px solid rgba(0,255,136,0.2);
+            padding: 15px;
+            height: 200px;
+            overflow-y: auto;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+        
+        .log-entry {
+            margin: 5px 0;
+        }
+        
+        .log-entry .time { color: #444; }
+        .log-entry .info { color: #00ff88; }
+        .log-entry .warn { color: #ffaa00; }
+        .log-entry .error { color: #ff4466; }
+    </style>
+</head>
+<body>
+    <div class="neural-bg"></div>
+    
+    <div class="container">
+        <header>
+            <h1>SynapseOS</h1>
+            <p class="subtitle">Self-Evolving Neural Operating System</p>
+        </header>
+        
+        <div class="neural-pathway">
+            <div class="system-node">
+                <div class="node-icon active" style="color: #ffaa00;">🧠</div>
+                <div class="node-label">EmpathyEngine</div>
+            </div>
+            <div class="system-node">
+                <div class="node-icon active" style="color: #00ff88;">⚡</div>
+                <div class="node-label">PulseOS</div>
+            </div>
+            <div class="system-node">
+                <div class="node-icon active" style="color: #00aaff;">🧪</div>
+                <div class="node-label">PheromoneNet</div>
+            </div>
+            <div class="system-node">
+                <div class="node-icon active" style="color: #ff00aa;">🌙</div>
+                <div class="node-label">DreamWeaver</div>
+            </div>
+            <div class="system-node">
+                <div class="node-icon active" style="color: #aa00ff;">🌀</div>
+                <div class="node-label">FractalFS</div>
+            </div>
+        </div>
+        
+        <div class="cycle-display">
+            <span id="cycleCount">0</span>
+            <div style="font-size: 14px; color: #666; margin-top: 10px;">NEURAL CYCLES</div>
+        </div>
+        
+        <div class="controls">
+            <button onclick="startSystem()">Initialize</button>
+            <button onclick="stopSystem()">Halt</button>
+            <button onclick="tick()">Single Tick</button>
+            <button onclick="autoTick()" id="autoBtn">Auto Run</button>
+            <button class="danger" onclick="resetSystem()">Reset</button>
+        </div>
+        
+        <div class="grid">
+            <div class="card">
+                <h3>FRACTALFS</h3>
+                <div class="metric">
+                    <span class="metric-label">Storage Size</span>
+                    <span class="metric-value" id="fractalSize">0 KB</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Nodes</span>
+                    <span class="metric-value" id="fractalNodes">0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Compression</span>
+                    <span class="metric-value" id="fractalCompression">1.0x</span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>PHEROMONENET</h3>
+                <div class="metric">
+                    <span class="metric-label">Active Pheromones</span>
+                    <span class="metric-value" id="pheromoneCount">0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Evaporation Rate</span>
+                    <span class="metric-value" id="pheromoneEvap">1.0%/tick</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Pathway Strength</span>
+                    <span class="metric-value" id="pheromoneStrength">0.0</span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>PULSEOS</h3>
+                <div class="metric">
+                    <span class="metric-label">Active Processes</span>
+                    <span class="metric-value" id="pulseProcesses">0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Synapses</span>
+                    <span class="metric-value" id="pulseSynapses">0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Excitation Level</span>
+                    <span class="metric-value" id="pulseExcitation">0.0</span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>EMPATHYENGINE</h3>
+                <div class="metric">
+                    <span class="metric-label">User State</span>
+                    <span class="metric-value">
+                        <span class="state-indicator state-calm"></span>
+                        <span id="empathyState">unknown</span>
+                    </span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Confidence</span>
+                    <span class="metric-value" id="empathyConfidence">0%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Resource Multiplier</span>
+                    <span class="metric-value" id="empathyMultiplier">1.0x</span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>DREAMWEAVER</h3>
+                <div class="metric">
+                    <span class="metric-label">Predictions</span>
+                    <span class="metric-value" id="dreamPredictions">0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Learning Rate</span>
+                    <span class="metric-value" id="dreamLearningRate">0.1</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Preload Confidence</span>
+                    <span class="metric-value" id="dreamConfidence">0%</span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>NEURAL PATHWAY</h3>
+                <div class="metric">
+                    <span class="metric-label">Empathy → Pulse</span>
+                    <span class="metric-value" id="pathEmpathyPulse">0.0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Pulse → Pheromone</span>
+                    <span class="metric-value" id="pathPulsePheromone">0.0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Dream → Fractal</span>
+                    <span class="metric-value" id="pathDreamFractal">0.0</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>PREDICTION QUEUE</h3>
+            <div class="prediction-queue" id="predictionQueue">
+                <div class="prediction-item">Awaiting predictions...</div>
+            </div>
+        </div>
+        
+        <div class="card" style="margin-top: 20px;">
+            <h3>SYSTEM LOG</h3>
+            <div class="log-output" id="logOutput">
+                <div class="log-entry"><span class="time">[00:00:00]</span> <span class="info">SynapseOS initialized in standby mode</span></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="status-bar">
+        <span id="statusText">Status: STANDBY</span>
+        <span>v1.0.0 | FractalFS + PheromoneNet + PulseOS + EmpathyEngine + DreamWeaver</span>
+    </div>
+    
+    <script>
+        let synapseOS = null;
+        let running = false;
+        let cycleCount = 0;
+        let autoInterval = null;
+        
+        async function initPython() {
+            try {
+                const response = await fetch('/synapse_os_bridge.py');
+                const text = await response.text();
+                log('Python bridge loaded', 'info');
+            } catch (e) {
+                log('Using JavaScript fallback', 'warn');
+            }
+            
+            synapseOS = {
+                name: 'SynapseOS',
+                version: '1.0.0',
+                running: false,
+                cycle_count: 0,
+                systems: {
+                    FractalFS: { active: true, size: 0, nodes: 0 },
+                    PheromoneNet: { active: true, pheromones: 0, evaporation_rate: 0.01 },
+                    PulseOS: { active: true, processes: 0, synapses: 0 },
+                    EmpathyEngine: { active: true, state: 'unknown', confidence: 0.0 },
+                    DreamWeaver: { active: true, predictions: 0, learning_rate: 0.1 }
+                },
+                neural_pathway: {
+                    empathy_to_pulse: 0,
+                    pulse_to_pheromone: 0,
+                    dreamweaver_to_fractalfs: 0
+                },
+                predictions: [],
+                process_memory: {}
+            };
+        }
+        
+        function startSystem() {
+            if (synapseOS) {
+                synapseOS.running = true;
+                running = true;
+                cycleCount = 0;
+                log('SynapseOS neural core activated', 'info');
+                document.getElementById('statusText').textContent = 'Status: RUNNING';
+                updateDisplay();
+            }
+        }
+        
+        function stopSystem() {
+            if (synapseOS) {
+                synapseOS.running = false;
+                running = false;
+                if (autoInterval) {
+                    clearInterval(autoInterval);
+                    autoInterval = null;
+                }
+                log('SynapseOS neural core halted', 'warn');
+                document.getElementById('statusText').textContent = 'Status: HALTED';
+            }
+        }
+        
+        function resetSystem() {
+            stopSystem();
+            initPython();
+            log('System reset to defaults', 'warn');
+            document.getElementById('statusText').textContent = 'Status: RESET';
+        }
+        
+        function tick() {
+            if (!synapseOS || !synapseOS.running) return;
+            
+            cycleCount++;
+            synapseOS.cycle_count = cycleCount;
+            
+            synapseOS.systems.PheromoneNet.pheromones = Math.max(0, 
+                synapseOS.systems.PheromoneNet.pheromones - 
+                synapseOS.systems.PheromoneNet.evaporation_rate * 10
+            );
+            
+            if (cycleCount % 10 === 0) {
+                empathyCycle();
+            }
+            
+            if (cycleCount % 30 === 0) {
+                dreamweaverCycle();
+            }
+            
+            if (cycleCount % 100 === 0) {
+                fractalCompact();
+            }
+            
+            updateDisplay();
+        }
+        
+        function empathyCycle() {
+            const states = ['focused', 'stressed', 'calm', 'curious', 'tired'];
+            const idx = (cycleCount / 30) % states.length;
+            const state = states[Math.floor(idx)];
+            
+            synapseOS.systems.EmpathyEngine.state = state;
+            synapseOS.systems.EmpathyEngine.confidence = Math.min(1.0, 0.5 + cycleCount / 200);
+            synapseOS.neural_pathway.empathy_to_pulse = synapseOS.systems.EmpathyEngine.confidence;
+            
+            const excitationMap = { focused: 0.9, stressed: 0.3, calm: 0.6, curious: 0.8, tired: 0.2 };
+            synapseOS.systems.PulseOS.processes = Math.floor(excitationMap[state] * 50);
+            synapseOS.neural_pathway.pulse_to_pheromone = excitationMap[state];
+            
+            log(`Empathy: User state → ${state}`, 'info');
+        }
+        
+        function dreamweaverCycle() {
+            if (synapseOS.neural_pathway.pulse_to_pheromone > 0.7) {
+                const predictions = ['code_editor', 'browser', 'terminal', 'file_explorer', 
+                               'music_player', 'email', 'chat', 'calendar'];
+                const idx = (cycleCount + synapseOS.predictions.length) % predictions.length;
+                
+                synapseOS.predictions.push({
+                    process: predictions[idx],
+                    confidence: 0.6,
+                    preloaded: false
+                });
+                
+                synapseOS.systems.DreamWeaver.predictions = synapseOS.predictions.length;
+                synapseOS.neural_pathway.dreamweaver_to_fractalfs = 0.6;
+                
+                log(`DreamWeaver: Predicting → ${predictions[idx]}`, 'info');
+            }
+        }
+        
+        function fractalCompact() {
+            if (synapseOS.systems.FractalFS.size > 1000) {
+                const compression = 0.95;
+                synapseOS.systems.FractalFS.size = Math.floor(synapseOS.systems.FractalFS.size * compression);
+                log('FractalFS: Compressed', 'info');
+            }
+        }
+        
+        function autoTick() {
+            if (autoInterval) {
+                clearInterval(autoInterval);
+                autoInterval = null;
+                document.getElementById('autoBtn').textContent = 'Auto Run';
+                log('Auto-ticking stopped', 'warn');
+            } else {
+                autoInterval = setInterval(tick, 100);
+                document.getElementById('autoBtn').textContent = 'Stop Auto';
+                log('Auto-ticking started', 'info');
+            }
+        }
+        
+        function updateDisplay() {
+            document.getElementById('cycleCount').textContent = cycleCount;
+            
+            document.getElementById('fractalSize').textContent = (synapseOS.systems.FractalFS.size / 1024).toFixed(1) + ' KB';
+            document.getElementById('fractalNodes').textContent = synapseOS.systems.FractalFS.nodes;
+            document.getElementById('fractalCompression').textContent = '1.0x';
+            
+            document.getElementById('pheromoneCount').textContent = Math.floor(synapseOS.systems.PheromoneNet.pheromones);
+            document.getElementById('pheromoneEvap').textContent = (synapseOS.systems.PheromoneNet.evaporation_rate * 100).toFixed(1) + '%/tick';
+            document.getElementById('pheromoneStrength').textContent = synapseOS.neural_pathway.pulse_to_pheromone.toFixed(2);
+            
+            document.getElementById('pulseProcesses').textContent = synapseOS.systems.PulseOS.processes;
+            document.getElementById('pulseSynapses').textContent = synapseOS.systems.PulseOS.synapses;
+            document.getElementById('pulseExcitation').textContent = synapseOS.neural_pathway.pulse_to_pheromone.toFixed(2);
+            
+            const stateEl = document.getElementById('empathyState');
+            stateEl.textContent = synapseOS.systems.EmpathyEngine.state;
+            stateEl.className = 'state-indicator state-' + synapseOS.systems.EmpathyEngine.state;
+            document.getElementById('empathyConfidence').textContent = Math.floor(synapseOS.systems.EmpathyEngine.confidence * 100) + '%';
+            document.getElementById('empathyMultiplier').textContent = (1.0 + synapseOS.neural_pathway.empathy_to_pulse * 0.2).toFixed(1) + 'x';
+            
+            document.getElementById('dreamPredictions').textContent = synapseOS.systems.DreamWeaver.predictions;
+            document.getElementById('dreamLearningRate').textContent = synapseOS.systems.DreamWeaver.learning_rate;
+            document.getElementById('dreamConfidence').textContent = Math.floor(synapseOS.neural_pathway.dreamweaver_to_fractalfs * 100) + '%';
+            
+            document.getElementById('pathEmpathyPulse').textContent = synapseOS.neural_pathway.empathy_to_pulse.toFixed(2);
+            document.getElementById('pathPulsePheromone').textContent = synapseOS.neural_pathway.pulse_to_pheromone.toFixed(2);
+            document.getElementById('pathDreamFractal').textContent = synapseOS.neural_pathway.dreamweaver_to_fractalfs.toFixed(2);
+            
+            const queueEl = document.getElementById('predictionQueue');
+            if (synapseOS.predictions.length === 0) {
+                queueEl.innerHTML = '<div class="prediction-item">Awaiting predictions...</div>';
+            } else {
+                queueEl.innerHTML = synapseOS.predictions.slice(-5).map(p => 
+                    `<div class="prediction-item">${p.process} (${Math.floor(p.confidence * 100)}% confidence)</div>`
+                ).join('');
+            }
+        }
+        
+        function log(message, type = 'info') {
+            const logEl = document.getElementById('logOutput');
+            const time = new Date().toTimeString().split(' ')[0];
+            logEl.innerHTML += `<div class="log-entry"><span class="time">[${time}]</span> <span class="${type}">${message}</span></div>`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        initPython();
+    </script>
+</body>
+</html>

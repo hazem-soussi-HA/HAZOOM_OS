@@ -1,0 +1,48 @@
+{
+  "contract": {
+    "address": "0x1851516cf6c9a835cacba824b0d4a7bbfbdd3f8e",
+    "client": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
+    "service_type": "email_automation",
+    "amount_eth": 0.6530199998258613,
+    "amount_usd": 1500.0,
+    "deadline": "2026-05-05T21:41:04.238884",
+    "status": "pending_payment",
+    "created_at": "2026-04-28T21:41:04.238884",
+    "milestones": [
+      {
+        "name": "Initial Setup",
+        "percentage": 30,
+        "description": "Email account setup and basic automation"
+      },
+      {
+        "name": "Core Development",
+        "percentage": 40,
+        "description": "AI processing and categorization"
+      },
+      {
+        "name": "Testing & Deployment",
+        "percentage": 30,
+        "description": "Testing, training, and final deployment"
+      }
+    ]
+  },
+  "agreement": {
+    "contract_id": "0x1851516cf6c9a835cacba824b0d4a7bbfbdd3f8e",
+    "service_description": "AI-powered email automation system with intelligent categorization, auto-responses, and task extraction using Alpha Pony Neural Network technology.",
+    "deliverables": [
+      "Intelligent email categorization system",
+      "Automated response templates",
+      "Task extraction and tracking",
+      "Analytics dashboard",
+      "Integration with existing tools",
+      "User training and documentation"
+    ],
+    "timeline_days": 7,
+    "total_amount_usd": 1500.0,
+    "jurisdiction": "International (Digital Services)"
+  },
+  "payment_link": "ethereum:0x1851516cf6c9a835cacba824b0d4a7bbfbdd3f8e?value=653019999825861376",
+  "smart_contract_code": "\n// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\nimport \"@openzeppelin/contracts/security/ReentrancyGuard.sol\";\nimport \"@openzeppelin/contracts/access/Ownable.sol\";\n\ncontract AlphaPonyServiceContract is ReentrancyGuard, Ownable {\n    address public client;\n    address public serviceProvider;\n    uint256 public totalAmount;\n    uint256 public deadline;\n    string public serviceType;\n    \n    mapping(uint256 => uint256) public milestonePayments;\n    uint256 public totalMilestones;\n    uint256 public currentMilestone;\n    \n    enum Status { Pending, InProgress, Completed, Disputed }\n    Status public contractStatus;\n    \n    event PaymentReceived(address from, uint256 amount);\n    event MilestoneReleased(uint256 milestone, uint256 amount);\n    event ContractCompleted(uint256 totalPaid);\n    \n    modifier onlyClient() {\n        require(msg.sender == client, \"Only client can call this function\");\n    }\n    \n    modifier onlyServiceProvider() {\n        require(msg.sender == serviceProvider, \"Only service provider can call this function\");\n    }\n    \n    constructor(\n        address _client,\n        address _serviceProvider,\n        uint256 _totalAmount,\n        uint256 _deadline,\n        string memory _serviceType,\n        uint256 _totalMilestones\n    ) {\n        client = _client;\n        serviceProvider = _serviceProvider;\n        totalAmount = _totalAmount;\n        deadline = _deadline;\n        serviceType = _serviceType;\n        totalMilestones = _totalMilestones;\n        contractStatus = Status.Pending;\n        currentMilestone = 0;\n    }\n    \n    receive() external payable nonReentrant {\n        require(block.timestamp <= deadline, \"Payment deadline has passed\");\n        require(contractStatus == Status.Pending, \"Contract not in pending state\");\n        require(msg.value == totalAmount, \"Incorrect payment amount\");\n        \n        emit PaymentReceived(msg.sender, msg.value);\n        contractStatus = Status.InProgress;\n    }\n    \n    function releaseMilestone() external onlyServiceProvider nonReentrant {\n        require(contractStatus == Status.InProgress, \"Contract not in progress\");\n        require(currentMilestone < totalMilestones, \"All milestones completed\");\n        \n        uint256 milestoneAmount = milestonePayments[currentMilestone];\n        require(address(this).balance >= milestoneAmount, \"Insufficient contract balance\");\n        \n        payable(serviceProvider).transfer(milestoneAmount);\n        emit MilestoneReleased(currentMilestone, milestoneAmount);\n        currentMilestone++;\n        \n        if (currentMilestone == totalMilestones) {\n            contractStatus = Status.Completed;\n            emit ContractCompleted(totalAmount);\n        }\n    }\n    \n    function setMilestonePayment(uint256 milestone, uint256 amount) external onlyOwner {\n        require(milestone < totalMilestones, \"Invalid milestone\");\n        milestonePayments[milestone] = amount;\n    }\n    \n    function getContractBalance() external view returns (uint256) {\n        return address(this).balance;\n    }\n    \n    function getRemainingTime() external view returns (uint256) {\n        if (block.timestamp >= deadline) return 0;\n        return deadline - block.timestamp;\n    }\n    \n    function dispute() external onlyClient {\n        require(contractStatus == Status.InProgress, \"Contract not in progress\");\n        contractStatus = Status.Disputed;\n    }\n    \n    function resolveDispute(bool clientWins) external onlyOwner {\n        require(contractStatus == Status.Disputed, \"No active dispute\");\n        \n        if (clientWins) {\n            payable(client).transfer(address(this).balance);\n        } else {\n            payable(serviceProvider).transfer(address(this).balance);\n        }\n        \n        contractStatus = Status.Completed;\n    }\n}\n        ",
+  "legal_document": "\nDIGITAL SERVICES AGREEMENT\nAlpha Pony Neural Systems - Contract ID: 0x1851516cf6c9a835cacba824b0d4a7bbfbdd3f8e\nDate: 2026-04-28\n\nPARTIES:\nService Provider: \nClient: 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb\n\nSERVICE DESCRIPTION:\nAI-powered email automation system with intelligent categorization, auto-responses, and task extraction using Alpha Pony Neural Network technology.\n\nDELIVERABLES:\n- Intelligent email categorization system\n- Automated response templates\n- Task extraction and tracking\n- Analytics dashboard\n- Integration with existing tools\n- User training and documentation\n\nTIMELINE:\n7 days from contract execution\nDeadline: 2026-05-05\n\nPAYMENT TERMS:\nTotal Amount: $1500.00 USD\nCryptocurrency: ETH\nPayment Address: \nMilestone-based payments as defined in smart contract\n\nJURISDICTION:\nInternational (Digital Services)\nGoverning Law: International Commercial Arbitration Rules\n\nTERMS AND CONDITIONS:\n1. Services will be delivered according to specified deliverables\n2. Payment held in smart contract until milestone completion\n3. Both parties agree to binding arbitration for disputes\n4. Digital signatures constitute legal agreement\n5. Services comply with international data protection laws\n\nINTELLECTUAL PROPERTY:\n1. Client retains ownership of final deliverables\n2. Service provider retains rights to underlying technology\n3. Source code provided upon full payment\n\nCONFIDENTIALITY:\nBoth parties agree to maintain confidentiality of proprietary information\n\nFORCE MAJEURE:\nNeither party liable for circumstances beyond reasonable control\n\nDIGITAL SIGNATURES:\nService Provider: [Pending Digital Signature]\nClient: [Pending Digital Signature]\n\nThis agreement is executed via smart contract and digital signatures.\n        ",
+  "saved_at": "2026-04-28T21:41:04.238884"
+}

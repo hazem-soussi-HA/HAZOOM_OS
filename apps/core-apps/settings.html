@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - HAZOOM OS</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            color: white;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .sidebar {
+            width: 150px;
+        }
+
+        .sidebar-item {
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-item.active {
+            background: #3b82f6;
+        }
+
+        .content {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #94a3b8;
+        }
+
+        select,
+        input {
+            width: 100%;
+            padding: 8px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: white;
+            border-radius: 5px;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #1e293b;
+            transition: .4s;
+            border-radius: 26px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        .toggle-switch input:checked+.toggle-slider {
+            background-color: #667eea;
+        }
+
+        .toggle-switch input:checked+.toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .status-secure {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .status-standard {
+            background: rgba(148, 163, 184, 0.2);
+            border: 1px solid #475569;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-item active" onclick="switchTab('theme')">🎨 Theme</div>
+            <div class="sidebar-item" onclick="switchTab('security')">🔒 Security</div>
+        </div>
+        <div class="content">
+            <div id="theme-section">
+                <div class="group">
+                    <label>Desktop Background</label>
+                    <input type="color" id="bgColor" onchange="updateBg()">
+                </div>
+                <div class="group">
+                    <label>OS Name</label>
+                    <input type="text" id="osName" value="HAZOOM OS" oninput="updateOSName()">
+                </div>
+                <div class="group">
+                    <label>System Scale</label>
+                    <select id="scale" onchange="updateScale()">
+                        <option value="1">100%</option>
+                        <option value="1.1">110%</option>
+                        <option value="1.2">120%</option>
+                        <option value="0.9">90%</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="security-section" style="display: none;">
+                <h2 style="margin-bottom: 20px;">🔒 Security Mode</h2>
+                <div class="toggle-container">
+                    <div>
+                        <div style="font-weight: 600;">Secure Mode</div>
+                        <div style="font-size: 12px; color: #94a3b8;">Enhanced security with restricted access</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="secureModeToggle" onchange="toggleSecureMode()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="toggle-container">
+                    <div>
+                        <div style="font-weight: 600;">Current Status</div>
+                        <span id="securityStatus" class="status-badge status-standard">STANDARD</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <div id="securityLevel" style="font-size: 24px; font-weight: bold; color: #667eea;"></div>
+                        <div style="font-size: 12px; color: #94a3b8;">Security Level</div>
+                    </div>
+                </div>
+
+                <div class="group">
+                    <label>Session Timeout (minutes)</label>
+                    <input type="number" id="sessionTimeout" value="30" min="5" max="180"
+                        onchange="updateSessionTimeout()">
+                </div>
+
+                <div class="group">
+                    <label>Audit Logging</label>
+                    <div class="toggle-container" style="margin: 0;">
+                        <span style="color: #94a3b8;">Log all security events</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked disabled>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="group">
+                    <label>Active Agents</label>
+                    <div id="activeAgentsList"
+                        style="max-height: 200px; overflow-y: auto; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px;">
+                    </div>
+                </div>
+
+                <div class="group">
+                    <button onclick="loadAuditLogs()"
+                        style="width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">📋
+                        View Audit Logs</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const desktop = window.parent.document.getElementById('desktop');
+
+        function updateBg() {
+            const color = document.getElementById('bgColor').value;
+            desktop.style.background = color;
+            localStorage.setItem('hazoom_bg', color);
+        }
+
+        function updateOSName() {
+            const name = document.getElementById('osName').value;
+            window.parent.document.title = name + ' v2.1';
+            const startBtn = window.parent.document.getElementById('start-btn');
+            if (startBtn) startBtn.textContent = '🚀 ' + name.split(' ')[0];
+        }
+
+        function updateScale() {
+            const scale = document.getElementById('scale').value;
+            window.parent.document.body.style.zoom = scale;
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            if (tab === 'theme') {
+                document.getElementById('theme-section').style.display = 'block';
+                document.getElementById('security-section').style.display = 'none';
+            } else if (tab === 'security') {
+                document.getElementById('theme-section').style.display = 'none';
+                document.getElementById('security-section').style.display = 'block';
+                loadSecurityStatus();
+            }
+        }
+
+        function toggleSecureMode() {
+            const isSecure = document.getElementById('secureModeToggle').checked;
+            if (isSecure) {
+                window.parent.SecurityConfig.enableSecureMode();
+            } else {
+                window.parent.SecurityConfig.disableSecureMode();
+            }
+            loadSecurityStatus();
+        }
+
+        function loadSecurityStatus() {
+            const secureMode = window.parent.SecurityConfig.secureMode;
+            const currentLevel = window.parent.SecurityConfig.currentLevel;
+
+            document.getElementById('secureModeToggle').checked = secureMode;
+
+            const statusBadge = document.getElementById('securityStatus');
+            const levelDisplay = document.getElementById('securityLevel');
+
+            if (secureMode) {
+                statusBadge.textContent = 'SECURE';
+                statusBadge.className = 'status-badge status-secure';
+                levelDisplay.textContent = 'SECURE';
+                levelDisplay.style.color = '#667eea';
+            } else {
+                statusBadge.textContent = 'STANDARD';
+                statusBadge.className = 'status-badge status-standard';
+                levelDisplay.textContent = currentLevel.toUpperCase();
+                levelDisplay.style.color = '#94a3b8';
+            }
+
+            loadActiveAgents();
+        }
+
+        function loadActiveAgents() {
+            const agentsList = document.getElementById('activeAgentsList');
+            agentsList.innerHTML = '<div style="color: #94a3b8; font-size: 12px;">Loading agents...</div>';
+
+            fetch('http://127.0.0.1:8002/agents')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.agents) {
+                        agentsList.innerHTML = data.agents.map(agent => `
+                             <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 5px; margin-bottom: 5px;">
+                                 <div>
+                                     <div style="font-weight: 600; color: ${agent.status === 'running' ? '#22c55e' : '#ef4444'};">${agent.name}</div>
+                                     <div style="font-size: 11px; color: #94a3b8;">${agent.type.toUpperCase()}</div>
+                                 </div>
+                                 <div style="text-align: right;">
+                                     <div style="font-size: 14px; color: #667eea;">${agent.efficiency}%</div>
+                                     <div style="font-size: 11px; color: #94a3b8;">Efficiency</div>
+                                 </div>
+                             </div>
+                         `).join('');
+                    }
+                })
+                .catch(error => {
+                    agentsList.innerHTML = '<div style="color: #ef4444; font-size: 12px;">Failed to load agents</div>';
+                });
+        }
+
+        function updateSessionTimeout() {
+            const timeout = document.getElementById('sessionTimeout').value;
+            window.parent.SecurityConfig.features.sessionTimeout = timeout * 60;
+            window.parent.SecurityConfig.saveConfig();
+        }
+
+        function loadAuditLogs() {
+            const logs = window.parent.SecurityConfig.getAuditLogs(50);
+            const logContent = logs.map(log => `
+                 <div style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 12px;">
+                     <div style="color: #94a3b8; font-size: 11px;">${log.timestamp}</div>
+                     <div style="color: #e2e8f0; margin-top: 5px;">${log.action}</div>
+                     <div style="color: #667eea; font-size: 11px; margin-top: 5px;">${log.securityLevel.toUpperCase()}</div>
+                 </div>
+             `).join('');
+
+            alert('Audit Logs:\n\n' + logContent);
+        }
+
+        // Init
+        const savedBg = localStorage.getItem('hazoom_bg');
+        if (savedBg) {
+            document.getElementById('bgColor').value = savedBg;
+            desktop.style.background = savedBg;
+        }
+
+        // Load initial security status
+        setTimeout(loadSecurityStatus, 500);
+    </script>
+</body>
+
+</html>

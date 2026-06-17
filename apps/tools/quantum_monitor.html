@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Monitor - HAZOOM OS</title>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #020617; color: #34d399; padding: 20px; margin: 0; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(52, 211, 153, 0.2); padding-bottom: 10px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .card { background: rgba(52, 211, 153, 0.05); border: 1px solid rgba(52, 211, 153, 0.2); padding: 20px; border-radius: 12px; }
+        .title { font-size: 12px; text-transform: uppercase; color: #10b981; margin-bottom: 10px; }
+        .value { font-size: 28px; font-family: monospace; }
+        .chart { height: 60px; display: flex; align-items: flex-end; gap: 2px; margin-top: 15px; }
+        .bar { flex: 1; background: #10b981; min-height: 2px; }
+        .logs { margin-top: 20px; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px; font-family: monospace; font-size: 12px; height: 150px; overflow-y: auto; }
+        .log { margin-bottom: 5px; border-left: 2px solid #10b981; padding-left: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div style="font-size: 20px; font-weight: bold;">📊 SYSTEM QUANTUM MONITOR</div>
+        <div id="status">🟢 SYNCHRONIZED</div>
+    </div>
+    
+    <div class="grid">
+        <div class="card">
+            <div class="title">Resonance</div>
+            <div class="value" id="resonance">0.0Hz</div>
+            <div class="chart" id="resChart"></div>
+        </div>
+        <div class="card">
+            <div class="title">Consciousness</div>
+            <div class="value" id="cons">0%</div>
+            <div class="chart" id="consChart"></div>
+        </div>
+        <div class="card">
+            <div class="title">Uptime</div>
+            <div class="value" id="uptime">0s</div>
+        </div>
+        <div class="card">
+            <div class="title">Threads</div>
+            <div class="value" id="threads">12</div>
+        </div>
+    </div>
+
+    <div class="logs" id="logs">
+        <div class="log">[INIT] Quantum monitoring subsystem active.</div>
+    </div>
+
+    <script>
+        const system = window.parent.HAZOOM.System;
+        const history = { res: [], cons: [] };
+
+        function addLog(msg) {
+            const div = document.createElement('div');
+            div.className = 'log';
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            const logs = document.getElementById('logs');
+            logs.appendChild(div);
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function update() {
+            const res = system.state.resonance;
+            const cons = system.state.consciousness;
+            
+            document.getElementById('resonance').textContent = res + 'Hz';
+            document.getElementById('cons').textContent = cons + '%';
+            document.getElementById('uptime').textContent = system.state.uptime + 's';
+
+            updateChart('res', (res - 850) * 20);
+            updateChart('cons', cons);
+            
+            if (Math.random() > 0.95) addLog("Quantum flux fluctuation detected.");
+        }
+
+        function updateChart(id, val) {
+            history[id].push(val);
+            if (history[id].length > 50) history[id].shift();
+            document.getElementById(id + 'Chart').innerHTML = history[id].map(h => `<div class="bar" style="height:${h}%"></div>`).join('');
+        }
+
+        setInterval(update, 1000);
+        update();
+        addLog("Kernel connection established.");
+    </script>
+</body>
+</html>

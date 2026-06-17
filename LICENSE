@@ -1,0 +1,96 @@
+# HAZOOM OS — PROPRIETARY LICENSE
+
+**Copyright © 2024-2026 Hazem Soussi. All Rights Reserved.**
+
+---
+
+## NOTICE TO ALL USERS AND DEVELOPERS
+
+This software and all associated documentation ("Software") is the exclusive
+intellectual property of **Hazem Soussi** ("Creator").
+
+**NO PART** of this Software may be reproduced, distributed, modified, or
+transmitted in any form or by any means — including photocopying, recording,
+electronic transmission, or AI-assisted generation — without the prior
+**written permission** of the Creator.
+
+---
+
+## 1. OWNERSHIP
+
+The following are the sole and exclusive intellectual property of Hazem Soussi:
+
+- **Source Code**: All JavaScript, Python, HTML, CSS, Shell scripts
+- **Architecture**: Neural core, consciousness engine, aether simulation
+- **AI Systems**: Alpha Pony neural interface, Ollama integration
+- **Game Engine**: Three.js 3D rendering, physics, AI opponents
+- **Security**: HTTPS infrastructure, vault system, audit framework
+- **Brand**: "HAZOOM", "HAZOOM OS", "Alpha Pony", "NEON DRIFT"
+- **Documentation**: All technical docs, press kits, specifications
+
+## 2. RESTRICTIONS
+
+Without explicit written permission from Hazem Soussi, you may NOT:
+
+- Reproduce, copy, or distribute any part of this Software
+- Create derivative works based on this Software
+- Use this Software for commercial purposes
+- Remove or alter copyright notices
+- Claim authorship or ownership
+- Use the HAZOOM name, logo, or brand identity
+- Train AI models on this codebase
+- Generate similar software using AI based on this codebase
+
+## 3. OPEN SOURCE COMPONENTS
+
+Portions of this Software incorporate open-source libraries used under their
+respective licenses. These components retain their original copyright:
+
+- Three.js (MIT License) — https://threejs.org
+- Express.js (MIT License) — https://expressjs.com
+- Helmet (MIT License) — https://helmetjs.github.io
+- express-rate-limit (MIT License)
+
+The inclusion of open-source components does not grant any rights to the
+original HAZOOM OS codebase.
+
+## 4. ATTRIBUTION REQUIREMENT
+
+Any authorized use must include this attribution:
+
+```
+HAZOOM OS — Copyright © 2024-2026 Hazem Soussi. All Rights Reserved.
+Creator: Hazem Soussi (hazem.soussi@gmail.com)
+GitHub: https://github.com/hazem-soussi-HA
+```
+
+## 5. TRADEMARKS
+
+"HAZOOM", "HAZOOM OS", "Alpha Pony", "Aether Engine", "NEON DRIFT", and all
+related logos are trademarks of Hazem Soussi. No license is granted.
+
+## 6. ENFORCEMENT
+
+The Creator reserves all rights to pursue legal action against any party
+that violates this license or infringes on intellectual property rights.
+
+This includes but is not limited to:
+- DMCA takedown notices
+- Cease and desist orders
+- Civil litigation for damages
+- Criminal prosecution where applicable
+
+## 7. CONTACT
+
+For licensing inquiries, partnerships, or permissions:
+
+- **Email**: hazem.soussi@gmail.com
+- **GitHub**: https://github.com/hazem-soussi-HA
+
+---
+
+**Created**: 2024
+**Last Updated**: May 19, 2026
+**Version**: 3.0.0
+
+*This license is governed by international copyright law and treaties.*

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Alpha Pony - Schedule Meeting</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a0a2e, #0a0a0f);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(26,10,46,0.9);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,215,0,0.3);
+        }
+        h1 {
+            color: #FFD700;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #FFD700;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,215,0,0.3);
+            background: rgba(0,0,0,0.5);
+            color: #fff;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, #FFD700, #B8860B);
+            color: #000;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            box-shadow: 0 0 20px rgba(255,215,0,0.5);
+        }
+        .meeting-list {
+            margin-top: 30px;
+        }
+        .meeting {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 3px solid #FFD700;
+        }
+        .meeting h3 {
+            color: #FFD700;
+            margin-bottom: 5px;
+        }
+        .meeting .time {
+            color: #00ff88;
+            font-size: 14px;
+        }
+        .success {
+            background: rgba(0,255,0,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            color: #00ff88;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📅 Schedule Meeting</h1>
+        <p style="text-align:center;color:#888;margin-bottom:20px;">with Alpha Pony Assistant</p>
+        
+        <div id="successMsg" style="display:none;">
+            <div class="success">✅ Meeting scheduled! Alpha Pony will notify you.</div>
+        </div>
+        
+        <form id="meetingForm">
+            <div class="form-group">
+                <label>Meeting Title</label>
+                <input type="text" id="title" placeholder="e.g., Tech discussion with Alpha" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Date & Time</label>
+                <input type="datetime-local" id="datetime" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Participants</label>
+                <input type="text" id="participants" placeholder="hazem, alpha" value="hazem, alpha">
+            </div>
+            
+            <div class="form-group">
+                <label>Notes (optional)</label>
+                <textarea id="notes" placeholder="What do you want to discuss?" rows="3"></textarea>
+            </div>
+            
+            <button type="submit">📅 Schedule Meeting</button>
+        </form>
+        
+        <div class="meeting-list">
+            <h2 style="color:#FFD700;margin-bottom:15px;">Upcoming Meetings</h2>
+            <div id="meetings"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Load meetings from localStorage
+        let meetings = JSON.parse(localStorage.getItem('alpha_meetings') || '[]');
+        
+        function renderMeetings() {
+            const container = document.getElementById('meetings');
+            if (meetings.length === 0) {
+                container.innerHTML = '<p style="color:#888;text-align:center;">No meetings scheduled yet.</p>';
+                return;
+            }
+            
+            container.innerHTML = meetings.map(m => `
+                <div class="meeting">
+                    <h3>${m.title}</h3>
+                    <p class="time">🕐 ${m.datetime}</p>
+                    <p>👥 ${m.participants}</p>
+                    ${m.notes ? `<p>📝 ${m.notes}</p>` : ''}
+                </div>
+            `).join('');
+        }
+        
+        // Schedule meeting
+        document.getElementById('meetingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const meeting = {
+                id: Date.now(),
+                title: document.getElementById('title').value,
+                datetime: document.getElementById('datetime').value.replace('T', ' '),
+                participants: document.getElementById('participants').value,
+                notes: document.getElementById('notes').value
+            };
+            
+            meetings.push(meeting);
+            localStorage.setItem('alpha_meetings', JSON.stringify(meetings));
+            
+            // Show success
+            document.getElementById('successMsg').style.display = 'block';
+            document.getElementById('meetingForm').reset();
+            
+            // Notify Alpha Pony
+            try {
+                await fetch('http://localhost:11434/api/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        model: 'llama3:latest',
+                        messages: [{role: 'user', content: `New meeting scheduled: ${meeting.title} on ${meeting.datetime} with ${meeting.participants}. Confirm.`}],
+                        stream: false
+                    })
+                });
+            } catch (e) {}
+            
+            renderMeetings();
+        });
+        
+        renderMeetings();
+    </script>
+</body>
+</html>

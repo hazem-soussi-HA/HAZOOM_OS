@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Chess - HAZOOM OS</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle, #0f172a 0%, #020617 100%);
+            color: white;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .game-container {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+        #board {
+            display: grid;
+            grid-template-columns: repeat(8, 60px);
+            grid-template-rows: repeat(8, 60px);
+            border: 4px solid #334155;
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+            position: relative;
+        }
+        .square {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .square.light { background-color: #e2e8f0; color: #1e293b; }
+        .square.dark { background-color: #475569; color: #f1f5f9; }
+        .square.selected { background-color: #fbbf24 !important; }
+        .square.last-move { background-color: rgba(52, 211, 153, 0.4) !important; }
+        .square.valid-move::after {
+            content: '';
+            width: 15px;
+            height: 15px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+        }
+        .piece {
+            transition: transform 0.2s;
+            z-index: 10;
+        }
+        .piece:hover { transform: scale(1.1); }
+        
+        .info-panel {
+            width: 200px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        .status { margin-bottom: 20px; font-size: 18px; color: #3b82f6; font-weight: bold; }
+        .history { height: 300px; overflow-y: auto; font-family: monospace; font-size: 12px; color: #94a3b8; }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            background: #3b82f6;
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn:hover { background: #2563eb; }
+        
+        /* Quantum Glow */
+        .quantum-pulse {
+            animation: pulse 1s infinite alternate;
+        }
+        @keyframes pulse {
+            from { box-shadow: 0 0 10px rgba(59, 130, 246, 0.3); }
+            to { box-shadow: 0 0 25px rgba(59, 130, 246, 0.6); }
+        }
+    </style>
+</head>
+<body>
+    <h1 style="margin-bottom: 20px; background: linear-gradient(to right, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Quantum Chess Engine</h1>
+    
+    <div class="game-container">
+        <div id="board" class="quantum-pulse"></div>
+        
+        <div class="info-panel">
+            <div class="status" id="status">White's Turn</div>
+            <div id="ai-status" style="font-size: 12px; color: #10b981; margin-bottom: 10px;"></div>
+            <div class="history" id="history">
+                <div>Move History:</div>
+            </div>
+            <button class="btn" onclick="resetGame()">New Game</button>
+            <button class="btn" style="background: #475569;" onclick="undoMove()">Undo</button>
+        </div>
+    </div>
+
+    <script>
+        // Simplified Chess Engine Logic
+        const PIECES = {
+            'wP': '♙', 'wR': '♖', 'wN': '♘', 'wB': '♗', 'wQ': '♕', 'wK': '♔',
+            'bP': '♟', 'bR': '♜', 'bN': '♞', 'bB': '♝', 'bQ': '♛', 'bK': '♚'
+        };
+
+        let board = [];
+        let selectedSquare = null;
+        let turn = 'w';
+        let moveHistory = [];
+
+        function initBoard() {
+            board = [
+                ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
+                ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'],
+                ['', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', ''],
+                ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
+                ['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR']
+            ];
+            render();
+        }
+
+        function render() {
+            const boardEl = document.getElementById('board');
+            boardEl.innerHTML = '';
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    const square = document.createElement('div');
+                    square.className = `square ${(r + c) % 2 === 0 ? 'light' : 'dark'}`;
+                    square.dataset.r = r;
+                    square.dataset.c = c;
+                    
+                    if (selectedSquare && selectedSquare.r === r && selectedSquare.c === c) {
+                        square.classList.add('selected');
+                    }
+                    
+                    const piece = board[r][c];
+                    if (piece) {
+                        square.textContent = PIECES[piece];
+                        square.classList.add('piece');
+                        square.style.color = piece.startsWith('w') ? '#000' : '#000'; // Using font pieces
+                    }
+                    
+                    square.onclick = () => handleSquareClick(r, c);
+                    boardEl.appendChild(square);
+                }
+            }
+        }
+
+        function handleSquareClick(r, c) {
+            const piece = board[r][c];
+            
+            if (selectedSquare) {
+                if (selectedSquare.r === r && selectedSquare.c === c) {
+                    selectedSquare = null;
+                } else {
+                    movePiece(selectedSquare.r, selectedSquare.c, r, c);
+                    selectedSquare = null;
+                }
+            } else {
+                if (piece && piece.startsWith(turn)) {
+                    selectedSquare = { r, c };
+                }
+            }
+            render();
+        }
+
+        function movePiece(fromR, fromC, toR, toC) {
+            // Very basic legal check (just can't take own pieces)
+            const targetPiece = board[toR][toC];
+            if (targetPiece && targetPiece.startsWith(turn)) return;
+
+            const movingPiece = board[fromR][fromC];
+            board[toR][toC] = movingPiece;
+            board[fromR][fromC] = '';
+            
+            moveHistory.push(`${movingPiece} ${coordsToAlgebraic(fromR, fromC)} -> ${coordsToAlgebraic(toR, toC)}`);
+            updateHistory();
+            
+            turn = turn === 'w' ? 'b' : 'w';
+            document.getElementById('status').textContent = turn === 'w' ? "White's Turn" : "Black's Turn";
+            
+            // Emit resonance pulse to kernel
+            if (window.parent.System) {
+                window.parent.System.emit('appOpen', { id: 'chess_move' });
+            }
+
+            if (turn === 'b') {
+                setTimeout(makeAIMove, 500);
+            }
+        }
+
+        function coordsToAlgebraic(r, c) {
+            return String.fromCharCode(97 + c) + (8 - r);
+        }
+
+        function updateHistory() {
+            const histEl = document.getElementById('history');
+            histEl.innerHTML = '<div>Move History:</div>' + moveHistory.map(m => `<div>${m}</div>`).join('');
+            histEl.scrollTop = histEl.scrollHeight;
+        }
+
+        function resetGame() {
+            moveHistory = [];
+            turn = 'w';
+            selectedSquare = null;
+            document.getElementById('status').textContent = "White's Turn";
+            document.getElementById('ai-status').textContent = "";
+            initBoard();
+        }
+
+        function undoMove() {
+            if (moveHistory.length > 0) {
+                // Implementation of full undo requires state snapshots
+                alert("Undo functionality coming in v2.2!");
+            }
+        }
+
+        // Extremely basic AI for "Full Consciousness" feel
+        function makeAIMove() {
+            document.getElementById('ai-status').textContent = "AI calculating moves...";
+            
+            // Collect all possible moves for Black
+            let moves = [];
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    if (board[r][c].startsWith('b')) {
+                        // Look for empty or white squares
+                        for (let tr = 0; tr < 8; tr++) {
+                            for (let tc = 0; tc < 8; tc++) {
+                                if (!board[tr][tc].startsWith('b')) {
+                                    moves.push({ from: {r, c}, to: {r: tr, c: tc} });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (moves.length > 0) {
+                // Random move for now, but simulated delay
+                const move = moves[Math.floor(Math.random() * moves.length)];
+                movePiece(move.from.r, move.from.c, move.to.r, move.to.c);
+                document.getElementById('ai-status').textContent = "AI played.";
+            }
+            render();
+        }
+
+        initBoard();
+    </script>
+</body>
+</html>

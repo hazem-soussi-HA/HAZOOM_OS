@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda - Hazoom</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Fredoka:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+    <style>
+        .calendar-container {
+            background: white;
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            margin-top: 2rem;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .calendar-nav button {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .calendar-nav button:hover {
+            background: #4A90E2;
+            transform: scale(1.05);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .calendar-day:hover {
+            background: var(--pastel-blue);
+        }
+
+        .calendar-day.today {
+            background: var(--primary-blue);
+            color: white;
+            font-weight: 600;
+        }
+
+        .calendar-day.has-event::after {
+            content: '';
+            position: absolute;
+            bottom: 8px;
+            width: 6px;
+            height: 6px;
+            background: var(--soft-yellow);
+            border-radius: 50%;
+        }
+
+        .events-list {
+            margin-top: 2rem;
+        }
+
+        .event-item {
+            background: var(--pastel-blue);
+            padding: 1.5rem;
+            border-radius: 16px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .event-item:hover {
+            transform: translateX(10px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .event-icon {
+            font-size: 2rem;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 12px;
+        }
+
+        .event-details h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+        }
+
+        .event-details p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .day-names {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="logo-section">
+                <svg class="logo" viewBox="0 0 170.08 170.08">
+                    <path fill="#FFE082" d="M-166.92,24.13c4.1-3,12.6,3.8,14.12,5.07s11.92,8.62,18.43,29.08c0,0,6.08-2.42,8.93-2.21,0,0-2.76-2.51-2.42-4.17s4.64-2.3,10.08-.51c0,0-2.55-4.13-1.23-6.46s7,.69,9.36,2.47,4.34,3.27,7.53,8.04c0,0,3.66.47,8.85,3.06,0,0,4.99-16.13,11.85-22.5,6.86-6.38,15.17-13.8,20.58-11.94,5.41,1.86,1.61,19.53.48,23.32s-5.57,16.22-20.66,24.86c0,0,3.23,7.67,3.31,13.88s1.53,8.15,2.42,9.85,5.57,11.62,0,20.34c-5.57,8.72-15.17,13.15-23.08,16.79s-7.99,5.89-15.41,5.97c-7.42.08-11.78-4.04-13.56-4.76s-15.98-6.21-20.5-11.7-6.46-8.15-7.02-12.59-.4-8.8,3.87-16.06c0,0,2.29-17.42,4.64-21.81,0,0-14.62-8.53-18.6-18.76-3.98-10.23-6.47-25.93-1.95-29.24Z"/>
+                    <circle cx="-113.48" cy="121.86" r="3.18" fill="#4A90E2"/>
+                </svg>
+                <div class="logo-text">
+                    <h1>Hazoom</h1>
+                    <p>Agenda & Schedule</p>
+                </div>
+            </div>
+            <div class="user-actions">
+                <a href="index.html" class="btn btn-secondary">🏠 Home</a>
+                <a href="#" class="btn btn-primary">➕ Add Event</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <ul class="nav-menu">
+                <li class="nav-item" onclick="window.location.href='index.html'">
+                    <span class="nav-icon">🏠</span>
+                    <span>Home</span>
+                </li>
+                <li class="nav-item active">
+                    <span class="nav-icon">📅</span>
+                    <span>Agenda</span>
+                </li>
+                <li class="nav-item" onclick="window.location.href='devoirs.html'">
+                    <span class="nav-icon">📚</span>
+                    <span>Devoirs</span>
+                </li>
+                <li class="nav-item" onclick="window.location.href='revisions.html'">
+                    <span class="nav-icon">🔬</span>
+                    <span>Révisions</span>
+                </li>
+                <li class="nav-item" onclick="window.location.href='cosmos.html'">
+                    <span class="nav-icon">🌌</span>
+                    <span>Cosmos</span>
+                </li>
+                <li class="nav-item" onclick="window.location.href='freedom.html'">
+                    <span class="nav-icon">🗽</span>
+                    <span>Freedom</span>
+                </li>
+                <li class="nav-item" onclick="window.location.href='ethics.html'">
+                    <span class="nav-icon">⚖️</span>
+                    <span>Ethics</span>
+                </li>
+                <li class="nav-item" onclick="window.location.href='profil.html'">
+                    <span class="nav-icon">👤</span>
+                    <span>Profile</span>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        <section class="hero-section">
+            <div class="hero-content">
+                <div class="hero-emoji">📅✨</div>
+                <h2 class="hero-title">Your Learning Agenda</h2>
+                <p class="hero-subtitle">
+                    Never miss a homework, quiz, or learning activity! Hazoom keeps you organized and on track.
+                </p>
+            </div>
+        </section>
+
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <h2 style="font-family: 'Fredoka', sans-serif; color: var(--text-dark);">December 2025</h2>
+                <div class="calendar-nav">
+                    <button onclick="previousMonth()">← Previous</button>
+                    <button onclick="today()">Today</button>
+                    <button onclick="nextMonth()">Next →</button>
+                </div>
+            </div>
+
+            <div class="day-names">
+                <div>Sun</div>
+                <div>Mon</div>
+                <div>Tue</div>
+                <div>Wed</div>
+                <div>Thu</div>
+                <div>Fri</div>
+                <div>Sat</div>
+            </div>
+
+            <div class="calendar-grid" id="calendarGrid">
+                <!-- Calendar days will be generated by JavaScript -->
+            </div>
+        </div>
+
+        <div class="events-list">
+            <h2 class="section-title">Today's Events</h2>
+
+            <div class="event-item">
+                <div class="event-icon">📚</div>
+                <div class="event-details">
+                    <h3>Math Homework - Algebra</h3>
+                    <p>⏰ 3:00 PM - 4:00 PM | 📍 Homework Dashboard</p>
+                </div>
+            </div>
+
+            <div class="event-item">
+                <div class="event-icon">🌌</div>
+                <div class="event-details">
+                    <h3>Cosmos Explorer - Solar System</h3>
+                    <p>⏰ 5:00 PM - 5:45 PM | 📍 Interactive Lesson</p>
+                </div>
+            </div>
+
+            <div class="event-item">
+                <div class="event-icon">🎯</div>
+                <div class="event-details">
+                    <h3>Quiz Zone - Geography</h3>
+                    <p>⏰ 7:00 PM - 7:30 PM | 📍 Quiz Dashboard</p>
+                </div>
+            </div>
+
+            <div class="event-item">
+                <div class="event-icon">🤖</div>
+                <div class="event-details">
+                    <h3>AI Study Session - Science</h3>
+                    <p>⏰ 8:00 PM - 8:45 PM | 📍 Hazoom Chat</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>🎓 Quick Links</h3>
+                <p><a href="index.html">Dashboard</a></p>
+                <p><a href="devoirs.html">Homework</a></p>
+                <p><a href="revisions.html">Study Sessions</a></p>
+                <p><a href="profil.html">My Profile</a></p>
+            </div>
+            <div class="footer-section">
+                <h3>📚 Subjects</h3>
+                <p><a href="cosmos.html">Space & Cosmos</a></p>
+                <p><a href="freedom.html">Freedom Studies</a></p>
+                <p><a href="ethics.html">Ethics & Values</a></p>
+                <p><a href="#">General Knowledge</a></p>
+            </div>
+            <div class="footer-section">
+                <h3>ℹ️ Help</h3>
+                <p><a href="#">How to Use</a></p>
+                <p><a href="#">FAQ</a></p>
+                <p><a href="#">Contact Support</a></p>
+                <p><a href="#">Parent Guide</a></p>
+            </div>
+            <div class="footer-section">
+                <h3>ℹ️ About Hazoom</h3>
+                <p><a href="#">Our Mission</a></p>
+                <p><a href="#">Privacy Policy</a></p>
+                <p><a href="#">Terms of Service</a></p>
+                <p><a href="#">Safety</a></p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Hazoom - Super Intelligence Educational Platform | Created by Hazem Soussi (hazem.soussi@gmail.com) | All Rights Reserved</p>
+        </div>
+    </footer>
+
+    <script>
+        // Generate calendar
+        function generateCalendar() {
+            const calendarGrid = document.getElementById('calendarGrid');
+            const today = new Date();
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+
+            // Get first day of month and number of days
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+            // Add empty cells for days before month starts
+            for (let i = 0; i < firstDay; i++) {
+                const emptyDay = document.createElement('div');
+                calendarGrid.appendChild(emptyDay);
+            }
+
+            // Add days of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                dayElement.textContent = day;
+
+                // Mark today
+                if (day === today.getDate()) {
+                    dayElement.classList.add('today');
+                }
+
+                // Mark days with events (mock data)
+                if ([3, 5, 8, 12, 15, 18, 22, 25, 28].includes(day)) {
+                    dayElement.classList.add('has-event');
+                }
+
+                calendarGrid.appendChild(dayElement);
+            }
+        }
+
+        function previousMonth() {
+            alert('Previous month view! 📅');
+        }
+
+        function nextMonth() {
+            alert('Next month view! 📅');
+        }
+
+        function today() {
+            alert('Back to today! 📅');
+        }
+
+        // Initialize calendar when page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            generateCalendar();
+        });
+    </script>
+</body>
+</html>

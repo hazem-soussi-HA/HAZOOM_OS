@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hazoom OS Desktop</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        /* Custom Integrated Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, rgba(255, 215, 0, 0.6), rgba(255, 140, 0, 0.6));
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(45deg, rgba(255, 215, 0, 0.8), rgba(255, 140, 0, 0.8));
+        }
+        
+        .desktop-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080"><defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%23667eea;stop-opacity:0.1"/><stop offset="50%" style="stop-color:%23764ba2;stop-opacity:0.1"/><stop offset="100%" style="stop-color:%23f093fb;stop-opacity:0.1"/></linearGradient></defs><rect width="1920" height="1080" fill="url(%23bg)"/><circle cx="200" cy="200" r="150" fill="%23667eea" opacity="0.05"/><circle cx="1720" cy="880" r="200" fill="%23764ba2" opacity="0.05"/><circle cx="960" cy="540" r="300" fill="%23f093fb" opacity="0.03"/></svg>') center/cover;
+        }
+        
+        .taskbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 48px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            z-index: 1000;
+        }
+        
+        .start-menu {
+            position: fixed;
+            bottom: 56px;
+            left: 16px;
+            width: 400px;
+            max-height: 500px;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            display: none;
+            z-index: 999;
+            overflow-y: auto;
+        }
+        
+        .start-menu.active {
+            display: block;
+        }
+        
+        .desktop-icon {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            margin: 8px;
+            position: absolute;
+        }
+        
+        .desktop-icon:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.05);
+        }
+        
+        .desktop-icon.selected {
+            background: rgba(255, 215, 0, 0.2);
+            border: 2px solid rgba(255, 215, 0, 0.5);
+        }
+        
+        .desktop-icon i {
+            font-size: 32px;
+            margin-bottom: 8px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .desktop-icon span {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.9);
+            text-align: center;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .window {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 100;
+            min-width: 400px;
+            min-height: 300px;
+        }
+        
+        .window.active {
+            display: block;
+        }
+        
+        .window.maximized {
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: calc(100vh - 48px) !important;
+            border-radius: 0;
+        }
+        
+        .window-header {
+            height: 32px;
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            cursor: move;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .window.maximized .window-header {
+            border-radius: 0;
+        }
+        
+        .window-title {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+        
+        .window-controls {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .window-control {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .window-control:hover {
+            transform: scale(1.2);
+        }
+        
+        .window-control.close {
+            background: #ff5f56;
+        }
+        
+        .window-control.minimize {
+            background: #ffbd2e;
+        }
+        
+        .window-control.maximize {
+            background: #28ca42;
+        }
+        
+        .window-content {
+            padding: 16px;
+            color: rgba(255, 255, 255, 0.9);
+            height: calc(100% - 32px);
+            overflow-y: auto;
+        }
+        
+        .system-tray {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .tray-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.7);
+            transition: all 0.2s ease;
+        }
+        
+        .tray-icon:hover {
+            color: rgba(255, 255, 255, 0.9);
+            transform: scale(1.1);
+        }
+        
+        .clock {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        
+        .widget {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 12px;
+            min-width: 150px;
+        }
+        
+        .context-menu {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 8px 0;
+            display: none;
+            z-index: 1001;
+            min-width: 200px;
+        }
+        
+        .context-menu.active {
+            display: block;
+        }
+        
+        .context-menu-item {
+            padding: 8px 16px;
+            color: rgba(255, 255, 255, 0.9);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+        
+        .context-menu-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .context-menu-item i {
+            width: 20px;
+            margin-right: 8px;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+            color: rgba(255, 255, 255, 0.9);
+            max-width: 300px;
+            z-index: 1002;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .cosmic-text {
+            background: linear-gradient(45deg, #FFD700, #FFA500, #FF69B4, #00CED1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: cosmicShine 3s ease-in-out infinite;
+        }
+        
+        @keyframes cosmicShine {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.3); }
+        }
+    </style>
+</head>
+<body>
+    <div class="desktop-container" id="desktop">
+        <!-- Desktop Icons -->
+        <div class="desktop-icon" style="top: 20px; left: 20px;" onclick="openApp('alpha-pony')">
+            <i class="fas fa-horse"></i>
+            <span>Alpha Pony</span>
+        </div>
+        
+        <div class="desktop-icon" style="top: 20px; left: 120px;" onclick="openApp('hazoom-universe')">
+            <i class="fas fa-infinity"></i>
+            <span>Hazoom Universe</span>
+        </div>
+        
+        <div class="desktop-icon" style="top: 120px; left: 20px;" onclick="openApp('screen-light')">
+            <i class="fas fa-lightbulb"></i>
+            <span>Screen Light</span>
+        </div>
+        
+        <div class="desktop-icon" style="top: 120px; left: 120px;" onclick="openApp('prompt-engineering')">
+            <i class="fas fa-brain"></i>
+            <span>Prompt Engineering</span>
+        </div>
+        
+        <div class="desktop-icon" style="top: 220px; left: 20px;" onclick="openApp('neural-interface')">
+            <i class="fas fa-network-wired"></i>
+            <span>Neural Interface</span>
+        </div>
+        
+        <div class="desktop-icon" style="top: 220px; left: 120px;" onclick="openApp('crypto-wallet')">
+            <i class="fas fa-wallet"></i>
+            <span>Crypto Wallet</span>
+        </div>
+        
+        <div class="desktop-icon" style="top: 320px; left: 20px;" onclick="openApp('file-manager')">
+            <i class="fas fa-folder"></i>
+            <span>File Manager</span>
+        </div>
+        
+        <div class="desktop-icon" style="top: 320px; left: 120px;" onclick="openApp('system-settings')">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+        </div>
+        
+        <div class="desktop-icon" style="top: 420px; left: 20px;" onclick="openApp('terminal')">
+            <i class="fas fa-terminal"></i>
+            <span>Terminal</span>
+        </div>
+        
+        <div class="desktop-icon" style="top: 420px; left: 120px;" onclick="openApp('web-browser')">
+            <i class="fas fa-globe"></i>
+            <span>Web Browser</span>
+        </div>
+        
+        <!-- Desktop Widgets -->
+        <div class="widget" style="top: 20px; right: 20px;">
+            <div class="cosmic-text font-bold mb-2">System Status</div>
+            <div class="text-xs space-y-1">
+                <div>🔋 CPU: 45%</div>
+                <div>💾 RAM: 62%</div>
+                <div>🌐 Network: Active</div>
+                <div>⚡ Energy: 95%</div>
+            </div>
+        </div>
+        
+        <div class="widget" style="top: 180px; right: 20px;">
+            <div class="cosmic-text font-bold mb-2">Universal Energy</div>
+            <div class="text-xs space-y-1">
+                <div>💚 Peace: 95%</div>
+                <div>💙 Focus: 88%</div>
+                <div>💜 Creative: 92%</div>
+                <div>💛 Healing: 89%</div>
+            </div>
+        </div>
+        
+        <div class="widget" style="bottom: 80px; right: 20px;">
+            <div class="cosmic-text font-bold mb-2">Active Services</div>
+            <div class="text-xs space-y-1">
+                <div>🦄 Alpha Pony: Running</div>
+                <div>∞ Hazoom OS: Active</div>
+                <div>💡 Screen Light: On</div>
+                <div>🧠 Neural: Connected</div>
+            </div>
+        </div>
+        
+        <!-- Windows -->
+        <div class="window" id="window-alpha-pony" style="top: 100px; left: 200px; width: 800px; height: 600px;">
+            <div class="window-header">
+                <div class="window-title">Alpha Pony - Neural Interface</div>
+                <div class="window-controls">
+                    <div class="window-control minimize" onclick="minimizeWindow('alpha-pony')"></div>
+                    <div class="window-control maximize" onclick="maximizeWindow('alpha-pony')"></div>
+                    <div class="window-control close" onclick="closeWindow('alpha-pony')"></div>
+                </div>
+            </div>
+            <div class="window-content">
+                <iframe src="/index.html" sandbox="allow-scripts allow-same-origin allow-forms" style="width: 100%; height: 100%; border: none; border-radius: 4px;"></iframe>
+            </div>
+        </div>
+        
+        <div class="window" id="window-hazoom-universe" style="top: 150px; left: 300px; width: 900px; height: 700px;">
+            <div class="window-header">
+                <div class="window-title">Hazoom Universe - Positive Vibes & Good Fortune</div>
+                <div class="window-controls">
+                    <div class="window-control minimize" onclick="minimizeWindow('hazoom-universe')"></div>
+                    <div class="window-control maximize" onclick="maximizeWindow('hazoom-universe')"></div>
+                    <div class="window-control close" onclick="closeWindow('hazoom-universe')"></div>
+                </div>
+            </div>
+            <div class="window-content">
+                <iframe src="/hazoom_universe" sandbox="allow-scripts allow-same-origin allow-forms" style="width: 100%; height: 100%; border: none; border-radius: 4px;"></iframe>
+            </div>
+        </div>
+        
+        <div class="window" id="window-screen-light" style="top: 200px; left: 250px; width: 1000px; height: 750px;">
+            <div class="window-header">
+                <div class="window-title">Screen Light Controller - Hazoom OS</div>
+                <div class="window-controls">
+                    <div class="window-control minimize" onclick="minimizeWindow('screen-light')"></div>
+                    <div class="window-control maximize" onclick="maximizeWindow('screen-light')"></div>
+                    <div class="window-control close" onclick="closeWindow('screen-light')"></div>
+                </div>
+            </div>
+            <div class="window-content">
+                <iframe src="/screen_light_controller" sandbox="allow-scripts allow-same-origin allow-forms" style="width: 100%; height: 100%; border: none; border-radius: 4px;"></iframe>
+            </div>
+        </div>
+        
+        <div class="window" id="window-prompt-engineering" style="top: 120px; left: 180px; width: 1100px; height: 800px;">
+            <div class="window-header">
+                <div class="window-title">Prompt Engineering System - Adaptive Learning</div>
+                <div class="window-controls">
+                    <div class="window-control minimize" onclick="minimizeWindow('prompt-engineering')"></div>
+                    <div class="window-control maximize" onclick="maximizeWindow('prompt-engineering')"></div>
+                    <div class="window-control close" onclick="closeWindow('prompt-engineering')"></div>
+                </div>
+            </div>
+            <div class="window-content">
+                <iframe src="/prompt_engineering_system" sandbox="allow-scripts allow-same-origin allow-forms" style="width: 100%; height: 100%; border: none; border-radius: 4px;"></iframe>
+            </div>
+        </div>
+        
+        <div class="window" id="window-neural-interface" style="top: 180px; left: 220px; width: 850px; height: 650px;">
+            <div class="window-header">
+                <div class="window-title">Neural Interface - Consciousness System</div>
+                <div class="window-controls">
+                    <div class="window-control minimize" onclick="minimizeWindow('neural-interface')"></div>
+                    <div class="window-control maximize" onclick="maximizeWindow('neural-interface')"></div>
+                    <div class="window-control close" onclick="closeWindow('neural-interface')"></div>
+                </div>
+            </div>
+            <div class="window-content">
+                <div class="text-center py-8">
+                    <i class="fas fa-network-wired text-6xl text-purple-400 mb-4"></i>
+                    <h3 class="text-2xl font-bold mb-4 cosmic-text">Neural Interface System</h3>
+                    <div class="grid grid-cols-2 gap-4 max-w-md mx-auto">
+                        <div class="bg-gray-800 rounded p-4">
+                            <div class="text-sm text-gray-400">Consciousness Level</div>
+                            <div class="text-xl font-bold text-green-400">Transcendent</div>
+                        </div>
+                        <div class="bg-gray-800 rounded p-4">
+                            <div class="text-sm text-gray-400">Neural Activity</div>
+                            <div class="text-xl font-bold text-blue-400">87%</div>
+                        </div>
+                        <div class="bg-gray-800 rounded p-4">
+                            <div class="text-sm text-gray-400">Aether Flow</div>
+                            <div class="text-xl font-bold text-purple-400">Harmonizing</div>
+                        </div>
+                        <div class="bg-gray-800 rounded p-4">
+                            <div class="text-sm text-gray-400">Sync Rate</div>
+                            <div class="text-xl font-bold text-yellow-400">94%</div>
+                        </div>
+                    </div>
+                    <button class="mt-6 bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded transition">
+                        <i class="fas fa-sync mr-2"></i>Sync Neural Network
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="window" id="window-crypto-wallet" style="top: 160px; left: 280px; width: 900px; height: 700px;">
+            <div class="window-header">
+                <div class="window-title">Cryptocurrency Wallet - Multi-Chain System</div>
+                <div class="window-controls">
+                    <div class="window-control minimize" onclick="minimizeWindow('crypto-wallet')"></div>
+                    <div class="window-control maximize" onclick="maximizeWindow('crypto-wallet')"></div>
+                    <div class="window-control close" onclick="closeWindow('crypto-wallet')"></div>
+                </div>
+            </div>
+            <div class="window-content">
+                <div class="text-center py-8">
+                    <i class="fas fa-wallet text-6xl text-yellow-400 mb-4"></i>
+                    <h3 class="text-2xl font-bold mb-4 cosmic-text">Crypto Wallet System</h3>
+                    <div class="grid grid-cols-3 gap-4 max-w-2xl mx-auto mb-6">
+                        <div class="bg-gray-800 rounded p-4">
+                            <div class="text-sm text-gray-400">ETH Balance</div>
+                            <div class="text-xl font-bold text-blue-400">2.456 ETH</div>
+                        </div>
+                        <div class="bg-gray-800 rounded p-4">
+                            <div class="text-sm text-gray-400">USDC Balance</div>
+                            <div class="text-xl font-bold text-green-400">1,234 USDC</div>
+                        </div>
+                        <div class="bg-gray-800 rounded p-4">
+                            <div class="text-sm text-gray-400">MATIC Balance</div>
+                            <div class="text-xl font-bold text-purple-400">567 MATIC</div>
+                        </div>
+                    </div>
+                    <div class="space-y-2 max-w-md mx-auto">
+                        <button class="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition">
+                            <i class="fas fa-paper-plane mr-2"></i>Send Transaction
+                        </button>
+                        <button class="w-full bg-green-600 hover:bg-green-700 px-4 py-2 rounded transition">
+                            <i class="fas fa-qrcode mr-2"></i>Receive Payment
+                        </button>
+                        <button class="w-full bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded transition">
+                            <i class="fas fa-history mr-2"></i>Transaction History
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="window" id="window-file-manager" style="top: 140px; left: 200px; width: 1000px; height: 750px;">
+            <div class="window-header">
+                <div class="window-title">File Manager - Hazoom OS</div>
+                <div class="window-controls">
+                    <div class="window-control minimize" onclick="minimizeWindow('file-manager')"></div>
+                    <div class="window-control maximize" onclick="maximizeWindow('file-manager')"></div>
+                    <div class="window-control close" onclick="closeWindow('file-manager')"></div>
+                </div>
+            </div>
+            <div class="window-content">
+                <div class="grid grid-cols-4 gap-4">
+                    <div class="text-center">
+                        <i class="fas fa-folder text-4xl text-yellow-400 mb-2"></i>
+                        <div class="text-sm">Documents</div>
+                    </div>
+                    <div class="text-center">
+                        <i class="fas fa-folder text-4xl text-blue-400 mb-2"></i>
+                        <div class="text-sm">Pictures</div>
+                    </div>
+                    <div class="text-center">
+                        <i class="fas fa-folder text-4xl text-green-400 mb-2"></i>
+                        <div class="text-sm">Videos</div>
+                    </div>
+                    <div class="text-center">
+                        <i class="fas fa-folder text-4xl text-purple-400 mb-2"></i>
+                        <div class="text-sm">Music</div>
+                    </div>
+                    <div class="text-center">
+                        <i class="fas fa-folder text-4xl text-red-400 mb-2"></i>
+                        <div class="text-sm">Downloads</div>
+                    </div>
+                    <div class="text-center">
+                        <i class="fas fa-folder text-4xl text-orange-400 mb-2"></i>
+                        <div class="text-sm">Desktop</div>
+                    </div>
+                    <div class="text-center">
+                        <i class="fas fa-folder text-4xl text-pink-400 mb-2"></i>
+                        <div class="text-sm">Projects</div>
+                    </div>
+                    <div class="text-center">
+                        <i class="fas fa-folder text-4xl text-cyan-400 mb-2"></i>
+                        <div class="text-sm">System</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="window" id="window-system-settings" style="top: 120px; left: 300px; width: 800px; height: 600px;">
+            <div class="window-header">
+                <div class="window-title">System Settings - Hazoom OS</div>
+                <div class="window-controls">
+                    <div class="window-control minimize" onclick="minimizeWindow('system-settings')"></div>
+                    <div class="window-control maximize" onclick="maximizeWindow('system-settings')"></div>
+                    <div class="window-control close" onclick="closeWindow('system-settings')"></div>
+                </div>
+            </div>
+            <div class="window-content">
+                <div class="space-y-4">
+                    <div class="bg-gray-800 rounded p-4">
+                        <h4 class="font-bold mb-2">Display Settings</h4>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span>Screen Brightness</span>
+                                <input type="range" min="0" max="100" value="85" class="w-32">
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Color Temperature</span>
+                                <select class="bg-gray-700 px-2 py-1 rounded">
+                                    <option>Warm (3000K)</option>
+                                    <option>Neutral (6500K)</option>
+                                    <option>Cool (7500K)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-800 rounded p-4">
+                        <h4 class="font-bold mb-2">System Preferences</h4>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="checkbox" checked class="mr-2">
+                                <span>Enable Universal Energy Sync</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" checked class="mr-2">
+                                <span>Show Desktop Widgets</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" checked class="mr-2">
+                                <span>Enable Neural Interface</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="bg-gray-800 rounded p-4">
+                        <h4 class="font-bold mb-2">Security Settings</h4>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span>Encryption Level</span>
+                                <span class="text-green-400">AES-256</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Firewall Status</span>
+                                <span class="text-green-400">Active</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="window" id="window-terminal" style="top: 200px; left: 250px; width: 800px; height: 500px;">
+            <div class="window-header">
+                <div class="window-title">Terminal - Hazoom OS Command Line</div>
+                <div class="window-controls">
+                    <div class="window-control minimize" onclick="minimizeWindow('terminal')"></div>
+                    <div class="window-control maximize" onclick="maximizeWindow('terminal')"></div>
+                    <div class="window-control close" onclick="closeWindow('terminal')"></div>
+                </div>
+            </div>
+            <div class="window-content bg-black text-green-400 font-mono text-sm p-4">
+                <div>Welcome to Hazoom OS Terminal v3.0.0</div>
+                <div>Type 'help' for available commands</div>
+                <div class="mt-2">
+                    <span>hazoom@universe:~$ </span>
+                    <span class="blink-cursor">_</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="window" id="window-web-browser" style="top: 100px; left: 150px; width: 1200px; height: 800px;">
+            <div class="window-header">
+                <div class="window-title">Web Browser - Hazoom OS</div>
+                <div class="window-controls">
+                    <div class="window-control minimize" onclick="minimizeWindow('web-browser')"></div>
+                    <div class="window-control maximize" onclick="maximizeWindow('web-browser')"></div>
+                    <div class="window-control close" onclick="closeWindow('web-browser')"></div>
+                </div>
+            </div>
+            <div class="window-content">
+                <div class="text-center py-8">
+                    <i class="fas fa-globe text-6xl text-blue-400 mb-4"></i>
+                    <h3 class="text-2xl font-bold mb-4 cosmic-text">Web Browser</h3>
+                    <div class="max-w-md mx-auto">
+                        <input type="text" placeholder="Enter URL or search query..." 
+                               class="w-full bg-gray-800 text-white px-4 py-2 rounded mb-4"
+                               value="https://localhost:8080">
+                        <button class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded transition">
+                            <i class="fas fa-search mr-2"></i>Navigate
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Taskbar -->
+        <div class="taskbar">
+            <div class="flex items-center gap-2">
+                <button onclick="toggleStartMenu()" class="tray-icon">
+                    <i class="fas fa-th"></i>
+                </button>
+                <div id="taskbar-apps" class="flex items-center gap-2">
+                    <!-- Taskbar apps will be added here dynamically -->
+                </div>
+            </div>
+            
+            <div class="system-tray">
+                <div class="tray-icon" onclick="showNotification('Network connected to universal consciousness')">
+                    <i class="fas fa-wifi"></i>
+                </div>
+                <div class="tray-icon" onclick="showNotification('Volume: 75%')">
+                    <i class="fas fa-volume-up"></i>
+                </div>
+                <div class="tray-icon" onclick="toggleScreenLight()">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <div class="tray-icon" onclick="showNotification('Neural interface: Connected')">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <div class="clock" id="clock">00:00:00</div>
+            </div>
+        </div>
+        
+        <!-- Start Menu -->
+        <div class="start-menu" id="startMenu">
+            <div class="cosmic-text font-bold text-lg mb-4">Hazoom OS Start Menu</div>
+            <div class="space-y-2">
+                <div class="context-menu-item" onclick="openApp('alpha-pony')">
+                    <i class="fas fa-horse"></i>Alpha Pony
+                </div>
+                <div class="context-menu-item" onclick="openApp('hazoom-universe')">
+                    <i class="fas fa-infinity"></i>Hazoom Universe
+                </div>
+                <div class="context-menu-item" onclick="openApp('screen-light')">
+                    <i class="fas fa-lightbulb"></i>Screen Light Controller
+                </div>
+                <div class="context-menu-item" onclick="openApp('prompt-engineering')">
+                    <i class="fas fa-brain"></i>Prompt Engineering
+                </div>
+                <div class="context-menu-item" onclick="openApp('neural-interface')">
+                    <i class="fas fa-network-wired"></i>Neural Interface
+                </div>
+                <div class="context-menu-item" onclick="openApp('crypto-wallet')">
+                    <i class="fas fa-wallet"></i>Crypto Wallet
+                </div>
+                <div class="context-menu-item" onclick="openApp('file-manager')">
+                    <i class="fas fa-folder"></i>File Manager
+                </div>
+                <div class="context-menu-item" onclick="openApp('system-settings')">
+                    <i class="fas fa-cog"></i>System Settings
+                </div>
+                <div class="context-menu-item" onclick="openApp('terminal')">
+                    <i class="fas fa-terminal"></i>Terminal
+                </div>
+                <div class="context-menu-item" onclick="openApp('web-browser')">
+                    <i class="fas fa-globe"></i>Web Browser
+                </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-gray-700">
+                <div class="context-menu-item" onclick="shutdownSystem()">
+                    <i class="fas fa-power-off"></i>Shutdown
+                </div>
+                <div class="context-menu-item" onclick="restartSystem()">
+                    <i class="fas fa-redo"></i>Restart
+                </div>
+            </div>
+        </div>
+        
+        <!-- Context Menu -->
+        <div class="context-menu" id="contextMenu">
+            <div class="context-menu-item" onclick="contextAction('open')">
+                <i class="fas fa-folder-open"></i>Open
+            </div>
+            <div class="context-menu-item" onclick="contextAction('rename')">
+                <i class="fas fa-edit"></i>Rename
+            </div>
+            <div class="context-menu-item" onclick="contextAction('delete')">
+                <i class="fas fa-trash"></i>Delete
+            </div>
+            <div class="context-menu-item" onclick="contextAction('properties')">
+                <i class="fas fa-info-circle"></i>Properties
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let activeWindow = null;
+        let startMenuOpen = false;
+        let openWindows = new Set();
+        let windowPositions = {};
+        
+        // Initialize clock
+        function updateClock() {
+            const now = new Date();
+            const time = now.toLocaleTimeString('en-US', { 
+                hour12: false, 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+            });
+            document.getElementById('clock').textContent = time;
+        }
+        
+        setInterval(updateClock, 1000);
+        updateClock();
+        
+        // Start menu
+        function toggleStartMenu() {
+            startMenuOpen = !startMenuOpen;
+            const startMenu = document.getElementById('startMenu');
+            startMenu.classList.toggle('active', startMenuOpen);
+        }
+        
+        // Window management
+        function openApp(appId) {
+            const window = document.getElementById(`window-${appId}`);
+            if (window) {
+                window.classList.add('active');
+                openWindows.add(appId);
+                addToTaskbar(appId);
+                setActiveWindow(appId);
+                closeStartMenu();
+            }
+        }
+        
+        function closeWindow(appId) {
+            const window = document.getElementById(`window-${appId}`);
+            if (window) {
+                window.classList.remove('active');
+                openWindows.delete(appId);
+                removeFromTaskbar(appId);
+                if (activeWindow === appId) {
+                    activeWindow = null;
+                }
+            }
+        }
+        
+        function minimizeWindow(appId) {
+            const window = document.getElementById(`window-${appId}`);
+            if (window) {
+                window.classList.remove('active');
+                if (activeWindow === appId) {
+                    activeWindow = null;
+                }
+            }
+        }
+        
+        function maximizeWindow(appId) {
+            const window = document.getElementById(`window-${appId}`);
+            if (window) {
+                window.classList.toggle('maximized');
+                setActiveWindow(appId);
+            }
+        }
+        
+        function setActiveWindow(appId) {
+            activeWindow = appId;
+            // Bring window to front
+            const window = document.getElementById(`window-${appId}`);
+            if (window) {
+                const highestZ = Math.max(...Array.from(document.querySelectorAll('.window')).map(w => parseInt(w.style.zIndex || 0)));
+                window.style.zIndex = highestZ + 1;
+            }
+        }
+        
+        // Taskbar management
+        function addToTaskbar(appId) {
+            const taskbarApps = document.getElementById('taskbar-apps');
+            if (!document.getElementById(`taskbar-${appId}`)) {
+                const taskbarApp = document.createElement('button');
+                taskbarApp.id = `taskbar-${appId}`;
+                taskbarApp.className = 'tray-icon bg-gray-700 px-2 py-1 rounded';
+                taskbarApp.onclick = () => toggleWindow(appId);
+                
+                const icons = {
+                    'alpha-pony': 'fa-horse',
+                    'hazoom-universe': 'fa-infinity',
+                    'screen-light': 'fa-lightbulb',
+                    'prompt-engineering': 'fa-brain',
+                    'neural-interface': 'fa-network-wired',
+                    'crypto-wallet': 'fa-wallet',
+                    'file-manager': 'fa-folder',
+                    'system-settings': 'fa-cog',
+                    'terminal': 'fa-terminal',
+                    'web-browser': 'fa-globe'
+                };
+                
+                taskbarApp.innerHTML = `<i class="fas ${icons[appId] || 'fa-window-maximize'}"></i>`;
+                taskbarApps.appendChild(taskbarApp);
+            }
+        }
+        
+        function removeFromTaskbar(appId) {
+            const taskbarApp = document.getElementById(`taskbar-${appId}`);
+            if (taskbarApp) {
+                taskbarApp.remove();
+            }
+        }
+        
+        function toggleWindow(appId) {
+            const window = document.getElementById(`window-${appId}`);
+            if (window) {
+                if (window.classList.contains('active')) {
+                    minimizeWindow(appId);
+                } else {
+                    openApp(appId);
+                }
+            }
+        }
+        
+        // System functions
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.innerHTML = `
+                <div class="flex items-start">
+                    <i class="fas fa-info-circle text-blue-400 mr-3 mt-1"></i>
+                    <div>
+                        <div class="font-bold mb-1">System Notification</div>
+                        <div class="text-sm">${message}</div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        function toggleScreenLight() {
+            const window = document.getElementById('window-screen-light');
+            if (window.classList.contains('active')) {
+                minimizeWindow('screen-light');
+            } else {
+                openApp('screen-light');
+            }
+        }
+        
+        function closeStartMenu() {
+            startMenuOpen = false;
+            document.getElementById('startMenu').classList.remove('active');
+        }
+        
+        function contextAction(action) {
+            showNotification(`Context action: ${action}`);
+            closeContextMenu();
+        }
+        
+        function closeContextMenu() {
+            document.getElementById('contextMenu').classList.remove('active');
+        }
+        
+        function shutdownSystem() {
+            if (confirm('Are you sure you want to shutdown Hazoom OS?')) {
+                showNotification('Shutting down Hazoom OS...');
+                setTimeout(() => {
+                    document.body.innerHTML = '<div class="flex items-center justify-center h-screen"><div class="text-center"><i class="fas fa-power-off text-6xl text-red-400 mb-4"></i><div class="text-2xl">Hazoom OS Shutdown Complete</div></div></div>';
+                }, 2000);
+            }
+        }
+        
+        function restartSystem() {
+            if (confirm('Are you sure you want to restart Hazoom OS?')) {
+                showNotification('Restarting Hazoom OS...');
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            }
+        }
+        
+        // Window dragging
+        let isDragging = false;
+        let currentDragWindow = null;
+        let dragOffset = { x: 0, y: 0 };
+        
+        document.addEventListener('mousedown', (e) => {
+            if (e.target.closest('.window-header')) {
+                isDragging = true;
+                currentDragWindow = e.target.closest('.window');
+                const rect = currentDragWindow.getBoundingClientRect();
+                dragOffset.x = e.clientX - rect.left;
+                dragOffset.y = e.clientY - rect.top;
+                currentDragWindow.style.zIndex = 1000;
+            }
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging && currentDragWindow && !currentDragWindow.classList.contains('maximized')) {
+                const x = e.clientX - dragOffset.x;
+                const y = e.clientY - dragOffset.y;
+                currentDragWindow.style.left = x + 'px';
+                currentDragWindow.style.top = y + 'px';
+            }
+        });
+        
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            currentDragWindow = null;
+        });
+        
+        // Context menu
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            const contextMenu = document.getElementById('contextMenu');
+            contextMenu.style.left = e.clientX + 'px';
+            contextMenu.style.top = e.clientY + 'px';
+            contextMenu.classList.add('active');
+        });
+        
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.context-menu')) {
+                closeContextMenu();
+            }
+            if (!e.target.closest('.start-menu') && !e.target.closest('.fa-th')) {
+                closeStartMenu();
+            }
+        });
+        
+        // Desktop selection
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.desktop-icon')) {
+                document.querySelectorAll('.desktop-icon').forEach(icon => {
+                    icon.classList.remove('selected');
+                });
+                e.target.closest('.desktop-icon').classList.add('selected');
+            } else if (e.target.closest('.desktop-container')) {
+                document.querySelectorAll('.desktop-icon').forEach(icon => {
+                    icon.classList.remove('selected');
+                });
+            }
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeContextMenu();
+                closeStartMenu();
+            }
+            if (e.ctrlKey && e.key === 'q') {
+                if (activeWindow) {
+                    closeWindow(activeWindow);
+                }
+            }
+            if (e.ctrlKey && e.key === 'm') {
+                if (activeWindow) {
+                    minimizeWindow(activeWindow);
+                }
+            }
+            if (e.ctrlKey && e.key === 'n') {
+                toggleStartMenu();
+            }
+        });
+        
+        // Welcome notification
+        setTimeout(() => {
+            showNotification('Welcome to Hazoom OS Desktop! Your universal consciousness is fully integrated.');
+        }, 1000);
+    </script>
+</body>
+</html>

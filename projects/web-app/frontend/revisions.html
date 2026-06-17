@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Révisions & AI Chat - Hazoom</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Fredoka:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+    <style>
+        .chat-interface {
+            background: white;
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 3rem;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .chat-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid var(--pastel-blue);
+        }
+
+        .chat-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .chat-subtitle {
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        .chat-messages-extended {
+            background: var(--pastel-blue);
+            border-radius: 16px;
+            padding: 2rem;
+            min-height: 400px;
+            max-height: 600px;
+            overflow-y: auto;
+            margin-bottom: 2rem;
+        }
+
+        .message-extended {
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1.5rem;
+            align-items: flex-start;
+        }
+
+        .message-extended.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar-extended {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            flex-shrink: 0;
+            box-shadow: var(--shadow-md);
+        }
+
+        .message-extended.user .message-avatar-extended {
+            background: var(--gradient-secondary);
+        }
+
+        .message-content-extended {
+            flex: 1;
+            max-width: 70%;
+        }
+
+        .message-bubble-extended {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 20px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 0.5rem;
+        }
+
+        .message-extended.user .message-bubble-extended {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            text-align: right;
+            padding: 0 0.5rem;
+        }
+
+        .message-extended.user .message-time {
+            text-align: left;
+        }
+
+        .chat-input-extended {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .quick-prompts {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+        }
+
+        .prompt-tag {
+            background: var(--pastel-blue);
+            color: var(--text-dark);
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+        }
+
+        .prompt-tag:hover {
+            background: var(--primary-blue);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .study-modes {
+            background: white;
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        .mode-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .mode-card {
+            background: var(--pastel-blue);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+        }
+
+        .mode-card:hover {
+            border-color: var(--primary-blue);
+            transform: scale(1.05);
+            box-shadow: var(--shadow-md);
+        }
+
+        .mode-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .mode-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-dark);
+        }
+
+        .mode-description {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .achievement-badge {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            box-shadow: var(--shadow-md);
+        }
+
+        .progress-indicator {
+            background: var(--pastel-blue);
+            height: 8px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--gradient-primary);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="logo-section">
+                <svg class="logo" viewBox="0 0 170.08 170.08">
+                    <path fill="#FFE082" d="M-166.92,24.13c4.1-3,12.6,3.8,14.12,5.07s11.92,8.62,18.43,29.08c0,0,6.08-2.42,8.93-2.21,0,0-2.76-2.51-2.42-4.17s4.64-2.3,10.08-.51c0,0-2.55-4.13-1.23-6.46s7,.69,9.36,2.47,4.34,3.27,7.53,8.04c0,0,3.66.47,8.85,3.06,0,0,4.99-16.13,11.85-22.5,6.86-6.38,15.17-13.8,20.58-11.94,5.41,1.86,1.61,19.53.48,23.32s-5.57,16.22-20.66,24.86c0,0,3.23,7.67,3.31,13.88s1.53,8.15,2.42,9.85,5.57,11.62,0,20.34c-5.57,8.72-15.17,13.15-23.08,16.79s-7.99,5.89-15.41,5.97c-7.42.08-11.78-4.04-13.56-4.76s-15.98-6.21-20.5-11.7-6.46-8.15-7.02-12.59-.4-8.8,3.87-16.06c0,0,2.29-17.42,4.64-21.81,0,0-14.62-8.53-18.6-18.76-3.98-10.23-6.47-25.93-1.95-29.24Z"/>
+                    <circle cx="-113.48" cy="121.86" r="3.18" fill="#4A90E2"/>
+                </svg>
+                <div class="logo-text">
+                    <h1>Hazoom</h1>
+                    <p>AI Study Companion</p>
+                </div>
+            </div>
+            <div class="user-actions">
+                <a href="index.html" class="btn btn-secondary">🏠 Home</a>
+                <a href="#" class="btn btn-primary">🎓 New Session</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <ul class="nav-menu">
+                <li class="nav-item" onclick="window.location.href='index.html'">
+                    <span class="nav-icon">🏠</span>
+                    <span>Home</span>
+                </li>
+                <li class="nav-item" onclick="window.location.href='agenda.html'">
+                    <span class="nav-icon">📅</span>
+                    <span>Agenda</span>
+                </li>
+                <li class="nav-item" onclick="window.location.href='devoirs.html'">
+                    <span class="nav-icon">📚</span>
+                    <span>Devoirs</span>
+                </li>
+                <li class="nav-item active">
+                    <span class="nav-icon">🔬</span>
+                    <span>Révisions</span>
+                </li>
+                <li class="nav-item" onclick="window.location.href='cosmos.html'">
+                    <span class="nav-icon">🌌</span>
+                    <span>Cosmos</span>
+                </li>
+                <li class="nav-item" onclick="window.location.href='freedom.html'">
+                    <span class="nav-icon">🗽</span>
+                    <span>Freedom</span>
+                </li>
+                <li class="nav-item" onclick="window.location.href='ethics.html'">
+                    <span class="nav-icon">⚖️</span>
+                    <span>Ethics</span>
+                </li>
+                <li class="nav-item" onclick="window.location.href='profil.html'">
+                    <span class="nav-icon">👤</span>
+                    <span>Profile</span>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        <section class="hero-section">
+            <div class="hero-content">
+                <div class="hero-emoji">🤖✨</div>
+                <h2 class="hero-title">AI Study Companion</h2>
+                <p class="hero-subtitle">
+                    Chat with Hazoom AI for personalized explanations, practice questions, and interactive learning sessions tailored just for you!
+                </p>
+                <div class="achievement-badge">🏆 You're on a 5-day study streak!</div>
+            </div>
+        </section>
+
+        <!-- Chat Interface -->
+        <div class="chat-interface">
+            <div class="chat-header">
+                <h2 class="chat-title">Chat with Hazoom 🦘</h2>
+                <p class="chat-subtitle">Ask me anything! I'm here to help you learn and grow.</p>
+            </div>
+
+            <div class="quick-prompts">
+                <button class="prompt-tag" onclick="askQuestion('Help me understand photosynthesis')">🌱 Explain Photosynthesis</button>
+                <button class="prompt-tag" onclick="askQuestion('Give me a math quiz')">➗ Math Quiz</button>
+                <button class="prompt-tag" onclick="askQuestion('What are my options for studying?')">📚 Study Options</button>
+                <button class="prompt-tag" onclick="askQuestion('Test my knowledge of France')">🇫🇷 French Practice</button>
+                <button class="prompt-tag" onclick="askQuestion('Explain the water cycle')">💧 Water Cycle</button>
+            </div>
+
+            <div class="chat-messages-extended" id="chatMessagesExtended">
+                <div class="message-extended">
+                    <div class="message-avatar-extended">🦘</div>
+                    <div class="message-content-extended">
+                        <div class="message-bubble-extended">
+                            Hello there! 👋 I'm Hazoom, your AI study companion! I'm here to help you learn anything you want. I can explain difficult concepts, quiz you on topics, or just chat about interesting things! What would you like to learn about today?
+                        </div>
+                        <div class="message-time">2:30 PM</div>
+                    </div>
+                </div>
+
+                <div class="message-extended user">
+                    <div class="message-avatar-extended">🧒</div>
+                    <div class="message-content-extended">
+                        <div class="message-bubble-extended">
+                            Hi Hazoom! Can you help me understand photosynthesis? I have a test tomorrow.
+                        </div>
+                        <div class="message-time">2:31 PM</div>
+                    </div>
+                </div>
+
+                <div class="message-extended">
+                    <div class="message-avatar-extended">🦘</div>
+                    <div class="message-content-extended">
+                        <div class="message-bubble-extended">
+                            Of course! 🌱 Photosynthesis is how plants make their own food using sunlight. Here's the simple version:<br><br>
+                            <strong>6CO₂ + 6H₂O + Light Energy → C₆H₁₂O₆ + 6O₂</strong><br><br>
+                            Plants take in carbon dioxide (CO₂) from the air and water (H₂O) from the soil. Using sunlight, they turn these into glucose (sugar for energy) and release oxygen (O₂) that we breathe!<br><br>
+                            Think of it like a recipe: sunlight + water + air = food for the plant! 🌞<br><br>
+                            Would you like me to explain any part in more detail?
+                        </div>
+                        <div class="message-time">2:31 PM</div>
+                    </div>
+                </div>
+
+                <div class="progress-indicator">
+                    <div class="progress-bar" style="width: 35%"></div>
+                </div>
+                <p style="text-align: center; color: var(--text-light); font-size: 0.9rem;">Session progress: 35% complete</p>
+            </div>
+
+            <div class="chat-input-extended">
+                <input type="text" id="chatInputExtended" placeholder="Ask Hazoom anything...">
+                <button onclick="sendMessageExtended()" style="padding: 1rem 2rem; background: var(--gradient-primary); color: white; border: none; border-radius: 25px; font-weight: 600; cursor: pointer;">Send 🚀</button>
+            </div>
+        </div>
+
+        <!-- Study Modes -->
+        <section class="study-modes">
+            <h2 class="section-title">Choose Your Study Mode</h2>
+
+            <div class="mode-grid">
+                <div class="mode-card" onclick="startMode('tutor')">
+                    <span class="mode-icon">👨‍🏫</span>
+                    <h3 class="mode-title">AI Tutor</h3>
+                    <p class="mode-description">
+                        Get personalized explanations and step-by-step guidance for any subject
+                    </p>
+                </div>
+
+                <div class="mode-card" onclick="startMode('quiz')">
+                    <span class="mode-icon">🎯</span>
+                    <h3 class="mode-title">Quiz Mode</h3>
+                    <p class="mode-description">
+                        Test your knowledge with adaptive quizzes that adjust to your level
+                    </p>
+                </div>
+
+                <div class="mode-card" onclick="startMode('flashcards')">
+                    <span class="mode-icon">🃏</span>
+                    <h3 class="mode-title">Flashcards</h3>
+                    <p class="mode-description">
+                        Review concepts with interactive flashcards and spaced repetition
+                    </p>
+                </div>
+
+                <div class="mode-card" onclick="startMode('discussion')">
+                    <span class="mode-icon">💬</span>
+                    <h3 class="mode-title">Discussion</h3>
+                    <p class="mode-description">
+                        Engage in thoughtful conversations about complex topics
+                    </p>
+                </div>
+
+                <div class="mode-card" onclick="startMode('practice')">
+                    <span class="mode-icon">✍️</span>
+                    <h3 class="mode-title">Practice Problems</h3>
+                    <p class="mode-description">
+                        Solve problems with hints and detailed solutions
+                    </p>
+                </div>
+
+                <div class="mode-card" onclick="startMode('review')">
+                    <span class="mode-icon">📖</span>
+                    <h3 class="mode-title">Concept Review</h3>
+                    <p class="mode-description">
+                        Review key concepts and make connections between topics
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>🎓 Study Resources</h3>
+                <p><a href="cosmos.html">Science Lessons</a></p>
+                <p><a href="devoirs.html">Homework Help</a></p>
+                <p><a href="#">Practice Tests</a></p>
+                <p><a href="#">Study Guides</a></p>
+            </div>
+            <div class="footer-section">
+                <h3>🤖 AI Features</h3>
+                <p><a href="#">Smart Quiz</a></p>
+                <p><a href="#">Concept Maps</a></p>
+                <p><a href="#">Progress Tracking</a></p>
+                <p><a href="#">Personalized Learning</a></p>
+            </div>
+            <div class="footer-section">
+                <h3>📚 Subjects</h3>
+                <p><a href="#">Mathematics</a></p>
+                <p><a href="#">Sciences</a></p>
+                <p><a href="#">Languages</a></p>
+                <p><a href="#">History & Social Studies</a></p>
+            </div>
+            <div class="footer-section">
+                <h3>ℹ️ Support</h3>
+                <p><a href="#">Study Tips</a></p>
+                <p><a href="#">FAQ</a></p>
+                <p><a href="#">Parent Dashboard</a></p>
+                <p><a href="#">Contact Us</a></p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Hazoom - Super Intelligence Educational Platform | Created by Hazem Soussi (hazem.soussi@gmail.com) | All Rights Reserved</p>
+        </div>
+    </footer>
+
+    <script>
+        function sendMessageExtended() {
+            const input = document.getElementById('chatInputExtended');
+            const messagesContainer = document.getElementById('chatMessagesExtended');
+
+            if (input.value.trim() === '') return;
+
+            // Add user message
+            const userMessage = document.createElement('div');
+            userMessage.className = 'message-extended user';
+            userMessage.innerHTML = `
+                <div class="message-avatar-extended">🧒</div>
+                <div class="message-content-extended">
+                    <div class="message-bubble-extended">${input.value}</div>
+                    <div class="message-time">Just now</div>
+                </div>
+            `;
+            messagesContainer.appendChild(userMessage);
+
+            // Simulate AI response
+            setTimeout(() => {
+                const aiMessage = document.createElement('div');
+                aiMessage.className = 'message-extended';
+                aiMessage.innerHTML = `
+                    <div class="message-avatar-extended">🦘</div>
+                    <div class="message-content-extended">
+                        <div class="message-bubble-extended">
+                            ${getAdvancedAIResponse(input.value)}
+                        </div>
+                        <div class="message-time">Just now</div>
+                    </div>
+                `;
+                messagesContainer.appendChild(aiMessage);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }, 1500);
+
+            input.value = '';
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function getAdvancedAIResponse(message) {
+            const lowerMessage = message.toLowerCase();
+
+            if (lowerMessage.includes('quiz') || lowerMessage.includes('test')) {
+                return "I'd love to quiz you! 🎯 What subject would you like to be tested on? I can create questions about math, science, history, languages, or any topic you're studying! Each quiz adapts to your level and helps you learn.";
+            } else if (lowerMessage.includes('photosynthesis') || lowerMessage.includes('plant')) {
+                return "Great question! 🌱 I explained the basics, but here's more detail: Photosynthesis happens in the chloroplasts (tiny factories in leaves). The chlorophyll (green stuff) captures sunlight. The process has two stages: light reactions and Calvin cycle. Want to dive deeper into either part?";
+            } else if (lowerMessage.includes('math') || lowerMessage.includes('equation') || lowerMessage.includes('solve')) {
+                return "Math is fun! ➗ What type of math are you working on? I can help with algebra, geometry, fractions, decimals, or even calculus! I'll give you practice problems and show you step-by-step solutions. What would you like to practice?";
+            } else if (lowerMessage.includes('science') || lowerMessage.includes('chemistry') || lowerMessage.includes('physics')) {
+                return "Science is amazing! 🔬 What aspect interests you? I can explain physics concepts (like gravity and motion), chemistry (atoms and reactions), earth science (weather and rocks), or biology (living things). What would you like to explore?";
+            } else if (lowerMessage.includes('history') || lowerMessage.includes('war') || lowerMessage.includes('ancient')) {
+                return "History is like a time machine! 🏛️ From ancient civilizations to modern times, there's so much to discover! What period or event interests you? I can tell you about ancient Egypt, the Roman Empire, medieval times, or recent history!";
+            } else {
+                const responses = [
+                    "That's a fantastic question! 🤔 I'm here to help you learn. Can you tell me more about what you'd like to know?",
+                    "I love your curiosity! 🌟 Let's explore that together! What specific part would you like to dive deeper into?",
+                    "Excellent! 💡 Let me explain that in a way that's easy to understand. Would you like examples or a step-by-step breakdown?",
+                    "You're thinking like a true scholar! 📚 Is this for a particular class or just for fun? I can tailor my explanation to help you best!",
+                    "Great question! 🚀 I enjoy explaining things in fun ways. Would you like me to use analogies, examples, or maybe tell you an interesting story about it?"
+                ];
+                return responses[Math.floor(Math.random() * responses.length)];
+            }
+        }
+
+        function askQuestion(question) {
+            document.getElementById('chatInputExtended').value = question;
+            sendMessageExtended();
+        }
+
+        function startMode(mode) {
+            alert(`🚀 Starting ${mode.charAt(0).toUpperCase() + mode.slice(1)} Mode!\n\nThis feature will be available soon!\n\n🎯 Interactive learning sessions\n📊 Progress tracking\n🏆 Achievement system\n🎨 Personalized experience`);
+        }
+
+        // Enter key support
+        document.getElementById('chatInputExtended').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessageExtended();
+            }
+        });
+    </script>
+</body>
+</html>

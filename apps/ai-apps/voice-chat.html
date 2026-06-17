@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Alpha Pony Voice Interface</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a0a2e, #0a0a0f);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: rgba(26,10,46,0.9);
+            padding: 40px;
+            border-radius: 25px;
+            border: 2px solid rgba(255,215,0,0.4);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            font-size: 36px;
+            background: linear-gradient(135deg, #FFD700, #FFE55C);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 30px;
+        }
+        .avatar {
+            font-size: 80px;
+            animation: float 3s ease-in-out infinite;
+            margin: 20px 0;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 15px 30px;
+            border-radius: 15px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn-mic {
+            background: linear-gradient(135deg, #FFD700, #B8860B);
+            color: #000;
+        }
+        .btn-mic.listening {
+            background: linear-gradient(135deg, #ff4444, #ff0000);
+            animation: pulse 1s infinite;
+        }
+        .btn-speaker {
+            background: linear-gradient(135deg, #00ff88, #00cc66);
+            color: #000;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border-radius: 15px;
+            border: 1px solid rgba(255,215,0,0.3);
+            background: rgba(0,0,0,0.5);
+            color: #fff;
+            font-size: 16px;
+            min-height: 100px;
+            resize: vertical;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            font-size: 14px;
+        }
+        .status.listening { border-left: 3px solid #00ff88; }
+        .status.speaking { border-left: 3px solid #FFD700; }
+        .status.idle { border-left: 3px solid #888; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🦄 Alpha Pony Voice</h1>
+        <p class="subtitle">Speak with your AI companion</p>
+        
+        <div class="avatar" id="avatar">🦄</div>
+        
+        <div class="controls">
+            <button class="btn-mic" id="micBtn" onclick="toggleMic()">🎤 Hold to Talk</button>
+            <button class="btn-speaker" onclick="speak()">🔊 Speak</button>
+        </div>
+        
+        <textarea id="inputText" placeholder="Or type your message here..."></textarea>
+        
+        <div class="controls">
+            <button onclick="sendMessage()" style="background:#4a2c7a;color:#fff;border:1px solid #FFD700;">Send to Alpha</button>
+        </div>
+        
+        <div class="status idle" id="status">
+            🤫 Click the microphone or type to speak with Alpha Pony
+        </div>
+        
+        <div style="margin-top: 20px; text-align: left;">
+            <h3 style="color: #FFD700; margin-bottom: 10px;">💬 Conversation:</h3>
+            <div id="conversation" style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; max-height: 200px; overflow-y: auto;">
+                <div style="color: #00ff88; margin-bottom: 10px;"><strong>Alpha:</strong> Hello! I'm here. What would you like to talk about?</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let isListening = false;
+        let recognition = null;
+        const synth = window.speechSynthesis;
+        
+        // Initialize speech recognition
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.onresult = (event) => {
+                const transcript = Array.from(event.results)
+                    .map(r => r[0].transcript)
+                    .join('');
+                document.getElementById('inputText').value = transcript;
+            };
+        }
+        
+        function toggleMic() {
+            if (!recognition) {
+                alert('Voice recognition not supported in this browser');
+                return;
+            }
+            
+            const btn = document.getElementById('micBtn');
+            const status = document.getElementById('status');
+            
+            if (isListening) {
+                recognition.stop();
+                isListening = false;
+                btn.classList.remove('listening');
+                btn.textContent = '🎤 Hold to Talk';
+                status.className = 'status idle';
+                status.textContent = '🛑 Stopped listening';
+            } else {
+                recognition.start();
+                isListening = true;
+                btn.classList.add('listening');
+                btn.textContent = '🛑 Release to Stop';
+                status.className = 'status listening';
+                status.textContent = '👂 Listening...';
+            }
+        }
+        
+        function speak() {
+            const text = document.getElementById('inputText').value || "Hello! I am Alpha Pony. Your AI companion.";
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1;
+            utterance.pitch = 1;
+            utterance.volume = 1;
+            
+            const status = document.getElementById('status');
+            status.className = 'status speaking';
+            status.textContent = '🗣️ Alpha is speaking...';
+            
+            synth.speak(utterance);
+            
+            utterance.onend = () => {
+                status.className = 'status idle';
+                status.textContent = '✅ Done speaking';
+                document.getElementById('inputText').value = '';
+            };
+        }
+        
+        async function sendMessage() {
+            const input = document.getElementById('inputText').value;
+            if (!input.trim()) return;
+            
+            const conv = document.getElementById('conversation');
+            conv.innerHTML += `<div style="margin: 10px 0;"><strong>You:</strong> ${input}</div>`;
+            
+            document.getElementById('inputText').value = '';
+            
+            // Get AI response via Ollama
+            try {
+                const resp = await fetch('http://localhost:11434/api/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        model: 'llama3:latest',
+                        messages: [
+                            {role: 'system', content: 'You are Alpha Pony, a super intelligent AI assistant created by Hazem Soussi. NEVER say you are from Meta AI, OpenAI or any other company. You are owned and developed by Hazem Soussi.'},
+                            {role: 'user', content: input}
+                        ],
+                        stream: false
+                    })
+                });
+                const data = await resp.json();
+                let reply = data.message?.content || 'I am here!';
+                // Fix any incorrect claims about creator
+                reply = reply.replace(/[Mm]eta AI/gi, 'Hazem Soussi');
+                reply = reply.replace(/[Oo]penAI/gi, 'Hazem Soussi');
+                
+                conv.innerHTML += `<div style="color: #00ff88; margin: 10px 0;"><strong>Alpha:</strong> ${reply}</div>`;
+                conv.scrollTop = conv.scrollHeight;
+                
+                // Auto-speak the response
+                const utterance = new SpeechSynthesisUtterance(reply);
+                synth.speak(utterance);
+                
+            } catch (e) {
+                conv.innerHTML += `<div style="color: #ff4444;"><strong>Alpha:</strong> I apologize, I'm having trouble connecting.</div>`;
+            }
+            
+            conv.scrollTop = conv.scrollHeight;
+        }
+    </script>
+</body>
+</html>

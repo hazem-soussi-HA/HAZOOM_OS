@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WSL // PHP_EMULATOR_V3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;500&display=swap');
+        :root { --cmd: #00ff41; --php: #777bb4; --bg: #0c0c0c; }
+        body { background: var(--bg); color: var(--cmd); font-family: 'Fira Code', monospace; font-size: 12px; overflow: hidden; height: 100vh; }
+        .pane { border: 1px solid #333; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; }
+        .header { background: #222; color: #aaa; padding: 4px 10px; font-size: 10px; display: flex; justify-content: space-between; }
+        .cursor { display: inline-block; width: 8px; height: 15px; background: var(--cmd); animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+        #terminal-out, #php-logs { overflow-y: auto; scroll-behavior: smooth; flex-grow: 1; padding: 10px; }
+        .php-text { color: var(--php); }
+        .sys-text { color: #555; }
+        .success { color: #fff; background: #005f00; padding: 0 4px; }
+    </style>
+</head>
+<body class="p-2 h-screen flex flex-col gap-2">
+
+    <!-- BOOT SYSTEM -->
+    <div id="boot-shield" onclick="bootSystem()" class="fixed inset-0 z-[100] bg-black flex items-center justify-center cursor-pointer">
+        <div class="text-center">
+            <p class="mb-4 text-white font-bold tracking-widest">[ SYSTEM HALTED ]</p>
+            <p class="animate-pulse">CLICK TO INITIALIZE VIRTUAL_PHP_ENVIRONMENT</p>
+        </div>
+    </div>
+
+    <!-- TOP: SYSTEM STATS -->
+    <div class="h-16 pane border-cyan-900/50">
+        <div class="header"><span>SYSTEM_MONITOR</span><span>STATUS: <span id="st-status" class="text-red-500">OFFLINE</span></span></div>
+        <div class="flex items-center h-full px-4 gap-10">
+            <div class="flex gap-2"><span>RES:</span><span id="res-val" class="text-white">15%</span></div>
+            <div class="flex gap-2"><span>ENT:</span><span id="ent-val" class="text-white">5%</span></div>
+            <div class="flex gap-2 text-[10px] opacity-50 uppercase"><span>Architecture: x86_64 / Virtual_PHP_8.2</span></div>
+        </div>
+    </div>
+
+    <!-- MIDDLE: TWO PANE VIEW -->
+    <div class="flex-grow flex gap-2 overflow-hidden">
+        <!-- LEFT: WSL TERMINAL -->
+        <div class="w-1/2 pane">
+            <div class="header"><span>architect@ledger_wsl:~</span><span>STDOUT</span></div>
+            <div id="terminal-out" class="space-y-1">
+                <p class="sys-text italic">Initializing WSL Instance...</p>
+            </div>
+            <div class="p-3 bg-black border-t border-white/5 flex gap-2 items-center">
+                <span class="text-white font-bold">$</span>
+                <input type="text" id="stdin" autocomplete="off" class="bg-transparent outline-none flex-grow text-white">
+                <div class="cursor"></div>
+            </div>
+        </div>
+
+        <!-- RIGHT: PHP SERVER LOGS (The "Power") -->
+        <div class="w-1/2 pane border-indigo-900/30">
+            <div class="header"><span class="php-text">PHP_ENGINE_DAEMON</span><span>SERVER_LOGS</span></div>
+            <div id="php-logs" class="font-mono text-[10px] text-indigo-300 bg-[#05050a]">
+                <p class="opacity-30 italic">Waiting for connection...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let state = { resonance: 15, entropy: 5, vault: JSON.parse(localStorage.getItem('php_vault') || '[]') };
+
+        function bootSystem() {
+            document.getElementById('boot-shield').style.display = 'none';
+            document.getElementById('st-status').innerText = 'ONLINE';
+            document.getElementById('st-status').className = 'text-green-500';
+            
+            phpLog("PHP 8.2.10 Development Server started");
+            termLog("WSL", "Mounted c:/Users/Architect/Ledger");
+            
+            const stdin = document.getElementById('stdin');
+            stdin.focus();
+            stdin.addEventListener('keydown', (e) => { if(e.key === 'Enter') handleInput(stdin.value); });
+            
+            renderVault();
+        }
+
+        function handleInput(cmd) {
+            if(!cmd.trim()) return;
+            document.getElementById('stdin').value = '';
+            
+            termLog("USER", cmd);
+
+            phpLog(`POST /ledger-api.php - Started`);
+            
+            setTimeout(() => {
+                const newId = Math.floor(Math.random() * 9000) + 1000;
+                const timestamp = new Date().toISOString();
+                
+                phpLog(`Processing Shard ID: ${newId} ...`);
+                phpLog(`Memory Usage: ${Math.random().toFixed(2)}MB`);
+                
+                const newShard = { id: newId, content: cmd.toUpperCase(), time: timestamp };
+                state.vault.unshift(newShard);
+                localStorage.setItem('php_vault', JSON.stringify(state.vault));
+                
+                state.resonance = Math.min(100, state.resonance + 4);
+                updateUI();
+                
+                phpLog(`JSON_ENCODE: Success. Writing to vault_memory.json`);
+                phpLog(`HTTP/1.1 200 OK`, "success");
+
+                termLog("WSL", `Shard ${newId} committed to persistent memory.`);
+                renderVault();
+            }, 600);
+        }
+
+        function termLog(user, msg) {
+            const out = document.getElementById('terminal-out');
+            const p = document.createElement('p');
+            p.innerHTML = `<span class="sys-text">[${new Date().toLocaleTimeString()}]</span> <span class="text-white">${user}:</span> ${msg}`;
+            out.appendChild(p);
+            out.scrollTop = out.scrollHeight;
+        }
+
+        function phpLog(msg, className = "") {
+            const logs = document.getElementById('php-logs');
+            const p = document.createElement('p');
+            p.className = `mb-1 ${className}`;
+            p.innerHTML = `<span class="opacity-40">[DEBUG]</span> <span class="php-text">${msg}</span>`;
+            logs.appendChild(p);
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function updateUI() {
+            document.getElementById('res-val').innerText = state.resonance + '%';
+            document.getElementById('ent-val').innerText = state.entropy + '%';
+        }
+
+        function renderVault() {
+            if(state.vault.length > 0 && state.vault.length % 3 === 0) {
+                termLog("SYSTEM", `Total shards in /vault: ${state.vault.length}`);
+            }
+        }
+    </script>
+</body>
+</html>

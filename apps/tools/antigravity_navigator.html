@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity Navigator</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #8b5cf6;
+            --accent-hover: #7c3aed;
+            --success: #22c55e;
+            --error: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-card);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--bg-card);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            background: var(--bg-card);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        button.danger {
+            border-color: var(--error);
+            color: var(--error);
+        }
+
+        button.danger:hover {
+            background: var(--error);
+            color: white;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 20px;
+            height: calc(100% - 70px);
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .card-header {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Status Panel */
+        .status-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            overflow-y: auto;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.9rem;
+        }
+
+        .status-val {
+            font-weight: bold;
+        }
+
+        .status-val.ok {
+            color: var(--success);
+        }
+
+        .status-val.err {
+            color: var(--error);
+        }
+
+        /* Console Log Panel */
+        .console-panel {
+            grid-column: 2;
+            grid-row: 1 / 3;
+            font-family: 'Consolas', 'Monaco', monospace;
+            background: #000;
+        }
+
+        .console-output {
+            flex: 1;
+            overflow-y: auto;
+            font-size: 0.85rem;
+            padding: 5px;
+        }
+
+        .log-entry {
+            padding: 4px;
+            border-bottom: 1px solid #111;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .log-time {
+            color: #555;
+            margin-right: 8px;
+            user-select: none;
+        }
+
+        .log-entry.info {
+            color: #ccc;
+        }
+
+        .log-entry.warn {
+            color: var(--warning);
+        }
+
+        .log-entry.error {
+            color: var(--error);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .log-entry.log {
+            color: #aaa;
+        }
+
+        /* Processes Panel */
+        .process-list {
+            overflow-y: auto;
+        }
+
+        .process-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            margin-bottom: 5px;
+            border-radius: 4px;
+        }
+
+        .process-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .process-pid {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            margin-left: 5px;
+        }
+
+        .btn-kill {
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            border-color: var(--error);
+            color: var(--warning);
+        }
+
+        .btn-kill:hover {
+            background: var(--error);
+            color: white;
+        }
+
+        /* Internet Gateway Panel */
+        .internet-panel {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        #searchInput {
+            flex: 1;
+            background: var(--bg-dark);
+            border: 1px solid var(--accent);
+            border-radius: 6px;
+            padding: 10px 15px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        #searchInput:focus {
+            border-color: var(--accent-hover);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+        }
+
+        #searchInput::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .search-engine-select {
+            background: var(--bg-dark);
+            border: 1px solid var(--accent);
+            border-radius: 6px;
+            padding: 10px 12px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+            border: none;
+            border-radius: 6px;
+            padding: 10px 20px;
+            color: white;
+            font-family: inherit;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
+
+        .browser-frame {
+            flex: 1;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid var(--accent);
+        }
+
+        #webBrowser {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .browser-toolbar {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            background: var(--bg-dark);
+            border-radius: 6px 6px 0 0;
+            align-items: center;
+        }
+
+        .url-input {
+            flex: 1;
+            background: var(--bg-dark);
+            border: 1px solid var(--text-secondary);
+            border-radius: 4px;
+            padding: 8px 12px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .url-input:focus {
+            border-color: var(--accent);
+        }
+
+        .nav-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--accent);
+            border-radius: 4px;
+            padding: 6px 12px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .network-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.online {
+            background: var(--success);
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+        }
+
+        .status-dot.offline {
+            background: var(--error);
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .quick-links {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 8px 0;
+        }
+
+        .quick-link {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 6px 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .quick-link:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(139, 92, 246, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>🛸 Antigravity Navigator <span style="font-size:0.8em; color:var(--text-secondary)">v2.0</span></h1>
+        <div class="header-controls">
+            <button onclick="checkNetworkStatus()">🌐 Check Network</button>
+            <button onclick="refreshDiagnostics()">🔍 Run Diagnostics</button>
+            <button class="danger" onclick="window.parent.location.reload()">💀 Force System Reboot</button>
+        </div>
+    </header>
+
+    <div class="dashboard-grid">
+        <!-- System Health -->
+        <div class="card">
+            <div class="card-header">
+                System Health
+                <span id="health-indicator" style="font-size:0.8em">Checking...</span>
+            </div>
+            <ul class="status-list" id="health-list">
+                <!-- Injected via JS -->
+            </ul>
+        </div>
+
+        <!-- Global Console -->
+        <div class="card console-panel">
+            <div class="card-header">
+                Global Event Log
+                <button onclick="clearLog()" style="padding:2px 8px; font-size:0.7rem;">Clear</button>
+            </div>
+            <div class="console-output" id="console-output">
+                <!-- Logs injected here -->
+            </div>
+        </div>
+
+         <!-- Active Processes -->
+         <div class="card" style="grid-row: 2;">
+             <div class="card-header">
+                 Active Processes
+                 <span id="proc-count" style="color:var(--accent)">0</span>
+             </div>
+             <div class="process-list" id="process-list">
+                 <!-- Injected via JS -->
+             </div>
+         </div>
+
+         <!-- Internet Gateway -->
+         <div class="card" style="grid-column: 1 / 3; grid-row: 1 / 3;">
+             <div class="card-header">
+                 🌐 Internet Gateway
+                 <div class="network-status" id="networkStatus">
+                     <span class="status-dot offline"></span>
+                     <span id="networkText">Checking...</span>
+                 </div>
+             </div>
+
+             <!-- Search Engine -->
+             <div style="margin-bottom: 15px;">
+                 <div class="search-container">
+                     <select class="search-engine-select" id="searchEngine">
+                         <option value="google">🔍 Google</option>
+                         <option value="bing">🔍 Bing</option>
+                         <option value="duckduckgo">🦆 DuckDuckGo</option>
+                         <option value="github">🐙 GitHub</option>
+                     </select>
+                     <input type="text" id="searchInput" placeholder="Search the internet...">
+                     <button class="search-btn" onclick="performSearch()">🚀 Search</button>
+                 </div>
+             </div>
+
+             <!-- Web Browser -->
+             <div class="browser-frame" style="flex: 1; display: flex; flex-direction: column;">
+                 <div class="browser-toolbar">
+                     <button class="nav-btn" onclick="goBack()" id="btnBack" disabled>← Back</button>
+                     <button class="nav-btn" onclick="goForward()" id="btnForward" disabled>→ Forward</button>
+                     <button class="nav-btn" onclick="goHome()">🏠 Home</button>
+                     <button class="nav-btn" onclick="refresh()">🔄 Refresh</button>
+                     <input type="text" class="url-input" id="urlInput" placeholder="https://..." onkeypress="if(event.key==='Enter')navigateTo()">
+                     <button class="nav-btn" onclick="navigateTo()">🔗 Go</button>
+                 </div>
+                 <div style="flex: 1; background: #fff; border-radius: 0 0 6px 6px; overflow: hidden;">
+                     <iframe id="webBrowser" src="about:blank" sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-top-navigation-by-user-activation"></iframe>
+                 </div>
+             </div>
+
+             <!-- Quick Links -->
+             <div style="margin-top: 12px;">
+                 <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px;">Quick Access</div>
+                 <div class="quick-links">
+                     <button class="quick-link" onclick="navigateTo('https://www.google.com')">🌐 Google</button>
+                     <button class="quick-link" onclick="navigateTo('https://github.com')">🐙 GitHub</button>
+                     <button class="quick-link" onclick="navigateTo('https://www.youtube.com')">📺 YouTube</button>
+                     <button class="quick-link" onclick="navigateTo('https://twitter.com')">🐦 Twitter</button>
+                     <button class="quick-link" onclick="navigateTo('https://www.wikipedia.org')">📚 Wikipedia</button>
+                     <button class="quick-link" onclick="navigateTo('https://www.reddit.com')">💬 Reddit</button>
+                 </div>
+             </div>
+         </div>
+     </div>
+
+     <script>
+         // Browser Navigation State
+         const browserState = {
+             history: [],
+             currentIndex: -1,
+             currentUrl: null
+         };
+
+         // Search Engines Configuration
+         const searchEngines = {
+             google: 'https://www.google.com/search?q=',
+             bing: 'https://www.bing.com/search?q=',
+             duckduckgo: 'https://duckduckgo.com/?q=',
+             github: 'https://github.com/search?q='
+         };
+
+         const defaultHomepage = 'https://www.google.com';
+        const LOG_history = [];
+
+        // --- Access Parent Scope ---
+        // Apps run in iframes, so we access window.parent to see the OS state
+        const OS = window.parent;
+        const HAZOOM = OS.HAZOOM;
+        const WindowManager = OS.WindowManager;
+
+        function log(type, msg, args) {
+            const time = new Date().toLocaleTimeString();
+            const output = document.getElementById('console-output');
+            const div = document.createElement('div');
+            div.className = `log-entry ${type}`;
+
+            // Format args if present
+            let extra = '';
+            if (args && args.length > 0) {
+                try {
+                    extra = ' ' + args.map(a => {
+                        if (typeof a === 'object') return JSON.stringify(a);
+                        return String(a);
+                    }).join(' ');
+                } catch (e) { extra = ' [Complex Object]'; }
+            }
+
+            div.innerHTML = `<span class="log-time">[${time}]</span> ${msg}${extra}`;
+            output.appendChild(div);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('console-output').innerHTML = '';
+        }
+
+        // Hook into parent console (if possible - usually blocked by cross-origin if not same origin)
+        // Since we are same origin (file:// or localhost), we can attempt to wrap parent console
+        // BUT, doing that safely is tricky. Instead, we'll poll for a global log history if one exists,
+        // or just rely on our own diagnostics.
+
+        // BETTER: Create a proxy for the console in the parent scope if it hasn't been done
+        if (!OS.__antigravity_console_hooked) {
+            OS.__antigravity_console_hooked = true;
+            const origLog = OS.console.log;
+            const origWarn = OS.console.warn;
+            const origError = OS.console.error;
+
+            OS.console.log = (...args) => { origLog.apply(OS.console, args); broadcastLog('info', args); };
+            OS.console.warn = (...args) => { origWarn.apply(OS.console, args); broadcastLog('warn', args); };
+            OS.console.error = (...args) => { origError.apply(OS.console, args); broadcastLog('error', args); };
+        }
+
+        // Function exposed to parent to receive logs
+        window.receiveLog = (type, args) => {
+            log(type, args.join(' '));
+        };
+
+        function broadcastLog(type, args) {
+            // Find ALL instances of Antigravity Navigator and send logs
+            const frames = OS.document.querySelectorAll('iframe');
+            frames.forEach(f => {
+                if (f.contentWindow.receiveLog) {
+                    f.contentWindow.receiveLog(type, args);
+                }
+            });
+        }
+
+        // --- Diagnostics ---
+        async function refreshDiagnostics() {
+            const list = document.getElementById('health-list');
+            list.innerHTML = '';
+
+            const addStatus = (name, isOk, val) => {
+                const li = document.createElement('li');
+                li.className = 'status-item';
+                li.innerHTML = `<span>${name}</span> <span class="status-val ${isOk ? 'ok' : 'err'}">${val}</span>`;
+                list.appendChild(li);
+            };
+
+            // 1. Core Objects
+            addStatus('HAZOOM Core', !!OS.HAZOOM, OS.HAZOOM ? 'Active' : 'Missing');
+            addStatus('Window Manager', !!OS.WindowManager, OS.WindowManager ? 'Active' : 'Missing');
+            addStatus('File System', !!OS.FileSystem, OS.FileSystem ? 'Mounted' : 'Missing');
+
+            // 2. Network Check (Backend)
+            try {
+                const start = Date.now();
+                const res = await fetch('http://127.0.0.1:8002/health');
+                const ms = Date.now() - start;
+                if (res.ok) addStatus('Quantum Monitor', true, `Online (${ms}ms)`);
+                else addStatus('Quantum Monitor', false, `Status ${res.status}`);
+            } catch (e) {
+                addStatus('Quantum Monitor', false, 'Unreachable');
+            }
+
+            // 3. System State
+            if (OS.System && OS.System.state) {
+                addStatus('Consciousness', true, OS.System.state.consciousness + '%');
+                addStatus('Resonance', true, OS.System.state.resonance + ' Hz');
+            }
+
+            // Update Indicator
+            document.getElementById('health-indicator').innerText = 'Updated ' + new Date().toLocaleTimeString();
+        }
+
+        // --- Process Manager ---
+        function refreshProcesses() {
+            const list = document.getElementById('process-list');
+            const countEl = document.getElementById('proc-count');
+            list.innerHTML = '';
+
+            if (!OS.WindowManager) return;
+
+            const wins = OS.WindowManager.windows;
+            countEl.innerText = wins.length;
+
+            wins.forEach(win => {
+                const div = document.createElement('div');
+                div.className = 'process-item';
+                div.innerHTML = `
+                    <div class="process-name">
+                        <span>${win.title}</span>
+                        <span class="process-pid">(${win.id})</span>
+                    </div>
+                    <button class="btn-kill" onclick="killProcess('${win.id}')">KILL</button>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+         window.killProcess = (id) => {
+             if (OS.WindowManager) {
+                 OS.WindowManager.close(id);
+                 log('warn', `Killed process ${id}`);
+                 refreshProcesses();
+             }
+         };
+
+         // --- Network & Internet Functions ---
+
+         async function checkNetworkStatus() {
+             const statusDot = document.getElementById('networkStatus').querySelector('.status-dot');
+             const networkText = document.getElementById('networkText');
+
+             try {
+                 // Try to fetch from a reliable endpoint
+                 const controller = new AbortController();
+                 const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+                 await fetch('https://www.google.com/favicon.ico', {
+                     method: 'HEAD',
+                     signal: controller.signal
+                 });
+
+                 clearTimeout(timeoutId);
+
+                 statusDot.className = 'status-dot online';
+                 networkText.textContent = '🟢 Online';
+                 log('info', '✅ Internet connection established');
+                 return true;
+             } catch (error) {
+                 statusDot.className = 'status-dot offline';
+                 networkText.textContent = '🔴 Offline';
+                 log('error', '❌ Internet connection failed: ' + error.message);
+                 return false;
+             }
+         }
+
+         function performSearch() {
+             const query = document.getElementById('searchInput').value.trim();
+             const engine = document.getElementById('searchEngine').value;
+
+             if (!query) {
+                 log('warn', 'Search query is empty');
+                 return;
+             }
+
+             const searchUrl = searchEngines[engine] + encodeURIComponent(query);
+             log('info', `🔍 Searching: "${query}" using ${engine}`);
+
+             // Navigate browser to search results
+             navigateTo(searchUrl);
+
+             // Add to history
+             browserState.history.push(searchUrl);
+             browserState.currentIndex = browserState.history.length - 1;
+             browserState.currentUrl = searchUrl;
+
+             updateNavButtons();
+         }
+
+         function navigateTo(url = null) {
+             const browser = document.getElementById('webBrowser');
+             let targetUrl = url;
+
+             if (url === null) {
+                 targetUrl = document.getElementById('urlInput').value.trim();
+             }
+
+             // Validate URL
+             if (!targetUrl) {
+                 log('warn', 'No URL provided');
+                 return;
+             }
+
+             // Add protocol if missing
+             if (!targetUrl.match(/^https?:\/\//i)) {
+                 targetUrl = 'https://' + targetUrl;
+             }
+
+             log('info', `🌐 Navigating to: ${targetUrl}`);
+
+             // Load URL in iframe
+             browser.src = targetUrl;
+             document.getElementById('urlInput').value = targetUrl;
+
+             // Update state
+             browserState.currentUrl = targetUrl;
+             browserState.history.push(targetUrl);
+             browserState.currentIndex = browserState.history.length - 1;
+
+             updateNavButtons();
+         }
+
+         function goBack() {
+             if (browserState.currentIndex > 0) {
+                 browserState.currentIndex--;
+                 const url = browserState.history[browserState.currentIndex];
+                 document.getElementById('webBrowser').src = url;
+                 document.getElementById('urlInput').value = url;
+                 browserState.currentUrl = url;
+                 updateNavButtons();
+                 log('info', `⬅ Back to: ${url}`);
+             }
+         }
+
+         function goForward() {
+             if (browserState.currentIndex < browserState.history.length - 1) {
+                 browserState.currentIndex++;
+                 const url = browserState.history[browserState.currentIndex];
+                 document.getElementById('webBrowser').src = url;
+                 document.getElementById('urlInput').value = url;
+                 browserState.currentUrl = url;
+                 updateNavButtons();
+                 log('info', `➡️ Forward to: ${url}`);
+             }
+         }
+
+         function goHome() {
+             navigateTo(defaultHomepage);
+             log('info', `🏠 Going home: ${defaultHomepage}`);
+         }
+
+         function refresh() {
+             const browser = document.getElementById('webBrowser');
+             browser.src = browser.src;
+             log('info', `🔄 Refreshing: ${browser.src}`);
+         }
+
+         function updateNavButtons() {
+             document.getElementById('btnBack').disabled = browserState.currentIndex <= 0;
+             document.getElementById('btnForward').disabled = browserState.currentIndex >= browserState.history.length - 1;
+         }
+
+         // Handle Enter key in URL input
+         document.getElementById('urlInput').addEventListener('keypress', (e) => {
+             if (e.key === 'Enter') {
+                 navigateTo();
+             }
+         });
+
+         // Handle Enter key in search input
+         document.getElementById('searchInput').addEventListener('keypress', (e) => {
+             if (e.key === 'Enter') {
+                 performSearch();
+             }
+         });
+
+         // --- Init ---
+         setInterval(refreshProcesses, 2000);
+         refreshProcesses();
+         refreshDiagnostics();
+         checkNetworkStatus();
+
+         // Periodic network status check (every 30 seconds)
+         setInterval(checkNetworkStatus, 30000);
+
+         log('info', 'Antigravity Navigator v2.0 initialized with Internet Gateway');
+         log('info', '🌐 Internet Gateway: Google Search + Web Browser enabled');
+    </script>
+</body>
+
+</html>

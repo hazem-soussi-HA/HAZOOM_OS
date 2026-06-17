@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Command Center 3D</title>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Courier New', monospace; overflow: hidden; background: #000; color: #0ff; }
+        #cesiumContainer { width: 100vw; height: 100vh; }
+        
+        /* Night mode overlay */
+        .night-mode #cesiumContainer { filter: brightness(0.7) contrast(1.2) saturate(0.8); }
+        .night-mode body { background: #050510; }
+        
+        /* Auth Screen */
+        #auth-screen {
+            position: fixed; inset: 0; z-index: 10000;
+            background: linear-gradient(135deg, #0a0a2e 0%, #1a1a3e 50%, #0d0d1a 100%);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .auth-container {
+            background: rgba(0,0,0,0.85); border: 2px solid #0ff; border-radius: 15px;
+            padding: 40px; width: 420px; text-align: center;
+            box-shadow: 0 0 60px rgba(0,255,255,0.3);
+        }
+        .auth-container h1 { color: #ff0; margin-bottom: 10px; text-shadow: 0 0 20px #ff0; font-size: 24px; }
+        .auth-container p { color: #0ff; margin-bottom: 20px; font-size: 12px; }
+        .auth-input {
+            width: 100%; padding: 12px; margin: 8px 0; background: rgba(0,255,255,0.1);
+            border: 1px solid #0ff; border-radius: 5px; color: #0ff; font-family: inherit;
+            font-size: 14px; outline: none;
+        }
+        .auth-input:focus { box-shadow: 0 0 20px rgba(0,255,255,0.5); }
+        .auth-btn {
+            width: 100%; padding: 12px; margin-top: 15px; background: rgba(255,255,0,0.2);
+            border: 1px solid #ff0; border-radius: 5px; color: #ff0; font-family: inherit;
+            font-size: 16px; cursor: pointer; transition: all 0.3s; letter-spacing: 2px;
+        }
+        .auth-btn:hover { background: rgba(255,255,0,0.4); box-shadow: 0 0 30px rgba(255,255,0,0.5); }
+        .auth-error { color: #f00; font-size: 12px; min-height: 20px; margin-top: 10px; }
+        
+        /* HUD Panels */
+        .hud-panel {
+            position: absolute; background: rgba(0,0,0,0.8); border: 1px solid rgba(0,255,255,0.4);
+            border-radius: 8px; backdrop-filter: blur(8px); z-index: 1000;
+            box-shadow: 0 0 20px rgba(0,255,255,0.2);
+        }
+        .hud-header {
+            padding: 10px 15px; border-bottom: 1px solid rgba(0,255,255,0.3);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .hud-header h3 { color: #ff0; font-size: 13px; text-shadow: 0 0 10px #ff0; }
+        .hud-close {
+            background: none; border: none; color: #f00; font-size: 18px;
+            cursor: pointer; padding: 2px 5px;
+        }
+        .hud-close:hover { text-shadow: 0 0 10px #f00; }
+        .hud-body { padding: 12px; }
+        
+        /* Top Bar */
+        #top-bar {
+            position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 15px; padding: 8px 20px; background: rgba(0,0,0,0.7);
+            border: 1px solid rgba(0,255,255,0.4); border-radius: 8px; z-index: 1000;
+            font-size: 12px;
+        }
+        .resource { display: flex; align-items: center; gap: 5px; }
+        .resource-icon { font-size: 16px; }
+        .resource-value { color: #0ff; font-weight: bold; }
+        
+        /* Left Panel - Systems List */
+        #systems-panel {
+            position: absolute; top: 60px; left: 10px; width: 280px;
+            max-height: calc(100vh - 80px); overflow-y: auto;
+        }
+        .system-item {
+            padding: 8px 12px; border-bottom: 1px solid rgba(0,255,255,0.1);
+            cursor: pointer; transition: background 0.2s; display: flex; justify-content: space-between; align-items: center;
+        }
+        .system-item:hover { background: rgba(0,255,255,0.1); }
+        .system-item.selected { background: rgba(0,255,255,0.2); border-left: 3px solid #0ff; }
+        .system-name { font-size: 12px; color: #0ff; }
+        .system-status { font-size: 10px; padding: 2px 6px; border-radius: 3px; }
+        .status-online { background: rgba(0,255,0,0.2); color: #0f0; }
+        .status-warning { background: rgba(255,165,0,0.2); color: #f80; }
+        .status-critical { background: rgba(255,0,0,0.2); color: #f00; }
+        
+        /* Right Panel - System Detail */
+        #detail-panel {
+            position: absolute; top: 60px; right: 10px; width: 300px;
+            display: none;
+        }
+        .detail-section { margin-bottom: 12px; }
+        .detail-section h4 { color: #0ff; font-size: 11px; margin-bottom: 6px; border-bottom: 1px solid rgba(0,255,255,0.2); padding-bottom: 4px; }
+        .stat-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 11px; }
+        .stat-label { color: #888; }
+        .stat-value { color: #0ff; font-weight: bold; }
+        .power-bar { height: 6px; background: rgba(0,255,255,0.1); border-radius: 3px; margin: 4px 0; overflow: hidden; }
+        .power-fill { height: 100%; border-radius: 3px; transition: width 0.5s, background 0.5s; }
+        .action-btn {
+            padding: 6px 10px; margin: 3px; background: rgba(0,255,255,0.1);
+            border: 1px solid #0ff; border-radius: 4px; color: #0ff; font-family: inherit;
+            font-size: 10px; cursor: pointer; transition: all 0.3s;
+        }
+        .action-btn:hover { background: rgba(0,255,255,0.3); box-shadow: 0 0 10px rgba(0,255,255,0.5); }
+        .action-btn.danger { border-color: #f00; color: #f00; }
+        .action-btn.danger:hover { background: rgba(255,0,0,0.3); }
+        .action-btn.success { border-color: #0f0; color: #0f0; }
+        .action-btn.success:hover { background: rgba(0,255,0,0.3); }
+        
+        /* Bottom Panel - Console */
+        #console-panel {
+            position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+            width: 700px; display: none;
+        }
+        .console-output { max-height: 150px; overflow-y: auto; font-size: 11px; }
+        .console-line { margin: 2px 0; }
+        .console-line.system { color: #888; }
+        .console-line.success { color: #0f0; }
+        .console-line.error { color: #f00; }
+        .console-line.warning { color: #f80; }
+        .console-line.info { color: #0ff; }
+        .console-line.encrypted { color: #f0f; }
+        .console-input-row { display: flex; gap: 5px; padding: 8px; border-top: 1px solid rgba(0,255,255,0.2); }
+        .console-input {
+            flex: 1; padding: 8px; background: rgba(0,255,255,0.1); border: 1px solid #0ff;
+            border-radius: 4px; color: #0ff; font-family: inherit; font-size: 11px; outline: none;
+        }
+        .console-send {
+            padding: 8px 15px; background: rgba(255,255,0,0.2); border: 1px solid #ff0;
+            border-radius: 4px; color: #ff0; cursor: pointer; font-family: inherit;
+        }
+        
+        /* Game Mode Panel */
+        #game-panel {
+            position: absolute; top: 60px; left: 300px; width: 250px;
+            display: none;
+        }
+        .game-stat { display: flex; justify-content: space-between; padding: 4px 0; font-size: 11px; }
+        .game-label { color: #888; }
+        .game-value { color: #ff0; font-weight: bold; }
+        .xp-bar { height: 8px; background: rgba(255,255,0,0.1); border-radius: 4px; margin: 5px 0; overflow: hidden; }
+        .xp-fill { height: 100%; background: linear-gradient(90deg, #ff0, #f80); border-radius: 4px; transition: width 0.5s; }
+        
+        /* Message Center */
+        #message-panel {
+            position: absolute; bottom: 200px; right: 320px; width: 350px;
+            display: none;
+        }
+        .msg-list { max-height: 200px; overflow-y: auto; }
+        .msg-item { padding: 8px; margin: 5px 0; background: rgba(255,0,255,0.1); border-radius: 5px; font-size: 11px; }
+        .msg-header { display: flex; justify-content: space-between; color: #f0f; margin-bottom: 4px; }
+        .msg-body { color: #ccc; }
+        .msg-input-row { display: flex; gap: 5px; padding: 8px; border-top: 1px solid rgba(255,0,255,0.2); }
+        .msg-select { flex: 1; padding: 6px; background: rgba(255,0,255,0.1); border: 1px solid #f0f; border-radius: 4px; color: #f0f; font-family: inherit; font-size: 10px; }
+        .msg-input { flex: 2; padding: 6px; background: rgba(255,0,255,0.1); border: 1px solid #f0f; border-radius: 4px; color: #f0f; font-family: inherit; font-size: 10px; }
+        .msg-send { padding: 6px 12px; background: rgba(255,0,255,0.2); border: 1px solid #f0f; border-radius: 4px; color: #f0f; cursor: pointer; font-family: inherit; }
+        
+        /* Controls */
+        #controls {
+            position: absolute; bottom: 10px; right: 10px; display: flex; flex-direction: column; gap: 5px;
+        }
+        .ctrl-btn {
+            padding: 8px 12px; background: rgba(0,255,255,0.1); border: 1px solid #0ff;
+            border-radius: 5px; color: #0ff; cursor: pointer; font-family: inherit;
+            font-size: 11px; transition: all 0.3s;
+        }
+        .ctrl-btn:hover { background: rgba(0,255,255,0.3); box-shadow: 0 0 15px rgba(0,255,255,0.5); }
+        .ctrl-btn.active { background: rgba(0,255,255,0.4); border-color: #ff0; color: #ff0; }
+        
+        /* Connection Status */
+        #conn-status {
+            position: absolute; top: 10px; right: 10px; padding: 5px 10px;
+            background: rgba(0,0,0,0.7); border: 1px solid #f00; border-radius: 5px;
+            font-size: 10px; z-index: 1000;
+        }
+        #conn-status.connected { border-color: #0f0; color: #0f0; }
+        
+        /* Cesium overrides */
+        .cesium-viewer-bottom { display: none; }
+        .cesium-credit-logoContainer { display: none; }
+        .cesium-viewer-animationContainer { display: none; }
+        .cesium-viewer-timelineContainer { display: none; }
+        .cesium-viewer-fullscreenContainer { display: none; }
+        .cesium-viewer-sceneModePickerContainer { display: none; }
+        .cesium-viewer-baseLayerPickerContainer { display: none; }
+        .cesium-viewer-geocoderContainer { display: none; }
+        .cesium-viewer-homeButtonContainer { display: none; }
+    </style>
+</head>
+<body>
+    <!-- Auth Screen -->
+    <div id="auth-screen">
+        <div class="auth-container">
+            <h1>🔐 QUANTUM COMMAND CENTER 3D</h1>
+            <p>Real-time WebSocket • 32 Global Systems • Game Mode</p>
+            <input type="text" id="auth-user" class="auth-input" placeholder="Operator ID" autocomplete="off">
+            <input type="password" id="auth-pass" class="auth-input" placeholder="Access Key" autocomplete="off">
+            <button class="auth-btn" onclick="authenticate()">AUTHENTICATE</button>
+            <div class="auth-error" id="auth-error"></div>
+            <div style="margin-top: 15px; font-size: 10px; color: #888;">Demo: admin / quantum123</div>
+        </div>
+    </div>
+    
+    <div id="cesiumContainer"></div>
+    
+    <!-- Connection Status -->
+    <div id="conn-status">🔴 DISCONNECTED</div>
+    
+    <!-- Top Bar -->
+    <div id="top-bar" style="display:none;">
+        <div class="resource"><span class="resource-icon">💰</span><span class="resource-value" id="res-credits">10000</span></div>
+        <div class="resource"><span class="resource-icon">⚡</span><span class="resource-value" id="res-power">500</span></div>
+        <div class="resource"><span class="resource-icon">🧠</span><span class="resource-value" id="res-intel">100</span></div>
+        <div class="resource"><span class="resource-icon">🌐</span><span class="resource-value" id="res-influence">50</span></div>
+        <div class="resource"><span class="resource-icon">🏆</span><span>Lvl <span class="resource-value" id="res-level">1</span></span></div>
+        <div class="resource"><span class="resource-icon">🔄</span><span>Turn <span class="resource-value" id="res-turn">1</span></span></div>
+    </div>
+    
+    <!-- Systems List -->
+    <div id="systems-panel" class="hud-panel" style="display:none;">
+        <div class="hud-header"><h3>🌍 SYSTEMS (32)</h3></div>
+        <div id="systems-list"></div>
+    </div>
+    
+    <!-- Detail Panel -->
+    <div id="detail-panel" class="hud-panel">
+        <div class="hud-header"><h3 id="detail-title">SYSTEM</h3><button class="hud-close" onclick="closeDetail()">×</button></div>
+        <div class="hud-body" id="detail-body"></div>
+    </div>
+    
+    <!-- Game Panel -->
+    <div id="game-panel" class="hud-panel">
+        <div class="hud-header"><h3>🎮 GAME MODE</h3></div>
+        <div class="hud-body" id="game-body"></div>
+    </div>
+    
+    <!-- Console -->
+    <div id="console-panel" class="hud-panel">
+        <div class="hud-header"><h3>💻 CONSOLE</h3><button class="hud-close" onclick="toggleConsole()">×</button></div>
+        <div class="hud-body">
+            <div class="console-output" id="console-output"></div>
+            <div class="console-input-row">
+                <input type="text" id="console-input" class="console-input" placeholder="Command..." onkeydown="if(event.key==='Enter')sendCommand()">
+                <button class="console-send" onclick="sendCommand()">EXECUTE</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Message Panel -->
+    <div id="message-panel" class="hud-panel">
+        <div class="hud-header"><h3>📨 MESSAGES</h3><button class="hud-close" onclick="toggleMessages()">×</button></div>
+        <div class="hud-body">
+            <div class="msg-list" id="msg-list"></div>
+            <div class="msg-input-row">
+                <select id="msg-target" class="msg-select"></select>
+                <input type="text" id="msg-input" class="msg-input" placeholder="Message..." onkeydown="if(event.key==='Enter')sendMessage()">
+                <button class="msg-send" onclick="sendMessage()">SEND</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Controls -->
+    <div id="controls" style="display:none;">
+        <button class="ctrl-btn" onclick="toggleNightMode()">🌙 NIGHT</button>
+        <button class="ctrl-btn" onclick="toggleGameMode()">🎮 GAME</button>
+        <button class="ctrl-btn" onclick="toggleConsole()">💻 CONSOLE</button>
+        <button class="ctrl-btn" onclick="toggleMessages()">📨 MSGS</button>
+        <button class="ctrl-btn" onclick="nextTurn()">🔄 NEXT TURN</button>
+        <button class="ctrl-btn" onclick="flyToSelected()">🎯 FOCUS</button>
+    </div>
+    
+    <script>
+        let viewer, ws, session = null, gameState = null, systems = [], selectedSystem = null;
+        let entities = {}, nightMode = false, gameMode = false, messages = [];
+        
+        const SYSTEM_ICONS = {
+            'mega-city': '🏙️', 'arcology': '🏢', 'technopolis': '🔬', 'data-hub': '💾',
+            'corpo-city': '🏦', 'federal-district': '🏛️', 'orbital-station': '🛰️',
+            'research-facility': '🧪', 'deep-space': '🌌', 'shadow-zone': '🌑',
+            'alpha-colony': '🚀', 'zenith-tower': '🗼', 'mega-port': '⚓', 'lux-hub': '💎',
+            'ice-fortress': '🏔️', 'desert-city': '🏜️', 'bio-dome': '🌿', 'sky-fortress': '☁️',
+            'ice-lab': '❄️', 'underwater': '🌊', 'submerged': '🐠', 'lunar-base': '🌕',
+            'mars-colony': '🔴', 'space-station': '🛸', 'ancient-modern': '🏺',
+            'coastal-city': '🏖️', 'geo-plant': '🌋', 'city-state': '🏙️',
+            'cultural-hub': '🎭', 'tech-hub': '📱'
+        };
+        
+        function initCesium() {
+            Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWE1OWUxNy1mMWZiLTQzYjYtYTQ0OS1kMWFjYmFjNmM1NzEiLCJpZCI6NTYwODUsImlhdCI6MTY5NzU0MjM0N30.OO1yM3NjKDpN4K5Q6K5Q6K5Q6K5Q6K5Q6K5Q6K5Q6K';
+            viewer = new Cesium.Viewer('cesiumContainer', {
+                animation: false, timeline: false, baseLayerPicker: false,
+                geocoder: false, homeButton: false, sceneModePicker: false,
+                selectionIndicator: false, navigationHelpButton: false,
+                infoBox: false, shouldAnimate: true,
+                scene3DOnly: true,
+                skyBox: new Cesium.SkyBox({ sources: { positiveX: 'https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Assets/Textures/SkyBox/tycho2t3_80_px.jpg', negativeX: 'https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Assets/Textures/SkyBox/tycho2t3_80_mx.jpg', positiveY: 'https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Assets/Textures/SkyBox/tycho2t3_80_py.jpg', negativeY: 'https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Assets/Textures/SkyBox/tycho2t3_80_my.jpg', positiveZ: 'https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Assets/Textures/SkyBox/tycho2t3_80_pz.jpg', negativeZ: 'https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Assets/Textures/SkyBox/tycho2t3_80_mz.jpg' } }),
+            });
+            viewer.scene.globe.enableLighting = true;
+            viewer.scene.screenSpaceCameraController.minimumZoomDistance = 2000000;
+            viewer.scene.screenSpaceCameraController.maximumZoomDistance = 50000000;
+        }
+        
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const host = window.location.host;
+            ws = new WebSocket(`${protocol}//${host}`);
+            
+            ws.onopen = () => {
+                document.getElementById('conn-status').textContent = '🟢 CONNECTED';
+                document.getElementById('conn-status').classList.add('connected');
+                consoleLog('success', '🔌 WebSocket connected');
+            };
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                handleServerMessage(data);
+            };
+            
+            ws.onclose = () => {
+                document.getElementById('conn-status').textContent = '🔴 DISCONNECTED';
+                document.getElementById('conn-status').classList.remove('connected');
+                consoleLog('error', '❌ WebSocket disconnected');
+                setTimeout(connectWebSocket, 3000);
+            };
+        }
+        
+        function handleServerMessage(data) {
+            switch (data.type) {
+                case 'welcome':
+                    consoleLog('system', `🌌 ${data.message}`);
+                    break;
+                case 'auth-success':
+                    session = data.session;
+                    gameState = data.gameState;
+                    document.getElementById('auth-screen').style.display = 'none';
+                    document.getElementById('top-bar').style.display = 'flex';
+                    document.getElementById('systems-panel').style.display = 'block';
+                    document.getElementById('controls').style.display = 'flex';
+                    document.getElementById('game-panel').style.display = 'block';
+                    updateResources();
+                    ws.send(JSON.stringify({ type: 'get-systems' }));
+                    break;
+                case 'systems-data':
+                    systems = data.systems;
+                    renderSystemsList();
+                    populateMsgTargets();
+                    createSystemEntities();
+                    break;
+                case 'system-update':
+                    systems = data.systems;
+                    updateSystemEntities();
+                    renderSystemsList();
+                    if (selectedSystem) openDetail(selectedSystem);
+                    break;
+                case 'ping-response':
+                    consoleLog('success', `📡 ${data.systemId}: ${data.latency}ms | ${data.status}`);
+                    break;
+                case 'boost-response':
+                    consoleLog('success', `⚡ ${data.systemId} boosted to ${data.power}% | Credits: ${data.credits}`);
+                    if (gameState) gameState.credits = data.credits;
+                    updateResources();
+                    break;
+                case 'system-response':
+                    consoleLog('success', `📨 ${data.systemId}: ${data.message}`);
+                    addMessage(data.systemId, data.message, data.timestamp);
+                    break;
+                case 'upgrade-response':
+                    consoleLog('success', `🔧 ${data.systemId} upgraded: ${data.upgrade} | Credits: ${data.credits}`);
+                    if (gameState) { gameState.credits = data.credits; gameState.xp = data.xp; }
+                    updateResources();
+                    break;
+                case 'turn-update':
+                    gameState = data.gameState;
+                    systems = data.systems;
+                    updateResources();
+                    renderSystemsList();
+                    updateSystemEntities();
+                    consoleLog('system', `🔄 Turn ${gameState.turn} complete`);
+                    break;
+                case 'event':
+                    consoleLog('warning', `🚨 ${data.event.desc} at ${data.event.system}`);
+                    break;
+                case 'chat-message':
+                    consoleLog('info', `💬 ${data.userId}: ${data.message}`);
+                    break;
+            }
+        }
+        
+        function authenticate() {
+            const userId = document.getElementById('auth-user').value.trim();
+            const password = document.getElementById('auth-pass').value;
+            ws.send(JSON.stringify({ type: 'auth', userId, password }));
+        }
+        
+        function createSystemEntities() {
+            systems.forEach(sys => {
+                const icon = SYSTEM_ICONS[sys.type] || '📍';
+                const color = sys.status === 'online' ? Cesium.Color.GREEN : sys.status === 'warning' ? Cesium.Color.ORANGE : Cesium.Color.RED;
+                const entity = viewer.entities.add({
+                    name: sys.name,
+                    position: Cesium.Cartesian3.fromDegrees(sys.lon, sys.lat, 0),
+                    point: { pixelSize: 12, color, outlineColor: Cesium.Color.WHITE, outlineWidth: 2, heightReference: Cesium.HeightReference.CLAMP_TO_GROUND },
+                    label: { text: `${icon} ${sys.name}`, font: '14px Courier New', fillColor: Cesium.Color.WHITE, outlineColor: Cesium.Color.BLACK, outlineWidth: 2, style: Cesium.LabelStyle.FILL_AND_OUTLINE, verticalOrigin: Cesium.VerticalOrigin.BOTTOM, pixelOffset: new Cesium.Cartesian2(0, -15), heightReference: Cesium.HeightReference.CLAMP_TO_GROUND, showBackground: true, backgroundColor: new Cesium.Color(0, 0, 0, 0.7) },
+                    description: `${icon} ${sys.name}\nType: ${sys.type}\nPower: ${sys.power}%\nStatus: ${sys.status}`
+                });
+                entities[sys.id] = entity;
+                entity.id = sys.id;
+            });
+            
+            viewer.screenSpaceEventHandler.setInputAction((click) => {
+                const picked = viewer.scene.pick(click.position);
+                if (picked && picked.id && picked.id.id) {
+                    const sys = systems.find(s => s.id === picked.id.id);
+                    if (sys) {
+                        selectedSystem = sys;
+                        openDetail(sys);
+                        flyToSystem(sys);
+                    }
+                }
+            }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+        }
+        
+        function updateSystemEntities() {
+            systems.forEach(sys => {
+                const entity = entities[sys.id];
+                if (entity) {
+                    const color = sys.status === 'online' ? Cesium.Color.GREEN : sys.status === 'warning' ? Cesium.Color.ORANGE : Cesium.Color.RED;
+                    entity.point.color = color;
+                    entity.description = `${sys.name}\nType: ${sys.type}\nPower: ${sys.power}%\nStatus: ${sys.status}`;
+                }
+            });
+        }
+        
+        function flyToSystem(sys) {
+            viewer.camera.flyTo({
+                destination: Cesium.Cartesian3.fromDegrees(sys.lon, sys.lat, 5000000),
+                duration: 1.5
+            });
+        }
+        
+        function renderSystemsList() {
+            const list = document.getElementById('systems-list');
+            list.innerHTML = systems.map(sys => {
+                const icon = SYSTEM_ICONS[sys.type] || '📍';
+                const statusClass = `status-${sys.status}`;
+                return `<div class="system-item ${selectedSystem && selectedSystem.id === sys.id ? 'selected' : ''}" onclick="selectSystem('${sys.id}')">
+                    <span class="system-name">${icon} ${sys.name}</span>
+                    <span class="system-status ${statusClass}">${sys.status}</span>
+                </div>`;
+            }).join('');
+        }
+        
+        function selectSystem(id) {
+            selectedSystem = systems.find(s => s.id === id);
+            renderSystemsList();
+            openDetail(selectedSystem);
+            flyToSystem(selectedSystem);
+        }
+        
+        function openDetail(sys) {
+            document.getElementById('detail-panel').style.display = 'block';
+            document.getElementById('detail-title').textContent = `${SYSTEM_ICONS[sys.type] || '📍'} ${sys.name}`;
+            const powerColor = sys.power > 80 ? '#0f0' : sys.power > 50 ? '#f80' : '#f00';
+            document.getElementById('detail-body').innerHTML = `
+                <div class="detail-section">
+                    <h4>📊 OVERVIEW</h4>
+                    <div class="stat-row"><span class="stat-label">Type</span><span class="stat-value">${sys.type}</span></div>
+                    <div class="stat-row"><span class="stat-label">Status</span><span class="stat-value" style="color:${sys.status === 'online' ? '#0f0' : sys.status === 'warning' ? '#f80' : '#f00'}">${sys.status.toUpperCase()}</span></div>
+                    <div class="stat-row"><span class="stat-label">Coordinates</span><span class="stat-value">${sys.lat.toFixed(2)}, ${sys.lon.toFixed(2)}</span></div>
+                </div>
+                <div class="detail-section">
+                    <h4>⚡ POWER</h4>
+                    <div class="stat-row"><span class="stat-label">Level</span><span class="stat-value">${sys.power.toFixed(1)}%</span></div>
+                    <div class="power-bar"><div class="power-fill" style="width:${sys.power}%; background:${powerColor}"></div></div>
+                    <div class="stat-row"><span class="stat-label">Resource Rate</span><span class="stat-value">${sys.resourceRate}/turn</span></div>
+                </div>
+                <div class="detail-section">
+                    <h4>🛡️ SYSTEMS</h4>
+                    <div class="stat-row"><span class="stat-label">Defense</span><span class="stat-value">Class ${sys.defense}</span></div>
+                    <div class="stat-row"><span class="stat-label">Comms</span><span class="stat-value">${sys.comms}</span></div>
+                    <div class="stat-row"><span class="stat-label">Population</span><span class="stat-value">${(sys.population / 1000000).toFixed(1)}M</span></div>
+                    <div class="stat-row"><span class="stat-label">Specialty</span><span class="stat-value">${sys.specialty}</span></div>
+                </div>
+                <div class="detail-section">
+                    <h4>🎮 ACTIONS</h4>
+                    <button class="action-btn success" onclick="pingSystem('${sys.id}')">📡 PING</button>
+                    <button class="action-btn success" onclick="boostSystem('${sys.id}')">⚡ BOOST</button>
+                    <button class="action-btn" onclick="upgradeSystem('${sys.id}', 'defense', 500)">🛡️ UPGRADE DEF</button>
+                    <button class="action-btn" onclick="upgradeSystem('${sys.id}', 'power', 300)">⚡ UPGRADE PWR</button>
+                    <button class="action-btn danger" onclick="overrideSystem('${sys.id}')">⚠️ OVERRIDE</button>
+                </div>
+            `;
+        }
+        
+        function closeDetail() {
+            document.getElementById('detail-panel').style.display = 'none';
+            selectedSystem = null;
+            renderSystemsList();
+        }
+        
+        function pingSystem(id) { ws.send(JSON.stringify({ type: 'ping-system', systemId: id })); }
+        function boostSystem(id) { ws.send(JSON.stringify({ type: 'boost-system', systemId: id })); }
+        function upgradeSystem(id, upgrade, cost) { ws.send(JSON.stringify({ type: 'upgrade-system', systemId: id, upgrade, cost })); }
+        function overrideSystem(id) { ws.send(JSON.stringify({ type: 'boost-system', systemId: id })); consoleLog('warning', `⚠️ Override ${id}`); }
+        
+        function updateResources() {
+            if (!gameState) return;
+            document.getElementById('res-credits').textContent = gameState.credits;
+            document.getElementById('res-power').textContent = gameState.power;
+            document.getElementById('res-intel').textContent = gameState.intel;
+            document.getElementById('res-influence').textContent = gameState.influence;
+            document.getElementById('res-level').textContent = gameState.level;
+            document.getElementById('res-turn').textContent = gameState.turn;
+            updateGamePanel();
+        }
+        
+        function updateGamePanel() {
+            if (!gameState) return;
+            const xpPercent = (gameState.xp / gameState.xpToNext) * 100;
+            document.getElementById('game-body').innerHTML = `
+                <div class="game-stat"><span class="game-label">Level</span><span class="game-value">${gameState.level}</span></div>
+                <div class="xp-bar"><div class="xp-fill" style="width:${xpPercent}%"></div></div>
+                <div class="game-stat"><span class="game-label">XP</span><span class="game-value">${gameState.xp}/${gameState.xpToNext}</span></div>
+                <div class="game-stat"><span class="game-label">Credits</span><span class="game-value">${gameState.credits}</span></div>
+                <div class="game-stat"><span class="game-label">Power</span><span class="game-value">${gameState.power}</span></div>
+                <div class="game-stat"><span class="game-label">Intel</span><span class="game-value">${gameState.intel}</span></div>
+                <div class="game-stat"><span class="game-label">Influence</span><span class="game-value">${gameState.influence}</span></div>
+                <div class="game-stat"><span class="game-label">Turn</span><span class="game-value">${gameState.turn}</span></div>
+                <button class="action-btn" onclick="nextTurn()" style="width:100%; margin-top:10px;">🔄 NEXT TURN</button>
+            `;
+        }
+        
+        function nextTurn() { ws.send(JSON.stringify({ type: 'next-turn' })); }
+        
+        function toggleNightMode() {
+            nightMode = !nightMode;
+            document.body.classList.toggle('night-mode', nightMode);
+            if (viewer) viewer.scene.globe.enableLighting = !nightMode;
+            consoleLog('info', nightMode ? '🌙 Night mode ON' : '☀️ Night mode OFF');
+        }
+        
+        function toggleGameMode() { gameMode = !gameMode; document.getElementById('game-panel').style.display = gameMode ? 'block' : 'none'; }
+        function toggleConsole() { const c = document.getElementById('console-panel'); c.style.display = c.style.display === 'none' ? 'block' : 'none'; }
+        function toggleMessages() { const m = document.getElementById('message-panel'); m.style.display = m.style.display === 'none' ? 'block' : 'none'; }
+        function flyToSelected() { if (selectedSystem) flyToSystem(selectedSystem); }
+        
+        function populateMsgTargets() {
+            document.getElementById('msg-target').innerHTML = systems.map(s => `<option value="${s.id}">${SYSTEM_ICONS[s.type] || '📍'} ${s.name}</option>`).join('');
+        }
+        
+        function sendMessage() {
+            const target = document.getElementById('msg-target').value;
+            const msg = document.getElementById('msg-input').value.trim();
+            if (!msg) return;
+            ws.send(JSON.stringify({ type: 'send-message', systemId: target, message: msg }));
+            document.getElementById('msg-input').value = '';
+            consoleLog('info', `📨 Sent to ${target}: ${msg}`);
+        }
+        
+        function addMessage(from, msg, time) {
+            messages.push({ from, msg, time });
+            const list = document.getElementById('msg-list');
+            list.innerHTML = messages.slice(-10).map(m => `
+                <div class="msg-item">
+                    <div class="msg-header"><span>${m.from}</span><span>${new Date(m.time).toLocaleTimeString()}</span></div>
+                    <div class="msg-body">${m.msg}</div>
+                </div>
+            `).join('');
+            list.scrollTop = list.scrollHeight;
+        }
+        
+        function consoleLog(type, msg) {
+            const output = document.getElementById('console-output');
+            if (!output) return;
+            const time = new Date().toLocaleTimeString();
+            output.innerHTML += `<div class="console-line ${type}">[${time}] ${msg}</div>`;
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        function sendCommand() {
+            const input = document.getElementById('console-input');
+            const cmd = input.value.trim().toLowerCase();
+            input.value = '';
+            if (!cmd) return;
+            consoleLog('info', `> ${cmd}`);
+            const parts = cmd.split(' ');
+            switch (parts[0]) {
+                case 'help': consoleLog('system', 'Commands: ping, boost, upgrade, next, night, systems, clear'); break;
+                case 'ping': if (parts[1]) pingSystem(parts[1]); break;
+                case 'boost': if (parts[1]) boostSystem(parts[1]); break;
+                case 'upgrade': if (parts[1] && parts[2]) upgradeSystem(parts[1], parts[2], parseInt(parts[3]) || 500); break;
+                case 'next': nextTurn(); break;
+                case 'night': toggleNightMode(); break;
+                case 'systems': consoleLog('system', systems.map(s => `${s.name} (${s.status})`).join(', ')); break;
+                case 'clear': document.getElementById('console-output').innerHTML = ''; break;
+                default: consoleLog('error', `Unknown: ${parts[0]}`);
+            }
+        }
+        
+        initCesium();
+        connectWebSocket();
+    </script>
+</body>
+</html>

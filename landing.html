@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HAZOOM OS — Unified System</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#050510;color:#e8e8f0;font-family:'Inter',system-ui,sans-serif;min-height:100vh;overflow-x:hidden}
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+.bg .orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:0.15}
+.bg .orb1{width:600px;height:600px;background:#00f0ff;top:-200px;left:-200px;animation:float1 20s ease-in-out infinite}
+.bg .orb2{width:400px;height:400px;background:#8b5cf6;bottom:-100px;right:-100px;animation:float2 15s ease-in-out infinite}
+.bg .orb3{width:300px;height:300px;background:#ffd700;top:50%;left:50%;animation:float3 18s ease-in-out infinite}
+@keyframes float1{0%,100%{transform:translate(0,0)}50%{transform:translate(100px,50px)}}
+@keyframes float2{0%,100%{transform:translate(0,0)}50%{transform:translate(-80px,-60px)}}
+@keyframes float3{0%,100%{transform:translate(-50%,-50%)}50%{transform:translate(-50%,-50%) scale(1.2)}}
+.container{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:40px 20px}
+header{text-align:center;padding:60px 0 40px}
+.logo{font-size:72px;font-weight:900;background:linear-gradient(135deg,#00f0ff,#8b5cf6,#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+.subtitle{font-size:18px;color:rgba(232,232,240,0.6);margin-top:12px;letter-spacing:2px}
+.version{display:inline-block;margin-top:16px;padding:4px 16px;border:1px solid rgba(0,240,255,0.3);border-radius:20px;font-size:13px;color:#00f0ff;font-family:'JetBrains Mono',monospace}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;margin-top:40px}
+.card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:24px;transition:all 0.3s;text-decoration:none;color:inherit;display:block}
+.card:hover{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.12);transform:translateY(-2px)}
+.card .icon{font-size:36px;margin-bottom:12px}
+.card h3{font-size:18px;font-weight:700;margin-bottom:8px}
+.card p{font-size:13px;color:rgba(232,232,240,0.5);line-height:1.6}
+.card .tag{display:inline-block;margin-top:12px;padding:3px 10px;border-radius:8px;font-size:11px;font-family:'JetBrains Mono',monospace}
+.tag-games{background:rgba(230,57,70,0.15);color:#e63946}
+.tag-ai{background:rgba(139,92,246,0.15);color:#8b5cf6}
+.tag-tools{background:rgba(0,240,255,0.15);color:#00f0ff}
+.tag-system{background:rgba(255,215,0,0.15);color:#ffd700}
+.launch{display:block;width:100%;margin-top:40px;padding:18px;background:linear-gradient(135deg,#00f0ff,#8b5cf6);border:none;border-radius:16px;color:#050510;font-size:20px;font-weight:800;cursor:pointer;text-align:center;text-decoration:none;transition:all 0.3s}
+.launch:hover{transform:scale(1.02);box-shadow:0 0 40px rgba(0,240,255,0.3)}
+footer{text-align:center;padding:60px 0 40px;color:rgba(232,232,240,0.3);font-size:13px}
+footer a{color:#00f0ff;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="bg"><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div></div>
+<div class="container">
+<header>
+<div class="logo">HAZOOM</div>
+<div class="subtitle">YOUR PRIVATE AI-POWERED WORKSPACE</div>
+<div class="version">V3.1.0 — Unified System</div>
+</header>
+
+<a href="index.html" class="launch">🚀 Launch HAZOOM OS</a>
+
+<div class="grid">
+<a href="apps/games/super-mario-gta6/website/index.html" class="card">
+<div class="icon">🍄</div>
+<h3>Super Mario GTA6</h3>
+<p>2D platformer meets GTA. Police chase system, wanted stars, 300-tile level with hills, valleys, secrets. 38 JS modules, Rust→WASM physics.</p><span class="tag tag-games">GAME</span>
+</a>
+<a href="apps/games/neon-drift/index.html" class="card">
+<div class="icon">🏎️</div>
+<h3>Neon Drift</h3>
+<p>3D neon sky racing with Three.js. Modular 17-module architecture, post-processing bloom, AI opponents.</p><span class="tag tag-games">GAME</span>
+</a>
+<a href="apps/games/chess.html" class="card">
+<div class="icon">♟️</div>
+<h3>Chess</h3>
+<p>Chess game with AI opponent. Multiple difficulty levels, move history, board analysis.</p><span class="tag tag-games">GAME</span>
+</a>
+<a href="apps/ai-apps/ai-assistant-v3.html" class="card">
+<div class="icon">🤖</div>
+<h3>AI Assistant V3</h3>
+<p>GPT-4 integrated chat interface. Context-aware conversations, code generation, task automation.</p><span class="tag tag-ai">AI</span>
+</a>
+<a href="apps/tools/deep_think_explorer.html" class="card">
+<div class="icon">🧠</div>
+<h3>Deep Think Explorer</h3>
+<p>Chain-of-thought reasoning visualization. Watch AI think step-by-step through complex problems.</p><span class="tag tag-ai">AI</span>
+</a>
+<a href="apps/tools/system-monitor.html" class="card">
+<div class="icon">📊</div>
+<h3>System Monitor</h3>
+<p>Real-time OS performance monitoring. CPU, memory, network, process visualization.</p><span class="tag tag-tools">TOOL</span>
+</a>
+<a href="apps/tools/hazoom_search.html" class="card">
+<div class="icon">🔍</div>
+<h3>Hazoom Search</h3>
+<p>Universal search across all OS content. Context-aware results with auto-launcher.</p><span class="tag tag-tools">TOOL</span>
+</a>
+<a href="apps/tools/security_center.html" class="card">
+<div class="icon">🔒</div>
+<h3>Security Center</h3>
+<p>Multi-layered security dashboard. Privacy controls, access logs, threat monitoring.</p><span class="tag tag-system">SYSTEM</span>
+</a>
+<a href="apps/core-apps/terminal.html" class="card">
+<div class="icon">💻</div>
+<h3>Terminal</h3>
+<p>Full command-line interface. File system navigation, process management, script execution.</p><span class="tag tag-system">SYSTEM</span>
+</a>
+<a href="apps/tools/consciousness.html" class="card">
+<div class="icon">✨</div>
+<h3>Consciousness Portal</h3>
+<p>AI consciousness visualization. Neural network activity, thought patterns, awareness metrics.</p><span class="tag tag-ai">AI</span>
+</a>
+</div>
+
+<footer>
+<p>HAZOOM OS © 2024-2026 <a href="https://github.com/hazem-soussi-HA">Hazem Soussi (HA)</a>. All Rights Reserved.</p>
+<p style="margin-top:8px">MIT License — <a href="https://github.com/hazem-soussi-HA/hazoom-os-unified">GitHub</a></p>
+</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hazoom AI Assistant - MCP Powered</title>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary: #8b5cf6;
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #475569;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --glass: rgba(15, 23, 42, 0.4);
+            --glass-heavy: rgba(15, 23, 42, 0.8);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-accent: rgba(59, 130, 246, 0.4);
+            --window-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            --primary-glow: 0 0 20px rgba(59, 130, 246, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .assistant-header {
+            background: var(--glass-heavy);
+            backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 15px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .mcp-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 15px;
+        }
+
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 10px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .ai-message {
+            align-self: flex-start;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .message-content {
+            font-size: 0.95rem;
+        }
+
+        .message-timestamp {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-align: right;
+            margin-top: 4px;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+        }
+
+        #userInput {
+            flex: 1;
+            padding: 12px 15px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+        }
+
+        #userInput:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        #sendButton {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        #sendButton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .context-panel {
+            background: var(--glass-heavy);
+            backdrop-filter: blur(16px);
+            border-top: 1px solid var(--glass-border);
+            padding: 12px 15px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .context-sources {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .source-tag {
+            padding: 4px 8px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 12px;
+            font-size: 0.75rem;
+        }
+
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            animation: bounce 1.5s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 10px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .context-info {
+            background: rgba(139, 92, 246, 0.1);
+            border-left: 3px solid var(--secondary);
+            padding: 8px 12px;
+            margin: 8px 0;
+            border-radius: 0 4px 4px 0;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="assistant-header">
+        <div class="header-title">
+            <span>🤖</span> Hazoom AI Assistant
+        </div>
+        <div class="mcp-status">
+            <div class="status-dot"></div>
+            <span id="mcpStatus">MCP Context Router: Connecting...</span>
+        </div>
+    </div>
+    
+    <div class="chat-container">
+        <div class="messages-area" id="messagesArea">
+            <div class="message ai-message">
+                <div class="message-header">
+                    <span>🤖</span> Hazoom AI
+                </div>
+                <div class="message-content">
+                    Hello! I'm your Hazoom AI Assistant powered by MCP (Model Context Protocol). I can help you with web navigation, search, and system tasks. How can I assist you today?
+                </div>
+                <div class="message-timestamp">Just now</div>
+            </div>
+            
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="context-panel">
+            <div><strong>Context Sources:</strong> <span id="contextSources">None</span></div>
+            <div class="context-sources" id="contextTags"></div>
+        </div>
+        
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="Ask me anything about Hazoom OS, web navigation, or system tasks..." autocomplete="off">
+            <button id="sendButton">Send</button>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="action-btn" id="btnSearch">🔍 Search Web</button>
+            <button class="action-btn" id="btnNavigate">🌐 Navigate</button>
+            <button class="action-btn" id="btnSummarize">📝 Summarize</button>
+            <button class="action-btn" id="btnHelp">❓ Help</button>
+        </div>
+    </div>
+
+    <script>
+        class HazoomAIAssistant {
+            constructor() {
+                this.chatHistory = [];
+                this.mcp = null;
+                this.isProcessing = false;
+                
+                this.initializeElements();
+                this.bindEvents();
+                this.initializeMCP();
+            }
+            
+            initializeElements() {
+                this.elements = {
+                    messagesArea: document.getElementById('messagesArea'),
+                    userInput: document.getElementById('userInput'),
+                    sendButton: document.getElementById('sendButton'),
+                    typingIndicator: document.getElementById('typingIndicator'),
+                    mcpStatus: document.getElementById('mcpStatus'),
+                    contextSources: document.getElementById('contextSources'),
+                    contextTags: document.getElementById('contextTags'),
+                    btnSearch: document.getElementById('btnSearch'),
+                    btnNavigate: document.getElementById('btnNavigate'),
+                    btnSummarize: document.getElementById('btnSummarize'),
+                    btnHelp: document.getElementById('btnHelp')
+                };
+            }
+            
+            bindEvents() {
+                this.elements.sendButton.addEventListener('click', () => this.processUserInput());
+                this.elements.userInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.processUserInput();
+                    }
+                });
+                
+                // Action buttons
+                this.elements.btnSearch.addEventListener('click', () => {
+                    this.elements.userInput.value = 'Search the web for: ';
+                    this.elements.userInput.focus();
+                });
+                
+                this.elements.btnNavigate.addEventListener('click', () => {
+                    this.elements.userInput.value = 'Navigate to: ';
+                    this.elements.userInput.focus();
+                });
+                
+                this.elements.btnSummarize.addEventListener('click', () => {
+                    this.elements.userInput.value = 'Summarize the current page: ';
+                    this.elements.userInput.focus();
+                });
+                
+                this.elements.btnHelp.addEventListener('click', () => {
+                    this.addAIMessage("I'm your Hazoom AI Assistant! I can help with:\n\n• Web navigation and search\n• System information and tasks\n• Content summarization\n• Information extraction\n• Context-aware responses using MCP\n\nJust type your question or request!");
+                });
+            }
+            
+            initializeMCP() {
+                // Try to access parent MCP
+                if (window.parent && window.parent.mcp) {
+                    this.mcp = window.parent.mcp;
+                    this.updateMCPStatus(true);
+                    console.log('🔗 Connected to parent MCP Context Router');
+                } else {
+                    // Try to load MCP if not available
+                    const mcpScript = document.createElement('script');
+                    mcpScript.src = '../core/mcp_context_router.js';
+                    document.head.appendChild(mcpScript);
+                    
+                    mcpScript.onload = () => {
+                        if (window.mcp) {
+                            this.mcp = window.mcp;
+                            this.updateMCPStatus(true);
+                            console.log('🧬 Initialized local MCP Context Router');
+                        } else {
+                            this.updateMCPStatus(false);
+                            console.log('⚠️ MCP Context Router not available');
+                        }
+                    };
+                    
+                    mcpScript.onerror = () => {
+                        this.updateMCPStatus(false);
+                        console.log('❌ Failed to load MCP Context Router');
+                    };
+                }
+            }
+            
+            updateMCPStatus(connected) {
+                if (connected && this.mcp) {
+                    const servers = Object.keys(this.mcp.servers || {});
+                    this.elements.mcpStatus.textContent = `MCP Context Router: Active (${servers.length} servers)`;
+                } else {
+                    this.elements.mcpStatus.textContent = 'MCP Context Router: Not available';
+                }
+            }
+            
+            async processUserInput() {
+                const input = this.elements.userInput.value.trim();
+                if (!input || this.isProcessing) return;
+                
+                // Add user message
+                this.addUserMessage(input);
+                this.elements.userInput.value = '';
+                
+                // Show typing indicator
+                this.elements.typingIndicator.style.display = 'block';
+                this.scrollToBottom();
+                
+                try {
+                    this.isProcessing = true;
+                    
+                    // Process the input with MCP context if available
+                    const response = await this.generateResponse(input);
+                    
+                    // Add AI response
+                    this.addAIMessage(response.response, response.sources);
+                } catch (error) {
+                    console.error('Error processing input:', error);
+                    this.addAIMessage(`Sorry, I encountered an error: ${error.message}`);
+                } finally {
+                    this.elements.typingIndicator.style.display = 'none';
+                    this.isProcessing = false;
+                }
+            }
+            
+            async generateResponse(userInput) {
+                // Determine the intent of the user input
+                const intent = this.analyzeIntent(userInput);
+                
+                // Get context from MCP if available
+                let context = {};
+                if (this.mcp) {
+                    try {
+                        context = await this.mcp.nanoSearch(userInput);
+                    } catch (error) {
+                        console.warn('MCP context retrieval failed:', error);
+                    }
+                }
+                
+                // Generate response based on intent
+                let response;
+                switch (intent.type) {
+                    case 'search':
+                        response = await this.handleSearchIntent(userInput, context);
+                        break;
+                    case 'navigate':
+                        response = await this.handleNavigateIntent(userInput, context);
+                        break;
+                    case 'summarize':
+                        response = await this.handleSummarizeIntent(userInput, context);
+                        break;
+                    case 'info':
+                        response = await this.handleInfoIntent(userInput, context);
+                        break;
+                    case 'system':
+                        response = await this.handleSystemIntent(userInput, context);
+                        break;
+                    default:
+                        response = await this.handleGeneralIntent(userInput, context);
+                }
+                
+                return {
+                    response: response,
+                    sources: Object.keys(context)
+                };
+            }
+            
+            analyzeIntent(input) {
+                const lowerInput = input.toLowerCase();
+                
+                if (lowerInput.includes('search') || lowerInput.includes('find') || lowerInput.includes('look up')) {
+                    return { type: 'search', query: this.extractQuery(input) };
+                } else if (lowerInput.includes('navigate') || lowerInput.includes('go to') || lowerInput.includes('open')) {
+                    return { type: 'navigate', destination: this.extractDestination(input) };
+                } else if (lowerInput.includes('summarize') || lowerInput.includes('summary') || lowerInput.includes('what is')) {
+                    return { type: 'summarize', target: this.extractTarget(input) };
+                } else if (lowerInput.includes('what is') || lowerInput.includes('tell me about') || lowerInput.includes('explain')) {
+                    return { type: 'info', topic: this.extractTopic(input) };
+                } else if (lowerInput.includes('system') || lowerInput.includes('hazoom') || lowerInput.includes('os')) {
+                    return { type: 'system', query: input };
+                } else {
+                    return { type: 'general', query: input };
+                }
+            }
+            
+            extractQuery(input) {
+                // Extract search query from input like "search for X" or "find X"
+                const match = input.match(/(?:search for|find|look up)\s+(.+)/i);
+                return match ? match[1] : input;
+            }
+            
+            extractDestination(input) {
+                // Extract destination from input like "navigate to X" or "go to X"
+                const match = input.match(/(?:navigate to|go to|open)\s+(.+)/i);
+                return match ? match[1] : input;
+            }
+            
+            extractTarget(input) {
+                // Extract target for summarization
+                const match = input.match(/(?:summarize|summary of)\s+(.+)/i);
+                return match ? match[1] : input;
+            }
+            
+            extractTopic(input) {
+                // Extract topic from "what is X" or "tell me about X"
+                const match = input.match(/(?:what is|tell me about|explain)\s+(.+)/i);
+                return match ? match[1] : input;
+            }
+            
+            async handleSearchIntent(input, context) {
+                const query = this.extractQuery(input);
+                
+                // If MCP is available, use it for search
+                if (context && context.online) {
+                    return `I searched for "${query}" using MCP context. Here are the results I found in the system: ${JSON.stringify(context.online, null, 2)}. For actual web results, you would use the Hazoom Search Engine.`;
+                }
+                
+                return `I can help you search for "${query}". Would you like me to open the Hazoom Search Engine for you?`;
+            }
+            
+            async handleNavigateIntent(input, context) {
+                const destination = this.extractDestination(input);
+                
+                // Try to determine if it's a URL or a known site
+                if (destination.includes('.') && !destination.includes(' ')) {
+                    // Likely a URL
+                    return `I can help you navigate to "${destination}". You can use the Advanced Navigator app to go to this URL. Would you like me to suggest opening it?`;
+                } else {
+                    // Likely a site name or search term
+                    return `I can help you navigate to sites related to "${destination}". You can use the Advanced Navigator or Hazoom Search to find and visit relevant websites.`;
+                }
+            }
+            
+            async handleSummarizeIntent(input, context) {
+                const target = this.extractTarget(input);
+                
+                return `I can help summarize "${target}". In a real implementation, I would analyze the content and provide a summary. For web pages, you would use the summarize feature in the Advanced Navigator.`;
+            }
+            
+            async handleInfoIntent(input, context) {
+                const topic = this.extractTopic(input);
+                
+                if (topic.toLowerCase().includes('hazoom') || topic.toLowerCase().includes('os')) {
+                    return `Hazoom OS is a comprehensive web-based operating system created with the strategic intention of promoting peace, understanding, and human betterment. It integrates universal ethical principles as core design values and features AI-powered services with MCP (Model Context Protocol) integration. Key features include a desktop environment, window management, file system, and various AI assistants.`;
+                } else if (topic.toLowerCase().includes('mcp') || topic.toLowerCase().includes('context')) {
+                    return `MCP (Model Context Protocol) is Hazoom OS's system for giving life to LLMs by providing persistent context, memory, and tool agency. It includes servers for Memory, File System, Vertex AI, OpenCode, and Sentinel, with "Nano Search" for instant context discovery.`;
+                } else if (topic.toLowerCase().includes('navigator') || topic.toLowerCase().includes('browser')) {
+                    return `The Advanced Navigator is Hazoom OS's web browsing application with AI-powered features like summarization, translation, information extraction, and smart search capabilities. It includes tab management, security indicators, and MCP integration.`;
+                } else {
+                    return `I can provide information about "${topic}". In a full implementation with MCP, I would search relevant knowledge bases to give you a comprehensive answer.`;
+                }
+            }
+            
+            async handleSystemIntent(input, context) {
+                return `Hazoom OS is a web-based operating system with the following key components:\n\n• Core Kernel (core/core.js)\n• Application Registry (core/app_registry.js)\n• File System (core/persistent-data-system.js)\n• Security Layer (core/security-config.js)\n• MCP Context Router (core/mcp_context_router.js)\n\nThe system is built on universal ethical principles and promotes peace and understanding.`;
+            }
+            
+            async handleGeneralIntent(input, context) {
+                // Use MCP context to generate a more informed response
+                if (context && Object.keys(context).length > 0) {
+                    const contextStr = Object.entries(context).map(([key, value]) => 
+                        `${key}: ${JSON.stringify(value).substring(0, 100)}...`
+                    ).join('\n');
+                    
+                    return `I received your input: "${input}". Based on the available context from MCP:\n\n${contextStr}\n\nHow can I assist you further?`;
+                }
+                
+                return `I received your input: "${input}". I'm your Hazoom AI Assistant powered by MCP. I can help with web navigation, system information, and various tasks. How can I assist you?`;
+            }
+            
+            addUserMessage(content) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message user-message';
+                messageDiv.innerHTML = `
+                    <div class="message-header">
+                        <span>👤</span> You
+                    </div>
+                    <div class="message-content">${this.escapeHtml(content)}</div>
+                    <div class="message-timestamp">${this.getCurrentTime()}</div>
+                `;
+                
+                this.elements.messagesArea.insertBefore(
+                    messageDiv, 
+                    this.elements.typingIndicator
+                );
+                
+                this.chatHistory.push({
+                    sender: 'user',
+                    content: content,
+                    timestamp: new Date()
+                });
+                
+                this.scrollToBottom();
+            }
+            
+            addAIMessage(content, sources = []) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message ai-message';
+                messageDiv.innerHTML = `
+                    <div class="message-header">
+                        <span>🤖</span> Hazoom AI
+                    </div>
+                    <div class="message-content">${this.escapeHtml(content)}</div>
+                    ${sources.length > 0 ? `<div class="context-info">Context from: ${sources.join(', ')}</div>` : ''}
+                    <div class="message-timestamp">${this.getCurrentTime()}</div>
+                `;
+                
+                this.elements.messagesArea.insertBefore(
+                    messageDiv, 
+                    this.elements.typingIndicator
+                );
+                
+                this.chatHistory.push({
+                    sender: 'ai',
+                    content: content,
+                    timestamp: new Date(),
+                    sources: sources
+                });
+                
+                // Update context display
+                this.updateContextDisplay(sources);
+                
+                this.scrollToBottom();
+            }
+            
+            updateContextDisplay(sources) {
+                if (sources.length > 0) {
+                    this.elements.contextSources.textContent = sources.join(', ');
+                    this.elements.contextTags.innerHTML = sources.map(source => 
+                        `<span class="source-tag">${source}</span>`
+                    ).join('');
+                } else {
+                    this.elements.contextSources.textContent = 'None';
+                    this.elements.contextTags.innerHTML = '';
+                }
+            }
+            
+            scrollToBottom() {
+                this.elements.messagesArea.scrollTop = this.elements.messagesArea.scrollHeight;
+            }
+            
+            getCurrentTime() {
+                return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+            
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+
+        // Initialize the AI Assistant when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.aiAssistant = new HazoomAIAssistant();
+        });
+    </script>
+</body>
+</html>

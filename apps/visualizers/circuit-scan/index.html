@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circuit Human Scan - VRINX Integration</title>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+    <div id="app">
+        <header class="header">
+            <h1>Circuit Human Scan</h1>
+            <div class="vrinx-status" id="vrinxStatus">
+                <span class="status-dot"></span>
+                <span>VRINX: Disconnected</span>
+            </div>
+        </header>
+        
+        <main class="main-content">
+            <section class="scan-section">
+                <div class="scan-controls">
+                    <button id="startScan" class="btn-primary">Start Scan</button>
+                    <button id="stopScan" class="btn-secondary">Stop Scan</button>
+                    <button id="connectVRINX" class="btn-primary">Connect to VRINX</button>
+                </div>
+                
+                <div class="display-protocols">
+                    <h2>Display Protocols</h2>
+                    <div class="protocol-grid">
+                        <div class="protocol-card" data-protocol="hdmi">
+                            <h3>HDMI</h3>
+                            <p>High Definition Multimedia Interface</p>
+                            <span class="status-indicator" id="hdmiStatus">Disconnected</span>
+                        </div>
+                        <div class="protocol-card" data-protocol="displayport">
+                            <h3>DisplayPort</h3>
+                            <p>Digital display interface</p>
+                            <span class="status-indicator" id="dpStatus">Disconnected</span>
+                        </div>
+                        <div class="protocol-card" data-protocol="usb-c">
+                            <h3>USB-C</h3>
+                            <p>Universal Serial Bus Type-C</p>
+                            <span class="status-indicator" id="usbCStatus">Disconnected</span>
+                        </div>
+                        <div class="protocol-card" data-protocol="wireless">
+                            <h3>Wireless Display</h3>
+                            <p>Miracast/AirPlay support</p>
+                            <span class="status-indicator" id="wirelessStatus">Disconnected</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="scan-results">
+                <h2>Scan Results</h2>
+                <div id="scanOutput" class="scan-output">
+                    <p>No scan results yet. Start a scan to detect human subjects.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <script src="./app.js"></script>
+</body>
+</html>

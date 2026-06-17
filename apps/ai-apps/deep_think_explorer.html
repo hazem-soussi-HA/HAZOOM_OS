@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Think Portal</title>
+    <link rel="stylesheet" href="../styles/hazoom-os.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --glass-bg: rgba(15, 23, 42, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --neon-blue: #00f3ff;
+            --neon-purple: #bc13fe;
+            --success: #00ff9d;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Outfit', sans-serif;
+            color: white;
+            background: transparent;
+            height: 100vh;
+            box-sizing: border-box;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 24px;
+            background: linear-gradient(to right, var(--neon-blue), var(--neon-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            position: relative;
+        }
+
+        input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 16px;
+            width: 100%;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+        }
+
+        button.think-btn {
+            background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+            border: none;
+            color: white;
+            padding: 0 30px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        button.think-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(188, 19, 254, 0.4);
+        }
+
+        .visualization-area {
+            flex: 1;
+            display: flex;
+            gap: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .steps-container {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .step-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 15px;
+            animation: slideIn 0.3s ease-out;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .step-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(5px);
+        }
+
+        .step-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--neon-blue);
+        }
+
+        .step-card.creative::before {
+            background: var(--neon-purple);
+        }
+
+        .step-card.analytical::before {
+            background: var(--success);
+        }
+
+        .step-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .step-content {
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .confidence-meter {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .meter-bar {
+            flex: 1;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .meter-fill {
+            height: 100%;
+            background: var(--success);
+            width: 0%;
+            transition: width 1s ease-out;
+        }
+
+        .stats-panel {
+            width: 300px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--neon-blue);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+        }
+
+        .thinking-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .thinking-indicator.active {
+            opacity: 1;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid transparent;
+            border-top-color: var(--neon-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .spinner::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border: 3px solid transparent;
+            border-top-color: var(--neon-purple);
+            border-radius: 50%;
+            animation: spin 2s linear infinite reverse;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 Deep Think <span style="font-weight: 300; opacity: 0.7;">Portal</span></h1>
+            <div style="font-size: 12px; color: rgba(255,255,255,0.5);">v1.0.0 (Symphony)</div>
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="queryInput"
+                placeholder="Enter a concept to analyze (e.g., 'Perceptron', 'Attention Mechanism')..."
+                autocomplete="off">
+            <button class="think-btn" onclick="startDeepThink()">
+                <span>⚡ Deep Think</span>
+            </button>
+        </div>
+
+        <div class="visualization-area">
+            <div class="steps-container" id="stepsContainer">
+                <div class="step-card"
+                    style="text-align: center; border: 1px dashed rgba(255,255,255,0.2); background: transparent;">
+                    <div class="step-content" style="color: rgba(255,255,255,0.5);">
+                        Enter a query above to start the Deep Think process.
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-panel">
+                <div class="stat-item">
+                    <div class="stat-value" id="confidenceScore">0%</div>
+                    <div class="stat-label">System Confidence</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="stepCount">0</div>
+                    <div class="stat-label">Reasoning Steps</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="timeTaken">0.0s</div>
+                    <div class="stat-label">Compute Time</div>
+                </div>
+                <div style="margin-top: auto; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                    <div class="stat-label" style="text-align: left; margin-bottom: 5px;">Active Mode</div>
+                    <div style="color: var(--neon-blue); font-weight: 600;">Symphony Parallel</div>
+                </div>
+            </div>
+
+            <div class="thinking-indicator" id="loader">
+                <div class="spinner"></div>
+                <div style="font-family: 'JetBrains Mono'; color: var(--neon-blue);">REASONING...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Engine -->
+    <script src="../core/deep_think_engine.js"></script>
+
+    <script>
+        const engine = new DeepThinkEngine();
+        const stepsContainer = document.getElementById('stepsContainer');
+        const loader = document.getElementById('loader');
+        const queryInput = document.getElementById('queryInput');
+
+        // Allow Enter key
+        queryInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') startDeepThink();
+        });
+
+        async function startDeepThink() {
+            const query = queryInput.value.trim();
+            if (!query) return;
+
+            // Reset UI
+            stepsContainer.innerHTML = '';
+            loader.classList.add('active');
+
+            // Execute Think
+            try {
+                // Determine mode based on complexity (simulated)
+                const mode = query.length > 20 ? 'parallel' : 'sequential';
+
+                const result = await engine.think(query, {
+                    mode: mode,
+                    maxPaths: 3,
+                    selfCorrect: true
+                });
+
+                loader.classList.remove('active');
+                renderResults(result);
+            } catch (e) {
+                console.error(e);
+                loader.classList.remove('active');
+                stepsContainer.innerHTML = `<div class="step-card" style="border-color: #ff4444;">Error: ${e.message}</div>`;
+            }
+        }
+
+        function renderResults(result) {
+            // Update Stats
+            animateValue('confidenceScore', 0, result.confidence || result.overallConfidence, 1000, '%');
+            document.getElementById('stepCount').innerText = result.reasoningChain.length;
+            document.getElementById('timeTaken').innerText = result.thinkTime + 's';
+
+            // Render Steps
+            let delay = 0;
+            result.reasoningChain.forEach(step => {
+                setTimeout(() => {
+                    renderStep(step);
+                    // Scroll to bottom
+                    stepsContainer.scrollTop = stepsContainer.scrollHeight;
+                }, delay);
+                delay += 300; // Stagger effect
+            });
+        }
+
+        function renderStep(step) {
+            const div = document.createElement('div');
+            // Determine class based on style or type
+            let className = 'step-card';
+            if (step.style) className += ` ${step.style}`;
+            if (step.type && step.type.includes('correction')) className += ' correction';
+
+            let typeLabel = step.style || step.type || 'System';
+            let confidence = step.confidence ? Math.round(step.confidence * 100) : 0;
+
+            let html = `
+                <div class="step-header">
+                    <span>${typeLabel}</span>
+                    <span>${new Date(step.timestamp).toLocaleTimeString()}</span>
+                </div>
+                <div class="step-content">
+                    ${step.description}
+                    ${step.thought ? `<div style="margin-top: 5px; color: rgba(255,255,255,0.8); font-style: italic;">"${step.thought}"</div>` : ''}
+                    ${step.corrections ? renderCorrections(step.corrections) : ''}
+                </div>
+            `;
+
+            if (step.confidence) {
+                html += `
+                    <div class="confidence-meter">
+                        <span style="font-size: 10px; width: 30px;">${confidence}%</span>
+                        <div class="meter-bar">
+                            <div class="meter-fill" style="width: ${confidence}%"></div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            div.className = className;
+            div.innerHTML = html;
+            stepsContainer.appendChild(div);
+        }
+
+        function renderCorrections(corrections) {
+            return `
+                <div style="margin-top: 10px; padding: 10px; background: rgba(255,68,68,0.1); border-radius: 8px; border-left: 3px solid #ff4444;">
+                    <div style="font-size: 11px; color: #ff8888; font-weight: 600; margin-bottom: 5px;">SELF-CORRECTION APPLIED</div>
+                    ${corrections.map(c => `
+                        <div style="font-size: 13px;">⚠️ ${c.issues.map(i => i.description).join(', ')}</div>
+                        <div style="font-size: 13px; color: #ffaaaa;">💡 Fix: ${c.suggestedFix}</div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function animateValue(id, start, end, duration, suffix = '') {
+            if (start === end) return;
+            const range = end - start;
+            let current = start;
+            const increment = end > start ? 1 : -1;
+            const stepTime = Math.abs(Math.floor(duration / range));
+            const obj = document.getElementById(id);
+            const timer = setInterval(function () {
+                current += increment;
+                obj.innerHTML = current + suffix;
+                if (current == end || (increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+                    clearInterval(timer);
+                    obj.innerHTML = end + suffix; // Ensure final value
+                }
+            }, Math.min(stepTime, 70)); // Cap speed
+        }
+
+        // Auto-run if perceptron is in URL? No, keep it clean.
+        // Pre-fill input for demo
+        setTimeout(() => {
+            if (!queryInput.value) {
+                queryInput.placeholder = "Try typing 'Attention is all you need'...";
+            }
+        }, 2000);
+    </script>
+</body>
+
+</html>

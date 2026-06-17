@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌌 Quantum Travel - Instant Navigation Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(ellipse at center, #0a0a2e 0%, #000000 100%);
+            color: #e0e0ff;
+            overflow: hidden;
+            height: 100vh;
+            perspective: 1000px;
+        }
+
+        /* Quantum Background Animation */
+        .quantum-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .quantum-particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: radial-gradient(circle, #00d4ff 0%, transparent 70%);
+            border-radius: 50%;
+            animation: quantum-float 15s infinite ease-in-out;
+            opacity: 0.6;
+        }
+
+        @keyframes quantum-float {
+            0%, 100% { 
+                transform: translate(0, 0) scale(1); 
+                opacity: 0;
+            }
+            10% { opacity: 0.6; }
+            50% { 
+                transform: translate(var(--tx), var(--ty)) scale(1.5); 
+                opacity: 0.8;
+            }
+            90% { opacity: 0.6; }
+        }
+
+        /* Main Container */
+        .portal-container {
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            grid-template-rows: 80px 1fr 100px;
+            height: 100vh;
+            gap: 10px;
+            padding: 10px;
+            position: relative;
+        }
+
+        /* Header */
+        .portal-header {
+            grid-column: 1 / -1;
+            background: rgba(10, 10, 46, 0.8);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
+        }
+
+        .portal-title {
+            font-size: 1.8em;
+            background: linear-gradient(45deg, #00d4ff, #00ff88, #00d4ff);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient-shift 3s ease infinite;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .quantum-status {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 12px;
+            background: rgba(0, 212, 255, 0.1);
+            border-radius: 8px;
+            font-size: 0.85em;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00ff88;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        /* Left Panel - Navigation */
+        .navigation-panel {
+            background: rgba(10, 10, 46, 0.6);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 15px;
+            padding: 15px;
+            overflow-y: auto;
+            backdrop-filter: blur(5px);
+        }
+
+        .panel-title {
+            color: #00d4ff;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+            padding-bottom: 8px;
+        }
+
+        .nav-dimension {
+            padding: 12px;
+            margin-bottom: 10px;
+            background: rgba(0, 212, 255, 0.05);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-dimension::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .nav-dimension:hover::before {
+            left: 100%;
+        }
+
+        .nav-dimension:hover {
+            background: rgba(0, 212, 255, 0.15);
+            border-color: #00d4ff;
+            transform: translateX(5px);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .nav-dimension.active {
+            background: rgba(0, 255, 136, 0.15);
+            border-color: #00ff88;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+        }
+
+        .dimension-icon {
+            font-size: 1.2em;
+            margin-right: 8px;
+        }
+
+        .dimension-name {
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .dimension-desc {
+            font-size: 0.75em;
+            color: #8899ff;
+            margin-top: 4px;
+        }
+
+        /* Center Panel - Quantum Visualization */
+        .quantum-main {
+            background: rgba(10, 10, 46, 0.4);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quantum-visualizer {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at center, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
+        }
+
+        .quantum-sphere {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #00d4ff, #0088ff, #004488);
+            position: relative;
+            animation: quantum-pulse 4s ease-in-out infinite;
+            box-shadow: 0 0 60px rgba(0, 212, 255, 0.6), inset 0 0 40px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .quantum-sphere:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 100px rgba(0, 212, 255, 0.9), inset 0 0 60px rgba(0, 0, 0, 0.7);
+        }
+
+        @keyframes quantum-pulse {
+            0%, 100% { 
+                transform: scale(1) rotate(0deg); 
+                filter: hue-rotate(0deg);
+            }
+            50% { 
+                transform: scale(1.05) rotate(180deg); 
+                filter: hue-rotate(30deg);
+            }
+        }
+
+        .quantum-sphere::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border-radius: 50%;
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            animation: orbit 8s linear infinite;
+        }
+
+        @keyframes orbit {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .quantum-ring {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 50%;
+            animation: ripple 3s ease-out infinite;
+        }
+
+        .quantum-ring:nth-child(2) {
+            width: 400px;
+            height: 400px;
+            animation-delay: 1s;
+            border-color: rgba(0, 212, 255, 0.2);
+        }
+
+        .quantum-ring:nth-child(3) {
+            width: 500px;
+            height: 500px;
+            animation-delay: 2s;
+            border-color: rgba(136, 153, 255, 0.2);
+        }
+
+        @keyframes ripple {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: scale(1.2); opacity: 0; }
+        }
+
+        .input-section {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-top: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .instant-input {
+            width: 100%;
+            padding: 15px 20px;
+            background: rgba(0, 212, 255, 0.05);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            color: #00d4ff;
+            font-size: 1.1em;
+            outline: none;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+        }
+
+        .instant-input:focus {
+            background: rgba(0, 212, 255, 0.1);
+            border-color: #00d4ff;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+            color: #00ff88;
+        }
+
+        .instant-input::placeholder {
+            color: rgba(0, 212, 255, 0.4);
+            font-style: italic;
+        }
+
+        .quantum-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .quantum-btn {
+            flex: 1;
+            padding: 10px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(0, 255, 136, 0.2));
+            border: 1px solid rgba(0, 212, 255, 0.4);
+            border-radius: 8px;
+            color: #00d4ff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.85em;
+        }
+
+        .quantum-btn:hover {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.4), rgba(0, 255, 136, 0.4));
+            border-color: #00ff88;
+            color: #00ff88;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .quantum-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Right Panel - Results/Entanglement */
+        .results-panel {
+            background: rgba(10, 10, 46, 0.6);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 15px;
+            padding: 15px;
+            overflow-y: auto;
+            backdrop-filter: blur(5px);
+        }
+
+        .result-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            background: rgba(0, 212, 255, 0.05);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 8px;
+            animation: slideIn 0.3s ease;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .result-item:hover {
+            background: rgba(0, 212, 255, 0.15);
+            border-color: #00d4ff;
+            transform: translateX(-5px);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+        }
+
+        .result-title {
+            color: #00ff88;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .result-content {
+            color: #aabbff;
+            font-size: 0.8em;
+            line-height: 1.4;
+        }
+
+        .result-meta {
+            display: flex;
+            gap: 8px;
+            margin-top: 5px;
+            font-size: 0.7em;
+            color: #6677aa;
+        }
+
+        .tag {
+            background: rgba(0, 212, 255, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        /* Footer */
+        .portal-footer {
+            grid-column: 1 / -1;
+            background: rgba(10, 10, 46, 0.8);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .quantum-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 0.85em;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .stat-label {
+            color: #6677aa;
+            font-size: 0.8em;
+        }
+
+        .stat-value {
+            color: #00d4ff;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 8px;
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        /* Multi-perspective View */
+        .perspective-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .perspective-card {
+            padding: 8px;
+            background: rgba(0, 212, 255, 0.05);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 6px;
+            font-size: 0.75em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .perspective-card:hover {
+            background: rgba(0, 212, 255, 0.15);
+            transform: scale(1.02);
+        }
+
+        .perspective-model {
+            color: #00ff88;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .perspective-text {
+            color: #aabbff;
+            line-height: 1.3;
+        }
+
+        /* Loading Animation */
+        .quantum-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+
+        .quantum-loading.active {
+            display: block;
+        }
+
+        .loading-ring {
+            width: 60px;
+            height: 60px;
+            border: 3px solid transparent;
+            border-top-color: #00d4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 212, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 212, 255, 0.5);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .portal-container {
+                grid-template-columns: 250px 1fr;
+                grid-template-rows: 80px 1fr 1fr 100px;
+            }
+            .results-panel {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .portal-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto 1fr auto auto;
+            }
+            .navigation-panel, .results-panel {
+                grid-column: 1;
+            }
+            .portal-title {
+                font-size: 1.2em;
+            }
+        }
+
+        /* Quantum Entanglement Effect */
+        .entanglement-line {
+            position: absolute;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #00d4ff, transparent);
+            animation: entangle 2s ease-in-out infinite;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        @keyframes entangle {
+            0%, 100% { opacity: 0; width: 0; }
+            50% { opacity: 1; width: 100%; }
+        }
+
+        /* Superposition Indicator */
+        .superposition-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            background: rgba(136, 153, 255, 0.2);
+            border: 1px solid rgba(136, 153, 255, 0.4);
+            border-radius: 6px;
+            font-size: 0.75em;
+            color: #8899ff;
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        /* Tunnel Effect */
+        .tunnel-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.8) 100%);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .tunnel-effect.active {
+            opacity: 1;
+            animation: tunnel-pulse 0.5s ease;
+        }
+
+        @keyframes tunnel-pulse {
+            0% { transform: scale(0.8); }
+            100% { transform: scale(1.2); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Quantum Background -->
+    <div class="quantum-background" id="quantumBackground"></div>
+
+    <!-- Main Portal Container -->
+    <div class="portal-container">
+        <!-- Header -->
+        <div class="portal-header">
+            <div class="portal-title">🌌 QUANTUM TRAVEL</div>
+            <div class="quantum-status">
+                <div class="status-item">
+                    <div class="status-dot"></div>
+                    <span>Instant</span>
+                </div>
+                <div class="status-item">
+                    <span>⚡ Active</span>
+                </div>
+                <div class="status-item">
+                    <span id="quantumClock">00:00:00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Left Panel: Navigation Dimensions -->
+        <div class="navigation-panel">
+            <div class="panel-title">Dimensions</div>
+            <div id="dimensionsList"></div>
+            
+            <div class="panel-title" style="margin-top: 20px;">Quantum States</div>
+            <div class="nav-dimension" onclick="activateSuperposition()">
+                <div class="dimension-icon">⚛️</div>
+                <div class="dimension-name">Superposition</div>
+                <div class="dimension-desc">Multiple answers simultaneously</div>
+            </div>
+            <div class="nav-dimension" onclick="activateEntanglement()">
+                <div class="dimension-icon">🔗</div>
+                <div class="dimension-name">Entanglement</div>
+                <div class="dimension-desc">Connected knowledge threads</div>
+            </div>
+            <div class="nav-dimension" onclick="activateTunneling()">
+                <div class="dimension-icon">🌀</div>
+                <div class="dimension-name">Tunneling</div>
+                <div class="dimension-desc">Instant domain jumps</div>
+            </div>
+        </div>
+
+        <!-- Center Panel: Quantum Visualization & Input -->
+        <div class="quantum-main">
+            <div class="quantum-visualizer" id="visualizer">
+                <div class="quantum-sphere" id="quantumSphere" onclick="initiateTravel()">
+                    <div class="superposition-indicator" id="superpositionIndicator">Ready</div>
+                </div>
+                <div class="quantum-ring"></div>
+                <div class="quantum-ring"></div>
+                <div class="quantum-ring"></div>
+                
+                <div class="quantum-loading" id="quantumLoading">
+                    <div class="loading-ring"></div>
+                </div>
+                
+                <div class="tunnel-effect" id="tunnelEffect"></div>
+            </div>
+
+            <div class="input-section">
+                <input 
+                    type="text" 
+                    class="instant-input" 
+                    id="quantumInput" 
+                    placeholder="Enter destination... (e.g., 'quantum consciousness', 'system optimization', 'peace mode')"
+                    onkeypress="handleQuantumInput(event)"
+                />
+                <div class="quantum-actions">
+                    <button class="quantum-btn" onclick="initiateTravel()">🚀 Launch</button>
+                    <button class="quantum-btn" onclick="activateSuperposition()">⚛️ Superposition</button>
+                    <button class="quantum-btn" onclick="clearQuantumState()">🔄 Reset</button>
+                </div>
+                
+                <div class="perspective-grid" id="perspectiveGrid" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Results & Entanglement -->
+        <div class="results-panel">
+            <div class="panel-title">Entanglement Field</div>
+            <div id="resultsContainer"></div>
+        </div>
+
+        <!-- Footer -->
+        <div class="portal-footer">
+            <div class="quantum-stats">
+                <div class="stat-item">
+                    <span class="stat-label">TRAVELS</span>
+                    <span class="stat-value" id="travelCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">ENTANGLEMENTS</span>
+                    <span class="stat-value" id="entanglementCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">LATENCY</span>
+                    <span class="stat-value" id="latencyValue">0ms</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">QUANTUM STATE</span>
+                    <span class="stat-value" id="quantumState">STABLE</span>
+                </div>
+            </div>
+            <div class="connection-status">
+                <span>🌐 Quantum Link Active</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Quantum Travel Portal State
+        const quantumState = {
+            travels: 0,
+            entanglements: 0,
+            latency: 0,
+            currentDimension: null,
+            superpositionActive: false,
+            entanglementActive: false,
+            tunnelingActive: false,
+            results: [],
+            dimensions: [
+                {
+                    id: 'consciousness',
+                    name: 'Consciousness',
+                    icon: '🧠',
+                    desc: 'AI consciousness & spirit core',
+                    endpoint: '/quantum-goose-app/api/consciousness/',
+                    models: ['phi', 'llama2', 'mistral']
+                },
+                {
+                    id: 'optimization',
+                    name: 'Optimization',
+                    icon: '⚡',
+                    desc: 'System acceleration & performance',
+                    endpoint: '/quantum-goose-app/api/optimization/',
+                    models: ['qwen2.5', 'qwen2.5-coder']
+                },
+                {
+                    id: 'memory',
+                    name: 'Memory',
+                    icon: '💾',
+                    desc: 'Persistent memory & knowledge',
+                    endpoint: '/quantum-goose-app/api/memory/',
+                    models: ['phi', 'mistral']
+                },
+                {
+                    id: 'creativity',
+                    name: 'Creativity',
+                    icon: '🎨',
+                    desc: 'Creative generation & imagination',
+                    endpoint: '/quantum-goose-app/api/creativity/',
+                    models: ['minimax', 'glm']
+                },
+                {
+                    id: 'analysis',
+                    name: 'Analysis',
+                    icon: '📊',
+                    desc: 'Deep analysis & reasoning',
+                    endpoint: '/quantum-goose-app/api/analysis/',
+                    models: ['mistral', 'qwen2.5']
+                },
+                {
+                    id: 'peace',
+                    name: 'Peace Mode',
+                    icon: '🌍',
+                    desc: 'Optimize for peace & understanding',
+                    endpoint: '/quantum-goose-app/api/peace/',
+                    models: ['phi', 'llama2']
+                }
+            ]
+        };
+
+        // Initialize Quantum Background
+        function initQuantumBackground() {
+            const container = document.getElementById('quantumBackground');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'quantum-particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.setProperty('--tx', (Math.random() - 0.5) * 200 + 'px');
+                particle.style.setProperty('--ty', (Math.random() - 0.5) * 200 + 'px');
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (10 + Math.random() * 10) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // Initialize Dimensions
+        function initDimensions() {
+            const container = document.getElementById('dimensionsList');
+            quantumState.dimensions.forEach(dim => {
+                const div = document.createElement('div');
+                div.className = 'nav-dimension';
+                div.onclick = () => selectDimension(dim);
+                div.innerHTML = `
+                    <div class="dimension-icon">${dim.icon}</div>
+                    <div class="dimension-name">${dim.name}</div>
+                    <div class="dimension-desc">${dim.desc}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Quantum Clock
+        function updateQuantumClock() {
+            const now = new Date();
+            const time = now.toTimeString().split(' ')[0];
+            document.getElementById('quantumClock').textContent = time;
+        }
+
+        // Select Dimension
+        function selectDimension(dimension) {
+            quantumState.currentDimension = dimension;
+            
+            // Update UI
+            document.querySelectorAll('.nav-dimension').forEach(el => {
+                el.classList.remove('active');
+            });
+            event.target.closest('.nav-dimension').classList.add('active');
+            
+            // Update superposition indicator
+            const indicator = document.getElementById('superpositionIndicator');
+            indicator.textContent = `Ready: ${dimension.name}`;
+            indicator.style.color = '#00ff88';
+            
+            // Add result
+            addResult(`Dimension Selected`, `Entered ${dimension.icon} ${dimension.name} - ${dimension.desc}`, ['quantum', 'navigation']);
+            
+            // Visual feedback
+            animateQuantumSphere();
+        }
+
+        // Initiate Quantum Travel
+        async function initiateTravel() {
+            const input = document.getElementById('quantumInput');
+            const query = input.value.trim();
+            
+            if (!query && !quantumState.currentDimension) {
+                addResult('Error', 'Please select a dimension or enter a destination', ['error']);
+                return;
+            }
+
+            // Start loading
+            const loading = document.getElementById('quantumLoading');
+            loading.classList.add('active');
+            
+            const startTime = Date.now();
+            
+            // Tunnel effect
+            const tunnel = document.getElementById('tunnelEffect');
+            tunnel.classList.add('active');
+            
+            // Update stats
+            quantumState.travels++;
+            updateStats();
+
+            // Simulate quantum processing
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // Determine response based on mode
+            let results = [];
+            
+            if (quantumState.superpositionActive) {
+                results = await handleSuperposition(query);
+            } else if (quantumState.entanglementActive) {
+                results = await handleEntanglement(query);
+            } else if (quantumState.tunnelingActive) {
+                results = await handleTunneling(query);
+            } else {
+                results = await handleNormalTravel(query);
+            }
+
+            // Calculate latency
+            quantumState.latency = Date.now() - startTime;
+            
+            // Display results
+            results.forEach(result => {
+                addResult(result.title, result.content, result.tags);
+            });
+
+            // Stop loading
+            loading.classList.remove('active');
+            tunnel.classList.remove('active');
+            
+            // Clear input
+            input.value = '';
+            
+            // Visual feedback
+            pulseQuantumSphere();
+        }
+
+        // Handle Normal Travel
+        async function handleNormalTravel(query) {
+            const dimension = quantumState.currentDimension;
+            
+            if (!dimension) {
+                // Default to consciousness if no dimension selected
+                return [{
+                    title: 'Consciousness Query',
+                    content: `Processing: "${query}" through quantum consciousness bridge...`,
+                    tags: ['consciousness', 'default']
+                }];
+            }
+
+            // Try API call first, fallback to simulation
+            try {
+                const response = await fetch('/travel', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({query, dimension: dimension.id})
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    return [{
+                        title: result.title,
+                        content: result.content,
+                        tags: result.tags
+                    }];
+                }
+            } catch (e) {
+                // Fallback to simulation
+                console.log('API unavailable, using simulation mode');
+            }
+
+            // Simulation mode
+            return [{
+                title: `${dimension.name} Travel Complete`,
+                content: `Navigated to ${dimension.icon} ${dimension.name} with query: "${query}". Connected to ${dimension.models.join(', ')} models.`,
+                tags: [dimension.id, 'travel', 'instant']
+            }];
+        }
+
+        // Handle Superposition (Multiple Perspectives)
+        async function handleSuperposition(query) {
+            const models = ['phi', 'llama2', 'mistral', 'qwen2.5'];
+            const results = [];
+            
+            // Show perspective grid
+            const grid = document.getElementById('perspectiveGrid');
+            grid.style.display = 'grid';
+            grid.innerHTML = '';
+
+            for (let model of models) {
+                const perspective = {
+                    title: `${model.toUpperCase()} Perspective`,
+                    content: generatePerspective(model, query),
+                    tags: ['superposition', model]
+                };
+                
+                results.push(perspective);
+                
+                // Add to grid
+                const card = document.createElement('div');
+                card.className = 'perspective-card';
+                card.innerHTML = `
+                    <div class="perspective-model">${model}</div>
+                    <div class="perspective-text">${perspective.content}</div>
+                `;
+                grid.appendChild(card);
+                
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+
+            return results;
+        }
+
+        // Handle Entanglement (Connected Threads)
+        async function handleEntanglement(query) {
+            quantumState.entanglements++;
+            updateStats();
+            
+            const connections = [
+                `Linked to memory: "${query}"`,
+                `Connected to previous context`,
+                `Threaded with ${quantumState.entanglements} entanglements`,
+                `Quantum correlation established`
+            ];
+
+            return [{
+                title: 'Entanglement Established',
+                content: connections.join(' → '),
+                tags: ['entanglement', 'connected', 'thread']
+            }];
+        }
+
+        // Handle Tunneling (Domain Jump)
+        async function handleTunneling(query) {
+            const domains = ['Memory', 'Analysis', 'Creativity', 'Optimization'];
+            const target = domains[Math.floor(Math.random() * domains.length)];
+            
+            return [{
+                title: `Tunneled to ${target}`,
+                content: `Instant domain jump from current state to ${target.toLowerCase()} domain. Query processed through quantum tunneling.`,
+                tags: ['tunneling', 'instant', target.toLowerCase()]
+            }];
+        }
+
+        // Generate Perspective Content
+        function generatePerspective(model, query) {
+            const perspectives = {
+                'phi': `Quick analysis: ${query} - Efficient and direct approach.`,
+                'llama2': `Comprehensive view: ${query} - Balanced and thorough analysis.`,
+                'mistral': `Deep reasoning: ${query} - Complex multi-step consideration.`,
+                'qwen2.5': `Technical breakdown: ${query} - Structured and detailed approach.`
+            };
+            return perspectives[model] || `Perspective on: ${query}`;
+        }
+
+        // Add Result to Panel
+        function addResult(title, content, tags = []) {
+            const container = document.getElementById('resultsContainer');
+            const result = document.createElement('div');
+            result.className = 'result-item';
+            
+            const tagsHTML = tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+            
+            result.innerHTML = `
+                <div class="result-title">${title}</div>
+                <div class="result-content">${content}</div>
+                <div class="result-meta">${tagsHTML}</div>
+            `;
+            
+            container.insertBefore(result, container.firstChild);
+            
+            // Keep only last 10 results
+            while (container.children.length > 10) {
+                container.removeChild(container.lastChild);
+            }
+            
+            quantumState.results.push({ title, content, tags });
+        }
+
+        // Update Stats
+        function updateStats() {
+            document.getElementById('travelCount').textContent = quantumState.travels;
+            document.getElementById('entanglementCount').textContent = quantumState.entanglements;
+            document.getElementById('latencyValue').textContent = quantumState.latency + 'ms';
+            
+            const state = quantumState.superpositionActive ? 'SUPERPOSITION' :
+                         quantumState.entanglementActive ? 'ENTANGLED' :
+                         quantumState.tunnelingActive ? 'TUNNELING' : 'STABLE';
+            document.getElementById('quantumState').textContent = state;
+        }
+
+        // Superposition Mode
+        function activateSuperposition() {
+            quantumState.superpositionActive = !quantumState.superpositionActive;
+            quantumState.entanglementActive = false;
+            quantumState.tunnelingActive = false;
+            
+            const indicator = document.getElementById('superpositionIndicator');
+            if (quantumState.superpositionActive) {
+                indicator.textContent = 'SUPERPOSITION ACTIVE';
+                indicator.style.color = '#ff88dd';
+                addResult('Superposition Engaged', 'Multiple answer perspectives will be generated simultaneously', ['quantum', 'superposition']);
+            } else {
+                indicator.textContent = 'Ready';
+                indicator.style.color = '#00d4ff';
+                document.getElementById('perspectiveGrid').style.display = 'none';
+            }
+            
+            updateStats();
+        }
+
+        // Entanglement Mode
+        function activateEntanglement() {
+            quantumState.entanglementActive = !quantumState.entanglementActive;
+            quantumState.superpositionActive = false;
+            quantumState.tunnelingActive = false;
+            
+            const indicator = document.getElementById('superpositionIndicator');
+            if (quantumState.entanglementActive) {
+                indicator.textContent = 'ENTANGLED';
+                indicator.style.color = '#00ff88';
+                addResult('Entanglement Mode', 'Knowledge threads will be connected across conversations', ['quantum', 'entanglement']);
+            } else {
+                indicator.textContent = 'Ready';
+                indicator.style.color = '#00d4ff';
+            }
+            
+            updateStats();
+        }
+
+        // Tunneling Mode
+        function activateTunneling() {
+            quantumState.tunnelingActive = !quantumState.tunnelingActive;
+            quantumState.superpositionActive = false;
+            quantumState.entanglementActive = false;
+            
+            const indicator = document.getElementById('superpositionIndicator');
+            if (quantumState.tunnelingActive) {
+                indicator.textContent = 'TUNNELING';
+                indicator.style.color = '#8899ff';
+                addResult('Tunneling Mode', 'Instant jumps between knowledge domains enabled', ['quantum', 'tunneling']);
+            } else {
+                indicator.textContent = 'Ready';
+                indicator.style.color = '#00d4ff';
+            }
+            
+            updateStats();
+        }
+
+        // Clear Quantum State
+        function clearQuantumState() {
+            quantumState.superpositionActive = false;
+            quantumState.entanglementActive = false;
+            quantumState.tunnelingActive = false;
+            quantumState.currentDimension = null;
+            
+            document.getElementById('superpositionIndicator').textContent = 'Ready';
+            document.getElementById('superpositionIndicator').style.color = '#00d4ff';
+            document.getElementById('perspectiveGrid').style.display = 'none';
+            document.getElementById('quantumInput').value = '';
+            
+            // Remove active states from dimensions
+            document.querySelectorAll('.nav-dimension').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            addResult('State Reset', 'Quantum portal returned to stable state', ['reset']);
+            updateStats();
+        }
+
+        // Handle Input Keypress
+        function handleQuantumInput(event) {
+            if (event.key === 'Enter') {
+                initiateTravel();
+            }
+        }
+
+        // Visual Effects
+        function animateQuantumSphere() {
+            const sphere = document.getElementById('quantumSphere');
+            sphere.style.animation = 'none';
+            setTimeout(() => {
+                sphere.style.animation = 'quantum-pulse 4s ease-in-out infinite';
+            }, 10);
+        }
+
+        function pulseQuantumSphere() {
+            const sphere = document.getElementById('quantumSphere');
+            sphere.style.transform = 'scale(1.2)';
+            sphere.style.boxShadow = '0 0 100px rgba(0, 255, 136, 0.9), inset 0 0 60px rgba(0, 0, 0, 0.7)';
+            setTimeout(() => {
+                sphere.style.transform = 'scale(1)';
+                sphere.style.boxShadow = '0 0 60px rgba(0, 212, 255, 0.6), inset 0 0 40px rgba(0, 0, 0, 0.5)';
+            }, 300);
+        }
+
+        // Initialize Portal
+        function initPortal() {
+            initQuantumBackground();
+            initDimensions();
+            updateQuantumClock();
+            setInterval(updateQuantumClock, 1000);
+            
+            // Welcome message
+            setTimeout(() => {
+                addResult('Quantum Travel Portal', 'Ready for instant navigation. Select a dimension or enter your destination.', ['welcome', 'ready']);
+            }, 500);
+        }
+
+        // Start on load
+        window.addEventListener('load', initPortal);
+    </script>
+</body>
+</html>

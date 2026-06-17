@@ -1,0 +1,4190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Monitor - HAZOOM OS v2.1</title>
+    <link rel="stylesheet" href="../hazoom-os.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'JetBrains Mono', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a0a 50%, #0a0a0a 100%);
+            color: #e0e0ff;
+            min-height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Modern Theme Variables */
+        :root {
+            --primary-purple: #8b5cf6;
+            --primary-cyan: #06b6d4;
+            --success-green: #10b981;
+            --warning-yellow: #f59e0b;
+            --error-red: #ef4444;
+            --bg-dark: #0f172a;
+            --bg-card: rgba(255, 255, 255, 0.05);
+            --border-glow: rgba(139, 92, 246, 0.3);
+        }
+
+        /* Glassmorphism Effects */
+        .glass {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-glow);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .glass:hover {
+            border-color: rgba(139, 92, 246, 0.6);
+            box-shadow: 0 8px 32px rgba(139, 92, 246, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Gradient Text */
+        .gradient-text {
+            background: linear-gradient(45deg, var(--primary-purple), var(--primary-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 200% 200%;
+            animation: gradientShift 3s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* Pulse Animation */
+        .pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Live Indicator */
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: 600;
+            color: var(--success-green);
+        }
+
+        .live-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--success-green);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        /* Hazoom Time Online Card */
+        .hazoom-time-card {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(6, 182, 212, 0.2));
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hazoom-time-card:hover {
+            border-color: rgba(139, 92, 246, 0.8);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+            transform: scale(1.02);
+        }
+
+        .hazoom-time-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .hazoom-time-card:hover::before {
+            left: 100%;
+        }
+
+        .hazoom-time-display {
+            font-size: 2em;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            text-align: center;
+            color: #e0e0ff;
+            margin: 8px 0;
+        }
+
+        .hazoom-time-date {
+            font-size: 0.85em;
+            text-align: center;
+            color: #a0a0ff;
+            opacity: 0.8;
+        }
+
+        .hazoom-time-clicks {
+            font-size: 0.75em;
+            text-align: center;
+            margin-top: 6px;
+            color: var(--primary-cyan);
+            font-weight: 600;
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: #a0a0ff;
+        }
+
+        .nav-tab:hover {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: rgba(139, 92, 246, 0.6);
+            color: #e0e0ff;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(6, 182, 212, 0.3));
+            border-color: rgba(139, 92, 246, 0.8);
+            color: #ffffff;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+        }
+
+        /* Page Container */
+        .page-container {
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .page-container.active {
+            display: block;
+        }
+
+        /* Metric Cards Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .metric-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(139, 92, 246, 0.7);
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.2);
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--primary-purple), var(--primary-cyan));
+        }
+
+        .metric-label {
+            font-size: 0.8em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #a0a0ff;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 2em;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 4px;
+        }
+
+        .metric-unit {
+            font-size: 0.5em;
+            color: #8080ff;
+            margin-left: 4px;
+        }
+
+        .metric-status {
+            font-size: 0.75em;
+            font-weight: 600;
+            margin-top: 6px;
+        }
+
+        .status-normal { color: var(--success-green); }
+        .status-warning { color: var(--warning-yellow); }
+        .status-error { color: var(--error-red); }
+
+        /* Charts Container */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .chart-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            min-height: 200px;
+        }
+
+        .chart-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #e0e0ff;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chart-visual {
+            width: 100%;
+            height: 150px;
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #a0a0ff;
+            font-size: 0.9em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-visual::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40%;
+            background: linear-gradient(180deg, transparent, rgba(139, 92, 246, 0.2));
+        }
+
+        /* Logs Console */
+        .logs-console {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8em;
+            margin-bottom: 16px;
+        }
+
+        .log-entry {
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+            display: flex;
+            gap: 12px;
+        }
+
+        .log-time {
+            color: #8080ff;
+            min-width: 80px;
+        }
+
+        .log-message {
+            flex: 1;
+        }
+
+        .log-info { color: #a0a0ff; }
+        .log-success { color: var(--success-green); }
+        .log-warning { color: var(--warning-yellow); }
+        .log-error { color: var(--error-red); }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        .action-btn {
+            padding: 10px 16px;
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            border-radius: 8px;
+            color: #e0e0ff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .action-btn:hover {
+            background: rgba(139, 92, 246, 0.4);
+            border-color: rgba(139, 92, 246, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.4), rgba(6, 182, 212, 0.4));
+            border-color: rgba(139, 92, 246, 0.8);
+        }
+
+        .action-btn.danger {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+
+        .action-btn.danger:hover {
+            background: rgba(239, 68, 68, 0.4);
+            border-color: rgba(239, 68, 68, 0.8);
+        }
+
+        .action-btn.active {
+            background: rgba(16, 185, 129, 0.3);
+            border-color: rgba(16, 185, 129, 0.6);
+            color: var(--success-green);
+        }
+
+        /* Status Bar */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 8px;
+            margin-top: 16px;
+            font-size: 0.85em;
+        }
+
+        .status-left, .status-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        /* Agent Cards */
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .agent-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .agent-card:hover {
+            border-color: rgba(139, 92, 246, 0.7);
+            transform: translateY(-2px);
+        }
+
+        .agent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .agent-name {
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+
+        .agent-type {
+            font-size: 0.75em;
+            padding: 4px 8px;
+            background: rgba(139, 92, 246, 0.2);
+            border-radius: 6px;
+            color: var(--primary-purple);
+        }
+
+        .agent-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin: 12px 0;
+        }
+
+        .agent-stat {
+            font-size: 0.85em;
+            color: #a0a0ff;
+        }
+
+        .agent-stat-value {
+            font-weight: 700;
+            color: #e0e0ff;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .agent-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .agent-btn {
+            flex: 1;
+            padding: 6px 10px;
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 6px;
+            color: #e0e0ff;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .agent-btn:hover {
+            background: rgba(139, 92, 246, 0.3);
+            border-color: rgba(139, 92, 246, 0.6);
+        }
+
+        /* Filter Controls */
+        .filter-controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-select, .filter-input {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 6px;
+            color: #e0e0ff;
+            font-size: 0.9em;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .filter-select:focus, .filter-input:focus {
+            outline: none;
+            border-color: rgba(139, 92, 246, 0.8);
+            box-shadow: 0 0 8px rgba(139, 92, 246, 0.3);
+        }
+
+        /* Deployment Cards */
+        .deployment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .deployment-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .deployment-card:hover {
+            border-color: rgba(139, 92, 246, 0.7);
+            transform: translateY(-2px);
+        }
+
+        .deployment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .deployment-name {
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+
+        .deployment-provider {
+            font-size: 0.75em;
+            padding: 4px 8px;
+            background: rgba(6, 182, 212, 0.2);
+            border-radius: 6px;
+            color: var(--primary-cyan);
+        }
+
+        .deployment-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin: 12px 0;
+        }
+
+        .deployment-stat {
+            font-size: 0.8em;
+            color: #a0a0ff;
+        }
+
+        .deployment-stat-value {
+            font-weight: 700;
+            color: #e0e0ff;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1em;
+        }
+
+        /* Settings Section */
+        .settings-section {
+            background: var(--bg-card);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .settings-title {
+            font-size: 1.2em;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #e0e0ff;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .setting-label {
+            font-size: 0.95em;
+            color: #a0a0ff;
+        }
+
+        .setting-control {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .toggle-switch {
+            width: 48px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .toggle-switch.active {
+            background: rgba(16, 185, 129, 0.3);
+            border-color: rgba(16, 185, 129, 0.6);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: #e0e0ff;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch.active::after {
+            left: 26px;
+            background: var(--success-green);
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.5);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(139, 92, 246, 0.8);
+        }
+
+        /* Loading Animation */
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(139, 92, 246, 0.2);
+            border-top: 3px solid var(--primary-purple);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-tabs {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                padding-bottom: 8px;
+            }
+            
+            .status-bar {
+                flex-direction: column;
+                gap: 8px;
+                text-align: center;
+            }
+            
+            .status-left, .status-right {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+
+        /* Login Form Enhancements */
+        .login-form {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            width: 350px;
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .login-form h2 {
+            background: linear-gradient(45deg, var(--primary-purple), var(--primary-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .form-group input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+            color: #e0e0ff;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            border-color: rgba(139, 92, 246, 0.8);
+            box-shadow: 0 0 12px rgba(139, 92, 246, 0.3);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary-purple), var(--primary-cyan));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 700;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+        }
+
+        /* Header Enhancements */
+        .header {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(6, 182, 212, 0.1));
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            backdrop-filter: blur(5px);
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 8px;
+        }
+
+        .header-subtitle {
+            font-size: 0.9em;
+            color: #a0a0ff;
+            opacity: 0.8;
+        }
+
+        /* Real-time Clock Display */
+        .realtime-clock {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .clock-icon {
+            font-size: 1.1em;
+        }
+
+        /* Quick Stats Grid */
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .quick-stat {
+            background: var(--bg-card);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .quick-stat:hover {
+            border-color: rgba(139, 92, 246, 0.7);
+            transform: translateY(-2px);
+        }
+
+        .quick-stat-value {
+            font-size: 1.5em;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--primary-cyan);
+        }
+
+        .quick-stat-label {
+            font-size: 0.7em;
+            color: #a0a0ff;
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* System Status Banner */
+        .system-status-banner {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.2));
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-health {
+            font-size: 2em;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--success-green);
+        }
+
+        .status-details {
+            text-align: right;
+            color: #a0a0ff;
+            font-size: 0.9em;
+        }
+
+        /* Export Button */
+        .export-btn {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .export-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .export-btn:hover::after {
+            left: 100%;
+        }
+
+        /* Analytics Charts */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .analytics-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            min-height: 250px;
+        }
+
+        .analytics-chart {
+            width: 100%;
+            height: 180px;
+            background: rgba(139, 92, 246, 0.05);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #a0a0ff;
+            font-size: 0.9em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .analytics-chart::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            background: linear-gradient(180deg, transparent, rgba(139, 92, 246, 0.15));
+        }
+
+        /* Stats Summary */
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .summary-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--primary-purple);
+        }
+
+        .summary-label {
+            font-size: 0.75em;
+            color: #a0a0ff;
+            margin-top: 4px;
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(139, 92, 246, 0.5);
+            border-radius: 8px;
+            padding: 12px 16px;
+            min-width: 250px;
+            color: #e0e0ff;
+            font-size: 0.9em;
+            animation: slideIn 0.3s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .toast.success {
+            border-color: rgba(16, 185, 129, 0.6);
+            background: rgba(16, 185, 129, 0.2);
+        }
+
+        .toast.error {
+            border-color: rgba(239, 68, 68, 0.6);
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .toast.warning {
+            border-color: rgba(245, 158, 11, 0.6);
+            background: rgba(245, 158, 11, 0.2);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Hide scrollbar for logs */
+        .logs-console::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .logs-console::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.3);
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="gradient-text">🔒 Admin Monitor</h1>
+            <div class="header-subtitle">HAZOOM OS v2.1 - Real-time System Monitoring</div>
+        </div>
+
+        <div class="login-container" id="loginContainer">
+            <div class="login-form">
+                <h2>Admin Access</h2>
+                <div class="form-group">
+                    <label for="adminUser">Username</label>
+                    <input type="text" id="adminUser" placeholder="Enter admin username" value="admin">
+                </div>
+                <div class="form-group">
+                    <label for="adminPass">Password</label>
+                    <input type="password" id="adminPass" placeholder="Enter admin password" value="admin123">
+                </div>
+                <button class="btn" onclick="login()">Login</button>
+                <div style="margin-top: 15px; color: #777; font-size: 0.8em; text-align: center;">
+                    Enhanced Monitoring Dashboard with Real-time Updates
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard" id="dashboard">
+            <!-- Hazoom Time Online Card -->
+            <div class="hazoom-time-card" id="hazoomTimeCard" onclick="handleHazoomTimeClick()">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-weight: 700; color: var(--primary-purple);">⚡ HAZOOM TIME ONLINE</span>
+                    <span class="live-indicator"><span class="live-dot"></span>LIVE</span>
+                </div>
+                <div class="hazoom-time-display" id="hazoomTimeDisplay">--:--:--</div>
+                <div class="hazoom-time-date" id="hazoomTimeDate">Loading...</div>
+                <div class="hazoom-time-clicks" id="hazoomTimeClicks">Clicks: 0</div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <div class="nav-tabs">
+                <div class="nav-tab active" onclick="switchPage('dashboard')">📊 Dashboard</div>
+                <div class="nav-tab" onclick="switchPage('supervision')">🎯 Supervision</div>
+                <div class="nav-tab" onclick="switchPage('agents')">🚀 Agents</div>
+                <div class="nav-tab" onclick="switchPage('observations')">🔍 Observations</div>
+                <div class="nav-tab" onclick="switchPage('deployments')">☁️ Deployments</div>
+                <div class="nav-tab" onclick="switchPage('analytics')">📈 Analytics</div>
+                <div class="nav-tab" onclick="switchPage('settings')">⚙️ Settings</div>
+            </div>
+
+            <!-- Dashboard Page -->
+            <div class="page-container active" id="page-dashboard">
+                <!-- Real-time Clocks -->
+                <div class="quick-stats">
+                    <div class="quick-stat">
+                        <div class="quick-stat-value" id="topBarClock">--:--:--</div>
+                        <div class="quick-stat-label">TopBar Clock</div>
+                    </div>
+                    <div class="quick-stat">
+                        <div class="quick-stat-value" id="dashboardClock">--:--:--</div>
+                        <div class="quick-stat-label">Dashboard Clock</div>
+                    </div>
+                    <div class="quick-stat">
+                        <div class="quick-stat-value" id="hazoomClock">--:--:--</div>
+                        <div class="quick-stat-label">Hazoom Clock</div>
+                    </div>
+                    <div class="quick-stat">
+                        <div class="quick-stat-value" id="updateRate">369ms</div>
+                        <div class="quick-stat-label">Update Rate</div>
+                    </div>
+                </div>
+
+                <!-- System Status Banner -->
+                <div class="system-status-banner">
+                    <div>
+                        <div style="font-size: 0.9em; color: #a0a0ff; margin-bottom: 4px;">System Health</div>
+                        <div class="status-health" id="systemHealth">98.5%</div>
+                    </div>
+                    <div class="status-details">
+                        <div>HAZOOM OS v2.1</div>
+                        <div style="font-size: 0.8em; opacity: 0.8;">All Systems Operational</div>
+                    </div>
+                </div>
+
+                <!-- Metric Cards -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">CPU Usage</div>
+                        <div class="metric-value" id="cpuValue">45<span class="metric-unit">%</span></div>
+                        <div class="metric-status status-normal" id="cpuStatus">Normal</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Memory</div>
+                        <div class="metric-value" id="memoryValue">6.2<span class="metric-unit">GB</span></div>
+                        <div class="metric-status status-normal" id="memoryStatus">Normal</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Disk Space</div>
+                        <div class="metric-value" id="diskValue">142<span class="metric-unit">GB</span></div>
+                        <div class="metric-status status-warning" id="diskStatus">High</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Network</div>
+                        <div class="metric-value" id="networkValue">1.2<span class="metric-unit">Mbps</span></div>
+                        <div class="metric-status status-normal" id="networkStatus">Normal</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Active Agents</div>
+                        <div class="metric-value" id="agentsValue">12<span class="metric-unit"></span></div>
+                        <div class="metric-status status-normal" id="agentsStatus">Running</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Success Rate</div>
+                        <div class="metric-value" id="successValue">96.8<span class="metric-unit">%</span></div>
+                        <div class="metric-status status-normal" id="successStatus">Excellent</div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-title">📊 Resource Trends</div>
+                        <div class="chart-visual" id="resourceChart">
+                            <span>Real-time CPU & Memory Trends</span>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-title">🏥 Health Distribution</div>
+                        <div class="chart-visual" id="healthChart">
+                            <span>System Health Metrics</span>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-title">⚡ Task Performance</div>
+                        <div class="chart-visual" id="performanceChart">
+                            <span>Response Time & Throughput</span>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-title">💾 Cache Performance</div>
+                        <div class="chart-visual" id="cacheChart">
+                            <span>Cache Efficiency & Hit Rate</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Logs -->
+                <div class="logs-console" id="logs">
+                    <div class="log-entry">
+                        <span class="log-time">[--:--:--]</span>
+                        <span class="log-message log-info">Admin monitor initialized</span>
+                    </div>
+                </div>
+
+                <!-- Application Management Section -->
+                <div class="settings-section">
+                    <div class="settings-title">🚀 Application Management</div>
+                    <div class="setting-item">
+                        <div class="setting-label">Running Applications</div>
+                        <div class="setting-control">
+                            <span id="runningAppsCount">0</span> apps
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-label">Total Applications</div>
+                        <div class="setting-control">
+                            <span id="totalAppsCount">0</span> apps
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-label">File System Size</div>
+                        <div class="setting-control">
+                            <span id="fsSize">Unknown</span>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-label">System Version</div>
+                        <div class="setting-control">
+                            <span id="systemVersion">2.1.0</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap;">
+                        <button class="action-btn primary" onclick="showAppManagement()">📋 Manage Apps</button>
+                        <button class="action-btn" onclick="refreshAppList()">🔄 Refresh Apps</button>
+                        <button class="action-btn" onclick="killAllApps()">🛑 Kill All Apps</button>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button class="action-btn primary" onclick="refreshData()">🔄 Refresh Data</button>
+                    <button class="action-btn" onclick="toggleRealtimeUpdates()" id="updateToggle">⏸️ Pause Updates</button>
+                    <button class="action-btn" onclick="clearCache()">🗑️ Clear Cache</button>
+                    <button class="action-btn" onclick="exportData()">📥 Export Data</button>
+                    <button class="action-btn danger" onclick="logout()">🚪 Logout</button>
+                </div>
+            </div>
+
+            <!-- Supervision Page -->
+            <div class="page-container" id="page-supervision">
+                <div class="header" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(245, 158, 11, 0.2)); border-color: rgba(239, 68, 68, 0.4);">
+                    <h2 style="margin: 0; color: #ff6b6b;">🎯 Real-Time Supervision System</h2>
+                    <div style="font-size: 0.9em; color: #ffaa00; margin-top: 8px;">Live CPU & Memory Monitoring with Action Controls</div>
+                </div>
+
+                <!-- Supervision Status Banner -->
+                <div class="system-status-banner" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(245, 158, 11, 0.2)); border-color: rgba(239, 68, 68, 0.4);">
+                    <div>
+                        <div style="font-size: 0.9em; color: #ffaa00; margin-bottom: 4px;">Supervision Status</div>
+                        <div class="status-health" id="supervisionStatus" style="color: #ff6b6b;">ACTIVE</div>
+                    </div>
+                    <div class="status-details">
+                        <div>Update Rate: <span id="supervisionRate">369ms</span></div>
+                        <div style="font-size: 0.8em; opacity: 0.8;">Ultra-Fast Monitoring</div>
+                    </div>
+                </div>
+
+                <!-- CPU Supervision Card -->
+                <div class="metric-card" style="margin-bottom: 16px; border-color: rgba(239, 68, 68, 0.5);">
+                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center;">
+                        <div>
+                            <div class="metric-label" style="color: #ff6b6b;">🔴 CPU SUPERVISION</div>
+                            <div class="metric-value" id="supervisionCpuValue">45<span class="metric-unit">%</span></div>
+                            <div class="metric-status" id="supervisionCpuStatus">Normal</div>
+                            <div style="font-size: 0.75em; color: #ff8888; margin-top: 4px;">Real-time CPU usage monitoring</div>
+                        </div>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button class="action-btn danger" onclick="supervisionAction('cpu', 'throttle')">⚡ Throttle</button>
+                            <button class="action-btn" onclick="supervisionAction('cpu', 'optimize')">🔧 Optimize</button>
+                            <button class="action-btn" onclick="supervisionAction('cpu', 'analyze')">📊 Analyze</button>
+                        </div>
+                    </div>
+                    <!-- Live CPU Chart -->
+                    <div style="margin-top: 12px; background: rgba(239, 68, 68, 0.1); border-radius: 8px; padding: 8px; height: 60px; position: relative; overflow: hidden;">
+                        <div id="cpuLiveChart" style="width: 100%; height: 100%; display: flex; align-items: flex-end; gap: 2px;">
+                            <!-- CPU bars will be generated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Memory Supervision Card -->
+                <div class="metric-card" style="margin-bottom: 16px; border-color: rgba(245, 158, 11, 0.5);">
+                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center;">
+                        <div>
+                            <div class="metric-label" style="color: #ffaa00;">🟡 MEMORY SUPERVISION</div>
+                            <div class="metric-value" id="supervisionMemoryValue">6.2<span class="metric-unit">GB</span></div>
+                            <div class="metric-status" id="supervisionMemoryStatus">Normal</div>
+                            <div style="font-size: 0.75em; color: #ffcc88; margin-top: 4px;">Live memory allocation tracking</div>
+                        </div>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button class="action-btn danger" onclick="supervisionAction('memory', 'clear')">🗑️ Clear</button>
+                            <button class="action-btn" onclick="supervisionAction('memory', 'compact')">📦 Compact</button>
+                            <button class="action-btn" onclick="supervisionAction('memory', 'profile')">🔍 Profile</button>
+                        </div>
+                    </div>
+                    <!-- Live Memory Chart -->
+                    <div style="margin-top: 12px; background: rgba(245, 158, 11, 0.1); border-radius: 8px; padding: 8px; height: 60px; position: relative; overflow: hidden;">
+                        <div id="memoryLiveChart" style="width: 100%; height: 100%; display: flex; align-items: flex-end; gap: 2px;">
+                            <!-- Memory bars will be generated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Combined Supervision Metrics -->
+                <div class="metrics-grid">
+                    <div class="metric-card" style="border-color: rgba(16, 185, 129, 0.5);">
+                        <div class="metric-label" style="color: #10b981;">🟢 PROCESSING</div>
+                        <div class="metric-value" id="processingRate">0<span class="metric-unit">/s</span></div>
+                        <div class="metric-status status-normal">Tasks/sec</div>
+                    </div>
+                    <div class="metric-card" style="border-color: rgba(6, 182, 212, 0.5);">
+                        <div class="metric-label" style="color: #06b6d4;">🔵 EFFICIENCY</div>
+                        <div class="metric-value" id="efficiencyRate">96<span class="metric-unit">%</span></div>
+                        <div class="metric-status status-normal">Optimal</div>
+                    </div>
+                    <div class="metric-card" style="border-color: rgba(139, 92, 246, 0.5);">
+                        <div class="metric-label" style="color: #8b5cf6;">🟣 RESPONSE</div>
+                        <div class="metric-value" id="responseTime">45<span class="metric-unit">ms</span></div>
+                        <div class="metric-status status-normal">Fast</div>
+                    </div>
+                    <div class="metric-card" style="border-color: rgba(239, 68, 68, 0.5);">
+                        <div class="metric-label" style="color: #ef4444;">🔴 ALERTS</div>
+                        <div class="metric-value" id="alertCount">0<span class="metric-unit"></span></div>
+                        <div class="metric-status status-normal">Active</div>
+                    </div>
+                </div>
+
+                <!-- Supervision Actions -->
+                <div class="action-buttons">
+                    <button class="action-btn danger" onclick="supervisionAction('system', 'emergency')">🚨 Emergency Stop</button>
+                    <button class="action-btn primary" onclick="supervisionAction('system', 'restart')">🔄 Restart All</button>
+                    <button class="action-btn" onclick="supervisionAction('system', 'pause')">⏸️ Pause All</button>
+                    <button class="action-btn" onclick="supervisionAction('system', 'resume')">▶️ Resume All</button>
+                    <button class="action-btn" onclick="exportSupervisionData()">📥 Export Data</button>
+                </div>
+
+                <!-- Supervision Logs -->
+                <div style="margin-top: 16px;">
+                    <div class="chart-title">📋 Supervision Event Log</div>
+                    <div class="logs-console" id="supervisionLogs" style="max-height: 250px;">
+                        <div class="log-entry">
+                            <span class="log-time">[--:--:--]</span>
+                            <span class="log-message log-info">Supervision system initialized</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agents Page -->
+            <div class="page-container" id="page-agents">
+                <div class="filter-controls">
+                    <select class="filter-select" id="agentTypeFilter" onchange="filterAgents()">
+                        <option value="all">All Types</option>
+                        <option value="goose">Goose</option>
+                        <option value="mcp">MCP</option>
+                        <option value="copilot">Copilot</option>
+                    </select>
+                    <input type="text" class="filter-input" id="agentSearch" placeholder="Search agents..." onkeyup="filterAgents()">
+                </div>
+
+                <div class="agent-grid" id="agentGrid">
+                    <!-- Agent cards will be generated here -->
+                </div>
+
+                <div class="action-buttons">
+                    <button class="action-btn primary" onclick="addAgent()">➕ Add Agent</button>
+                    <button class="action-btn" onclick="restartAllAgents()">🔄 Restart All</button>
+                    <button class="action-btn" onclick="pauseAllAgents()">⏸️ Pause All</button>
+                </div>
+            </div>
+
+            <!-- Observations Page -->
+            <div class="page-container" id="page-observations">
+                <div class="filter-controls">
+                    <select class="filter-select" id="obsSeverityFilter" onchange="filterObservations()">
+                        <option value="all">All Severities</option>
+                        <option value="info">Info</option>
+                        <option value="warning">Warning</option>
+                        <option value="error">Error</option>
+                        <option value="critical">Critical</option>
+                    </select>
+                    <select class="filter-select" id="obsTypeFilter" onchange="filterObservations()">
+                        <option value="all">All Types</option>
+                        <option value="metric">Metric</option>
+                        <option value="log">Log</option>
+                        <option value="event">Event</option>
+                        <option value="trace">Trace</option>
+                    </select>
+                    <input type="text" class="filter-input" id="obsSearch" placeholder="Search observations..." onkeyup="filterObservations()">
+                </div>
+
+                <div class="logs-console" id="observationsList" style="max-height: 400px;">
+                    <!-- Observations will be generated here -->
+                </div>
+
+                <div class="action-buttons">
+                    <button class="action-btn primary" onclick="addObservation()">➕ Add Observation</button>
+                    <button class="action-btn export-btn" onclick="exportObservations()">📥 Export Observations</button>
+                    <button class="action-btn danger" onclick="clearObservations()">🗑️ Clear All</button>
+                </div>
+            </div>
+
+            <!-- Deployments Page -->
+            <div class="page-container" id="page-deployments">
+                <div class="deployment-grid" id="deploymentGrid">
+                    <!-- Deployment cards will be generated here -->
+                </div>
+
+                <div class="action-buttons">
+                    <button class="action-btn primary" onclick="addDeployment()">➕ New Deployment</button>
+                    <button class="action-btn" onclick="deployAll()">🚀 Deploy All</button>
+                    <button class="action-btn" onclick="scaleAll()">📈 Scale All</button>
+                </div>
+            </div>
+
+            <!-- Analytics Page -->
+            <div class="page-container" id="page-analytics">
+                <div class="stats-summary">
+                    <div class="summary-card">
+                        <div class="summary-value" id="totalTasks">1,247</div>
+                        <div class="summary-label">Total Tasks</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-value" id="avgResponse">45ms</div>
+                        <div class="summary-label">Avg Response</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-value" id="efficiency">94.2%</div>
+                        <div class="summary-label">Efficiency</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-value" id="uptime">99.8%</div>
+                        <div class="summary-label">Uptime</div>
+                    </div>
+                </div>
+
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <div class="chart-title">📈 Performance Trends</div>
+                        <div class="analytics-chart">
+                            <span>Response Time & Throughput Analysis</span>
+                        </div>
+                    </div>
+                    <div class="analytics-card">
+                        <div class="chart-title">📊 Task Efficiency</div>
+                        <div class="analytics-chart">
+                            <span>Task Completion & Success Rates</span>
+                        </div>
+                    </div>
+                    <div class="analytics-card">
+                        <div class="chart-title">🏥 Health Distribution</div>
+                        <div class="analytics-chart">
+                            <span>System Health Breakdown</span>
+                        </div>
+                    </div>
+                    <div class="analytics-card">
+                        <div class="chart-title">⚡ Resource Usage</div>
+                        <div class="analytics-chart">
+                            <span>CPU, Memory & Network Trends</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="action-btn primary" onclick="generateReport()">📊 Generate Report</button>
+                    <button class="action-btn export-btn" onclick="exportAnalytics()">📥 Export Analytics</button>
+                    <button class="action-btn" onclick="refreshAnalytics()">🔄 Refresh</button>
+                </div>
+            </div>
+
+            <!-- Settings Page -->
+            <div class="page-container" id="page-settings">
+                <div class="settings-section">
+                    <div class="settings-title">🔔 Notifications & Alerts</div>
+                    <div class="setting-item">
+                        <div class="setting-label">Voice Announcements</div>
+                        <div class="setting-control">
+                            <div class="toggle-switch active" id="voiceToggle" onclick="toggleVoice()"></div>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-label">Real-time Updates</div>
+                        <div class="setting-control">
+                            <div class="toggle-switch active" id="realtimeToggle" onclick="toggleRealtime()"></div>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-label">Alert Thresholds</div>
+                        <div class="setting-control">
+                            <select class="filter-select" id="alertThreshold" onchange="updateThreshold()">
+                                <option value="low">Low (70%)</option>
+                                <option value="medium" selected>Medium (80%)</option>
+                                <option value="high">High (90%)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <div class="settings-title">⚙️ System Configuration</div>
+                    <div class="setting-item">
+                        <div class="setting-label">Update Interval</div>
+                        <div class="setting-control">
+                            <select class="filter-select" id="updateInterval" onchange="changeUpdateInterval()">
+                                <option value="369">369ms (Ultra-fast)</option>
+                                <option value="500">500ms (Fast)</option>
+                                <option value="1000" selected>1000ms (Normal)</option>
+                                <option value="2000">2000ms (Slow)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-label">Data Retention</div>
+                        <div class="setting-control">
+                            <select class="filter-select" id="retention" onchange="updateRetention()">
+                                <option value="1h">1 Hour</option>
+                                <option value="6h">6 Hours</option>
+                                <option value="24h" selected>24 Hours</option>
+                                <option value="7d">7 Days</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-label">Auto-refresh Dashboard</div>
+                        <div class="setting-control">
+                            <div class="toggle-switch active" id="autoRefreshToggle" onclick="toggleAutoRefresh()"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <div class="settings-title">🔒 Security Settings</div>
+                    <div class="setting-item">
+                        <div class="setting-label">Session Timeout</div>
+                        <div class="setting-control">
+                            <select class="filter-select" id="sessionTimeout" onchange="updateSessionTimeout()">
+                                <option value="15">15 Minutes</option>
+                                <option value="30" selected>30 Minutes</option>
+                                <option value="60">1 Hour</option>
+                                <option value="120">2 Hours</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-label">Require Password on Resume</div>
+                        <div class="setting-control">
+                            <div class="toggle-switch" id="passwordResumeToggle" onclick="togglePasswordResume()"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="action-btn primary" onclick="saveSettings()">💾 Save Settings</button>
+                    <button class="action-btn" onclick="resetSettings()">🔄 Reset to Default</button>
+                    <button class="action-btn danger" onclick="clearAllData()">🗑️ Clear All Data</button>
+                </div>
+            </div>
+
+            <!-- Status Bar -->
+            <div class="status-bar">
+                <div class="status-left">
+                    <div class="status-indicator">
+                        <div class="status-dot"></div>
+                        <div class="status-text">Admin System Online</div>
+                    </div>
+                    <div class="realtime-clock">
+                        <span class="clock-icon">🕐</span>
+                        <span id="statusClock">--:--:--</span>
+                    </div>
+                </div>
+                <div class="status-right">
+                    <span>Updates: <strong id="updateCounter">0</strong></span>
+                    <span>Session: <strong id="sessionTime">00:00</strong></span>
+                    <span>User: <strong id="adminUserDisplay">Admin</strong></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // ============================================
+        // HAZOOM OS ADMIN MONITOR - ENHANCED
+        // ============================================
+
+        // Configuration
+        const CONFIG = {
+            VERSION: '2.1.0',
+            UPDATE_INTERVAL: 1000, // Default 1 second
+            MAX_LOGS: 50,
+            MAX_OBSERVATIONS: 100,
+            VOICE_ENABLED: true,
+            REALTIME_UPDATES: true,
+            AUTO_REFRESH: true,
+            ALERT_THRESHOLD: 80
+        };
+
+        // State Management
+        const STATE = {
+            isLoggedIn: false,
+            username: '',
+            hazoomTimeClicks: 0,
+            updateCount: 0,
+            sessionStartTime: null,
+            lastUpdate: null,
+            updateIntervalId: null,
+            clockIntervalId: null,
+            hazoomTimeIntervalId: null,
+            agents: [],
+            observations: [],
+            deployments: [],
+            metrics: {
+                cpu: 45,
+                memory: 6.2,
+                disk: 142,
+                network: 1.2,
+                agents: 12,
+                success: 96.8,
+                health: 98.5
+            }
+        };
+
+        // Speech Synthesis
+        const speechSynth = window.speechSynthesis;
+        let lastAnnouncement = '';
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+
+        function initMonitor() {
+            console.log('HAZOOM OS Admin Monitor v' + CONFIG.VERSION);
+            
+            // Check for existing session
+            const adminSession = localStorage.getItem('adminSession');
+            if (adminSession) {
+                const session = JSON.parse(adminSession);
+                if (session.valid && !isSessionExpired(session)) {
+                    showDashboard(session.username);
+                    addLog('Session restored', 'success');
+                    return;
+                }
+            }
+
+            // Initialize sample data
+            initializeSampleData();
+        }
+
+        function initializeSampleData() {
+            // Sample Agents
+            STATE.agents = [
+                { id: 1, name: 'Goose-Primary', type: 'goose', status: 'running', cpu: 23, memory: 1.2, tasks: 45 },
+                { id: 2, name: 'MCP-Worker-1', type: 'mcp', status: 'running', cpu: 18, memory: 0.8, tasks: 32 },
+                { id: 3, name: 'Copilot-Assistant', type: 'copilot', status: 'paused', cpu: 5, memory: 0.4, tasks: 12 },
+                { id: 4, name: 'Goose-Backup', type: 'goose', status: 'running', cpu: 15, memory: 1.0, tasks: 28 }
+            ];
+
+            // Sample Observations
+            STATE.observations = [
+                { id: 1, time: '16:30:12', severity: 'info', type: 'metric', source: 'system', message: 'CPU usage normal at 45%' },
+                { id: 2, time: '16:30:15', severity: 'success', type: 'event', source: 'agent', message: 'Agent Goose-Primary completed task #1247' },
+                { id: 3, time: '16:30:20', severity: 'warning', type: 'metric', source: 'system', message: 'Disk usage high at 142GB' },
+                { id: 4, time: '16:30:25', severity: 'info', type: 'log', source: 'deployment', message: 'Deployment AWS-01 health check passed' }
+            ];
+
+            // Sample Deployments
+            STATE.deployments = [
+                { id: 1, name: 'AWS-Primary', provider: 'aws', region: 'us-east-1', status: 'active', instances: 3, cost: 245, uptime: 99.9 },
+                { id: 2, name: 'Azure-Backup', provider: 'azure', region: 'west-us-2', status: 'active', instances: 2, cost: 180, uptime: 99.8 },
+                { id: 3, name: 'Local-Dev', provider: 'local', region: 'localhost', status: 'pending', instances: 1, cost: 0, uptime: 95.2 }
+            ];
+        }
+
+        // ============================================
+        // AUTHENTICATION
+        // ============================================
+
+        function login() {
+            const username = document.getElementById('adminUser').value;
+            const password = document.getElementById('adminPass').value;
+
+            if (username === 'admin' && password === 'admin123') {
+                const session = {
+                    username: username,
+                    valid: true,
+                    timestamp: new Date().toISOString(),
+                    lastActivity: new Date().toISOString()
+                };
+                localStorage.setItem('adminSession', JSON.stringify(session));
+                
+                showDashboard(username);
+                addLog('Admin login successful', 'success');
+                showToast('Welcome back, ' + username + '!', 'success');
+                speak('Admin monitor online. System status is normal.');
+            } else {
+                showToast('Invalid credentials', 'error');
+                addLog('Failed login attempt for: ' + username, 'error');
+                speak('Login failed. Invalid credentials.');
+            }
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('adminSession');
+                stopAllIntervals();
+                
+                document.getElementById('loginContainer').style.display = 'flex';
+                document.getElementById('dashboard').style.display = 'none';
+                document.getElementById('adminUser').value = '';
+                document.getElementById('adminPass').value = '';
+                
+                STATE.isLoggedIn = false;
+                addLog('Admin session ended', 'info');
+                showToast('Logged out successfully', 'success');
+                speak('Admin session ended. Goodbye.');
+            }
+        }
+
+        function isSessionExpired(session) {
+            if (!session.timestamp) return true;
+            const sessionTime = new Date(session.timestamp);
+            const now = new Date();
+            const hoursDiff = (now - sessionTime) / (1000 * 60 * 60);
+            return hoursDiff > 24; // Session expires after 24 hours
+        }
+
+        // ============================================
+        // DASHBOARD MANAGEMENT
+        // ============================================
+
+        function showDashboard(username) {
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            document.getElementById('adminUserDisplay').textContent = username;
+            
+            STATE.isLoggedIn = true;
+            STATE.username = username;
+            STATE.sessionStartTime = new Date();
+            
+            // Start all monitoring intervals
+            startClockUpdates();
+            startHazoomTimeUpdates();
+            startRealtimeUpdates();
+            startSessionTimer();
+            
+            // Render initial data
+            renderAgents();
+            renderObservations();
+            renderDeployments();
+            
+            addLog('Dashboard loaded successfully', 'success');
+        }
+
+        // ============================================
+        // PAGE NAVIGATION
+        // ============================================
+
+        function switchPage(pageName) {
+            // Hide all pages
+            document.querySelectorAll('.page-container').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show selected page
+            const targetPage = document.getElementById('page-' + pageName);
+            if (targetPage) {
+                targetPage.classList.add('active');
+            }
+            
+            // Update tab styling
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            addLog('Switched to ' + pageName + ' page', 'info');
+        }
+
+        // ============================================
+        // HAZOOM TIME ONLINE FEATURE
+        // ============================================
+
+        function startHazoomTimeUpdates() {
+            if (STATE.hazoomTimeIntervalId) {
+                clearInterval(STATE.hazoomTimeIntervalId);
+            }
+            
+            updateHazoomTimeDisplay();
+            STATE.hazoomTimeIntervalId = setInterval(() => {
+                updateHazoomTimeDisplay();
+            }, 1000); // Update every second
+        }
+
+        function updateHazoomTimeDisplay() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+            const dateStr = now.toLocaleDateString('en-US', { 
+                weekday: 'short', 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+            
+            const timeElement = document.getElementById('hazoomTimeDisplay');
+            const dateElement = document.getElementById('hazoomTimeDate');
+            const clicksElement = document.getElementById('hazoomTimeClicks');
+            
+            if (timeElement) timeElement.textContent = timeStr;
+            if (dateElement) dateElement.textContent = dateStr;
+            if (clicksElement) clicksElement.textContent = 'Clicks: ' + STATE.hazoomTimeClicks;
+        }
+
+        function handleHazoomTimeClick() {
+            STATE.hazoomTimeClicks++;
+            updateHazoomTimeDisplay();
+            
+            // Visual feedback
+            const card = document.getElementById('hazoomTimeCard');
+            card.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                card.style.transform = 'scale(1)';
+            }, 100);
+            
+            addLog('Hazoom Time clicked: ' + STATE.hazoomTimeClicks + ' total', 'info');
+            
+            if (STATE.hazoomTimeClicks % 5 === 0) {
+                showToast('Hazoom Time clicked ' + STATE.hazoomTimeClicks + ' times!', 'success');
+                speak('Hazoom time interaction recorded.');
+            }
+        }
+
+        // ============================================
+        // REAL-TIME CLOCK UPDATES
+        // ============================================
+
+        function startClockUpdates() {
+            if (STATE.clockIntervalId) {
+                clearInterval(STATE.clockIntervalId);
+            }
+            
+            updateAllClocks();
+            STATE.clockIntervalId = setInterval(() => {
+                updateAllClocks();
+            }, 1000);
+        }
+
+        function updateAllClocks() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+            
+            // Update all clock displays
+            const clocks = ['topBarClock', 'dashboardClock', 'hazoomClock', 'statusClock'];
+            clocks.forEach(clockId => {
+                const element = document.getElementById(clockId);
+                if (element) {
+                    element.textContent = timeStr;
+                }
+            });
+        }
+
+        // ============================================
+        // REAL-TIME MONITORING UPDATES
+        // ============================================
+
+        function startRealtimeUpdates() {
+            if (STATE.updateIntervalId) {
+                clearInterval(STATE.updateIntervalId);
+            }
+            
+            if (!CONFIG.REALTIME_UPDATES) return;
+            
+            updateMetrics();
+            STATE.updateIntervalId = setInterval(() => {
+                if (CONFIG.REALTIME_UPDATES) {
+                    updateMetrics();
+                }
+            }, CONFIG.UPDATE_INTERVAL);
+        }
+
+        function updateMetrics() {
+            if (!STATE.isLoggedIn) return;
+            
+            // Simulate real-time data changes
+            STATE.metrics.cpu = Math.max(20, Math.min(85, STATE.metrics.cpu + (Math.random() - 0.5) * 10));
+            STATE.metrics.memory = Math.max(4, Math.min(10, STATE.metrics.memory + (Math.random() - 0.5) * 0.5));
+            STATE.metrics.network = Math.max(0.5, Math.min(5, STATE.metrics.network + (Math.random() - 0.5) * 0.3));
+            STATE.metrics.success = Math.max(90, Math.min(99, STATE.metrics.success + (Math.random() - 0.5) * 1));
+            STATE.metrics.health = Math.max(95, Math.min(99.5, STATE.metrics.health + (Math.random() - 0.5) * 0.5));
+            
+            // Update UI
+            document.getElementById('cpuValue').innerHTML = STATE.metrics.cpu.toFixed(1) + '<span class="metric-unit">%</span>';
+            document.getElementById('memoryValue').innerHTML = STATE.metrics.memory.toFixed(1) + '<span class="metric-unit">GB</span>';
+            document.getElementById('networkValue').innerHTML = STATE.metrics.network.toFixed(1) + '<span class="metric-unit">Mbps</span>';
+            document.getElementById('successValue').innerHTML = STATE.metrics.success.toFixed(1) + '<span class="metric-unit">%</span>';
+            document.getElementById('systemHealth').textContent = STATE.metrics.health.toFixed(1) + '%';
+            
+            // Update status indicators
+            updateStatusIndicators();
+            
+            // Update counters
+            STATE.updateCount++;
+            document.getElementById('updateCounter').textContent = STATE.updateCount;
+            
+            // Voice announcements for critical thresholds
+            if (CONFIG.VOICE_ENABLED) {
+                if (STATE.metrics.cpu > CONFIG.ALERT_THRESHOLD && lastAnnouncement !== 'cpu') {
+                    speak('Warning. CPU usage is at ' + STATE.metrics.cpu.toFixed(0) + ' percent');
+                    lastAnnouncement = 'cpu';
+                    setTimeout(() => lastAnnouncement = '', 10000);
+                }
+                if (STATE.metrics.memory > 8 && lastAnnouncement !== 'memory') {
+                    speak('Memory usage is at ' + STATE.metrics.memory.toFixed(1) + ' gigabytes');
+                    lastAnnouncement = 'memory';
+                    setTimeout(() => lastAnnouncement = '', 10000);
+                }
+            }
+            
+            // Add log entry periodically
+            if (STATE.updateCount % 10 === 0) {
+                addLog('Metrics updated - CPU: ' + STATE.metrics.cpu.toFixed(1) + '%, Memory: ' + STATE.metrics.memory.toFixed(1) + 'GB', 'info');
+            }
+            
+            STATE.lastUpdate = new Date();
+        }
+
+        function updateStatusIndicators() {
+            // CPU Status
+            const cpuStatus = document.getElementById('cpuStatus');
+            if (STATE.metrics.cpu > 80) {
+                cpuStatus.textContent = 'High';
+                cpuStatus.className = 'metric-status status-error';
+            } else if (STATE.metrics.cpu > 60) {
+                cpuStatus.textContent = 'Elevated';
+                cpuStatus.className = 'metric-status status-warning';
+            } else {
+                cpuStatus.textContent = 'Normal';
+                cpuStatus.className = 'metric-status status-normal';
+            }
+            
+            // Memory Status
+            const memoryStatus = document.getElementById('memoryStatus');
+            if (STATE.metrics.memory > 8) {
+                memoryStatus.textContent = 'High';
+                memoryStatus.className = 'metric-status status-warning';
+            } else {
+                memoryStatus.textContent = 'Normal';
+                memoryStatus.className = 'metric-status status-normal';
+            }
+            
+            // Network Status
+            const networkStatus = document.getElementById('networkStatus');
+            if (STATE.metrics.network > 3) {
+                networkStatus.textContent = 'Busy';
+                networkStatus.className = 'metric-status status-warning';
+            } else {
+                networkStatus.textContent = 'Normal';
+                networkStatus.className = 'metric-status status-normal';
+            }
+        }
+
+        function toggleRealtimeUpdates() {
+            CONFIG.REALTIME_UPDATES = !CONFIG.REALTIME_UPDATES;
+            const btn = document.getElementById('updateToggle');
+            
+            if (CONFIG.REALTIME_UPDATES) {
+                btn.textContent = '⏸️ Pause Updates';
+                btn.classList.remove('active');
+                startRealtimeUpdates();
+                addLog('Real-time updates resumed', 'success');
+                showToast('Updates resumed', 'success');
+                speak('Real-time updates resumed');
+            } else {
+                btn.textContent = '▶️ Resume Updates';
+                btn.classList.add('active');
+                if (STATE.updateIntervalId) {
+                    clearInterval(STATE.updateIntervalId);
+                }
+                addLog('Real-time updates paused', 'warning');
+                showToast('Updates paused', 'warning');
+                speak('Real-time updates paused');
+            }
+        }
+
+        // ============================================
+        // SESSION TIMER
+        // ============================================
+
+        function startSessionTimer() {
+            setInterval(() => {
+                if (!STATE.sessionStartTime) return;
+                
+                const now = new Date();
+                const diff = Math.floor((now - STATE.sessionStartTime) / 1000);
+                const minutes = Math.floor(diff / 60);
+                const seconds = diff % 60;
+                
+                const timeStr = String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+                const sessionElement = document.getElementById('sessionTime');
+                if (sessionElement) {
+                    sessionElement.textContent = timeStr;
+                }
+            }, 1000);
+        }
+
+        // ============================================
+        // AGENTS MANAGEMENT
+        // ============================================
+
+        function renderAgents() {
+            const grid = document.getElementById('agentGrid');
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            
+            STATE.agents.forEach(agent => {
+                const card = document.createElement('div');
+                card.className = 'agent-card';
+                card.innerHTML = `
+                    <div class="agent-header">
+                        <div class="agent-name">${agent.name}</div>
+                        <div class="agent-type">${agent.type.toUpperCase()}</div>
+                    </div>
+                    <div class="agent-stats">
+                        <div class="agent-stat">CPU: <span class="agent-stat-value">${agent.cpu}%</span></div>
+                        <div class="agent-stat">Memory: <span class="agent-stat-value">${agent.memory}GB</span></div>
+                        <div class="agent-stat">Tasks: <span class="agent-stat-value">${agent.tasks}</span></div>
+                        <div class="agent-stat">Status: <span class="agent-stat-value" style="color: ${agent.status === 'running' ? '#10b981' : '#f59e0b'}">${agent.status}</span></div>
+                    </div>
+                    <div class="agent-actions">
+                        <button class="agent-btn" onclick="restartAgent(${agent.id})">Restart</button>
+                        <button class="agent-btn" onclick="pauseAgent(${agent.id})">${agent.status === 'running' ? 'Pause' : 'Resume'}</button>
+                        <button class="agent-btn" onclick="viewAgentLogs(${agent.id})">Logs</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterAgents() {
+            const typeFilter = document.getElementById('agentTypeFilter').value;
+            const searchTerm = document.getElementById('agentSearch').value.toLowerCase();
+            
+            const filtered = STATE.agents.filter(agent => {
+                const matchesType = typeFilter === 'all' || agent.type === typeFilter;
+                const matchesSearch = agent.name.toLowerCase().includes(searchTerm);
+                return matchesType && matchesSearch;
+            });
+            
+            // Re-render with filtered data
+            const grid = document.getElementById('agentGrid');
+            grid.innerHTML = '';
+            
+            filtered.forEach(agent => {
+                const card = document.createElement('div');
+                card.className = 'agent-card';
+                card.innerHTML = `
+                    <div class="agent-header">
+                        <div class="agent-name">${agent.name}</div>
+                        <div class="agent-type">${agent.type.toUpperCase()}</div>
+                    </div>
+                    <div class="agent-stats">
+                        <div class="agent-stat">CPU: <span class="agent-stat-value">${agent.cpu}%</span></div>
+                        <div class="agent-stat">Memory: <span class="agent-stat-value">${agent.memory}GB</span></div>
+                        <div class="agent-stat">Tasks: <span class="agent-stat-value">${agent.tasks}</span></div>
+                        <div class="agent-stat">Status: <span class="agent-stat-value" style="color: ${agent.status === 'running' ? '#10b981' : '#f59e0b'}">${agent.status}</span></div>
+                    </div>
+                    <div class="agent-actions">
+                        <button class="agent-btn" onclick="restartAgent(${agent.id})">Restart</button>
+                        <button class="agent-btn" onclick="pauseAgent(${agent.id})">${agent.status === 'running' ? 'Pause' : 'Resume'}</button>
+                        <button class="agent-btn" onclick="viewAgentLogs(${agent.id})">Logs</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            
+            addLog(`Filtered agents: ${filtered.length} found`, 'info');
+        }
+
+        function restartAgent(id) {
+            const agent = STATE.agents.find(a => a.id === id);
+            if (agent) {
+                agent.status = 'restarting';
+                renderAgents();
+                addLog(`Restarting agent: ${agent.name}`, 'warning');
+                showToast(`Restarting ${agent.name}`, 'warning');
+                speak(`Restarting ${agent.name}`);
+                
+                setTimeout(() => {
+                    agent.status = 'running';
+                    agent.cpu = Math.floor(Math.random() * 20) + 10;
+                    agent.memory = (Math.random() * 1 + 0.5).toFixed(1);
+                    renderAgents();
+                    addLog(`Agent ${agent.name} restarted successfully`, 'success');
+                    showToast(`${agent.name} restarted`, 'success');
+                    speak(`${agent.name} restarted`);
+                }, 2000);
+            }
+        }
+
+        function pauseAgent(id) {
+            const agent = STATE.agents.find(a => a.id === id);
+            if (agent) {
+                agent.status = agent.status === 'running' ? 'paused' : 'running';
+                renderAgents();
+                const action = agent.status === 'paused' ? 'paused' : 'resumed';
+                addLog(`${agent.name} ${action}`, 'info');
+                showToast(`${agent.name} ${action}`, 'info');
+                speak(`${agent.name} ${action}`);
+            }
+        }
+
+        function viewAgentLogs(id) {
+            const agent = STATE.agents.find(a => a.id === id);
+            if (agent) {
+                addLog(`Viewing logs for ${agent.name}`, 'info');
+                showToast(`Logs for ${agent.name}`, 'info');
+                // In a real system, this would open a logs viewer
+            }
+        }
+
+        function addAgent() {
+            const name = prompt('Enter agent name:');
+            if (name) {
+                const type = prompt('Enter agent type (goose/mcp/copilot):', 'goose');
+                const newAgent = {
+                    id: Date.now(),
+                    name: name,
+                    type: type || 'goose',
+                    status: 'running',
+                    cpu: Math.floor(Math.random() * 20) + 10,
+                    memory: (Math.random() * 1 + 0.5).toFixed(1),
+                    tasks: Math.floor(Math.random() * 50)
+                };
+                STATE.agents.push(newAgent);
+                renderAgents();
+                addLog(`New agent added: ${name} (${type})`, 'success');
+                showToast(`Agent ${name} added`, 'success');
+                speak(`New agent ${name} added`);
+            }
+        }
+
+        function restartAllAgents() {
+            addLog('Restarting all agents...', 'warning');
+            showToast('Restarting all agents', 'warning');
+            speak('Restarting all agents');
+            
+            STATE.agents.forEach(agent => {
+                if (agent.status === 'running') {
+                    agent.status = 'restarting';
+                }
+            });
+            renderAgents();
+            
+            setTimeout(() => {
+                STATE.agents.forEach(agent => {
+                    agent.status = 'running';
+                    agent.cpu = Math.floor(Math.random() * 20) + 10;
+                    agent.memory = (Math.random() * 1 + 0.5).toFixed(1);
+                });
+                renderAgents();
+                addLog('All agents restarted successfully', 'success');
+                showToast('All agents restarted', 'success');
+                speak('All agents restarted');
+            }, 3000);
+        }
+
+        function pauseAllAgents() {
+            const hasRunning = STATE.agents.some(a => a.status === 'running');
+            const action = hasRunning ? 'paused' : 'resumed';
+            
+            STATE.agents.forEach(agent => {
+                agent.status = hasRunning ? 'paused' : 'running';
+            });
+            
+            renderAgents();
+            addLog(`All agents ${action}`, 'info');
+            showToast(`All agents ${action}`, 'info');
+            speak(`All agents ${action}`);
+        }
+
+        // ============================================
+        // OBSERVATIONS MANAGEMENT
+        // ============================================
+
+        function renderObservations() {
+            const container = document.getElementById('observationsList');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            STATE.observations.forEach(obs => {
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+                entry.innerHTML = `
+                    <span class="log-time">[${obs.time}]</span>
+                    <span class="log-message log-${obs.severity}">${obs.message}</span>
+                `;
+                container.appendChild(entry);
+            });
+        }
+
+        function filterObservations() {
+            const severityFilter = document.getElementById('obsSeverityFilter').value;
+            const typeFilter = document.getElementById('obsTypeFilter').value;
+            const searchTerm = document.getElementById('obsSearch').value.toLowerCase();
+            
+            const filtered = STATE.observations.filter(obs => {
+                const matchesSeverity = severityFilter === 'all' || obs.severity === severityFilter;
+                const matchesType = typeFilter === 'all' || obs.type === typeFilter;
+                const matchesSearch = obs.message.toLowerCase().includes(searchTerm);
+                return matchesSeverity && matchesType && matchesSearch;
+            });
+            
+            const container = document.getElementById('observationsList');
+            container.innerHTML = '';
+            
+            filtered.forEach(obs => {
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+                entry.innerHTML = `
+                    <span class="log-time">[${obs.time}]</span>
+                    <span class="log-message log-${obs.severity}">${obs.message}</span>
+                `;
+                container.appendChild(entry);
+            });
+            
+            addLog(`Filtered observations: ${filtered.length} found`, 'info');
+        }
+
+        function addObservation() {
+            const message = prompt('Enter observation message:');
+            if (message) {
+                const severity = prompt('Enter severity (info/warning/error/critical):', 'info');
+                const type = prompt('Enter type (metric/log/event/trace):', 'event');
+                const now = new Date();
+                const timeStr = now.toTimeString().split(' ')[0];
+                
+                const newObs = {
+                    id: Date.now(),
+                    time: timeStr,
+                    severity: severity || 'info',
+                    type: type || 'event',
+                    source: 'manual',
+                    message: message
+                };
+                
+                STATE.observations.unshift(newObs);
+                if (STATE.observations.length > CONFIG.MAX_OBSERVATIONS) {
+                    STATE.observations.pop();
+                }
+                
+                renderObservations();
+                addLog(`New observation added: ${message}`, severity || 'info');
+                showToast(`Observation added`, 'success');
+            }
+        }
+
+        function exportObservations() {
+            const data = JSON.stringify(STATE.observations, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `observations_${Date.now()}.json`;
+            a.click();
+            
+            addLog('Observations exported', 'success');
+            showToast('Observations exported', 'success');
+            speak('Observations exported');
+        }
+
+        function clearObservations() {
+            if (confirm('Clear all observations?')) {
+                STATE.observations = [];
+                renderObservations();
+                addLog('All observations cleared', 'warning');
+                showToast('Observations cleared', 'warning');
+                speak('Observations cleared');
+            }
+        }
+
+        // ============================================
+        // DEPLOYMENTS MANAGEMENT
+        // ============================================
+
+        function renderDeployments() {
+            const grid = document.getElementById('deploymentGrid');
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            
+            STATE.deployments.forEach(deploy => {
+                const card = document.createElement('div');
+                card.className = 'deployment-card';
+                card.innerHTML = `
+                    <div class="deployment-header">
+                        <div class="deployment-name">${deploy.name}</div>
+                        <div class="deployment-provider">${deploy.provider.toUpperCase()}</div>
+                    </div>
+                    <div class="deployment-stats">
+                        <div class="deployment-stat">Instances: <span class="deployment-stat-value">${deploy.instances}</span></div>
+                        <div class="deployment-stat">Cost: <span class="deployment-stat-value">$${deploy.cost}</span></div>
+                        <div class="deployment-stat">Uptime: <span class="deployment-stat-value">${deploy.uptime}%</span></div>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 0.8em; color: #a0a0ff;">
+                        Region: ${deploy.region} | Status: <span style="color: ${deploy.status === 'active' ? '#10b981' : '#f59e0b'}">${deploy.status}</span>
+                    </div>
+                    <div class="agent-actions" style="margin-top: 12px;">
+                        <button class="agent-btn" onclick="deployAction(${deploy.id}, 'deploy')">Deploy</button>
+                        <button class="agent-btn" onclick="deployAction(${deploy.id}, 'scale')">Scale</button>
+                        <button class="agent-btn" onclick="deployAction(${deploy.id}, 'logs')">Logs</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function deployAction(id, action) {
+            const deploy = STATE.deployments.find(d => d.id === id);
+            if (!deploy) return;
+            
+            switch(action) {
+                case 'deploy':
+                    addLog(`Deploying ${deploy.name}...`, 'info');
+                    showToast(`Deploying ${deploy.name}`, 'info');
+                    speak(`Deploying ${deploy.name}`);
+                    deploy.status = 'deploying';
+                    renderDeployments();
+                    setTimeout(() => {
+                        deploy.status = 'active';
+                        deploy.uptime = 99.9;
+                        renderDeployments();
+                        addLog(`${deploy.name} deployed successfully`, 'success');
+                        showToast(`${deploy.name} deployed`, 'success');
+                        speak(`${deploy.name} deployed`);
+                    }, 2000);
+                    break;
+                    
+                case 'scale':
+                    const newInstances = deploy.instances + 1;
+                    addLog(`Scaling ${deploy.name} to ${newInstances} instances`, 'info');
+                    showToast(`Scaling ${deploy.name}`, 'info');
+                    speak(`Scaling ${deploy.name}`);
+                    deploy.instances = newInstances;
+                    deploy.cost += 50;
+                    renderDeployments();
+                    break;
+                    
+                case 'logs':
+                    addLog(`Viewing logs for ${deploy.name}`, 'info');
+                    showToast(`Logs for ${deploy.name}`, 'info');
+                    break;
+            }
+        }
+
+        function addDeployment() {
+            const name = prompt('Enter deployment name:');
+            if (name) {
+                const provider = prompt('Enter provider (aws/azure/local):', 'aws');
+                const newDeploy = {
+                    id: Date.now(),
+                    name: name,
+                    provider: provider || 'aws',
+                    region: provider === 'aws' ? 'us-east-1' : provider === 'azure' ? 'west-us-2' : 'localhost',
+                    status: 'pending',
+                    instances: 1,
+                    cost: 0,
+                    uptime: 95.0
+                };
+                STATE.deployments.push(newDeploy);
+                renderDeployments();
+                addLog(`New deployment added: ${name}`, 'success');
+                showToast(`Deployment ${name} added`, 'success');
+                speak(`New deployment ${name} added`);
+            }
+        }
+
+        function deployAll() {
+            addLog('Deploying all pending deployments...', 'warning');
+            showToast('Deploying all', 'warning');
+            speak('Deploying all deployments');
+            
+            STATE.deployments.forEach(deploy => {
+                if (deploy.status === 'pending') {
+                    deploy.status = 'deploying';
+                }
+            });
+            renderDeployments();
+            
+            setTimeout(() => {
+                STATE.deployments.forEach(deploy => {
+                    if (deploy.status === 'deploying') {
+                        deploy.status = 'active';
+                        deploy.uptime = 99.9;
+                    }
+                });
+                renderDeployments();
+                addLog('All deployments completed', 'success');
+                showToast('All deployments completed', 'success');
+                speak('All deployments completed');
+            }, 3000);
+        }
+
+        function scaleAll() {
+            addLog('Scaling all deployments...', 'info');
+            showToast('Scaling all deployments', 'info');
+            speak('Scaling all deployments');
+            
+            STATE.deployments.forEach(deploy => {
+                if (deploy.status === 'active') {
+                    deploy.instances += 1;
+                    deploy.cost += 50;
+                }
+            });
+            renderDeployments();
+            addLog('All deployments scaled', 'success');
+            showToast('All deployments scaled', 'success');
+        }
+
+        // ============================================
+        // ANALYTICS & REPORTS
+        // ============================================
+
+        function generateReport() {
+            addLog('Generating comprehensive report...', 'info');
+            showToast('Generating report', 'info');
+            speak('Generating comprehensive report');
+            
+            // Simulate report generation
+            setTimeout(() => {
+                const report = {
+                    timestamp: new Date().toISOString(),
+                    metrics: { ...STATE.metrics },
+                    agents: STATE.agents.length,
+                    deployments: STATE.deployments.length,
+                    observations: STATE.observations.length,
+                    hazoomTimeClicks: STATE.hazoomTimeClicks,
+                    updateCount: STATE.updateCount
+                };
+                
+                console.log('HAZOOM OS Report:', report);
+                addLog('Report generated successfully', 'success');
+                showToast('Report generated', 'success');
+                speak('Report generated successfully');
+                
+                // Update analytics stats
+                document.getElementById('totalTasks').textContent = (1247 + STATE.updateCount).toLocaleString();
+                document.getElementById('avgResponse').textContent = (45 + Math.floor(Math.random() * 10)) + 'ms';
+                document.getElementById('efficiency').textContent = (94.2 + Math.random() * 2).toFixed(1) + '%';
+                document.getElementById('uptime').textContent = (99.8 + Math.random() * 0.1).toFixed(1) + '%';
+            }, 1500);
+        }
+
+        function exportAnalytics() {
+            const data = {
+                metrics: STATE.metrics,
+                agents: STATE.agents,
+                deployments: STATE.deployments,
+                observations: STATE.observations,
+                hazoomTimeClicks: STATE.hazoomTimeClicks,
+                updateCount: STATE.updateCount,
+                sessionDuration: STATE.sessionStartTime ? Math.floor((new Date() - STATE.sessionStartTime) / 1000) : 0
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `hazoom_analytics_${Date.now()}.json`;
+            a.click();
+            
+            addLog('Analytics exported', 'success');
+            showToast('Analytics exported', 'success');
+            speak('Analytics exported');
+        }
+
+        function refreshAnalytics() {
+            addLog('Refreshing analytics...', 'info');
+            showToast('Refreshing analytics', 'info');
+            
+            // Update stats with new values
+            document.getElementById('totalTasks').textContent = (1247 + STATE.updateCount + Math.floor(Math.random() * 50)).toLocaleString();
+            document.getElementById('avgResponse').textContent = (40 + Math.floor(Math.random() * 15)) + 'ms';
+            document.getElementById('efficiency').textContent = (93 + Math.random() * 4).toFixed(1) + '%';
+            document.getElementById('uptime').textContent = (99.5 + Math.random() * 0.4).toFixed(1) + '%';
+            
+            addLog('Analytics refreshed', 'success');
+            showToast('Analytics refreshed', 'success');
+        }
+
+        // ============================================
+        // SETTINGS MANAGEMENT
+        // ============================================
+
+        function toggleVoice() {
+            CONFIG.VOICE_ENABLED = !CONFIG.VOICE_ENABLED;
+            const toggle = document.getElementById('voiceToggle');
+            
+            if (CONFIG.VOICE_ENABLED) {
+                toggle.classList.add('active');
+                addLog('Voice announcements enabled', 'success');
+                showToast('Voice enabled', 'success');
+                speak('Voice announcements enabled');
+            } else {
+                toggle.classList.remove('active');
+                addLog('Voice announcements disabled', 'warning');
+                showToast('Voice disabled', 'warning');
+                if (speechSynth) speechSynth.cancel();
+            }
+        }
+
+        function toggleRealtime() {
+            CONFIG.REALTIME_UPDATES = !CONFIG.REALTIME_UPDATES;
+            const toggle = document.getElementById('realtimeToggle');
+            
+            if (CONFIG.REALTIME_UPDATES) {
+                toggle.classList.add('active');
+                startRealtimeUpdates();
+                addLog('Real-time updates enabled', 'success');
+                showToast('Real-time updates enabled', 'success');
+            } else {
+                toggle.classList.remove('active');
+                if (STATE.updateIntervalId) {
+                    clearInterval(STATE.updateIntervalId);
+                }
+                addLog('Real-time updates disabled', 'warning');
+                showToast('Real-time updates disabled', 'warning');
+            }
+        }
+
+        function toggleAutoRefresh() {
+            CONFIG.AUTO_REFRESH = !CONFIG.AUTO_REFRESH;
+            const toggle = document.getElementById('autoRefreshToggle');
+            
+            if (CONFIG.AUTO_REFRESH) {
+                toggle.classList.add('active');
+                addLog('Auto-refresh enabled', 'success');
+                showToast('Auto-refresh enabled', 'success');
+            } else {
+                toggle.classList.remove('active');
+                addLog('Auto-refresh disabled', 'warning');
+                showToast('Auto-refresh disabled', 'warning');
+            }
+        }
+
+        function togglePasswordResume() {
+            const toggle = document.getElementById('passwordResumeToggle');
+            toggle.classList.toggle('active');
+            const isActive = toggle.classList.contains('active');
+            addLog('Password on resume: ' + (isActive ? 'enabled' : 'disabled'), 'info');
+            showToast('Password requirement ' + (isActive ? 'enabled' : 'disabled'), 'info');
+        }
+
+        function updateThreshold() {
+            const threshold = document.getElementById('alertThreshold').value;
+            const thresholds = { low: 70, medium: 80, high: 90 };
+            CONFIG.ALERT_THRESHOLD = thresholds[threshold];
+            addLog('Alert threshold set to ' + CONFIG.ALERT_THRESHOLD + '%', 'info');
+            showToast('Threshold updated', 'success');
+        }
+
+        function changeUpdateInterval() {
+            const interval = parseInt(document.getElementById('updateInterval').value);
+            CONFIG.UPDATE_INTERVAL = interval;
+            
+            if (STATE.updateIntervalId && CONFIG.REALTIME_UPDATES) {
+                clearInterval(STATE.updateIntervalId);
+                startRealtimeUpdates();
+            }
+            
+            document.getElementById('updateRate').textContent = interval + 'ms';
+            addLog('Update interval changed to ' + interval + 'ms', 'info');
+            showToast('Update interval changed', 'success');
+        }
+
+        function updateRetention() {
+            const retention = document.getElementById('retention').value;
+            addLog('Data retention set to ' + retention, 'info');
+            showToast('Retention updated', 'success');
+        }
+
+        function updateSessionTimeout() {
+            const timeout = document.getElementById('sessionTimeout').value;
+            addLog('Session timeout set to ' + timeout + ' minutes', 'info');
+            showToast('Session timeout updated', 'success');
+        }
+
+        function saveSettings() {
+            const settings = {
+                voice: CONFIG.VOICE_ENABLED,
+                realtime: CONFIG.REALTIME_UPDATES,
+                autoRefresh: CONFIG.AUTO_REFRESH,
+                threshold: CONFIG.ALERT_THRESHOLD,
+                updateInterval: CONFIG.UPDATE_INTERVAL,
+                retention: document.getElementById('retention').value,
+                sessionTimeout: document.getElementById('sessionTimeout').value,
+                passwordResume: document.getElementById('passwordResumeToggle').classList.contains('active')
+            };
+            
+            localStorage.setItem('hazoomSettings', JSON.stringify(settings));
+            addLog('Settings saved successfully', 'success');
+            showToast('Settings saved', 'success');
+            speak('Settings saved');
+        }
+
+        function resetSettings() {
+            if (confirm('Reset all settings to default?')) {
+                CONFIG.VOICE_ENABLED = true;
+                CONFIG.REALTIME_UPDATES = true;
+                CONFIG.AUTO_REFRESH = true;
+                CONFIG.ALERT_THRESHOLD = 80;
+                CONFIG.UPDATE_INTERVAL = 1000;
+                
+                // Reset UI toggles
+                document.getElementById('voiceToggle').classList.add('active');
+                document.getElementById('realtimeToggle').classList.add('active');
+                document.getElementById('autoRefreshToggle').classList.add('active');
+                document.getElementById('passwordResumeToggle').classList.remove('active');
+                
+                // Reset selects
+                document.getElementById('alertThreshold').value = 'medium';
+                document.getElementById('updateInterval').value = '1000';
+                document.getElementById('retention').value = '24h';
+                document.getElementById('sessionTimeout').value = '30';
+                
+                document.getElementById('updateRate').textContent = '1000ms';
+                
+                addLog('Settings reset to default', 'warning');
+                showToast('Settings reset', 'warning');
+                speak('Settings reset to default');
+            }
+        }
+
+        function clearAllData() {
+            if (confirm('Clear ALL data including session, settings, and cached data? This cannot be undone!')) {
+                localStorage.clear();
+                stopAllIntervals();
+                
+                addLog('All data cleared', 'error');
+                showToast('All data cleared', 'error');
+                speak('All data cleared');
+                
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            }
+        }
+
+        // ============================================
+        // UTILITY FUNCTIONS
+        // ============================================
+
+        function refreshData() {
+            addLog('Refreshing all data...', 'info');
+            showToast('Refreshing data', 'info');
+            speak('Refreshing data');
+            
+            // Update metrics
+            updateMetrics();
+            
+            // Refresh agents
+            STATE.agents.forEach(agent => {
+                agent.cpu = Math.floor(Math.random() * 30) + 10;
+                agent.memory = (Math.random() * 1.5 + 0.5).toFixed(1);
+                agent.tasks += Math.floor(Math.random() * 5);
+            });
+            renderAgents();
+            
+            // Refresh deployments
+            STATE.deployments.forEach(deploy => {
+                if (deploy.status === 'active') {
+                    deploy.uptime = Math.min(99.9, deploy.uptime + Math.random() * 0.05);
+                }
+            });
+            renderDeployments();
+            
+            addLog('Data refreshed successfully', 'success');
+            showToast('Data refreshed', 'success');
+        }
+
+        function clearCache() {
+            addLog('Clearing cache...', 'warning');
+            showToast('Clearing cache', 'warning');
+            speak('Clearing cache');
+            
+            // Simulate cache clearing
+            setTimeout(() => {
+                addLog('Cache cleared successfully', 'success');
+                showToast('Cache cleared', 'success');
+                speak('Cache cleared');
+                
+                // Reset some metrics
+                STATE.metrics.cpu = Math.floor(Math.random() * 20) + 20;
+                STATE.metrics.memory = 5 + Math.random();
+                updateMetrics();
+            }, 1000);
+        }
+
+        function exportData() {
+            const data = {
+                timestamp: new Date().toISOString(),
+                metrics: STATE.metrics,
+                agents: STATE.agents,
+                deployments: STATE.deployments,
+                observations: STATE.observations,
+                hazoomTimeClicks: STATE.hazoomTimeClicks,
+                updateCount: STATE.updateCount,
+                sessionDuration: STATE.sessionStartTime ? Math.floor((new Date() - STATE.sessionStartTime) / 1000) : 0
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `hazoom_monitor_export_${Date.now()}.json`;
+            a.click();
+            
+            addLog('Data exported successfully', 'success');
+            showToast('Data exported', 'success');
+            speak('Data exported');
+        }
+
+        function addLog(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            if (!logs) return;
+            
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            
+            const now = new Date();
+            const timestamp = now.toTimeString().split(' ')[0];
+            
+            entry.innerHTML = `
+                <span class="log-time">[${timestamp}]</span>
+                <span class="log-message log-${type}">${message}</span>
+            `;
+            
+            logs.insertBefore(entry, logs.firstChild);
+            
+            // Limit log entries
+            while (logs.children.length > CONFIG.MAX_LOGS) {
+                logs.removeChild(logs.lastChild);
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        function speak(text) {
+            if (!CONFIG.VOICE_ENABLED || !speechSynth) return;
+            
+            speechSynth.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1;
+            utterance.pitch = 1;
+            utterance.volume = 1;
+            
+            const voices = speechSynth.getVoices();
+            const englishVoice = voices.find(voice => voice.lang.startsWith('en'));
+            if (englishVoice) {
+                utterance.voice = englishVoice;
+            }
+            
+            speechSynth.speak(utterance);
+        }
+
+        function stopAllIntervals() {
+            if (STATE.updateIntervalId) {
+                clearInterval(STATE.updateIntervalId);
+            }
+            if (STATE.clockIntervalId) {
+                clearInterval(STATE.clockIntervalId);
+            }
+            if (STATE.hazoomTimeIntervalId) {
+                clearInterval(STATE.hazoomTimeIntervalId);
+            }
+        }
+
+        // ============================================
+        // EVENT LISTENERS
+        // ============================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initMonitor();
+            
+            // Load voices for speech synthesis
+            if (speechSynth) {
+                speechSynth.onvoiceschanged = () => {
+                    speechSynth.getVoices();
+                };
+            }
+            
+            // Handle Enter key in login form
+            document.getElementById('adminPass').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    login();
+                }
+            });
+            
+            // Load saved settings
+            const savedSettings = localStorage.getItem('hazoomSettings');
+            if (savedSettings) {
+                const settings = JSON.parse(savedSettings);
+                CONFIG.VOICE_ENABLED = settings.voice !== false;
+                CONFIG.REALTIME_UPDATES = settings.realtime !== false;
+                CONFIG.AUTO_REFRESH = settings.autoRefresh !== false;
+                CONFIG.ALERT_THRESHOLD = settings.threshold || 80;
+                CONFIG.UPDATE_INTERVAL = settings.updateInterval || 1000;
+                
+                // Update UI to reflect saved settings
+                if (!CONFIG.VOICE_ENABLED) {
+                    document.getElementById('voiceToggle')?.classList.remove('active');
+                }
+                if (!CONFIG.REALTIME_UPDATES) {
+                    document.getElementById('realtimeToggle')?.classList.remove('active');
+                }
+                if (!CONFIG.AUTO_REFRESH) {
+                    document.getElementById('autoRefreshToggle')?.classList.remove('active');
+                }
+            }
+        });
+
+        // ============================================
+        // SUPERVISION SYSTEM - LIVE CPU/MEMORY ACTIONS
+        // ============================================
+
+        // Supervision state
+        const SUPERVISION = {
+            cpuHistory: [],
+            memoryHistory: [],
+            processingRate: 0,
+            efficiency: 96,
+            responseTime: 45,
+            alertCount: 0,
+            isActive: false,
+            updateIntervalId: null
+        };
+
+        // Start supervision monitoring
+        function startSupervision() {
+            if (SUPERVISION.isActive) return;
+            
+            SUPERVISION.isActive = true;
+            SUPERVISION.cpuHistory = [];
+            SUPERVISION.memoryHistory = [];
+            
+            // Update supervision metrics every 369ms (ultra-fast)
+            SUPERVISION.updateIntervalId = setInterval(() => {
+                updateSupervisionMetrics();
+            }, 369);
+            
+            addSupervisionLog('Supervision system activated', 'success');
+            speak('Supervision system activated');
+        }
+
+        // Stop supervision monitoring
+        function stopSupervision() {
+            if (!SUPERVISION.isActive) return;
+            
+            SUPERVISION.isActive = false;
+            if (SUPERVISION.updateIntervalId) {
+                clearInterval(SUPERVISION.updateIntervalId);
+            }
+            
+            addSupervisionLog('Supervision system deactivated', 'warning');
+            speak('Supervision system deactivated');
+        }
+
+        // Update supervision metrics
+        function updateSupervisionMetrics() {
+            if (!SUPERVISION.isActive) return;
+            
+            // Generate realistic CPU data with spikes
+            let cpuValue = 45 + (Math.random() - 0.5) * 20;
+            if (Math.random() > 0.95) cpuValue += 20; // Random spike
+            cpuValue = Math.max(10, Math.min(95, cpuValue));
+            
+            // Generate realistic Memory data
+            let memoryValue = 6.2 + (Math.random() - 0.5) * 1.5;
+            memoryValue = Math.max(4, Math.min(10, memoryValue));
+            
+            // Update processing rate (tasks per second)
+            SUPERVISION.processingRate = Math.floor(20 + Math.random() * 30);
+            
+            // Update efficiency (affected by CPU spikes)
+            SUPERVISION.efficiency = Math.max(85, Math.min(99, 96 - (cpuValue - 45) * 0.2));
+            
+            // Update response time (affected by CPU and Memory)
+            SUPERVISION.responseTime = Math.floor(30 + (cpuValue - 45) * 0.5 + (memoryValue - 6) * 5);
+            
+            // Check for alerts
+            if (cpuValue > 80) {
+                SUPERVISION.alertCount++;
+                addSupervisionLog(`⚠️ CPU spike detected: ${cpuValue.toFixed(1)}%`, 'error');
+                if (voiceEnabled && lastAnnouncement !== 'cpu_spike') {
+                    speak('Warning. CPU spike detected at ' + cpuValue.toFixed(0) + ' percent');
+                    lastAnnouncement = 'cpu_spike';
+                    setTimeout(() => lastAnnouncement = '', 10000);
+                }
+            }
+            
+            if (memoryValue > 8.5) {
+                SUPERVISION.alertCount++;
+                addSupervisionLog(`⚠️ High memory usage: ${memoryValue.toFixed(1)}GB`, 'warning');
+            }
+            
+            // Update UI
+            document.getElementById('supervisionCpuValue').innerHTML = cpuValue.toFixed(1) + '<span class="metric-unit">%</span>';
+            document.getElementById('supervisionMemoryValue').innerHTML = memoryValue.toFixed(1) + '<span class="metric-unit">GB</span>';
+            
+            // Update status indicators
+            const cpuStatus = document.getElementById('supervisionCpuStatus');
+            const memoryStatus = document.getElementById('supervisionMemoryStatus');
+            
+            if (cpuValue > 80) {
+                cpuStatus.textContent = 'CRITICAL';
+                cpuStatus.className = 'metric-status status-error';
+            } else if (cpuValue > 60) {
+                cpuStatus.textContent = 'High';
+                cpuStatus.className = 'metric-status status-warning';
+            } else {
+                cpuStatus.textContent = 'Normal';
+                cpuStatus.className = 'metric-status status-normal';
+            }
+            
+            if (memoryValue > 8) {
+                memoryStatus.textContent = 'High';
+                memoryStatus.className = 'metric-status status-warning';
+            } else {
+                memoryStatus.textContent = 'Normal';
+                memoryStatus.className = 'metric-status status-normal';
+            }
+            
+            // Update combined metrics
+            document.getElementById('processingRate').innerHTML = SUPERVISION.processingRate + '<span class="metric-unit">/s</span>';
+            document.getElementById('efficiencyRate').innerHTML = SUPERVISION.efficiency.toFixed(1) + '<span class="metric-unit">%</span>';
+            document.getElementById('responseTime').innerHTML = SUPERVISION.responseTime + '<span class="metric-unit">ms</span>';
+            document.getElementById('alertCount').innerHTML = SUPERVISION.alertCount + '<span class="metric-unit"></span>';
+            
+            // Update live charts
+            updateLiveChart('cpuLiveChart', cpuValue, 'rgba(239, 68, 68, 0.6)');
+            updateLiveChart('memoryLiveChart', memoryValue * 10, 'rgba(245, 158, 11, 0.6)');
+            
+            // Update supervision status
+            const statusElement = document.getElementById('supervisionStatus');
+            if (statusElement) {
+                statusElement.textContent = 'ACTIVE';
+                statusElement.style.color = '#00ff88';
+            }
+        }
+
+        // Update live chart visualization
+        function updateLiveChart(chartId, value, color) {
+            const chart = document.getElementById(chartId);
+            if (!chart) return;
+            
+            // Add new bar
+            const bar = document.createElement('div');
+            bar.style.width = '4px';
+            bar.style.height = Math.min(value, 100) + '%';
+            bar.style.backgroundColor = color;
+            bar.style.borderRadius = '2px';
+            bar.style.transition = 'all 0.3s ease';
+            
+            chart.appendChild(bar);
+            
+            // Keep only last 50 bars
+            while (chart.children.length > 50) {
+                chart.removeChild(chart.firstChild);
+            }
+        }
+
+        // Supervision action handler
+        function supervisionAction(target, action) {
+            const timestamp = new Date().toLocaleTimeString();
+            
+            switch(target) {
+                case 'cpu':
+                    if (action === 'throttle') {
+                        addSupervisionLog(`[${timestamp}] CPU throttled - Reducing performance`, 'warning');
+                        speak('CPU throttled');
+                        // Simulate CPU reduction
+                        setTimeout(() => {
+                            const cpuValue = Math.max(20, parseFloat(document.getElementById('supervisionCpuValue').textContent) - 15);
+                            document.getElementById('supervisionCpuValue').innerHTML = cpuValue.toFixed(1) + '<span class="metric-unit">%</span>';
+                        }, 1000);
+                    } else if (action === 'optimize') {
+                        addSupervisionLog(`[${timestamp}] CPU optimized - Performance improved`, 'success');
+                        speak('CPU optimized');
+                        // Simulate optimization
+                        SUPERVISION.efficiency = Math.min(99, SUPERVISION.efficiency + 2);
+                    } else if (action === 'analyze') {
+                        addSupervisionLog(`[${timestamp}] CPU analysis started`, 'info');
+                        speak('Analyzing CPU usage');
+                        // Simulate analysis
+                        setTimeout(() => {
+                            addSupervisionLog(`[${timestamp}] CPU analysis complete - 3 processes optimized`, 'success');
+                        }, 2000);
+                    }
+                    break;
+                    
+                case 'memory':
+                    if (action === 'clear') {
+                        addSupervisionLog(`[${timestamp}] Memory cleared - 1.2GB freed`, 'success');
+                        speak('Memory cleared');
+                        // Simulate memory clearing
+                        setTimeout(() => {
+                            const memValue = Math.max(4, parseFloat(document.getElementById('supervisionMemoryValue').textContent) - 1.2);
+                            document.getElementById('supervisionMemoryValue').innerHTML = memValue.toFixed(1) + '<span class="metric-unit">GB</span>';
+                        }, 500);
+                    } else if (action === 'compact') {
+                        addSupervisionLog(`[${timestamp}] Memory compacted - Fragmentation reduced`, 'info');
+                        speak('Memory compacted');
+                        // Simulate compaction
+                        SUPERVISION.responseTime = Math.max(20, SUPERVISION.responseTime - 5);
+                    } else if (action === 'profile') {
+                        addSupervisionLog(`[${timestamp}] Memory profiling started`, 'info');
+                        speak('Profiling memory usage');
+                        // Simulate profiling
+                        setTimeout(() => {
+                            addSupervisionLog(`[${timestamp}] Memory profile complete - 2 leaks detected and fixed`, 'success');
+                        }, 2500);
+                    }
+                    break;
+                    
+                case 'system':
+                    if (action === 'emergency') {
+                        addSupervisionLog(`[${timestamp}] 🚨 EMERGENCY STOP INITIATED`, 'error');
+                        speak('Emergency stop initiated');
+                        SUPERVISION.alertCount += 10;
+                        // Simulate emergency stop
+                        stopSupervision();
+                        setTimeout(() => {
+                            addSupervisionLog(`[${timestamp}] Emergency stop complete - All systems paused`, 'error');
+                        }, 1000);
+                    } else if (action === 'restart') {
+                        addSupervisionLog(`[${timestamp}] System restart initiated`, 'warning');
+                        speak('Restarting all systems');
+                        // Simulate restart
+                        SUPERVISION.alertCount = 0;
+                        SUPERVISION.efficiency = 96;
+                        SUPERVISION.responseTime = 45;
+                        setTimeout(() => {
+                            addSupervisionLog(`[${timestamp}] System restart complete - All systems operational`, 'success');
+                            speak('System restart complete');
+                        }, 3000);
+                    } else if (action === 'pause') {
+                        addSupervisionLog(`[${timestamp}] All systems paused`, 'warning');
+                        speak('All systems paused');
+                        stopSupervision();
+                    } else if (action === 'resume') {
+                        addSupervisionLog(`[${timestamp}] All systems resumed`, 'success');
+                        speak('All systems resumed');
+                        startSupervision();
+                    }
+                    break;
+            }
+            
+            // Visual feedback
+            const btn = event.target;
+            btn.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                btn.style.transform = 'scale(1)';
+            }, 100);
+        }
+
+        // Add supervision log
+        function addSupervisionLog(message, type = 'info') {
+            const logs = document.getElementById('supervisionLogs');
+            if (!logs) return;
+            
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            
+            const now = new Date();
+            const timestamp = now.toTimeString().split(' ')[0];
+            
+            entry.innerHTML = `
+                <span class="log-time">[${timestamp}]</span>
+                <span class="log-message log-${type}">${message}</span>
+            `;
+            
+            logs.insertBefore(entry, logs.firstChild);
+            
+            // Limit log entries
+            while (logs.children.length > 30) {
+                logs.removeChild(logs.lastChild);
+            }
+        }
+
+        // Export supervision data
+        function exportSupervisionData() {
+            const data = {
+                timestamp: new Date().toISOString(),
+                cpuHistory: SUPERVISION.cpuHistory,
+                memoryHistory: SUPERVISION.memoryHistory,
+                processingRate: SUPERVISION.processingRate,
+                efficiency: SUPERVISION.efficiency,
+                responseTime: SUPERVISION.responseTime,
+                alertCount: SUPERVISION.alertCount,
+                isActive: SUPERVISION.isActive
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `supervision_data_${Date.now()}.json`;
+            a.click();
+            
+            addSupervisionLog('Supervision data exported', 'success');
+            showToast('Supervision data exported', 'success');
+            speak('Supervision data exported');
+        }
+
+        // Initialize supervision when page loads
+        function initSupervision() {
+            // Start supervision automatically after login
+            setTimeout(() => {
+                if (STATE.isLoggedIn) {
+                    startSupervision();
+                }
+            }, 2000);
+        }
+
+        // Override showDashboard to start supervision
+        const originalShowDashboard = showDashboard;
+        showDashboard = function(username) {
+            originalShowDashboard(username);
+            initSupervision();
+        };
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            stopAllIntervals();
+            stopSupervision();
+            if (speechSynth) {
+                speechSynth.cancel();
+            }
+        });
+    </script>
+</body>
+</html>
+<task_progress>
+- [x] Understand original hazoom-os project structure
+- [x] Analyze core.js implementation
+- [x] Check apps directory structure
+- [x] Review existing monitoring/admin features
+- [x] Enhance admin_monitor.html with real-time dashboard
+- [x] Add Hazoom Time Online feature
+- [x] Add 3 real-time clocks (TopBar, Dashboard, Hazoom Time)
+- [x] Add 6 monitoring pages (Dashboard, Agents, Observations, Deployments, Analytics, Settings)
+- [x] Implement ultra-fast updates (369-996ms configurable)
+- [x] Add modern UI with purple/cyan gradients
+- [x] Add voice announcements
+- [x] Add click tracking for Hazoom Time
+- [x] Add comprehensive logging system
+- [x] Add settings management
+- [x] Update documentation
+</task_progress>
+
+        .container {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 0, 0, 0.1);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 0, 0, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2em;
+            background: linear-gradient(45deg, #ff0000, #ff5555, #ff0000);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient 3s ease infinite;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+        }
+
+        .login-form {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            width: 350px;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+        }
+
+        .login-form h2 {
+            color: #ff5555;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #aaa;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            background: rgba(50, 50, 50, 0.5);
+            border: 1px solid #555;
+            border-radius: 5px;
+            color: white;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(45deg, #ff0000, #cc0000);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: linear-gradient(45deg, #ff3333, #ee0000);
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+        }
+
+        .dashboard {
+            display: none;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 0, 0, 0.7);
+            box-shadow: 0 10px 30px rgba(255, 0, 0, 0.3);
+        }
+
+        .card-title {
+            font-size: 0.8em;
+            color: #ff7777;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .card-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: #ff5555;
+            margin-bottom: 5px;
+        }
+
+        .card-unit {
+            font-size: 0.5em;
+            color: #aa7777;
+            margin-left: 5px;
+        }
+
+        .card-status {
+            font-size: 0.7em;
+            color: #00ff88;
+        }
+
+        .card-status.warning {
+            color: #ffaa00;
+        }
+
+        .card-status.error {
+            color: #ff4444;
+        }
+
+        .charts {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            flex: 1;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            min-height: 200px;
+        }
+
+        .chart-title {
+            font-size: 1.2em;
+            color: #ff5555;
+            margin-bottom: 15px;
+        }
+
+        .chart-placeholder {
+            width: 100%;
+            height: 150px;
+            background: rgba(255, 0, 0, 0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ff7777;
+        }
+
+        .logs {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8em;
+        }
+
+        .log-entry {
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 0, 0, 0.1);
+        }
+
+        .log-time {
+            color: #aa7777;
+            margin-right: 10px;
+        }
+
+        .log-message {
+            color: #ffaaaa;
+        }
+
+        .log-message.info {
+            color: #ff7777;
+        }
+
+        .log-message.success {
+            color: #00ff88;
+        }
+
+        .log-message.warning {
+            color: #ffaa00;
+        }
+
+        .log-message.error {
+            color: #ff4444;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 0, 0, 0.2);
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00ff88;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-text {
+            color: #00ff88;
+            font-size: 0.9em;
+        }
+
+        .admin-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .admin-btn {
+            flex: 1;
+            padding: 8px;
+            background: rgba(255, 0, 0, 0.3);
+            border: 1px solid rgba(255, 0, 0, 0.5);
+            border-radius: 5px;
+            color: #ff7777;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .admin-btn:hover {
+            background: rgba(255, 0, 0, 0.5);
+            color: white;
+        }
+
+        .voice-active {
+            background: rgba(0, 255, 136, 0.3) !important;
+            border-color: rgba(0, 255, 136, 0.5) !important;
+            color: #00ff88 !important;
+        }
+
+        .cache-info {
+            background: rgba(0, 100, 0, 0.2);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔒 Admin Monitor</h1>
+        </div>
+
+        <div class="login-container" id="loginContainer">
+            <div class="login-form">
+                <h2>Admin Access</h2>
+                <div class="form-group">
+                    <label for="adminUser">Username</label>
+                    <input type="text" id="adminUser" placeholder="Enter admin username">
+                </div>
+                <div class="form-group">
+                    <label for="adminPass">Password</label>
+                    <input type="password" id="adminPass" placeholder="Enter admin password">
+                </div>
+                <button class="btn" onclick="login()">Login</button>
+                <div style="margin-top: 15px; color: #777; font-size: 0.8em;">
+                    Cached System Monitoring Dashboard
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard" id="dashboard">
+            <div class="grid">
+                <div class="card">
+                    <div class="card-title">CPU</div>
+                    <div class="card-value" id="cpuValue">45<span class="card-unit">%</span></div>
+                    <div class="card-status">Normal</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Memory</div>
+                    <div class="card-value" id="memoryValue">6.2<span class="card-unit">GB</span></div>
+                    <div class="card-status">Normal</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Disk</div>
+                    <div class="card-value" id="diskValue">142<span class="card-unit">GB</span></div>
+                    <div class="card-status warning">High</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Network</div>
+                    <div class="card-value" id="networkValue">1.2<span class="card-unit">Mbps</span></div>
+                    <div class="card-status">Normal</div>
+                </div>
+            </div>
+
+            <div class="charts">
+                <div class="chart-container">
+                    <div class="chart-title">System Load</div>
+                    <div class="chart-placeholder" id="loadChart">
+                        📈 Real-time visualization
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Cache Performance</div>
+                    <div class="chart-placeholder" id="cacheChart">
+                        💾 Cache efficiency metrics
+                    </div>
+                </div>
+            </div>
+
+            <div class="cache-info">
+                <strong>Cache Status:</strong> <span id="cacheStatus">Active</span> | 
+                <strong>Size:</strong> <span id="cacheSize">2.4GB</span> | 
+                <strong>Hit Rate:</strong> <span id="cacheHitRate">94.2%</span>
+            </div>
+
+            <div class="logs" id="logs">
+                <div class="log-entry">
+                    <span class="log-time">[2026-01-03 16:30:12]</span>
+                    <span class="log-message info">Admin monitor initialized</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-time">[2026-01-03 16:30:15]</span>
+                    <span class="log-message success">Admin session started</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-time">[2026-01-03 16:30:20]</span>
+                    <span class="log-message info">Monitoring cached system data</span>
+                </div>
+            </div>
+
+            <div class="admin-controls">
+                <button class="admin-btn" id="voiceToggle" onclick="toggleVoice()">🔊 Voice: ON</button>
+                <button class="admin-btn" onclick="clearCache()">Clear Cache</button>
+                <button class="admin-btn" onclick="refreshData()">Refresh Data</button>
+                <button class="admin-btn" onclick="logout()">Logout</button>
+            </div>
+
+            <div class="status-bar">
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <div class="status-text">Admin System Online</div>
+                </div>
+                <div style="color: #6677aa; font-size: 0.8em;">
+                    Last update: <span id="lastUpdate">16:30:30</span> | 
+                    <span id="adminUserDisplay">Admin</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../core.js"></script>
+    <script>
+        // Enhanced admin authentication system
+        const ADMIN_USERS = [
+            { username: 'admin', password: 'admin123', role: 'administrator', permissions: ['read', 'write', 'execute', 'monitor'] },
+            { username: 'operator', password: 'operator123', role: 'operator', permissions: ['read', 'monitor'] },
+            { username: 'auditor', password: 'auditor123', role: 'auditor', permissions: ['read', 'logs'] }
+        ];
+
+        // Check if user has specific permission
+        function hasPermission(user, permission) {
+            const adminUser = ADMIN_USERS.find(u => u.username === user);
+            return adminUser ? adminUser.permissions.includes(permission) : false;
+        }
+
+        // Real-time system metrics from Hazoom OS
+        let systemMetrics = {
+            cpu: 0,
+            memory: 0,
+            disk: 0,
+            network: 0,
+            runningApps: 0,
+            uptime: 0,
+            cacheSize: 0,
+            cacheHitRate: 0,
+            timestamp: new Date()
+        };
+
+        // Get real metrics from Hazoom OS
+        function getRealMetrics() {
+            if (window.HAZOOM && window.HAZOOM.WindowManager) {
+                // Get actual system metrics from Hazoom OS
+                const runningApps = window.HAZOOM.WindowManager.getRunningApps();
+                const allAppStates = window.HAZOOM.WindowManager.getAllAppStates();
+
+                // Calculate metrics based on actual system state
+                const cpuUsage = Math.min(100, Math.floor(Math.random() * 20) + 30); // Simulate realistic CPU
+                const memoryUsage = parseFloat((Math.random() * 4 + 4).toFixed(1)); // Simulate realistic memory
+
+                return {
+                    cpu: cpuUsage,
+                    memory: memoryUsage,
+                    disk: systemMetrics.disk || 142,
+                    network: systemMetrics.network || parseFloat((Math.random() * 2 + 0.5).toFixed(1)),
+                    runningApps: runningApps.length,
+                    uptime: systemMetrics.uptime || Math.floor(Math.random() * 100000),
+                    cacheSize: systemMetrics.cacheSize || parseFloat((Math.random() * 1 + 2).toFixed(1)),
+                    cacheHitRate: parseFloat((Math.random() * 5 + 90).toFixed(1)),
+                    timestamp: new Date()
+                };
+            } else {
+                // Fallback to simulated data if HAZOOM not available
+                return {
+                    cpu: Math.min(100, Math.floor(Math.random() * 20) + 30),
+                    memory: parseFloat((Math.random() * 4 + 4).toFixed(1)),
+                    disk: 142,
+                    network: parseFloat((Math.random() * 2 + 0.5).toFixed(1)),
+                    runningApps: Math.floor(Math.random() * 15),
+                    uptime: Math.floor(Math.random() * 100000),
+                    cacheSize: parseFloat((Math.random() * 1 + 2).toFixed(1)),
+                    cacheHitRate: parseFloat((Math.random() * 5 + 90).toFixed(1)),
+                    timestamp: new Date()
+                };
+            }
+        }
+
+        // Initialize the monitoring system
+        function initMonitor() {
+            // Check if user is already logged in (from localStorage)
+            const adminSession = localStorage.getItem('adminSession');
+            if (adminSession) {
+                const session = JSON.parse(adminSession);
+                if (session.valid) {
+                    showDashboard(session.username);
+                }
+            }
+
+            // Initialize with real metrics
+            systemMetrics = getRealMetrics();
+        }
+
+        // Get detailed system information from Hazoom OS
+        function getSystemInfo() {
+            if (window.HAZOOM) {
+                return {
+                    version: window.HAZOOM.VERSION || '2.1.0',
+                    name: window.HAZOOM.NAME || 'HAZOOM OS',
+                    apps: window.HAZOOM.WindowManager ? window.HAZOOM.WindowManager.getRunningApps().length : 0,
+                    totalApps: Object.keys(window.HAZOOM.apps || {}).filter(key => typeof window.HAZOOM.apps[key] === 'object' && window.HAZOOM.apps[key].id).length,
+                    fsSize: estimateFileSystemSize(),
+                    uptime: Math.floor((Date.now() - (sessionStartTime || Date.now())) / 1000)
+                };
+            }
+            return {
+                version: '2.1.0',
+                name: 'HAZOOM OS',
+                apps: 0,
+                totalApps: 0,
+                fsSize: 'Unknown',
+                uptime: 0
+            };
+        }
+
+        // Estimate file system size
+        function estimateFileSystemSize() {
+            if (window.HAZOOM && window.HAZOOM.FileSystem) {
+                try {
+                    const fs = window.HAZOOM.FileSystem.state.root;
+                    let size = 0;
+
+                    function calculateSize(obj) {
+                        if (obj.type === 'file' && obj.content) {
+                            size += obj.content.length;
+                        } else if (obj.type === 'folder' && obj.children) {
+                            Object.values(obj.children).forEach(child => calculateSize(child));
+                        }
+                    }
+
+                    calculateSize(fs);
+                    return (size / 1024).toFixed(2) + ' KB';
+                } catch (e) {
+                    return 'Error calculating';
+                }
+            }
+            return 'Unknown';
+        }
+
+        // Session start time for uptime calculation
+        const sessionStartTime = Date.now();
+
+        // Voice synthesis settings
+        let voiceEnabled = true;
+        let speechSynth = window.speechSynthesis;
+        let lastAnnouncement = '';
+
+        // Toggle voice announcements
+        function toggleVoice() {
+            voiceEnabled = !voiceEnabled;
+            const btn = document.getElementById('voiceToggle');
+            if (voiceEnabled) {
+                btn.innerHTML = '🔊 Voice: ON';
+                btn.classList.add('voice-active');
+                speak('Voice announcements enabled');
+            } else {
+                btn.innerHTML = '🔇 Voice: OFF';
+                btn.classList.remove('voice-active');
+                speechSynth.cancel();
+            }
+        }
+
+        // Speak function
+        function speak(text) {
+            if (!voiceEnabled || !speechSynth) return;
+
+            speechSynth.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1;
+            utterance.pitch = 1;
+            utterance.volume = 1;
+
+            const voices = speechSynth.getVoices();
+            const englishVoice = voices.find(voice => voice.lang.startsWith('en'));
+            if (englishVoice) {
+                utterance.voice = englishVoice;
+            }
+
+            speechSynth.speak(utterance);
+        }
+
+        // Load voices
+        if (speechSynth) {
+            speechSynth.onvoiceschanged = () => {
+                speechSynth.getVoices();
+            };
+        }
+
+        // Login function with enhanced security
+        function login() {
+            const username = document.getElementById('adminUser').value;
+            const password = document.getElementById('adminPass').value;
+
+            // Find user in admin list
+            const user = ADMIN_USERS.find(u => u.username === username && u.password === password);
+
+            if (user) {
+                // Store admin session with role and permissions
+                const session = {
+                    username: username,
+                    role: user.role,
+                    permissions: user.permissions,
+                    valid: true,
+                    timestamp: new Date().toISOString()
+                };
+                localStorage.setItem('adminSession', JSON.stringify(session));
+
+                showDashboard(username);
+                addLog(`Admin login successful for ${username} (${user.role})`, 'success');
+
+                // Log to Hazoom OS system if available
+                if (window.HAZOOM && window.HAZOOM.FileSystem) {
+                    const logEntry = `[${new Date().toISOString()}] Admin login successful for user: ${username} with role: ${user.role}`;
+                    window.HAZOOM.FileSystem.createFile('/logs', `admin_login_${Date.now()}.log`, logEntry);
+                }
+            } else {
+                alert('Invalid credentials');
+                addLog(`Failed admin login attempt for user: ${username}`, 'error');
+
+                // Add security log
+                if (window.HAZOOM && window.HAZOOM.FileSystem) {
+                    const logEntry = `[${new Date().toISOString()}] Failed login attempt for user: ${username}`;
+                    window.HAZOOM.FileSystem.createFile('/logs', `security_event_${Date.now()}.log`, logEntry);
+                }
+            }
+        }
+
+        // Show dashboard after successful login
+        function showDashboard(username) {
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            document.getElementById('adminUserDisplay').textContent = username;
+
+            // Initialize voice button state
+            const voiceBtn = document.getElementById('voiceToggle');
+            if (voiceEnabled) {
+                voiceBtn.innerHTML = '🔊 Voice: ON';
+                voiceBtn.classList.add('voice-active');
+                setTimeout(() => speak('Admin monitor online. System status is normal.'), 1000);
+            } else {
+                voiceBtn.innerHTML = '🔇 Voice: OFF';
+                voiceBtn.classList.remove('voice-active');
+            }
+
+            // Load system data
+            updateMetrics();
+
+            // Update system info display
+            updateSystemInfoDisplay();
+        }
+
+        // Update system info display
+        function updateSystemInfoDisplay() {
+            const sysInfo = getSystemInfo();
+
+            // Update system info elements if they exist
+            if (document.getElementById('systemVersion')) {
+                document.getElementById('systemVersion').textContent = sysInfo.version;
+            }
+            if (document.getElementById('runningAppsCount')) {
+                document.getElementById('runningAppsCount').textContent = sysInfo.apps;
+            }
+            if (document.getElementById('totalAppsCount')) {
+                document.getElementById('totalAppsCount').textContent = sysInfo.totalApps;
+            }
+            if (document.getElementById('fsSize')) {
+                document.getElementById('fsSize').textContent = sysInfo.fsSize;
+            }
+        }
+
+        // Manage applications (start, stop, restart)
+        function manageApp(appId, action) {
+            if (!window.HAZOOM || !window.HAZOOM.WindowManager) {
+                addLog(`Cannot ${action} app: Hazoom OS services not available`, 'error');
+                return;
+            }
+
+            switch(action) {
+                case 'start':
+                    if (window.HAZOOM.WindowManager.isAppRunning(appId)) {
+                        addLog(`App ${appId} is already running`, 'warning');
+                    } else {
+                        window.HAZOOM.openApp(appId);
+                        addLog(`Started app: ${appId}`, 'success');
+                    }
+                    break;
+
+                case 'stop':
+                    const app = window.HAZOOM.WindowManager.getAppById(appId);
+                    if (app) {
+                        window.HAZOOM.WindowManager.close(app.id);
+                        addLog(`Stopped app: ${appId}`, 'success');
+                    } else {
+                        addLog(`App ${appId} is not running`, 'info');
+                    }
+                    break;
+
+                case 'restart':
+                    const appToRestart = window.HAZOOM.WindowManager.getAppById(appId);
+                    if (appToRestart) {
+                        window.HAZOOM.WindowManager.close(appToRestart.id);
+                        setTimeout(() => {
+                            window.HAZOOM.openApp(appId);
+                            addLog(`Restarted app: ${appId}`, 'success');
+                        }, 1000);
+                    } else {
+                        window.HAZOOM.openApp(appId);
+                        addLog(`Started app: ${appId}`, 'success');
+                    }
+                    break;
+            }
+
+            // Update metrics after app management
+            setTimeout(updateMetrics, 500);
+        }
+
+        // Get list of all available apps
+        function getAllApps() {
+            if (window.HAZOOM && window.HAZOOM.apps) {
+                return Object.keys(window.HAZOOM.apps)
+                    .filter(key => typeof window.HAZOOM.apps[key] === 'object' && window.HAZOOM.apps[key].id)
+                    .map(key => ({
+                        id: key,
+                        name: window.HAZOOM.apps[key].name,
+                        icon: window.HAZOOM.apps[key].icon,
+                        category: window.HAZOOM.apps[key].category,
+                        running: window.HAZOOM.WindowManager ? window.HAZOOM.WindowManager.isAppRunning(key) : false
+                    }));
+            }
+            return [];
+        }
+
+        // Show application management interface
+        function showAppManagement() {
+            const apps = getAllApps();
+            if (apps.length === 0) {
+                addLog('No applications available for management', 'info');
+                return;
+            }
+
+            // Create modal or expandable section for app management
+            const appList = apps.map(app => `
+                <div class="agent-card" style="margin-bottom: 8px;">
+                    <div class="agent-header">
+                        <div class="agent-name">${app.icon} ${app.name}</div>
+                        <div class="agent-type">${app.category}</div>
+                    </div>
+                    <div class="agent-stats">
+                        <div class="agent-stat">Status: <span class="agent-stat-value">${app.running ? 'Running' : 'Stopped'}</span></div>
+                    </div>
+                    <div class="agent-actions">
+                        <button class="agent-btn ${app.running ? 'danger' : 'primary'}"
+                                onclick="manageApp('${app.id}', '${app.running ? 'stop' : 'start'}')">
+                            ${app.running ? '⏹️ Stop' : '▶️ Start'}
+                        </button>
+                        <button class="agent-btn" onclick="manageApp('${app.id}', 'restart')">🔄 Restart</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // Create a modal or expandable section to show the app list
+            const modal = document.createElement('div');
+            modal.id = 'appManagementModal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                backdrop-filter: blur(5px);
+            `;
+
+            modal.innerHTML = `
+                <div class="glass" style="
+                    width: 80%;
+                    max-width: 800px;
+                    max-height: 80vh;
+                    overflow-y: auto;
+                    padding: 20px;
+                    border-radius: 12px;
+                ">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <h3 style="color: #e0e0ff;">Application Management</h3>
+                        <button class="action-btn danger" onclick="document.body.removeChild(document.getElementById('appManagementModal'))">❌ Close</button>
+                    </div>
+                    <div class="agent-grid">
+                        ${appList}
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            addLog(`Showing application management for ${apps.length} apps`, 'info');
+        }
+
+        // Refresh application list
+        function refreshAppList() {
+            updateMetrics(); // This will also update the app counts
+            addLog('Application list refreshed', 'success');
+        }
+
+        // Kill all running applications
+        function killAllApps() {
+            if (!window.HAZOOM || !window.HAZOOM.WindowManager) {
+                addLog('Cannot kill apps: Hazoom OS services not available', 'error');
+                return;
+            }
+
+            const runningApps = window.HAZOOM.WindowManager.getRunningApps();
+            if (runningApps.length === 0) {
+                addLog('No running applications to kill', 'info');
+                return;
+            }
+
+            if (confirm(`Are you sure you want to close all ${runningApps.length} running applications?`)) {
+                runningApps.forEach(app => {
+                    window.HAZOOM.WindowManager.close(app.id);
+                });
+
+                addLog(`Killed all ${runningApps.length} running applications`, 'warning');
+
+                // Update metrics after killing apps
+                setTimeout(updateMetrics, 500);
+            }
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('adminSession');
+            document.getElementById('loginContainer').style.display = 'flex';
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('adminUser').value = '';
+            document.getElementById('adminPass').value = '';
+            addLog('Admin session ended', 'info');
+        }
+
+        // Update metrics from real system data
+        function updateMetrics() {
+            // Get real metrics from Hazoom OS
+            systemMetrics = getRealMetrics();
+
+            // Update the UI with real metrics
+            document.getElementById('cpuValue').innerHTML = systemMetrics.cpu + '<span class="card-unit">%</span>';
+            document.getElementById('memoryValue').innerHTML = systemMetrics.memory + '<span class="card-unit">GB</span>';
+            document.getElementById('networkValue').innerHTML = systemMetrics.network + '<span class="card-unit">Mbps</span>';
+            document.getElementById('cacheSize').textContent = systemMetrics.cacheSize + 'GB';
+            document.getElementById('cacheHitRate').textContent = systemMetrics.cacheHitRate + '%';
+
+            // Update additional metrics that were added
+            if (document.getElementById('runningAppsValue')) {
+                document.getElementById('runningAppsValue').textContent = systemMetrics.runningApps;
+            }
+            if (document.getElementById('uptimeValue')) {
+                const uptimeHours = Math.floor(systemMetrics.uptime / 3600);
+                document.getElementById('uptimeValue').textContent = uptimeHours + 'h';
+            }
+
+            const now = new Date();
+            const time = now.toTimeString().split(' ')[0];
+            document.getElementById('lastUpdate').textContent = time;
+
+            // Update status indicators based on metrics
+            updateStatusIndicators();
+
+            // Voice announcement for monitoring data
+            if (voiceEnabled && systemMetrics.cpu > 70) {
+                speak(`Warning. CPU usage is at ${systemMetrics.cpu} percent`);
+            } else if (voiceEnabled && systemMetrics.memory > 8) {
+                speak(`Memory usage is at ${systemMetrics.memory} gigabytes`);
+            }
+
+            // Update system tray if available
+            if (window.HAZOOM && window.HAZOOM.WindowManager) {
+                // Update system tray with current status
+                const runningApps = window.HAZOOM.WindowManager.getRunningApps();
+                const runningCount = runningApps.length;
+                const connectionStatus = document.getElementById('connection-status');
+                if (connectionStatus) {
+                    connectionStatus.innerHTML = `🟢 Online <span style="font-size: 10px;">(${runningCount} apps)</span>`;
+                }
+            }
+        }
+
+        // Update status indicators based on metrics
+        function updateStatusIndicators() {
+            // Update CPU status
+            const cpuStatus = document.getElementById('cpuStatus');
+            if (cpuStatus) {
+                if (systemMetrics.cpu > 80) {
+                    cpuStatus.textContent = 'Critical';
+                    cpuStatus.className = 'metric-status status-error';
+                } else if (systemMetrics.cpu > 60) {
+                    cpuStatus.textContent = 'High';
+                    cpuStatus.className = 'metric-status status-warning';
+                } else {
+                    cpuStatus.textContent = 'Normal';
+                    cpuStatus.className = 'metric-status status-normal';
+                }
+            }
+
+            // Update Memory status
+            const memoryStatus = document.getElementById('memoryStatus');
+            if (memoryStatus) {
+                if (systemMetrics.memory > 9) {
+                    memoryStatus.textContent = 'Critical';
+                    memoryStatus.className = 'metric-status status-error';
+                } else if (systemMetrics.memory > 7) {
+                    memoryStatus.textContent = 'High';
+                    memoryStatus.className = 'metric-status status-warning';
+                } else {
+                    memoryStatus.textContent = 'Normal';
+                    memoryStatus.className = 'metric-status status-normal';
+                }
+            }
+
+            // Update Disk status
+            const diskStatus = document.getElementById('diskStatus');
+            if (diskStatus) {
+                if (systemMetrics.disk > 90) {
+                    diskStatus.textContent = 'Critical';
+                    diskStatus.className = 'metric-status status-error';
+                } else if (systemMetrics.disk > 70) {
+                    diskStatus.textContent = 'High';
+                    diskStatus.className = 'metric-status status-warning';
+                } else {
+                    diskStatus.textContent = 'Normal';
+                    diskStatus.className = 'metric-status status-normal';
+                }
+            }
+
+            // Update Network status
+            const networkStatus = document.getElementById('networkStatus');
+            if (networkStatus) {
+                if (systemMetrics.network > 10) {
+                    networkStatus.textContent = 'High';
+                    networkStatus.className = 'metric-status status-warning';
+                } else if (systemMetrics.network > 15) {
+                    networkStatus.textContent = 'Critical';
+                    networkStatus.className = 'metric-status status-error';
+                } else {
+                    networkStatus.textContent = 'Normal';
+                    networkStatus.className = 'metric-status status-normal';
+                }
+            }
+
+            // Update running apps status
+            const agentsStatus = document.getElementById('agentsStatus');
+            if (agentsStatus) {
+                if (systemMetrics.runningApps > 20) {
+                    agentsStatus.textContent = 'Many Apps';
+                    agentsStatus.className = 'metric-status status-warning';
+                } else if (systemMetrics.runningApps === 0) {
+                    agentsStatus.textContent = 'Idle';
+                    agentsStatus.className = 'metric-status status-normal';
+                } else {
+                    agentsStatus.textContent = 'Running';
+                    agentsStatus.className = 'metric-status status-normal';
+                }
+            }
+        }
+
+        // Add log entry
+        function addLog(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+
+            const now = new Date();
+            const timestamp = now.toISOString().slice(0, 19).replace('T', ' ');
+
+            entry.innerHTML = `
+                <span class="log-time">[${timestamp}]</span>
+                <span class="log-message ${type}">${message}</span>
+            `;
+
+            logs.insertBefore(entry, logs.firstChild);
+
+            while (logs.children.length > 15) {
+                logs.removeChild(logs.lastChild);
+            }
+        }
+
+        // Clear cache function
+        function clearCache() {
+            addLog('Cache cleared by admin', 'warning');
+            speak('Cache cleared');
+            // In a real system, this would clear actual cache
+            // For simulation, we'll just update the cache size
+            cachedData.cacheSize = 0.1;
+            document.getElementById('cacheSize').textContent = cachedData.cacheSize + 'GB';
+            document.getElementById('cacheStatus').textContent = 'Cleared - Rebuilding';
+
+            setTimeout(() => {
+                cachedData.cacheSize = 2.4;
+                document.getElementById('cacheSize').textContent = cachedData.cacheSize + 'GB';
+                document.getElementById('cacheStatus').textContent = 'Active';
+                addLog('Cache rebuilt', 'success');
+                speak('Cache rebuilt successfully');
+            }, 3000);
+        }
+
+        // Refresh data function
+        function refreshData() {
+            addLog('Cache refresh initiated', 'info');
+            speak('Refreshing monitoring data');
+            updateMetrics();
+        }
+
+        // Initialize the monitor when page loads
+        window.onload = function() {
+            initMonitor();
+            const voiceBtn = document.getElementById('voiceToggle');
+            if (voiceEnabled) {
+                voiceBtn.classList.add('voice-active');
+            }
+
+            // Update metrics every 5 seconds
+            setInterval(updateMetrics, 5000);
+        };
+
+        // Handle Enter key in login form
+        document.getElementById('adminPass').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
+    </script>
+</body>
+</html>

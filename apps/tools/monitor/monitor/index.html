@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sky Radar Monitor</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<canvas id="glBg"></canvas>
+<div id="ui">
+  <div class="header">SKY RADAR — Monitoring Dashboard</div>
+  <div class="controls">
+    <button class="btn" id="btnStart">Start</button>
+    <button class="btn" id="btnPause">Pause</button>
+    <button class="btn" id="btnReset">Reset</button>
+    <button class="btn" id="btnExportJSON">Export JSON</button>
+    <button class="btn" id="btnExportCSV">Export CSV</button>
+  </div>
+  <div class="radar-wrap">
+    <canvas id="radarCanvas"></canvas>
+  </div>
+  <div id="metrics" class="grid"></div>
+  <div id="toast"></div>
+</div>
+<script src="src/monitor.js"></script>
+</body>
+</html>

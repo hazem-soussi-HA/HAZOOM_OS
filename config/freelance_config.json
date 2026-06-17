@@ -1,0 +1,20 @@
+{
+  "upwork": {
+    "profile_id": "your_upwork_profile_id",
+    "api_key": "your_upwork_api_key",
+    "api_secret": "your_upwork_api_secret",
+    "webhook_url": "https://your-domain.com/webhook/upwork",
+    "auto_bid": true,
+    "max_hourly_rate": 100.0,
+    "min_hourly_rate": 25.0
+  },
+  "fiverr": {
+    "profile_id": "your_fiverr_profile_id", 
+    "api_key": "your_fiverr_api_key",
+    "api_secret": "your_fiverr_api_secret",
+    "webhook_url": "https://your-domain.com/webhook/fiverr",
+    "auto_bid": true,
+    "max_hourly_rate": 80.0,
+    "min_hourly_rate": 20.0
+  }
+}

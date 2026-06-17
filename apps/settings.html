@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Hazoom OS — Settings</title>
+<style>
+:root {
+  --bg: #0b1120; --bg2: #111827; --bg3: #1e293b; --bg4: #334155;
+  --text: #e2e8f0; --text2: #94a3b8; --text3: #64748b;
+  --border: #1e3a5f; --primary: #3b82f6; --accent: #06b6d4;
+  --success: #22c55e; --warn: #f59e0b; --err: #ef4444;
+  --radius: 12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;overflow:hidden;}
+
+/* Sidebar */
+.sidebar{width:240px;min-width:240px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;}
+.sidebar-header{padding:20px;border-bottom:1px solid var(--border);}
+.sidebar-header h1{font-size:1.1rem;background:linear-gradient(135deg,var(--primary),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.sidebar-header p{font-size:.75rem;color:var(--text3);margin-top:4px;}
+.sidebar-search{padding:12px;}
+.sidebar-search input{width:100%;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.85rem;outline:none;}
+.sidebar-search input:focus{border-color:var(--primary);}
+.sidebar-nav{flex:1;padding:8px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:background .15s;font-size:.9rem;color:var(--text2);}
+.nav-item:hover{background:var(--bg3);color:var(--text);}
+.nav-item.active{background:rgba(59,130,246,.15);color:var(--primary);}
+.nav-icon{font-size:1.1rem;width:24px;text-align:center;}
+.nav-label{flex:1;}
+.nav-badge{font-size:.65rem;background:var(--bg4);color:var(--text2);padding:1px 6px;border-radius:10px;}
+
+/* Content */
+.content{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.content-header{padding:20px 28px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.content-header h2{font-size:1.2rem;font-weight:600;}
+.header-actions{display:flex;gap:8px;}
+.btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border);cursor:pointer;font-size:.8rem;transition:all .15s;}
+.btn-primary{background:var(--primary);border-color:var(--primary);color:#fff;}
+.btn-primary:hover{background:#2563eb;}
+.btn-ghost{background:var(--bg3);color:var(--text2);}
+.btn-ghost:hover{background:var(--bg4);color:var(--text);}
+.btn-danger{background:rgba(239,68,68,.15);border-color:var(--err);color:var(--err);}
+.btn-danger:hover{background:var(--err);color:#fff;}
+
+.content-body{flex:1;overflow-y:auto;padding:24px 28px;}
+
+/* Setting groups */
+.setting-group{margin-bottom:28px;}
+.setting-group h3{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.04);}
+.setting-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.03);}
+.setting-row:last-child{border:none;}
+.setting-info{flex:1;}
+.setting-label{font-size:.9rem;font-weight:500;}
+.setting-desc{font-size:.78rem;color:var(--text3);margin-top:2px;}
+
+/* Toggle */
+.toggle{width:44px;height:24px;background:var(--bg4);border-radius:12px;cursor:pointer;transition:background .2s;position:relative;flex-shrink:0;}
+.toggle.on{background:var(--primary);}
+.toggle::after{content:'';position:absolute;width:18px;height:18px;background:#fff;border-radius:50%;top:3px;left:3px;transition:transform .2s;}
+.toggle.on::after{transform:translateX(20px);}
+
+/* Select */
+.select{padding:6px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.85rem;outline:none;cursor:pointer;}
+.select:focus{border-color:var(--primary);}
+
+/* Slider */
+.slider{width:140px;-webkit-appearance:none;height:4px;background:var(--bg4);border-radius:4px;outline:none;}
+.slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:var(--primary);border-radius:50%;cursor:pointer;}
+
+/* Color picker */
+.color-wrap{display:flex;gap:6px;align-items:center;}
+.color-dot{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .15s;}
+.color-dot:hover{transform:scale(1.15);}
+.color-dot.active{border-color:#fff;}
+.color-custom{width:22px;height:22px;border-radius:50%;background:conic-gradient(red,yellow,green,cyan,blue,magenta,red);cursor:pointer;position:relative;}
+.color-custom input{opacity:0;position:absolute;width:100%;height:100%;cursor:pointer;font-size:2px;}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;background:var(--success);color:#fff;border-radius:10px;font-size:.85rem;box-shadow:0 4px 20px rgba(0,0,0,.3);transform:translateY(80px);opacity:0;transition:all .3s;z-index:999;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.err{background:var(--err);}
+
+/* Modal */
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);display:flex;justify-content:center;align-items:center;z-index:998;opacity:0;pointer-events:none;transition:opacity .25s;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:28px;min-width:380px;max-width:560px;}
+.modal h3{margin-bottom:16px;font-size:1rem;}
+.modal p{color:var(--text2);font-size:.85rem;margin-bottom:20px;line-height:1.5;}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;}
+
+/* Range display */
+.range-val{font-size:.78rem;color:var(--text3);margin-left:8px;min-width:40px;}
+
+/* File input */
+.file-input{padding:8px 12px;background:var(--bg3);border:1px dashed var(--border);border-radius:8px;color:var(--text2);font-size:.8rem;cursor:pointer;text-align:center;transition:border-color .15s;}
+.file-input:hover{border-color:var(--primary);color:var(--text);}
+
+/* Responsive */
+@media(max-width:640px){
+  .sidebar{width:56px;min-width:56px;}
+  .sidebar-header,.sidebar-search,.nav-label,.nav-badge{display:none;}
+  .nav-item{justify-content:center;padding:12px;}
+  .nav-icon{margin:0;font-size:1.3rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sidebar-header">
+    <h1>⚙️ Settings</h1>
+    <p>Hazoom OS v2.3</p>
+  </div>
+  <div class="sidebar-search">
+    <input type="text" id="settingsSearch" placeholder="Search settings...">
+  </div>
+  <div class="sidebar-nav" id="sidebarNav">
+    <div class="nav-item active" data-section="appearance"><span class="nav-icon">🎨</span><span class="nav-label">Appearance</span></div>
+    <div class="nav-item" data-section="security"><span class="nav-icon">🔐</span><span class="nav-label">Security</span></div>
+    <div class="nav-item" data-section="storage"><span class="nav-icon">💾</span><span class="nav-label">Storage</span></div>
+    <div class="nav-item" data-section="network"><span class="nav-icon">🌐</span><span class="nav-label">Network</span></div>
+    <div class="nav-item" data-section="notifications"><span class="nav-icon">🔔</span><span class="nav-label">Notifications</span></div>
+    <div class="nav-item" data-section="keyboard"><span class="nav-icon">⌨️</span><span class="nav-label">Keyboard</span></div>
+    <div class="nav-item" data-section="ai"><span class="nav-icon">🧠</span><span class="nav-label">AI</span></div>
+    <div class="nav-item" data-section="privacy"><span class="nav-icon">📊</span><span class="nav-label">Privacy</span></div>
+    <div class="nav-item" data-section="advanced"><span class="nav-icon">🔧</span><span class="nav-label">Advanced</span></div>
+    <div class="nav-item" data-section="about"><span class="nav-icon">ℹ️</span><span class="nav-label">About</span></div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="content">
+  <div class="content-header">
+    <h2 id="sectionTitle">Appearance</h2>
+    <div class="header-actions">
+      <button class="btn btn-ghost" id="exportBtn">📥 Export</button>
+      <button class="btn btn-ghost" id="importBtn">📤 Import</button>
+      <button class="btn btn-danger" id="resetBtn">Reset All</button>
+    </div>
+  </div>
+  <div class="content-body" id="contentBody"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3 id="modalTitle">Confirm</h3>
+    <p id="modalText"></p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="modalCancel">Cancel</button>
+      <button class="btn btn-primary" id="modalConfirm">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── Default Settings ──────────────────────────────────────────────────────
+const DEFAULTS = {
+  theme: 'dark', accent: '#3b82f6', fontSize: 15, animations: true, glass: 80, cursor: 'default',
+  sessionTimeout: 30, autoLock: true, encryption: false,
+  storageAutoClean: false, storageMaxDays: 30,
+  proxy: '', dns: 'auto', dnsCustom: '',
+  notifyDesktop: true, notifySound: true, notifyBadge: true,
+  keybindings: '{}',
+  aiModel: 'auto', aiContext: true, aiHistory: true,
+  telemetry: false, crashReports: false, analytics: false,
+  devMode: false,
+};
+
+let settings = loadSettings();
+
+function loadSettings() {
+  try {
+    return { ...DEFAULTS, ...JSON.parse(localStorage.getItem('hazoom_settings') || '{}') };
+  } catch { return { ...DEFAULTS }; }
+}
+
+function save() {
+  localStorage.setItem('hazoom_settings', JSON.stringify(settings));
+  applyTheme();
+  toast('Settings saved');
+}
+
+function toast(msg, err) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (err ? ' err' : '');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ─── Theme Engine ───────────────────────────────────────────────────────────
+function applyTheme() {
+  const r = document.documentElement;
+  const accent = settings.accent || '#3b82f6';
+  r.style.setProperty('--primary', accent);
+  r.style.setProperty('--accent', settings.theme === 'light' ? '#06b6d4' : '#8b5cf6');
+  r.style.setProperty('--font-size', settings.fontSize + 'px');
+  const g = settings.glass / 100;
+  r.style.setProperty('--glass', `rgba(15,23,42,${g})`);
+  document.body.style.fontSize = settings.fontSize + 'px';
+  if (!settings.animations) r.style.setProperty('--transition', '0s');
+  if (settings.theme === 'light') {
+    r.style.setProperty('--bg', '#f1f5f9');
+    r.style.setProperty('--bg2', '#e2e8f0');
+    r.style.setProperty('--bg3', '#cbd5e1');
+    r.style.setProperty('--text', '#1e293b');
+    r.style.setProperty('--text2', '#475569');
+  } else {
+    r.style.setProperty('--bg', '#0b1120');
+    r.style.setProperty('--bg2', '#111827');
+    r.style.setProperty('--bg3', '#1e293b');
+    r.style.setProperty('--text', '#e2e8f0');
+    r.style.setProperty('--text2', '#94a3b8');
+  }
+  localStorage.setItem('hazoom_settings', JSON.stringify(settings));
+}
+applyTheme();
+
+// ─── Section Renderer ──────────────────────────────────────────────────────
+const SECTIONS = {
+  appearance: () => `
+    <div class="setting-group"><h3>Theme</h3>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Mode</div><div class="setting-desc">Choose between dark and light</div></div>
+        <select class="select" data-key="theme"><option value="dark" ${settings.theme==='dark'?'selected':''}>🌙 Dark</option><option value="light" ${settings.theme==='light'?'selected':''}>☀️ Light</option></select></div>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Accent Color</div><div class="setting-desc">Primary color throughout the OS</div></div>
+        <div class="color-wrap">
+          ${['#3b82f6','#8b5cf6','#06b6d4','#22c55e','#f59e0b','#ef4444','#ec4899','#f97316'].map(c =>
+            `<div class="color-dot ${settings.accent===c?'active':''}" style="background:${c}" data-accent="${c}"></div>`
+          ).join('')}
+          <div class="color-custom"><input type="color" value="${settings.accent}" data-key="accent"></div>
+        </div></div>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Font Size</div><div class="setting-desc">${settings.fontSize}px</div></div>
+        <div style="display:flex;align-items:center"><input type="range" class="slider" data-key="fontSize" min="12" max="22" value="${settings.fontSize}"><span class="range-val">${settings.fontSize}px</span></div></div>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Glassmorphism</div><div class="setting-desc">Transparency intensity: ${settings.glass}%</div></div>
+        <input type="range" class="slider" data-key="glass" min="0" max="100" value="${settings.glass}"></div>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Animations</div><div class="setting-desc">Enable transitions and effects</div></div>
+        <div class="toggle ${settings.animations?'on':''}" data-key="animations" data-type="bool"></div></div>
+    </div>`,
+
+  security: () => `
+    <div class="setting-group"><h3>Session</h3>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Auto-Lock</div><div class="setting-desc">Lock after inactivity</div></div>
+        <div class="toggle ${settings.autoLock?'on':''}" data-key="autoLock" data-type="bool"></div></div>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Session Timeout</div><div class="setting-desc">${settings.sessionTimeout} minutes</div></div>
+        <select class="select" data-key="sessionTimeout">
+          ${[5,15,30,60,120].map(v=>`<option value="${v}" ${settings.sessionTimeout===v?'selected':''}>${v} min</option>`).join('')}
+        </select></div>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Encryption</div><div class="setting-desc">Encrypt local storage data</div></div>
+        <div class="toggle ${settings.encryption?'on':''}" data-key="encryption" data-type="bool"></div></div>
+    </div>
+    <div class="setting-group"><h3>Data</h3>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Clear All Data</div><div class="setting-desc">Remove all local storage, settings, files</div></div>
+        <button class="btn btn-danger" id="clearDataBtn">Clear Data</button></div>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Export Settings</div><div class="setting-desc">Download settings as JSON</div></div>
+        <button class="btn btn-ghost" id="exportBtn2">📥 Export</button></div>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Import Settings</div><div class="setting-desc">Load settings from JSON file</div></div>
+        <input type="file" id="importFile" accept=".json" style="display:none"><button class="btn btn-ghost" id="importBtn2">📤 Import</button></div>
+    </div>`,
+
+  storage: () => `
+    <div class="setting-group"><h3>Storage Management</h3>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Local Storage Used</div><div class="setting-desc" id="storageUsed">Calculating...</div></div></div>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Auto-Clean Cache</div><div class="setting-desc">Remove temp files automatically</div></div>
+        <div class="toggle ${settings.storageAutoClean?'on':''}" data-key="storageAutoClean" data-type="bool"></div></div>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Max Cache Age</div><div class="setting-desc">${settings.storageMaxDays} days</div></div>
+        <select class="select" data-key="storageMaxDays">
+          ${[7,14,30,60,90].map(v=>`<option value="${v}" ${settings.storageMaxDays===v?'selected':''}>${v} days</option>`).join('')}
+        </select></div>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Clear Cache</div><div class="setting-desc">Remove cached search results and temp data</div></div>
+        <button class="btn btn-ghost" id="clearCacheBtn">Clear Cache</button></div>
+    </div>`,
+
+  network: () => `
+    <div class="setting-group"><h3>Connection</h3>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Status</div><div class="setting-desc" id="netStatus">Checking...</div></div>
+        <button class="btn btn-ghost" id="netTestBtn">Test</button></div>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Proxy URL</div><div class="setting-desc">HTTP proxy server</div></div>
+        <input type="text" class="select" data-key="proxy" value="${esc(settings.proxy)}" placeholder="http://proxy:8080" style="width:180px"></div>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">DNS</div><div class="setting-desc">DNS resolution mode</div></div>
+        <select class="select" data-key="dns">
+          ${['auto','1.1.1.1','8.8.8.8','9.9.9.9'].map(v=>`<option value="${v}" ${settings.dns===v?'selected':''}>${v}</option>`).join('')}
+        </select></div>
+    </div>`,
+
+  notifications: () => `
+    <div class="setting-group"><h3>Notifications</h3>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Desktop Notifications</div><div class="setting-desc">Show system notifications</div></div>
+        <div class="toggle ${settings.notifyDesktop?'on':''}" data-key="notifyDesktop" data-type="bool"></div></div>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Sound</div><div class="setting-desc">Play notification sounds</div></div>
+        <div class="toggle ${settings.notifySound?'on':''}" data-key="notifySound" data-type="bool"></div></div>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Badge Counter</div><div class="setting-desc">Show unread count on icon</div></div>
+        <div class="toggle ${settings.notifyBadge?'on':''}" data-key="notifyBadge" data-type="bool"></div></div>
+    </div>`,
+
+  keyboard: () => `
+    <div class="setting-group"><h3>Keyboard Shortcuts</h3>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Ctrl + Space</div><div class="setting-desc">Open search</div></div><span style="color:var(--text3);font-size:.8rem">Default</span></div>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Ctrl + T</div><div class="setting-desc">New terminal tab</div></div><span style="color:var(--text3);font-size:.8rem">Default</span></div>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Ctrl + W</div><div class="setting-desc">Close current tab</div></div><span style="color:var(--text3);font-size:.8rem">Default</span></div>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Ctrl + Shift + F</div><div class="setting-desc">Toggle file manager</div></div><span style="color:var(--text3);font-size:.8rem">Default</span></div>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Alt + ←/→</div><div class="setting-desc">Navigate back/forward</div></div><span style="color:var(--text3);font-size:.8rem">Default</span></div>
+    </div>`,
+
+  ai: () => `
+    <div class="setting-group"><h3>AI Assistant</h3>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Model</div><div class="setting-desc">AI model for assistant responses</div></div>
+        <select class="select" data-key="aiModel">
+          ${['auto','llama3','gpt-4','claude','local'].map(v=>`<option value="${v}" ${settings.aiModel===v?'selected':''}>${v}</option>`).join('')}
+        </select></div>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Context Awareness</div><div class="setting-desc">AI remembers conversation context</div></div>
+        <div class="toggle ${settings.aiContext?'on':''}" data-key="aiContext" data-type="bool"></div></div>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Save History</div><div class="setting-desc">Persist chat history locally</div></div>
+        <div class="toggle ${settings.aiHistory?'on':''}" data-key="aiHistory" data-type="bool"></div></div>
+    </div>`,
+
+  privacy: () => `
+    <div class="setting-group"><h3>Data & Privacy</h3>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Telemetry</div><div class="setting-desc">Send anonymous usage statistics</div></div>
+        <div class="toggle ${settings.telemetry?'on':''}" data-key="telemetry" data-type="bool"></div></div>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Crash Reports</div><div class="setting-desc">Send crash reports to help improve the OS</div></div>
+        <div class="toggle ${settings.crashReports?'on':''}" data-key="crashReports" data-type="bool"></div></div>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Analytics</div><div class="setting-desc">Collect app usage analytics</div></div>
+        <div class="toggle ${settings.analytics?'on':''}" data-key="analytics" data-type="bool"></div></div>
+    </div>`,
+
+  advanced: () => `
+    <div class="setting-group"><h3>Developer</h3>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Developer Mode</div><div class="setting-desc">Enable debug tools and dev console</div></div>
+        <div class="toggle ${settings.devMode?'on':''}" data-key="devMode" data-type="bool"></div></div>
+    </div>
+    <div class="setting-group"><h3>Danger Zone</h3>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Reset All Settings</div><div class="setting-desc">Restore all settings to defaults</div></div>
+        <button class="btn btn-danger" id="resetAdvBtn">Reset All</button></div>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Factory Reset</div><div class="setting-desc">Wipe everything — files, settings, all data</div></div>
+        <button class="btn btn-danger" id="factoryBtn">Factory Reset</button></div>
+    </div>`,
+
+  about: () => `
+    <div class="setting-group"><h3>HAZOOM OS</h3>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Version</div><div class="setting-desc">v2.3.0 — Ethereal Edition</div></div></div>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Architecture</div><div class="setting-desc">Web-based OS with MCP integration</div></div></div>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Kernel</div><div class="setting-desc">JavaScript Core + Python Backend</div></div></div>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">Storage</div><div class="setting-desc" id="aboutStorage">—</div></div></div>
+      <div class="setting-row"><div class="setting-info"><div class="setting-label">License</div><div class="setting-desc">MIT + GPLv3 Dual License</div></div></div>
+    </div>
+    <div class="setting-group"><h3>Manifesto</h3>
+      <div style="background:var(--bg3);padding:16px;border-radius:8px;color:var(--text2);line-height:1.6;font-style:italic;border-left:3px solid var(--primary);">
+        "OS is like a deep self-mind. Nothing is lost and everything is connected. Doubt is a key for opening doors."<br>
+        — Hazem Soussi, Creator of HAZOOM OS
+      </div></div>
+    </div>`,
+};
+
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+
+function render(section) {
+  const body = document.getElementById('contentBody');
+  const fn = SECTIONS[section];
+  if (fn) body.innerHTML = fn();
+  document.getElementById('sectionTitle').textContent = section.charAt(0).toUpperCase() + section.slice(1);
+  bindEvents();
+}
+
+// ─── Event Binding ──────────────────────────────────────────────────────────
+function bindEvents() {
+  // Toggles
+  document.querySelectorAll('.toggle').forEach(el => {
+    el.addEventListener('click', () => {
+      const key = el.dataset.key;
+      const isBool = el.dataset.type === 'bool';
+      if (isBool) {
+        settings[key] = !settings[key];
+        el.classList.toggle('on', settings[key]);
+      }
+      save();
+    });
+  });
+
+  // Selects
+  document.querySelectorAll('.select[data-key]').forEach(el => {
+    el.addEventListener('change', () => {
+      settings[el.dataset.key] = isNaN(el.value) ? el.value : Number(el.value);
+      save();
+    });
+  });
+
+  // Sliders
+  document.querySelectorAll('.slider[data-key]').forEach(el => {
+    el.addEventListener('input', () => {
+      const v = Number(el.value);
+      settings[el.dataset.key] = v;
+      const rv = el.parentElement.querySelector('.range-val');
+      if (rv) rv.textContent = v + 'px';
+    });
+    el.addEventListener('change', save);
+  });
+
+  // Color dots
+  document.querySelectorAll('.color-dot').forEach(el => {
+    el.addEventListener('click', () => {
+      document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+      el.classList.add('active');
+      settings.accent = el.dataset.accent;
+      save();
+    });
+  });
+
+  // Color custom
+  document.querySelector('.color-custom input')?.addEventListener('input', function() {
+    settings.accent = this.value;
+    document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+    save();
+  });
+
+  // Sidebar nav
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.addEventListener('click', () => {
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      el.classList.add('active');
+      render(el.dataset.section);
+    });
+  });
+
+  // Export
+  const doExport = () => {
+    const blob = new Blob([JSON.stringify(settings, null, 2)], {type: 'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'hazoom_settings.json';
+    a.click();
+    toast('Settings exported');
+  };
+  document.getElementById('exportBtn')?.addEventListener('click', doExport);
+  document.getElementById('exportBtn2')?.addEventListener('click', doExport);
+
+  // Import
+  const doImport = () => document.getElementById('fileInput')?.click();
+  document.getElementById('importBtn')?.addEventListener('click', doImport);
+  document.getElementById('importBtn2')?.addEventListener('click', doImport);
+
+  // Clear data
+  document.getElementById('clearDataBtn')?.addEventListener('click', () => showModal('Clear All Data?', 'This will remove all files, settings, and local data. This cannot be undone.', () => { localStorage.clear(); location.reload(); }));
+
+  // Reset
+  document.getElementById('resetBtn')?.addEventListener('click', () => showModal('Reset Settings?', 'All settings will return to defaults. Your files will be kept.', () => { settings = {...DEFAULTS}; save(); render('appearance'); toast('Settings reset'); }));
+  document.getElementById('resetAdvBtn')?.addEventListener('click', () => showModal('Reset Settings?', 'All settings will return to defaults.', () => { settings = {...DEFAULTS}; save(); render('advanced'); toast('Settings reset'); }));
+  document.getElementById('factoryBtn')?.addEventListener('click', () => showModal('Factory Reset?', 'EVERYTHING will be deleted — all files, settings, history, everything. This is irreversible.', () => { localStorage.clear(); location.reload(); }));
+
+  // Clear cache
+  document.getElementById('clearCacheBtn')?.addEventListener('click', () => { toast('Cache cleared'); });
+
+  // Network
+  document.getElementById('netTestBtn')?.addEventListener('click', testNetwork);
+  updateStorageInfo();
+  testNetwork();
+}
+
+function updateStorageInfo() {
+  const s = JSON.stringify(localStorage).length;
+  const used = (s / 1024).toFixed(1) + ' KB';
+  document.getElementById('storageUsed') && (document.getElementById('storageUsed').textContent = used);
+  const a = document.getElementById('aboutStorage');
+  if (a) a.textContent = used;
+}
+
+function testNetwork() {
+  const el = document.getElementById('netStatus');
+  if (!el) return;
+  el.textContent = 'Testing...';
+  const t = Date.now();
+  fetch('https://1.1.1.1/dns-query', {method: 'HEAD', mode: 'no-cors', signal: AbortSignal.timeout(4000)})
+    .then(() => el.textContent = `Online (${Date.now()-t}ms)`)
+    .catch(() => el.textContent = 'Offline / Blocked');
+}
+
+// ─── Modal ─────────────────────────────────────────────────────────────────
+let modalCallback;
+function showModal(title, text, cb) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalText').textContent = text;
+  modalCallback = cb;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+document.getElementById('modalCancel').addEventListener('click', () => document.getElementById('modalOverlay').classList.remove('open'));
+document.getElementById('modalConfirm').addEventListener('click', () => { if (modalCallback) modalCallback(); document.getElementById('modalOverlay').classList.remove('open'); });
+
+// ─── Search ─────────────────────────────────────────────────────────────────
+document.getElementById('settingsSearch')?.addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('.nav-item').forEach(el => {
+    const match = el.querySelector('.nav-label').textContent.toLowerCase().includes(q);
+    el.style.display = match ? '' : 'none';
+  });
+});
+
+// ─── Import file handler ────────────────────────────────────────────────────
+const fi = document.getElementById('importFile');
+if (fi) {
+  fi.addEventListener('change', function() {
+    const f = this.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = function() {
+      try {
+        const data = JSON.parse(r.result);
+        settings = {...DEFAULTS, ...data};
+        save();
+        render(document.querySelector('.nav-item.active')?.dataset.section || 'appearance');
+        toast('Settings imported');
+      } catch { toast('Invalid JSON file', true); }
+    };
+    r.readAsText(f);
+  });
+}
+
+// ─── Init ───────────────────────────────────────────────────────────────────
+render('appearance');
+</script>
+</body>
+</html>

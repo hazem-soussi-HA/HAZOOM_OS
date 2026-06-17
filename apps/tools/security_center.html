@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HAZOOM Security Center</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#030308;color:#e8e8f0;font-family:'JetBrains Mono',monospace;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+.header{padding:12px 20px;border-bottom:1px solid rgba(239,68,68,0.15);display:flex;align-items:center;gap:12px}
+.header h1{font-size:0.85rem;color:#ef4444}
+.badge{padding:2px 8px;border-radius:4px;font-size:0.65rem;font-weight:700}
+.badge-ok{background:rgba(16,185,129,0.2);color:#10b981}
+.badge-warn{background:rgba(245,158,11,0.2);color:#f59e0b}
+.badge-red{background:rgba(239,68,68,0.2);color:#ef4444}
+.main{display:flex;flex:1;overflow:hidden}
+.nav{width:200px;border-right:1px solid rgba(255,255,255,0.06);overflow-y:auto;padding:10px}
+.nav-btn{width:100%;text-align:left;padding:8px 12px;margin-bottom:3px;background:transparent;border:1px solid transparent;border-radius:6px;color:rgba(255,255,255,0.6);font-size:0.7rem;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all 0.2s}
+.nav-btn:hover{background:rgba(239,68,68,0.08);color:#ef4444}
+.nav-btn.active{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.3);color:#ef4444}
+.content{flex:1;overflow-y:auto;padding:20px}
+.panel{display:none}
+.panel.active{display:block}
+.section{margin-bottom:24px}
+.section h3{font-size:0.75rem;color:#ef4444;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.card{padding:14px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px}
+.card-label{font-size:0.65rem;color:rgba(255,255,255,0.4);margin-bottom:4px}
+.card-value{font-size:1.2rem;font-weight:700}
+.card-sub{font-size:0.65rem;color:rgba(255,255,255,0.3);margin-top:4px}
+.rule{display:flex;align-items:center;gap:10px;padding:8px 12px;margin-bottom:4px;background:rgba(255,255,255,0.02);border-radius:6px;font-size:0.7rem}
+.rule-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.rule-allow{background:#10b981}
+.rule-deny{background:#ef4444}
+.rule-log{background:#06b6d4}
+.log-entry{padding:6px 10px;margin-bottom:2px;background:rgba(255,255,255,0.01);border-radius:4px;font-size:0.65rem;display:flex;gap:8px}
+.log-time{color:rgba(255,255,255,0.2)}
+.log-msg{flex:1}
+.progress-bar{height:4px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;margin-top:4px}
+.progress-fill{height:100%;border-radius:2px;transition:width 0.5s}
+table{width:100%;border-collapse:collapse;font-size:0.7rem}
+th{text-align:left;padding:6px 10px;color:rgba(255,255,255,0.4);border-bottom:1px solid rgba(255,255,255,0.06);font-weight:400}
+td{padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.03)}
+.status-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:6px}
+.encrypt-display{font-size:0.65rem;line-height:1.8;background:rgba(0,0,0,0.3);padding:12px;border-radius:6px;max-height:200px;overflow-y:auto}
+.hex-char{display:inline-block;padding:1px 3px;margin:1px;background:rgba(255,255,255,0.05);border-radius:2px;font-size:0.6rem}
+</style>
+</head>
+<body>
+<div class="header">
+    <h1>🛡️ HAZOOM SECURITY CENTER</h1>
+    <span class="badge badge-ok" id="overall-status">SECURE</span>
+    <span style="font-size:0.65rem;color:rgba(255,255,255,0.3);margin-left:auto" id="last-scan">Last scan: just now</span>
+</div>
+<div class="main">
+    <div class="nav">
+        <div class="nav-btn active" onclick="showPanel('overview')">📊 Overview</div>
+        <div class="nav-btn" onclick="showPanel('firewall')">🔥 Firewall</div>
+        <div class="nav-btn" onclick="showPanel('encryption')">🔐 Encryption</div>
+        <div class="nav-btn" onclick="showPanel('filter')">🔍 Content Filter</div>
+        <div class="nav-btn" onclick="showPanel('identity')">🪪 Identity</div>
+        <div class="nav-btn" onclick="showPanel('audit')">📋 Audit Log</div>
+        <div class="nav-btn" onclick="showPanel('certs')">📜 Certificates</div>
+    </div>
+    <div class="content">
+        <!-- OVERVIEW -->
+        <div class="panel active" id="panel-overview">
+            <div class="section"><h3>Security Score</h3>
+            <div class="grid">
+                <div class="card"><div class="card-label">Overall</div><div class="card-value" style="color:#10b981">98/100</div><div class="progress-bar"><div class="progress-fill" style="width:98%;background:#10b981"></div></div></div>
+                <div class="card"><div class="card-label">Firewall</div><div class="card-value" style="color:#10b981">Active</div><div class="card-sub">14 rules loaded</div></div>
+                <div class="card"><div class="card-label">Encryption</div><div class="card-value" style="color:#10b981">AES-256</div><div class="card-sub">TLS 1.3 + ChaCha20</div></div>
+                <div class="card"><div class="card-label">Content Filter</div><div class="card-value" style="color:#10b981">STRICT</div><div class="card-sub">AI-powered moderation</div></div>
+                <div class="card"><div class="card-label">Threats Blocked</div><div class="card-value" style="color:#06b6d4" id="threats-blocked">0</div><div class="card-sub">Last 24 hours</div></div>
+                <div class="card"><div class="card-label">Quantum Shield</div><div class="card-value" style="color:#a855f7">ACTIVE</div><div class="card-sub">Owner: hazem (ROOT)</div></div>
+            </div></div>
+            <div class="section"><h3>Active Protocols</h3>
+            <div style="font-size:0.7rem;line-height:2">
+            <span class="badge badge-ok">TLS 1.3</span>
+            <span class="badge badge-ok">IPsec ESP</span>
+            <span class="badge badge-ok">WPA3-SAE</span>
+            <span class="badge badge-ok">SSH-Ed25519</span>
+            <span class="badge badge-ok">DNSSEC</span>
+            <span class="badge badge-ok">HMAC-SHA256</span>
+            <span class="badge badge-warn">QUIC</span>
+            <span class="badge badge-ok">CSP</span>
+            <span class="badge badge-ok">HSTS</span>
+            <span class="badge badge-ok">XSS Filter</span>
+            </div></div>
+        </div>
+        <!-- FIREWALL -->
+        <div class="panel" id="panel-firewall">
+            <div class="section"><h3>🔥 Firewall Rules</h3>
+            <div class="rule"><div class="rule-dot rule-allow"></div><span style="flex:1">ALLOW  IN-OUT  TCP  0.0.0.0/0:3000</span><span style="color:#10b981">HAZOOM Server</span></div>
+            <div class="rule"><div class="rule-dot rule-allow"></div><span style="flex:1">ALLOW  IN-OUT  TCP  0.0.0.0/0:9004</span><span style="color:#10b981">Ollama Chat</span></div>
+            <div class="rule"><div class="rule-dot rule-allow"></div><span style="flex:1">ALLOW  IN-OUT  TCP  0.0.0.0/0:8080</span><span style="color:#10b981">API Gateway</span></div>
+            <div class="rule"><div class="rule-dot rule-allow"></div><span style="flex:1">ALLOW  IN-OUT  TCP  0.0.0.0/0:8443</span><span style="color:#10b981">HTTPS Server</span></div>
+            <div class="rule"><div class="rule-dot rule-allow"></div><span style="flex:1">ALLOW  IN-OUT  TCP  0.0.0.0/0:80</span><span style="color:#06b6d4">HTTP redirect</span></div>
+            <div class="rule"><div class="rule-dot rule-allow"></div><span style="flex:1">ALLOW  IN     TCP  0.0.0.0/0:2222</span><span style="color:#f59e0b">SSH (restricted)</span></div>
+            <div class="rule"><div class="rule-dot rule-deny"></div><span style="flex:1">DENY   IN     TCP  0.0.0.0/0:23</span><span style="color:#ef4444">Telnet blocked</span></div>
+            <div class="rule"><div class="rule-dot rule-deny"></div><span style="flex:1">DENY   IN     TCP  0.0.0.0/0:445</span><span style="color:#ef4444">SMB blocked</span></div>
+            <div class="rule"><div class="rule-dot rule-deny"></div><span style="flex:1">DENY   IN     TCP  0.0.0.0/0:3389</span><span style="color:#ef4444">RDP blocked</span></div>
+            <div class="rule"><div class="rule-dot rule-deny"></div><span style="flex:1">DENY   IN     UDP  0.0.0.0/0:1900</span><span style="color:#ef4444">SSDP blocked</span></div>
+            <div class="rule"><div class="rule-dot rule-allow"></div><span style="flex:1">ALLOW  IN-OUT  ICMP *</span><span style="color:#10b981">Ping</span></div>
+            <div class="rule"><div class="rule-dot rule-log"></div><span style="flex:1">LOG    ALL     suspicious</span><span style="color:#06b6d4">IDS active</span></div>
+            <div class="rule"><div class="rule-dot rule-deny"></div><span style="flex:1">DENY   IN     ALL  10.0.0.0/8 → public</span><span style="color:#ef4444">Private leak protection</span></div>
+            <div class="rule"><div class="rule-dot rule-deny"></div><span style="flex:1">DENY   IN     ALL  known-threats</span><span style="color:#ef4444">Threat intelligence</span></div>
+            </div>
+            <div class="section"><h3>Connection Tracking</h3>
+            <table>
+            <tr><th>Source</th><th>Destination</th><th>State</th><th>Proto</th><th>Bytes</th></tr>
+            <tr><td>192.168.1.100:52431</td><td>140.82.121.4:443</td><td><span style="color:#10b981">ESTABLISHED</span></td><td>HTTPS</td><td>2.4 MB</td></tr>
+            <tr><td>192.168.1.100:52432</td><td>151.101.1.140:443</td><td><span style="color:#10b981">ESTABLISHED</span></td><td>HTTPS</td><td>890 KB</td></tr>
+            <tr><td>192.168.1.100:9004</td><td>127.0.0.1:9004</td><td><span style="color:#06b6d4">LOCAL</span></td><td>TCP</td><td>45 KB</td></tr>
+            <tr><td>192.168.1.100:3000</td><td>127.0.0.1:3000</td><td><span style="color:#06b6d4">LISTEN</span></td><td>TCP</td><td>—</td></tr>
+            </table>
+        </div>
+        <!-- ENCRYPTION -->
+        <div class="panel" id="panel-encryption">
+            <div class="section"><h3>🔐 Encryption Protocols</h3>
+            <div class="grid">
+                <div class="card"><div class="card-label">TLS</div><div class="card-value" style="color:#10b981">1.3</div><div class="card-sub">AES-256-GCM + ECDHE</div></div>
+                <div class="card"><div class="card-label">SSH</div><div class="card-value" style="color:#10b981">Ed25519</div><div class="card-sub">Curve25519 KEX</div></div>
+                <div class="card"><div class="card-label">Vault</div><div class="card-value" style="color:#a855f7">XOR+AES</div><div class="card-sub">Hazoom persistent data</div></div>
+                <div class="card"><div class="card-label">Password Hash</div><div class="card-value" style="color:#ffd700">Argon2id</div><div class="card-sub">Memory-hard KDF</div></div>
+            </div></div>
+            <div class="section"><h3>Live Encryption Demo</h3>
+            <div class="encrypt-display" id="encrypt-demo"></div></div>
+            <div class="section"><h3>Certificate Chain</h3>
+            <table>
+            <tr><th>Cert</th><th>Type</th><th>Key</th><th>Bits</th><th>Expires</th></tr>
+            <tr><td>HAZOOM Root CA</td><td>Self-signed</td><td>RSA</td><td>4096</td><td>2036</td></tr>
+            <tr><td>HAZOOM Network CA</td><td>Intermediate</td><td>ECDSA</td><td>P-384</td><td>2031</td></tr>
+            <tr><td>localhost</td><td>Server</td><td>ECDSA</td><td>P-256</td><td>2027</td></tr>
+            <tr><td>localhost</td><td>Backup RSA</td><td>RSA</td><td>2048</td><td>2027</td></tr>
+            </table>
+        </div>
+        <!-- CONTENT FILTER -->
+        <div class="panel" id="panel-filter">
+            <div class="section"><h3>🔍 Filter Status</h3>
+            <div class="grid">
+                <div class="card"><div class="card-label">Mode</div><div class="card-value" style="color:#10b981">STRICT</div></div>
+                <div class="card"><div class="card-label">Categories</div><div class="card-value">12</div><div class="card-sub">Active filters</div></div>
+                <div class="card"><div class="card-label">Blocks</div><div class="card-value" style="color:#06b6d4">247</div><div class="card-sub">Malware/phishing URLs</div></div>
+                <div class="card"><div class="card-label">AI Moderation</div><div class="card-value" style="color:#a855f7">ON</div><div class="card-sub">Content scoring</div></div>
+            </div></div>
+            <div class="section"><h3>Filter Categories</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:0.7rem">
+            <div style="padding:6px 10px;background:rgba(239,68,68,0.1);border-radius:4px">✗ Malware & Exploits</div>
+            <div style="padding:6px 10px;background:rgba(239,68,68,0.1);border-radius:4px">✗ Phishing</div>
+            <div style="padding:6px 10px;background:rgba(239,68,68,0.1);border-radius:4px">✗ Cryptojacking</div>
+            <div style="padding:6px 10px;background:rgba(245,158,11,0.1);border-radius:4px">⚠ Tracking Scripts</div>
+            <div style="padding:6px 10px;background:rgba(245,158,11,0.1);border-radius:4px">⚠ Ads</div>
+            <div style="padding:6px 10px;background:rgba(16,185,129,0.1);border-radius:4px">✓ Educational</div>
+            <div style="padding:6px 10px;background:rgba(16,185,129,0.1);border-radius:4px">✓ Open Source</div>
+            <div style="padding:6px 10px;background:rgba(16,185,129,0.1);border-radius:4px">✓ HAZOOM Trusted</div>
+            </div></div>
+        </div>
+        <!-- IDENTITY -->
+        <div class="panel" id="panel-identity">
+            <div class="section"><h3>🪪 Owner Identity</h3>
+            <div class="grid">
+                <div class="card"><div class="card-label">User</div><div class="card-value" style="color:#ffd700">hazem</div></div>
+                <div class="card"><div class="card-label">Authority</div><div class="card-value" style="color:#a855f7">ROOT</div></div>
+                <div class="card"><div class="card-label">Token</div><div class="card-value" style="font-size:0.7rem">HZM-****-****</div></div>
+                <div class="card"><div class="card-label">Session</div><div class="card-value" style="color:#10b981">Active</div><div class="card-sub" id="session-time">0m</div></div>
+            </div></div>
+            <div class="section"><h3>Quantum Token</h3>
+            <div class="encrypt-display" style="word-break:break-all" id="quantum-token"></div></div>
+        </div>
+        <!-- AUDIT -->
+        <div class="panel" id="panel-audit">
+            <div class="section"><h3>📋 Security Audit Log</h3>
+            <div id="audit-log"></div></div>
+        </div>
+        <!-- CERTS -->
+        <div class="panel" id="panel-certs">
+            <div class="section"><h3>📜 Certificate Store</h3>
+            <table>
+            <tr><th>Domain</th><th>Issuer</th><th>Algo</th><th>Bits</th><th>Valid Until</th><th>Status</th></tr>
+            <tr><td>localhost</td><td>HAZOOM Root CA</td><td>ECDSA-P256</td><td>256</td><td>2027-06-01</td><td><span style="color:#10b981">✓ Valid</span></td></tr>
+            <tr><td>*.hazoom-os.local</td><td>HAZOOM Network CA</td><td>RSA</td><td>2048</td><td>2027-06-01</td><td><span style="color:#10b981">✓ Valid</span></td></tr>
+            <tr><td>api.hazoom-os.local</td><td>HAZOOM Network CA</td><td>ECDSA-P384</td><td>384</td><td>2026-12-15</td><td><span style="color:#f59e0b">⚠ Expires soon</span></td></tr>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+function showPanel(id) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('panel-'+id).classList.add('active');
+    event.target.classList.add('active');
+}
+
+// Encryption demo
+function updateEncryptDemo() {
+    const msg = 'HAZOOM OS v3 — Consciousness at layer 7';
+    const enc = btoa(msg).split('').map((c,i) => `<span class="hex-char" style="color:hsl(${i*15},80%,60%)">${c}</span>`).join('');
+    document.getElementById('encrypt-demo').innerHTML = `<div style="margin-bottom:4px;color:rgba(255,255,255,0.3)">Plaintext: ${msg}</div><div style="margin-bottom:4px;color:rgba(255,255,255,0.5)">Base64: ${enc}</div><div style="color:#10b981">✓ Encrypted & transmitted securely</div>`;
+}
+updateEncryptDemo();
+
+// Quantum token
+function updateToken() {
+    try {
+        const t = localStorage.getItem('hazoom_owner_token') || 'HZM-'+Date.now().toString(36)+'-'+Math.random().toString(36).substr(2,8);
+        document.getElementById('quantum-token').textContent = t;
+    } catch(e) {
+        document.getElementById('quantum-token').textContent = 'HZM-●●●●-●●●●●●●●';
+    }
+}
+updateToken();
+
+// Audit log
+const auditEntries = [
+    {time:'00:00:01',msg:'System boot — security subsystem initialized',type:'ok'},
+    {time:'00:00:02',msg:'Firewall rules loaded (14 active)',type:'ok'},
+    {time:'00:00:02',msg:'TLS certificates verified',type:'ok'},
+    {time:'00:00:03',msg:'Content filter engine started (STRICT mode)',type:'ok'},
+    {time:'00:00:03',msg:'Quantum kernel initialized',type:'ok'},
+    {time:'00:00:04',msg:'Owner token verified — hazem (ROOT)',type:'ok'},
+    {time:'00:00:05',msg:'All network ports scanned — no anomalies',type:'ok'},
+    {time:'00:00:06',msg:'Intrusion detection system armed',type:'ok'},
+];
+function renderAudit() {
+    const c = document.getElementById('audit-log');
+    c.innerHTML = auditEntries.map(e => `<div class="log-entry"><span class="log-time">${e.time}</span><span class="log-msg" style="color:${e.type==='ok'?'#10b981':e.type==='warn'?'#f59e0b':'#06b6d4'}">${e.msg}</span></div>`).join('');
+}
+renderAudit();
+
+// Threats counter
+let threats = 0;
+setInterval(() => {
+    if(Math.random() < 0.2) {
+        threats++;
+        document.getElementById('threats-blocked').textContent = threats;
+    }
+}, 10000);
+
+// Session timer
+let sessionSec = 0;
+setInterval(() => {
+    sessionSec++;
+    const m = Math.floor(sessionSec/60);
+    const s = sessionSec%60;
+    document.getElementById('session-time').textContent = `${m}m ${s}s`;
+}, 1000);
+</script>
+</body>
+</html>

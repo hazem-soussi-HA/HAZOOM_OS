@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Search - HAZOOM OS</title>
+    <style>
+        :root {
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.4);
+            --bg-glass: rgba(15, 23, 42, 0.7);
+            --border-glass: rgba(255, 255, 255, 0.1);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+        }
+
+        body {
+            margin: 0;
+            padding: 24px;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: #0f172a;
+            color: var(--text-primary);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 24px;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        input {
+            width: 100%;
+            padding: 18px 24px;
+            padding-left: 54px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            color: white;
+            font-size: 1.1rem;
+            outline: none;
+            backdrop-filter: blur(12px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.2);
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--accent-glow), 0 8px 32px -4px rgba(0, 0, 0, 0.3);
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            pointer-events: none;
+        }
+
+        .results-area {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-right: 8px;
+        }
+
+        .results-area::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .results-area::-webkit-scrollbar-thumb {
+            background: var(--border-glass);
+            border-radius: 10px;
+        }
+
+        .section-header {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+            margin: 16px 0 8px 4px;
+            font-weight: 700;
+        }
+
+        .result-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            animation: fadeIn 0.3s ease-out both;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--border-glass);
+            transform: scale(1.01);
+        }
+
+        .result-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-glass);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            border: 1px solid var(--border-glass);
+        }
+
+        .result-info {
+            flex: 1;
+        }
+
+        .result-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+
+        .result-meta {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .keyboard-hint {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            background: rgba(15, 23, 42, 0.5);
+            border-top: 1px solid var(--border-glass);
+            margin: 0 -24px -24px -24px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            justify-content: center;
+        }
+
+        kbd {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="search-container">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Search for files, apps, settings..." autofocus
+            autocomplete="off">
+    </div>
+
+    <div class="results-area" id="resultsArea">
+        <div id="quantumInsight"
+            style="display: none; padding: 16px; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 12px; margin-bottom: 20px; animation: fadeIn 0.5s ease;">
+            <div
+                style="font-size: 0.7rem; color: #6366f1; text-transform: uppercase; font-weight: 800; margin-bottom: 8px; letter-spacing: 1px;">
+                ✧ Quantum Insight</div>
+            <div id="insightText" style="font-size: 0.9rem; line-height: 1.4; color: #cbd5e1;"></div>
+        </div>
+        <div class="no-results">Typing something to begin searching...</div>
+    </div>
+
+    <div class="keyboard-hint">
+        Use <kbd>↑</kbd> <kbd>↓</kbd> to navigate, <kbd>Enter</kbd> to open
+    </div>
+
+    <script>
+        const input = document.getElementById('searchInput');
+        const resultsArea = document.getElementById('resultsArea');
+        const OS = window.parent;
+
+        let selectedIndex = -1;
+        let allResults = [];
+
+        // Check for initial query from HAZOOM config
+        const win = OS.WindowManager.windows.find(w => w.id === window.frameElement.parentElement.id);
+        if (win && win.query) {
+            input.value = win.query;
+            performSearch(win.query);
+        }
+
+        input.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+            if (query.length < 1) {
+                renderPlaceholder('Typing something to begin searching...');
+                return;
+            }
+            performSearch(query);
+        });
+
+        function performSearch(query) {
+            allResults = [];
+            const results = {
+                apps: [],
+                files: [],
+                settings: []
+            };
+
+            showQuantumInsight(query);
+
+            // 1. Search Apps
+            if (OS.AppRegistry) {
+                const appList = OS.AppRegistry.getAppList();
+                appList.forEach(id => {
+                    const meta = OS.AppRegistry.getMeta(id);
+                    if (meta && (meta.name.toLowerCase().includes(query.toLowerCase()) || id.toLowerCase().includes(query.toLowerCase()))) {
+                        results.apps.push({
+                            id,
+                            name: meta.name,
+                            icon: meta.icon,
+                            type: 'app',
+                            category: meta.category || 'system'
+                        });
+                    }
+                });
+            }
+
+            // 2. Search Files
+            if (OS.FileSystem && OS.FileSystem.search) {
+                const fileResults = OS.FileSystem.search(query);
+                results.files = fileResults.map(f => ({
+                    ...f,
+                    type: 'file',
+                    icon: f.type === 'folder' ? '📁' : '📄'
+                }));
+            }
+
+            // 3. Search Settings
+            const setTerms = [
+                { name: 'Dark Mode', tab: 'theme', icon: '🌙' },
+                { name: 'Colors', tab: 'theme', icon: '🎨' },
+                { name: 'Security', tab: 'security', icon: '🔒' },
+                { name: 'Safe Mode', tab: 'security', icon: '🛡️' }
+            ];
+            results.settings = setTerms.filter(s => s.name.toLowerCase().includes(query.toLowerCase()))
+                .map(s => ({ ...s, type: 'setting' }));
+
+            renderResults(results);
+        }
+
+        function showQuantumInsight(query) {
+            const insightBox = document.getElementById('quantumInsight');
+            const insightText = document.getElementById('insightText');
+            const q = query.toLowerCase();
+
+            if (q.includes('security') || q.includes('lock') || q.includes('safe')) {
+                insightBox.style.display = 'block';
+                insightText.textContent = "Your system is currently running in Strategic Cosmic mode. All quantum channels are encrypted via the SecureAppLauncher.";
+            } else if (q.includes('heat') || q.includes('temp') || q.includes('hot')) {
+                insightBox.style.display = 'block';
+                insightText.textContent = "Quantum heat spikes detected in sector 7-G. I recommend monitoring via the Heat Monitor app to prevent state decoherence.";
+            } else if (q.includes('ai') || q.includes('brain') || q.includes('help')) {
+                insightBox.style.display = 'block';
+                insightText.textContent = "The Neural-Q v4.2 LLM is ready. You can consult it for complex system orchestration or data synthesis tasks.";
+            } else {
+                insightBox.style.display = 'none';
+            }
+        }
+
+        function renderResults(results) {
+            resultsArea.innerHTML = '';
+            selectedIndex = -1;
+            allResults = [];
+
+            const sections = [
+                { title: 'Applications', data: results.apps },
+                { title: 'Files & Folders', data: results.files },
+                { title: 'Settings', data: results.settings }
+            ];
+
+            let hasAny = false;
+            sections.forEach(section => {
+                if (section.data.length > 0) {
+                    hasAny = true;
+                    const header = document.createElement('div');
+                    header.className = 'section-header';
+                    header.textContent = section.title;
+                    resultsArea.appendChild(header);
+
+                    section.data.forEach(item => {
+                        allResults.push(item);
+                        const row = createResultRow(item);
+                        resultsArea.appendChild(row);
+                    });
+                }
+            });
+
+            if (!hasAny) {
+                renderPlaceholder('No matches found for "' + input.value + '"');
+            }
+        }
+
+        function createResultRow(item) {
+            const div = document.createElement('div');
+            div.className = 'result-item';
+            div.innerHTML = `
+                <div class="result-icon">${item.icon}</div>
+                <div class="result-info">
+                    <div class="result-name">${item.name}</div>
+                    <div class="result-meta">${item.path || item.type.toUpperCase()}</div>
+                </div>
+            `;
+            div.onclick = () => openItem(item);
+            return div;
+        }
+
+        function renderPlaceholder(text) {
+            resultsArea.innerHTML = `<div class="no-results">${text}</div>`;
+        }
+
+        function openItem(item) {
+            if (item.type === 'app') {
+                OS.HAZOOM.openApp(item.id);
+            } else if (item.type === 'file') {
+                if (item.type === 'folder') {
+                    OS.HAZOOM.openApp('filemanager', { path: item.path });
+                } else {
+                    OS.HAZOOM.openApp('filemanager', { openFile: item.path });
+                }
+            } else if (item.type === 'setting') {
+                OS.HAZOOM.openApp('settings', { tab: item.tab });
+            }
+
+            // Close search after opening?
+            // Optional: OS.WindowManager.close(window.frameElement.parentElement.id);
+        }
+
+        // Keyboard Navigation
+        window.addEventListener('keydown', (e) => {
+            const rows = document.querySelectorAll('.result-item');
+            if (e.key === 'ArrowDown') {
+                selectedIndex = Math.min(selectedIndex + 1, rows.length - 1);
+                updateSelection(rows);
+            } else if (e.key === 'ArrowUp') {
+                selectedIndex = Math.max(selectedIndex - 1, 0);
+                updateSelection(rows);
+            } else if (e.key === 'Enter' && selectedIndex >= 0) {
+                openItem(allResults[selectedIndex]);
+            }
+        });
+
+        function updateSelection(rows) {
+            rows.forEach((r, i) => {
+                if (i === selectedIndex) {
+                    r.classList.add('selected');
+                    r.style.background = 'rgba(255, 255, 255, 0.1)';
+                    r.scrollIntoView({ block: 'nearest' });
+                } else {
+                    r.classList.remove('selected');
+                    r.style.background = '';
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

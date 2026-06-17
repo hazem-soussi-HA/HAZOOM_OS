@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!--
+  NEON DRIFT — SKY RACER
+  Copyright © 2024-2026 Hazem Soussi. All Rights Reserved.
+  Creator: Hazem Soussi (hazem.soussi@gmail.com)
+  "attention is all you need"
+  This game is part of HAZOOM OS.
+-->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>NEON DRIFT — SKY RACER</title>
+<style>
+/* __CSS__ */
+</style>
+</head>
+<body>
+<div id="ui">
+  <canvas id="hud-canvas"></canvas>
+
+  <!-- Top Bar -->
+  <div id="top-bar">
+    <div id="rank-badge">1st</div>
+    <div id="track-name">QUANTUM COMMAND</div>
+    <div id="delta-display">+0.000</div>
+  </div>
+
+  <!-- Timer Panel -->
+  <div id="timer-panel">
+    <div class="timer-item"><div class="timer-label">LAP</div><div class="timer-value"><span id="lap-display">1</span>/3</div></div>
+    <div class="timer-item"><div class="timer-label">SESSION</div><div class="timer-value" id="session-time">0:00.00</div></div>
+    <div class="timer-item"><div class="timer-label">LAP TIME</div><div class="timer-value" id="current-lap">0:00.00</div></div>
+    <div class="timer-item"><div class="timer-label">BEST LAP</div><div class="timer-value best" id="best-lap-display">--</div></div>
+    <div class="timer-item"><div class="timer-label">LAST LAP</div><div class="timer-value last" id="last-lap-display">--</div></div>
+  </div>
+
+  <canvas id="minimap" width="130" height="130"></canvas>
+
+  <!-- Telemetry Panel -->
+  <div id="telemetry-panel">
+    <div class="row"><span class="label">GEAR</span><span class="value" id="gear-display" style="color:#f80;font-size:18px;font-weight:700">N</span></div>
+    <div class="row"><span class="label">RPM</span><span class="value" id="rpm-display">0</span><span class="unit">rpm</span></div>
+    <div class="row"><span class="label">SPD</span><span class="value" id="sim-speed">0</span><span class="unit">km/h</span></div>
+    <div class="row"><span class="label">T.C.</span><span class="value" id="tc-display">--</span><span class="unit">°C</span></div>
+    <div class="row"><span class="label">BOOST</span><span class="value" id="boost-display">0.0</span><span class="unit">bar</span></div>
+  </div>
+
+  <div id="speed-lines"></div>
+  <div id="sound-toggle">&#x1F50A;</div>
+  <div id="cam-indicator">CHASE CAM</div>
+  <div id="countdown"></div>
+  <div id="countdown-instruction">W / &#x2191; TO ACCELERATE</div>
+  <div id="go-flash"></div>
+
+  <!-- ===== AR (AUGMENTED REALITY) HUD LAYER ===== -->
+  <div id="hud-redline-flash"></div>
+  <div id="hud-offtrack-flash"></div>
+  <div id="hud-delta-bar">
+    <div class="delta-label">LAP &#x0394;</div>
+    <div class="delta-fill" id="hud-delta-fill"></div>
+  </div>
+  <div id="hud-boost-ready">
+    <span class="arrow">&#x25B2;</span>
+    <span>BOOST READY</span>
+  </div>
+  <div id="hud-ar-toggle"><span class="dot"></span>AR MODE</div>
+
+  <!-- Combo + Score -->
+  <div id="combo-display" class="combo-display" style="display:none">
+    <div id="combo-num" class="combo-num">0x</div>
+    <div class="combo-label">DRIFT COMBO</div>
+    <div id="combo-multi" class="combo-multi">x1.0</div>
+  </div>
+  <div id="score-display" class="score-display" style="display:none">
+    <div class="score-label">SCORE</div>
+    <div id="score-num" class="score-num">0</div>
+  </div>
+
+  <!-- Active power-up effects -->
+  <div id="active-effects" class="active-effects" style="display:none"></div>
+
+  <!-- Start Screen -->
+  <div id="start-screen">
+    <div id="start-bg"></div>
+    <div class="logo-container">
+      <div class="logo-main">NEON DRIFT</div>
+      <div class="logo-sub">SIMULATION</div>
+    </div>
+    <div id="track-select">
+      <div class="track-card selected" data-track="command-center">
+        <div class="track-icon">&#x1F306;</div>
+        <div class="track-name">Quantum Command</div>
+        <div class="track-desc">Race through 12 cyberpunk city-states. Neon towers pierce the sky.</div>
+        <div class="track-stats">12 waypoints &bull; 2.4km</div>
+      </div>
+      <div class="track-card" data-track="starwars">
+        <div class="track-icon">&#x1F30C;</div>
+        <div class="track-name">Galactic Core</div>
+        <div class="track-desc">Orbital racing around star systems. Low-gravity drift physics.</div>
+        <div class="track-stats">4 waypoints &bull; 1.8km</div>
+      </div>
+      <div class="track-card" data-track="world-map">
+        <div class="track-icon">&#x1F30D;</div>
+        <div class="track-name">Earth Circuit</div>
+        <div class="track-desc">8 real-world cities, one epic global sky race.</div>
+        <div class="track-stats">8 waypoints &bull; 2.0km</div>
+      </div>
+    </div>
+    <button id="start-btn">&#x26A1; START RACE &#x26A1;</button>
+    <div style="display:flex;gap:12px;margin-bottom:12px">
+      <button id="ai-btn" class="ai-toggle">&#x1F916; AI DEMO</button>
+      <button id="practice-btn" class="ai-toggle">&#x1F3C1; PRACTICE</button>
+    </div>
+    <div id="controls-info">W/&#x2191; ACCELERATE &nbsp; S/&#x2193; BRAKE &nbsp; A/&#x2190; D/&#x2192; STEER &nbsp; SPACE NITRO &nbsp; SHIFT DRIFT &nbsp; C CAMERA &nbsp; ESC QUIT</div>
+    <button id="achievements-btn" style="margin-top:10px;background:rgba(255,255,0,0.08);border:1px solid rgba(255,255,0,0.4);color:#ff0;padding:8px 18px;border-radius:4px;font-family:'Courier New',monospace;font-size:11px;letter-spacing:2px;cursor:pointer">&#x1F3C5; ACHIEVEMENTS (<span id="achieve-count">0/0</span>)</button>
+  </div>
+
+  <!-- Achievements Panel -->
+  <div id="achievements-panel" style="position:absolute;inset:0;background:rgba(0,0,0,0.95);display:none;align-items:flex-start;justify-content:flex-start;flex-direction:column;z-index:70;padding:30px;overflow-y:auto">
+    <div style="max-width:700px;width:100%;color:#0ff;font-family:'Courier New',monospace;margin:0 auto">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;position:sticky;top:0;background:rgba(0,0,0,0.9);padding:10px 0;z-index:5">
+        <h2 style="color:#ff0;letter-spacing:4px;margin:0">&#x1F3C5; ACHIEVEMENTS</h2>
+        <button id="achievements-close" style="background:transparent;border:1px solid #f0f;color:#f0f;padding:6px 14px;cursor:pointer;font-family:inherit;letter-spacing:2px;border-radius:4px">&#x2190; BACK</button>
+      </div>
+      <div id="achievement-progress" style="color:#888;font-size:11px;letter-spacing:2px;margin-bottom:20px">PROGRESS: 0%</div>
+      <div id="achievements-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px"></div>
+    </div>
+  </div>
+
+  <!-- Game Over -->
+  <div id="game-over">
+    <h1>&#x1F3C1; RACE COMPLETE &#x1F3C1;</h1>
+    <p class="stats">Time: <span id="final-time">0:00.00</span></p>
+    <p class="stats">Best Lap: <span id="best-lap">0:00.00</span></p>
+    <p class="stats">Top Speed: <span id="top-speed">0</span> KM/H</p>
+    <p class="stats">Position: <span id="final-position">1st</span></p>
+    <div id="lap-breakdown"></div>
+    <button id="restart-btn">&#x1F504; RACE AGAIN</button>
+  </div>
+</div>
+
+<script src="js/vendor/three.min.js"></script>
+<script>
+/* __MODULES__ */
+</script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Hazoom Styles</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Fredoka:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+        
+        .test-section {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .color-box {
+            height: 100px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+    </div>
+
+    <div class="test-container">
+        <div class="test-section">
+            <h1>🎨 Test des Styles Hazoom</h1>
+            <p>Cette page teste tous les styles et variables CSS du nouveau fichier <code>styles.css</code></p>
+        </div>
+
+        <!-- Test des couleurs principales -->
+        <div class="test-section">
+            <h2>Couleurs Principales</h2>
+            <div class="color-grid">
+                <div class="color-box" style="background: var(--primary-blue);">Primary Blue</div>
+                <div class="color-box" style="background: var(--secondary-purple);">Secondary Purple</div>
+                <div class="color-box" style="background: var(--soft-yellow); color: var(--text-dark);">Soft Yellow</div>
+                <div class="color-box" style="background: var(--soft-pink);">Soft Pink</div>
+                <div class="color-box" style="background: var(--soft-green); color: var(--text-dark);">Soft Green</div>
+                <div class="color-box" style="background: var(--soft-orange); color: var(--text-dark);">Soft Orange</div>
+            </div>
+        </div>
+
+        <!-- Test des couleurs pastel -->
+        <div class="test-section">
+            <h2>Couleurs Pastel (pour les cartes)</h2>
+            <div class="color-grid">
+                <div class="color-box pastel-1" style="color: var(--text-dark);">Pastel Blue</div>
+                <div class="color-box pastel-2" style="color: var(--text-dark);">Pastel Purple</div>
+                <div class="color-box pastel-3" style="color: var(--text-dark);">Pastel Yellow</div>
+                <div class="color-box pastel-4" style="color: var(--text-dark);">Pastel Pink</div>
+                <div class="color-box pastel-5" style="color: var(--text-dark);">Pastel Green</div>
+                <div class="color-box pastel-6" style="color: var(--text-dark);">Pastel Orange</div>
+            </div>
+        </div>
+
+        <!-- Test des boutons -->
+        <div class="test-section">
+            <h2>Boutons</h2>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <button class="btn btn-primary">🚀 Bouton Primary</button>
+                <button class="btn btn-secondary">👨‍👩‍👧‍👦 Bouton Secondary</button>
+                <button class="btn btn-primary" disabled>Bouton Désactivé</button>
+            </div>
+        </div>
+
+        <!-- Test des cartes -->
+        <div class="test-section">
+            <h2>Feature Cards</h2>
+            <div class="features-grid" style="grid-template-columns: repeat(3, 1fr);">
+                <div class="feature-card pastel-1">
+                    <span class="feature-icon">📅</span>
+                    <h3 class="feature-title">Card Pastel 1</h3>
+                    <p class="feature-description">Test de la carte avec style pastel-1 (bleu clair)</p>
+                </div>
+                <div class="feature-card pastel-2">
+                    <span class="feature-icon">🤖</span>
+                    <h3 class="feature-title">Card Pastel 2</h3>
+                    <p class="feature-description">Test de la carte avec style pastel-2 (violet clair)</p>
+                </div>
+                <div class="feature-card pastel-3">
+                    <span class="feature-icon">🌌</span>
+                    <h3 class="feature-title">Card Pastel 3</h3>
+                    <p class="feature-description">Test de la carte avec style pastel-3 (jaune clair)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test des ombres -->
+        <div class="test-section">
+            <h2>Ombres</h2>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+                <div style="background: white; padding: 2rem; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); text-align: center;">
+                    <strong>Shadow SM</strong>
+                </div>
+                <div style="background: white; padding: 2rem; border-radius: var(--radius-md); box-shadow: var(--shadow-md); text-align: center;">
+                    <strong>Shadow MD</strong>
+                </div>
+                <div style="background: white; padding: 2rem; border-radius: var(--radius-md); box-shadow: var(--shadow-lg); text-align: center;">
+                    <strong>Shadow LG</strong>
+                </div>
+                <div style="background: white; padding: 2rem; border-radius: var(--radius-md); box-shadow: var(--shadow-xl); text-align: center;">
+                    <strong>Shadow XL</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test des gradients -->
+        <div class="test-section">
+            <h2>Gradients</h2>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                <div style="background: var(--gradient-primary); padding: 2rem; border-radius: var(--radius-md); color: white; text-align: center;">
+                    <strong>Gradient Primary</strong>
+                </div>
+                <div style="background: var(--gradient-secondary); padding: 2rem; border-radius: var(--radius-md); color: var(--text-dark); text-align: center;">
+                    <strong>Gradient Secondary</strong>
+                </div>
+                <div style="background: var(--gradient-success); padding: 2rem; border-radius: var(--radius-md); color: white; text-align: center;">
+                    <strong>Gradient Success</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test du background animé -->
+        <div class="test-section">
+            <h2>Background Animé</h2>
+            <p>✅ Si vous voyez des bulles flottantes en arrière-plan, l'animation fonctionne !</p>
+            <p>Les bulles devraient monter lentement avec un mouvement fluide.</p>
+        </div>
+
+        <!-- Test de navigation -->
+        <div class="test-section">
+            <h2>Navigation</h2>
+            <p>Liens vers les autres pages :</p>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <a href="index.html" class="btn btn-primary">🏠 Home</a>
+                <a href="agenda.html" class="btn btn-primary">📅 Agenda</a>
+                <a href="devoirs.html" class="btn btn-primary">📚 Devoirs</a>
+                <a href="revisions.html" class="btn btn-primary">🔬 Révisions</a>
+                <a href="cosmos.html" class="btn btn-primary">🌌 Cosmos</a>
+            </div>
+        </div>
+
+        <!-- Résultat du test -->
+        <div class="test-section" style="background: var(--gradient-success); color: white;">
+            <h2>✅ Résultat du Test</h2>
+            <ul style="font-size: 1.1rem; line-height: 2;">
+                <li>✅ Si toutes les couleurs s'affichent correctement → Variables CSS OK</li>
+                <li>✅ Si les boutons ont un style → Composants OK</li>
+                <li>✅ Si les cartes ont des effets hover → Interactions OK</li>
+                <li>✅ Si les ombres sont visibles → Shadows OK</li>
+                <li>✅ Si les bulles flottent en arrière-plan → Animations OK</li>
+            </ul>
+            <p style="margin-top: 2rem; font-size: 1.2rem; font-weight: 600;">
+                Si tous les tests passent, le fichier styles.css est correctement configuré ! 🎉
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Test des interactions
+        console.log('✅ styles.css chargé');
+        console.log('Variables CSS disponibles :');
+        const root = getComputedStyle(document.documentElement);
+        console.log('--primary-blue:', root.getPropertyValue('--primary-blue'));
+        console.log('--pastel-blue:', root.getPropertyValue('--pastel-blue'));
+        console.log('--shadow-md:', root.getPropertyValue('--shadow-md'));
+    </script>
+</body>
+</html>

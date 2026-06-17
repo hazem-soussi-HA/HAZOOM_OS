@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hazoom Unified Model - Super Intelligent AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0c0c0c 0%, #8A2BE2 25%, #1E90FF 50%, #FFD700 75%, #FF6B6B 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        .quantum-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .quantum-particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 15s infinite linear;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            100% {
+                transform: translate(100vw, 100vh) rotate(360deg);
+            }
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 1;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .model-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(50, 50, 70, 0.5);
+            border-radius: 10px;
+            font-size: 0.9em;
+        }
+        
+        .model-info div {
+            text-align: center;
+        }
+        
+        .model-info .value {
+            font-weight: bold;
+            color: #00c6ff;
+            font-size: 1.2em;
+        }
+        
+        .chat-container {
+            height: 500px;
+            overflow-y: auto;
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background: rgba(30, 30, 50, 0.5);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            max-width: 80%;
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .user-message {
+            background: linear-gradient(135deg, #00c6ff, #0072ff);
+            margin-left: auto;
+            text-align: right;
+            align-self: flex-end;
+        }
+        
+        .ai-message {
+            background: linear-gradient(135deg, #ff7e5f, #feb47b);
+            margin-right: auto;
+            align-self: flex-start;
+        }
+        
+        .typing-indicator {
+            display: none;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            align-self: flex-start;
+        }
+        
+        .typing-indicator span {
+            height: 10px;
+            width: 10px;
+            background: #00c6ff;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+            animation: typing 1s infinite;
+        }
+        
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        .input-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        #messageInput {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1em;
+        }
+        
+        #messageInput::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        button {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #00c6ff, #0072ff);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 114, 255, 0.3);
+        }
+        
+        .config-panel {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(30, 30, 50, 0.5);
+            border-radius: 10px;
+        }
+        
+        .config-panel h3 {
+            margin-bottom: 15px;
+            color: #00c6ff;
+        }
+        
+        .config-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .config-option {
+            margin-bottom: 10px;
+        }
+        
+        .config-option label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        select, input {
+            width: 100%;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-box {
+            background: rgba(50, 50, 70, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #00c6ff;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+        
+        .token-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(30, 30, 50, 0.5);
+            border-radius: 10px;
+        }
+        
+        .history-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(30, 30, 50, 0.5);
+            border-radius: 10px;
+        }
+        
+        .history-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 2.2em;
+            }
+            
+            .chat-container {
+                height: 400px;
+            }
+            
+            .model-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quantum-effect" id="quantumEffect"></div>
+    
+    <div class="container">
+        <header>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <img src="/hazoom_logo.png" alt="Hazoom Logo" style="max-width: 200px; height: auto; margin-bottom: 10px;">
+            </div>
+        </header>
+        
+        <div class="model-info">
+            <div>
+                <div class="value" id="modelName">Unified Model</div>
+                <div>Model</div>
+            </div>
+            <div>
+                <div class="value" id="modelVersion">3.0.0</div>
+                <div>Version</div>
+            </div>
+            <div>
+                <div class="value" id="aiPersonality">Balanced</div>
+                <div>Personality</div>
+            </div>
+            <div>
+                <div class="value" id="interactionStyle">Friendly</div>
+                <div>Style</div>
+            </div>
+        </div>
+        
+        <div class="chat-container" id="chatContainer">
+            <div class="message ai-message">
+                Hello! I'm Hazoom, your unified super intelligent assistant. I integrate all customization features into one cohesive system. How can I help you today?
+            </div>
+        </div>
+        
+        <div class="typing-indicator" id="typingIndicator">
+            <span></span>
+            <span></span>
+            <span></span>
+            Hazoom is typing...
+        </div>
+        
+        <div class="input-container">
+            <input type="text" id="messageInput" placeholder="Type your message here...">
+            <button id="sendButton">Send</button>
+        </div>
+        
+        <div class="config-panel">
+            <h3>Model Configuration</h3>
+            <div class="config-options">
+                <div class="config-option">
+                    <label for="aiPersonalitySelect">AI Personality:</label>
+                    <select id="aiPersonalitySelect">
+                        <option value="balanced">Balanced</option>
+                        <option value="optimistic">Optimistic</option>
+                        <option value="professional">Professional</option>
+                        <option value="creative">Creative</option>
+                    </select>
+                </div>
+                <div class="config-option">
+                    <label for="interactionStyleSelect">Interaction Style:</label>
+                    <select id="interactionStyleSelect">
+                        <option value="friendly">Friendly</option>
+                        <option value="professional">Professional</option>
+                        <option value="minimalist">Minimalist</option>
+                    </select>
+                </div>
+                <div class="config-option">
+                    <label for="quantumBoost">Quantum Boost:</label>
+                    <input type="range" id="quantumBoost" min="1" max="5" step="0.1" value="2.5">
+                    <span id="quantumBoostValue">2.5x</span>
+                </div>
+            </div>
+            <button id="updateConfigButton" style="margin-top: 10px;">Update Configuration</button>
+        </div>
+        
+        <div class="stats-container">
+            <div class="stat-box">
+                <div class="stat-value" id="responseTime">0.00ms</div>
+                <div class="stat-label">Avg Response Time</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="totalInteractions">0</div>
+                <div class="stat-label">Total Interactions</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="tokensUsed">0</div>
+                <div class="stat-label">Tokens Used</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="activeUsers">0</div>
+                <div class="stat-label">Active Users</div>
+            </div>
+        </div>
+        
+        <div class="history-section">
+            <h3>Recent Conversations</h3>
+            <div id="historyContainer">
+                <div class="history-item">Welcome to Hazoom Unified Model!</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Create quantum particles for background effect
+        function createQuantumParticles() {
+            const container = document.getElementById('quantumEffect');
+            const particleCount = 40;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('quantum-particle');
+                
+                // Random size and position
+                const size = Math.random() * 100 + 20;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                
+                // Random animation duration and delay
+                particle.style.animationDuration = `${Math.random() * 20 + 10}s`;
+                particle.style.animationDelay = `${Math.random() * 5}s`;
+                
+                // Random opacity
+                particle.style.opacity = Math.random() * 0.1 + 0.05;
+                
+                container.appendChild(particle);
+            }
+        }
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', () => {
+            createQuantumParticles();
+            setupEventListeners();
+            connectWebSocket();
+            loadModelConfig();
+            updateQuantumBoostDisplay();
+        });
+        
+        // DOM elements
+        const chatContainer = document.getElementById('chatContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const responseTimeEl = document.getElementById('responseTime');
+        const totalInteractionsEl = document.getElementById('totalInteractions');
+        const tokensUsedEl = document.getElementById('tokensUsed');
+        const activeUsersEl = document.getElementById('activeUsers');
+        const modelNameEl = document.getElementById('modelName');
+        const modelVersionEl = document.getElementById('modelVersion');
+        const aiPersonalityEl = document.getElementById('aiPersonality');
+        const interactionStyleEl = document.getElementById('interactionStyle');
+        const historyContainer = document.getElementById('historyContainer');
+        const aiPersonalitySelect = document.getElementById('aiPersonalitySelect');
+        const interactionStyleSelect = document.getElementById('interactionStyleSelect');
+        const quantumBoostSlider = document.getElementById('quantumBoost');
+        const quantumBoostValue = document.getElementById('quantumBoostValue');
+        const updateConfigButton = document.getElementById('updateConfigButton');
+        
+        let ws = null;
+        let userId = 'web_user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            sendButton.addEventListener('click', sendMessage);
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            quantumBoostSlider.addEventListener('input', updateQuantumBoostDisplay);
+            updateConfigButton.addEventListener('click', updateModelConfiguration);
+        }
+        
+        // Update quantum boost display
+        function updateQuantumBoostDisplay() {
+            quantumBoostValue.textContent = quantumBoostSlider.value + 'x';
+        }
+        
+        // Connect to WebSocket
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/chat`;
+            
+            ws = new WebSocket(wsUrl);
+            
+            ws.onopen = () => {
+                console.log('Connected to Hazoom Unified Model WebSocket');
+            };
+            
+            ws.onmessage = (event) => {
+                typingIndicator.style.display = 'none';
+                
+                try {
+                    const response = JSON.parse(event.data);
+                    
+                    if (response.type === 'response') {
+                        displayMessage(response.response, 'ai');
+                        
+                        // Update stats
+                        responseTimeEl.textContent = `${(response.response_time * 1000).toFixed(2)}ms`;
+                        tokensUsedEl.textContent = response.tokens_used;
+                        
+                        // Add to history
+                        addToHistory(response.response, 'AI');
+                    } else if (response.type === 'error') {
+                        displayMessage(`Error: ${response.message}`, 'ai');
+                    }
+                } catch (error) {
+                    console.error('Error parsing WebSocket message:', error);
+                    displayMessage('Sorry, I encountered an error processing your request.', 'ai');
+                }
+            };
+            
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+            
+            ws.onclose = () => {
+                console.log('WebSocket connection closed');
+                
+                // Attempt to reconnect after 3 seconds
+                setTimeout(connectWebSocket, 3000);
+            };
+        }
+        
+        // Load model configuration
+        async function loadModelConfig() {
+            try {
+                const response = await fetch('/api/model-config');
+                const data = await response.json();
+                
+                if (data.config) {
+                    modelNameEl.textContent = data.config.model_name;
+                    modelVersionEl.textContent = data.config.version;
+                    aiPersonalityEl.textContent = data.config.ai_response_style;
+                    interactionStyleEl.textContent = data.config.interaction_template;
+                    
+                    // Update select elements
+                    aiPersonalitySelect.value = data.config.ai_response_style;
+                    interactionStyleSelect.value = data.config.interaction_template;
+                    quantumBoostSlider.value = data.config.quantum_boost_factor;
+                    updateQuantumBoostDisplay();
+                }
+                
+                if (data.performance) {
+                    totalInteractionsEl.textContent = data.performance.total_interactions;
+                    activeUsersEl.textContent = data.performance.active_users;
+                }
+            } catch (error) {
+                console.error('Error loading model config:', error);
+            }
+        }
+        
+        // Update model configuration
+        async function updateModelConfiguration() {
+            try {
+                const config = {
+                    ai_response_style: aiPersonalitySelect.value,
+                    interaction_template: interactionStyleSelect.value,
+                    quantum_boost_factor: parseFloat(quantumBoostSlider.value)
+                };
+                
+                const response = await fetch('/api/model-config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(config)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('Configuration updated successfully!');
+                    loadModelConfig(); // Reload to show updated values
+                } else {
+                    throw new Error(data.detail || 'Unknown error');
+                }
+            } catch (error) {
+                console.error('Error updating configuration:', error);
+                alert(`Error updating configuration: ${error.message}`);
+            }
+        }
+        
+        // Send message to backend
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+            
+            // Display user message
+            displayMessage(message, 'user');
+            addToHistory(message, 'User');
+            messageInput.value = '';
+            
+            // Show typing indicator
+            typingIndicator.style.display = 'block';
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            // Send message via WebSocket
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                const messageData = {
+                    message: message,
+                    user_id: userId
+                };
+                
+                ws.send(JSON.stringify(messageData));
+            } else {
+                // Fallback to REST API
+                sendViaRest(message);
+            }
+        }
+        
+        // Send message via REST API as fallback
+        async function sendViaRest(message) {
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        user_id: userId
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayMessage(data.response, 'ai');
+                    
+                    // Update stats
+                    responseTimeEl.textContent = `${(data.response_time * 1000).toFixed(2)}ms`;
+                    tokensUsedEl.textContent = data.tokens_used;
+                    
+                    // Add to history
+                    addToHistory(data.response, 'AI');
+                } else {
+                    throw new Error(data.detail || 'Unknown error');
+                }
+            } catch (error) {
+                console.error('Error sending message via REST:', error);
+                displayMessage('Sorry, I encountered an error processing your request.', 'ai');
+            } finally {
+                typingIndicator.style.display = 'none';
+            }
+        }
+        
+        // Display message in chat
+        function displayMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+            messageDiv.classList.add(sender + '-message');
+            messageDiv.textContent = text;
+            
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // Add to conversation history
+        function addToHistory(text, sender) {
+            const historyItem = document.createElement('div');
+            historyItem.classList.add('history-item');
+            
+            // Truncate long messages
+            const displayText = text.length > 50 ? text.substring(0, 50) + '...' : text;
+            historyItem.textContent = `${sender}: ${displayText}`;
+            
+            // Add to top of history
+            historyContainer.insertBefore(historyItem, historyContainer.firstChild);
+            
+            // Limit history to 5 items
+            if (historyContainer.children.length > 5) {
+                historyContainer.removeChild(historyContainer.lastChild);
+            }
+        }
+        
+        // Add some example messages to the chat
+        setTimeout(() => {
+            displayMessage("I'm the Hazoom Unified Model, integrating all customization features into one cohesive system.", 'ai');
+        }, 2000);
+        
+        setTimeout(() => {
+            displayMessage("I can adapt my personality and interaction style based on your preferences.", 'ai');
+        }, 4000);
+    </script>
+</body>
+</html>

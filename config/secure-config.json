@@ -1,0 +1,27 @@
+{
+  "server": {
+    "host": "0.0.0.0",
+    "port": 8443,
+    "ssl": {
+      "key": "/app/ssl/server.key",
+      "cert": "/app/ssl/server.crt"
+    }
+  },
+  "security": {
+    "https_only": true,
+    "cors": {
+      "enabled": true,
+      "origins": ["https://map.peaceful.world"]
+    },
+    "headers": {
+      "hsts": true,
+      "x_frame_options": "DENY",
+      "content_security": "strict"
+    }
+  },
+  "map": {
+    "center": {"lat": 20, "lng": 0},
+    "zoom": 2,
+    "peaceful_mode": true
+  }
+}

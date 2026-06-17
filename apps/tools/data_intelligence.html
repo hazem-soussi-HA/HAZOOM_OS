@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Intelligence - HAZOOM OS v2.2</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #0f0f1a);
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+        .container { padding: 24px; max-width: 1400px; margin: 0 auto; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            border-color: #8b5cf6;
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.15);
+        }
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #8b5cf6;
+        }
+        .card-desc { font-size: 14px; color: #888; margin-bottom: 16px; }
+        .btn {
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(139, 92, 246, 0.4);
+        }
+        .btn.secondary {
+            background: transparent;
+            border: 1px solid #8b5cf6;
+            color: #8b5cf6;
+        }
+        .input-group { margin-bottom: 16px; }
+        .input-group label { display: block; margin-bottom: 8px; font-size: 14px; color: #888; }
+        .input-group input, .input-group textarea, .input-group select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-family: inherit;
+        }
+        .input-group input:focus { outline: none; border-color: #8b5cf6; }
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .stat-label { color: #888; }
+        .stat-value { color: #8b5cf6; font-weight: 600; }
+        .chart-placeholder {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.1));
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            border: 1px dashed rgba(139, 92, 246, 0.3);
+        }
+        .console {
+            background: #0a0a0f;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            height: 250px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .console-line { margin: 4px 0; }
+        .console-line.info { color: #8b5cf6; }
+        .console-line.success { color: #22c55e; }
+        .tag {
+            display: inline-block;
+            padding: 4px 10px;
+            background: rgba(139, 92, 246, 0.2);
+            border-radius: 12px;
+            font-size: 12px;
+            margin: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <div class="logo">🧠 Data Intelligence</div>
+                <div style="color: #666; font-size: 14px; margin-top: 4px;">AI-Powered Data Analysis</div>
+            </div>
+            <div style="background: rgba(139, 92, 246, 0.2); padding: 8px 16px; border-radius: 20px; font-size: 12px; color: #8b5cf6;">
+                🧠 Neural Network Active
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-title">🔮 Predictive Analytics</div>
+                <div class="card-desc">AI-powered trend prediction</div>
+                <div class="input-group">
+                    <label>Data Type</label>
+                    <select id="predictType">
+                        <option value="market">Market Trends</option>
+                        <option value="user">User Behavior</option>
+                        <option value="tech">Tech Evolution</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="runPrediction()">🔮 Predict</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🔗 Data Link Discovery</div>
+                <div class="card-desc">Find connections in your data</div>
+                <div class="input-group">
+                    <label>Dataset</label>
+                    <select id="datasetSelect">
+                        <option>Web Scraped Data</option>
+                        <option>API Data</option>
+                        <option>User Data</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="findLinks()">🔗 Analyze Links</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🎯 Pattern Recognition</div>
+                <div class="card-desc">Detect patterns in large datasets</div>
+                <div class="input-group">
+                    <label>Pattern Type</label>
+                    <select id="patternType">
+                        <option value="anomaly">Anomalies</option>
+                        <option value="cluster">Clusters</option>
+                        <option value="sequence">Sequences</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="detectPatterns()">🎯 Detect</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📊 Data Synthesis</div>
+                <div class="card-desc">Generate insights from multiple sources</div>
+                <div class="input-group">
+                    <label>Sources (comma separated)</label>
+                    <input type="text" id="sourcesInput" placeholder="web, api, database">
+                </div>
+                <button class="btn" onclick="synthesize()">⚡ Synthesize</button>
+            </div>
+        </div>
+
+        <div class="grid" style="margin-top: 20px;">
+            <div class="card">
+                <div class="card-title">📈 Intelligence Metrics</div>
+                <div class="stat-row">
+                    <span class="stat-label">Total Datasets</span>
+                    <span class="stat-value" id="totalDatasets">127</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Patterns Found</span>
+                    <span class="stat-value" id="patternsFound">1,429</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Predictions</span>
+                    <span class="stat-value" id="predictions">89%</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Neural Nodes</span>
+                    <span class="stat-value">10,000+</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🔗 Data Graph</div>
+                <div class="chart-placeholder">
+                    <div style="font-size: 40px; margin-bottom: 10px;">🕸️</div>
+                    <div style="color: #888;">Visualization of data connections</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="console" id="console">
+            <div class="console-line info">[🧠] Data Intelligence initialized</div>
+            <div class="console-line info">[🟢] Neural network ready</div>
+            <div class="console-line info">[💡] Waiting for analysis commands</div>
+        </div>
+    </div>
+
+    <script>
+        function log(msg, type = 'info') {
+            const console = document.getElementById('console');
+            const time = new Date().toLocaleTimeString();
+            console.innerHTML += `<div class="console-line ${type}">[${time}] ${msg}</div>`;
+            console.scrollTop = console.scrollHeight;
+        }
+
+        function runPrediction() {
+            log('🔮 Running predictive analysis...', 'info');
+            setTimeout(() => {
+                log('✅ Prediction: 87% confidence in upcoming trend', 'success');
+                log('📊 Key indicators: user growth +15%, engagement +22%', 'success');
+            }, 2000);
+        }
+
+        function findLinks() {
+            log('🔗 Analyzing data connections...', 'info');
+            setTimeout(() => {
+                log('✅ Found 47 connections between datasets', 'success');
+                log('🔗 Strong link: API data → Web scraped data', 'info');
+            }, 1500);
+        }
+
+        function detectPatterns() {
+            log('🎯 Detecting patterns...', 'info');
+            setTimeout(() => {
+                log('✅ Detected 3 anomalies in dataset', 'success');
+                log('📊 Found 5 natural clusters', 'success');
+            }, 1800);
+        }
+
+        function synthesize() {
+            log('⚡ Synthesizing data from multiple sources...', 'info');
+            setTimeout(() => {
+                log('✅ Synthesis complete', 'success');
+                log('🧠 Generated 12 new insights', 'success');
+            }, 2500);
+        }
+
+        setInterval(() => {
+            const patterns = document.getElementById('patternsFound');
+            patterns.textContent = (parseInt(patterns.textContent.replace(',', '')) + Math.floor(Math.random() * 5)).toLocaleString();
+        }, 8000);
+    </script>
+</body>
+</html>

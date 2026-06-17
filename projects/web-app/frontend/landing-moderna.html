@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hazoom - Plateforme Éducative Intelligente</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Fredoka:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="modern-ui.css">
+    <style>
+        /* Styles spécifiques à cette page */
+        .hero-section {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        }
+
+        .floating-emojis {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .floating-emojis span {
+            position: absolute;
+            font-size: 3rem;
+            animation: float-around 20s linear infinite;
+            opacity: 0.6;
+        }
+
+        .floating-emojis span:nth-child(1) { top: 10%; left: 10%; animation-delay: 0s; }
+        .floating-emojis span:nth-child(2) { top: 20%; right: 15%; animation-delay: 2s; }
+        .floating-emojis span:nth-child(3) { bottom: 15%; left: 20%; animation-delay: 4s; }
+        .floating-emojis span:nth-child(4) { bottom: 25%; right: 10%; animation-delay: 6s; }
+        .floating-emojis span:nth-child(5) { top: 50%; left: 5%; animation-delay: 8s; }
+        .floating-emojis span:nth-child(6) { top: 60%; right: 5%; animation-delay: 10s; }
+
+        @keyframes float-around {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            33% {
+                transform: translate(100px, -100px) rotate(120deg);
+            }
+            66% {
+                transform: translate(-50px, 100px) rotate(240deg);
+            }
+            100% {
+                transform: translate(0, 0) rotate(360deg);
+            }
+        }
+
+        /* Menu mobile */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+        }
+
+        /* Statistiques animé */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-normal);
+        }
+
+        .stat-card:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: block;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Moderne -->
+    <header class="modern-header">
+        <div class="header-container">
+            <!-- Logo optimisé -->
+            <a href="#" class="header-logo">
+                <img src="hazoom_logo.png" alt="Hazoom Logo" class="animate-bounce-gentle">
+            </a>
+
+            <!-- Navbar Intelligente -->
+            <nav class="smart-navbar">
+                <a href="#" class="nav-item active">
+                    Accueil
+                    <span class="nav-indicator"></span>
+                </a>
+                <a href="#" class="nav-item">
+                    🚀 Fonctionnalités
+                    <span class="nav-indicator"></span>
+                </a>
+                <a href="#" class="nav-item">
+                    📚 Ressources
+                    <span class="nav-indicator"></span>
+                </a>
+                <a href="#" class="nav-item">
+                    👨‍👩‍👧‍👦 Pour Parents
+                    <span class="nav-indicator"></span>
+                </a>
+                <a href="#" class="nav-item">
+                    💬 Support
+                    <span class="nav-badge">3</span>
+                    <span class="nav-indicator"></span>
+                </a>
+            </nav>
+
+            <!-- Bouton Menu Mobile -->
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+        </div>
+    </header>
+
+    <!-- Section Hero -->
+    <section class="hero-section">
+        <!-- Emojis flottants en arrière-plan -->
+        <div class="floating-emojis">
+            <span>🎨</span>
+            <span>📖</span>
+            <span>🎯</span>
+            <span>⭐</span>
+            <span>🌟</span>
+            <span>💫</span>
+        </div>
+
+        <div class="hero-content">
+            <h1 class="hero-title animate-bounce-gentle">L'Avenir de l'Éducation</h1>
+            <p class="hero-subtitle">
+                Une plateforme intelligente qui transforme l'apprentissage en aventure passionnante
+                pour vos enfants 🎓✨
+            </p>
+
+            <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+                <button class="dopamine-btn btn-primary" style="font-size: 1.1rem;">
+                    🚀 Commencer Maintenant
+                </button>
+                <button class="dopamine-btn btn-secondary" style="font-size: 1.1rem;">
+                    📹 Voir la Démo
+                </button>
+            </div>
+
+            <!-- Statistiques -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <span class="stat-number">10K+</span>
+                    <span class="stat-label">Enfants Heureux</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">500+</span>
+                    <span class="stat-label">Leçons Interactives</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">95%</span>
+                    <span class="stat-label">Taux de Satisfaction</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section Fonctionnalités -->
+    <section style="padding: 60px 30px;">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 20px; font-family: 'Fredoka', sans-serif;">
+                <span class="text-gradient">Pourquoi Choisir Hazoom ?</span>
+            </h2>
+            <p style="text-align: center; color: #718096; margin-bottom: 50px; font-size: 1.1rem;">
+                Découvrez comment nous révolutionnons l'éducation 💡
+            </p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon animate-bounce-gentle">🤖</div>
+                    <h3 class="feature-title">IA Personnalisée</h3>
+                    <p class="feature-description">
+                        Notre intelligence artificielle s'adapte au rythme d'apprentissage de chaque enfant
+                        pour une expérience sur mesure.
+                    </p>
+                    <div style="margin-top: 20px;">
+                        <span class="hazoom-badge">Intelligent</span>
+                        <span class="hazoom-badge">Personnalisé</span>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon animate-pulse-glow" style="background: var(--gradient-secondary);">🎮</div>
+                    <h3 class="feature-title">Apprentissage Ludique</h3>
+                    <p class="feature-description">
+                        Transformez l'étude en jeu ! Des quiz interactifs, des défis et des récompenses
+                        qui motivent naturellement.
+                    </p>
+                    <div style="margin-top: 20px;">
+                        <span class="hazoom-badge">Fun</span>
+                        <span class="hazoom-badge">Motivant</span>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon animate-rotate-gentle" style="background: var(--gradient-success);">📊</div>
+                    <h3 class="feature-title">Suivi Parental</h3>
+                    <p class="feature-description">
+                        Visualisez les progrès de votre enfant en temps réel avec des rapports détaillés
+                        et des recommandations d'experts.
+                    </p>
+                    <div style="margin-top: 20px;">
+                        <span class="hazoom-badge">Transparent</span>
+                        <span class="hazoom-badge">Sécurisé</span>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon rainbow-border">🌈</div>
+                    <h3 class="feature-title">Contenu Riche</h3>
+                    <p class="feature-description">
+                        Plus de 500 cours涵盖了数学、科学、语言等 dans un environnement
+                        sécurisé et adapté aux enfants.
+                    </p>
+                    <div style="margin-top: 20px;">
+                        <span class="hazoom-badge">Complet</span>
+                        <span class="hazoom-badge">Varié</span>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon animated-gradient">
+                        <span style="font-size: 2.5rem;">👥</span>
+                    </div>
+                    <h3 class="feature-title">Communauté Active</h3>
+                    <p class="feature-description">
+                        Rejoignez une communauté de parents et d'éducateurs pour échanger,
+                        partager et apprendre ensemble.
+                    </p>
+                    <div style="margin-top: 20px;">
+                        <span class="hazoom-badge">Collaboratif</span>
+                        <span class="hazoom-badge">Engageant</span>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <img src="hazoom_emoji_official.png" alt="Emoji" class="interactive-emoji">
+                    </div>
+                    <h3 class="feature-title">Prix Abordable</h3>
+                    <p class="feature-description">
+                        Offrez la meilleure éducation à votre enfant sans vous ruiner.
+                        Des plans flexibles pour toutes les familles.
+                    </p>
+                    <div style="margin-top: 20px;">
+                        <span class="hazoom-badge">Économique</span>
+                        <span class="hazoom-badge">Accessible</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section Témoignages -->
+    <section style="background: var(--gradient-primary); padding: 80px 30px; margin-top: 60px;">
+        <div style="max-width: 1200px; margin: 0 auto; text-align: center; color: white;">
+            <h2 style="font-size: 2.5rem; margin-bottom: 50px; font-family: 'Fredoka', sans-serif;">
+                Ce Que Disent les Parents 💝
+            </h2>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+                <div class="modern-card" style="text-align: left;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                        <div style="width: 60px; height: 60px; background: var(--gradient-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem;">👩</div>
+                        <div>
+                            <strong style="color: #2d3748;">Sarah M.</strong>
+                            <p style="font-size: 0.9rem; color: #718096;">Maman de Emma, 8 ans</p>
+                        </div>
+                    </div>
+                    <p style="color: #4a5568; font-style: italic;">
+                        "Ma fille adore apprendre avec Hazoom ! Son niveau a augmenté de 40% en 3 mois. Merci ! 🌟"
+                    </p>
+                    <div style="margin-top: 15px; color: #FFD93D; font-size: 1.2rem;">⭐⭐⭐⭐⭐</div>
+                </div>
+
+                <div class="modern-card" style="text-align: left;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                        <div style="width: 60px; height: 60px; background: var(--gradient-secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem;">👨</div>
+                        <div>
+                            <strong style="color: #2d3748;">Pierre L.</strong>
+                            <p style="font-size: 0.9rem; color: #718096;">Papa de Lucas, 10 ans</p>
+                        </div>
+                    </div>
+                    <p style="color: #4a5568; font-style: italic;">
+                        "Un outil fantastique ! Lucas fait ses devoirs avec plaisir maintenant. Les progrès sont visibles ! 🚀"
+                    </p>
+                    <div style="margin-top: 15px; color: #FFD93D; font-size: 1.2rem;">⭐⭐⭐⭐⭐</div>
+                </div>
+
+                <div class="modern-card" style="text-align: left;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                        <div style="width: 60px; height: 60px; background: var(--gradient-success); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem;">👩‍🏫</div>
+                        <div>
+                            <strong style="color: #2d3748;">Marie D.</strong>
+                            <p style="font-size: 0.9rem; color: #718096;">Enseignante</p>
+                        </div>
+                    </div>
+                    <p style="color: #4a5568; font-style: italic;">
+                        "Je recommande Hazoom à tous mes élèves. Les résultats sont impressionnants ! 📚"
+                    </p>
+                    <div style="margin-top: 15px; color: #FFD93D; font-size: 1.2rem;">⭐⭐⭐⭐⭐</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Final -->
+    <section style="padding: 100px 30px; text-align: center;">
+        <div style="max-width: 800px; margin: 0 auto;">
+            <h2 style="font-size: 3rem; margin-bottom: 30px; font-family: 'Fredoka', sans-serif;">
+                <span class="text-gradient">Prêt à Transformer l'Avenir de Votre Enfant ?</span>
+            </h2>
+            <p style="font-size: 1.3rem; color: #718096; margin-bottom: 50px;">
+                Rejoignez des milliers de familles qui ont déjà choisi l'excellence éducative ✨
+            </p>
+
+            <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+                <button class="dopamine-btn btn-primary" style="font-size: 1.2rem; padding: 15px 40px;">
+                    🚀 Essayer Gratuitement
+                </button>
+                <button class="dopamine-btn btn-warm" style="font-size: 1.2rem; padding: 15px 40px;">
+                    💬 Parler à un Expert
+                </button>
+            </div>
+
+            <p style="margin-top: 30px; color: #a0aec0; font-size: 0.9rem;">
+                🎁 Offre spéciale : 30 jours gratuits • Annulation à tout moment • Support 24/7
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="background: #2d3748; color: white; padding: 60px 30px 30px;">
+        <div style="max-width: 1400px; margin: 0 auto;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px; margin-bottom: 40px;">
+                <div>
+                    <img src="hazoom_logo.png" alt="Hazoom" style="width: 150px; margin-bottom: 20px;">
+                    <p style="color: #a0aec0; line-height: 1.6;">
+                        L'avenir de l'éducation est entre vos mains. Ensemble, construisons un avenir meilleur pour nos enfants.
+                    </p>
+                </div>
+                <div>
+                    <h4 style="margin-bottom: 20px; color: #FFD93D;">Liens Utiles</h4>
+                    <ul style="list-style: none; color: #cbd5e0;">
+                        <li style="margin-bottom: 10px;"><a href="#" style="color: inherit; text-decoration: none;">À Propos</a></li>
+                        <li style="margin-bottom: 10px;"><a href="#" style="color: inherit; text-decoration: none;">Blog</a></li>
+                        <li style="margin-bottom: 10px;"><a href="#" style="color: inherit; text-decoration: none;">Carrières</a></li>
+                        <li style="margin-bottom: 10px;"><a href="#" style="color: inherit; text-decoration: none;">Presse</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="margin-bottom: 20px; color: #FFD93D;">Légal</h4>
+                    <ul style="list-style: none; color: #cbd5e0;">
+                        <li style="margin-bottom: 10px;"><a href="#" style="color: inherit; text-decoration: none;">Conditions d'Utilisation</a></li>
+                        <li style="margin-bottom: 10px;"><a href="#" style="color: inherit; text-decoration: none;">Politique de Confidentialité</a></li>
+                        <li style="margin-bottom: 10px;"><a href="#" style="color: inherit; text-decoration: none;">Cookies</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="margin-bottom: 20px; color: #FFD93D;">Contact</h4>
+                    <ul style="list-style: none; color: #cbd5e0;">
+                        <li style="margin-bottom: 10px;">📧 contact@hazoom.com</li>
+                        <li style="margin-bottom: 10px;">📞 +33 1 23 45 67 89</li>
+                        <li style="margin-bottom: 10px;">📍 Paris, France</li>
+                    </ul>
+                </div>
+            </div>
+            <div style="text-align: center; padding-top: 30px; border-top: 1px solid #4a5568; color: #718096;">
+                <p>&copy; 2025 Hazoom. Tous droits réservés. Fait avec ❤️ pour l'éducation.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Sidebar Mobile -->
+    <div class="mobile-sidebar" id="mobileSidebar">
+        <a href="#" class="mobile-nav-item">Accueil</a>
+        <a href="#" class="mobile-nav-item">Fonctionnalités</a>
+        <a href="#" class="mobile-nav-item">Ressources</a>
+        <a href="#" class="mobile-nav-item">Pour Parents</a>
+        <a href="#" class="mobile-nav-item">Support</a>
+    </div>
+
+    <script>
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('mobileSidebar');
+            sidebar.classList.toggle('open');
+        }
+
+        // Animation au scroll
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('.modern-header');
+            if (window.scrollY > 100) {
+                header.style.boxShadow = 'var(--shadow-lg)';
+            } else {
+                header.style.boxShadow = 'var(--shadow-sm)';
+            }
+        });
+
+        // Animation des cartes au scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.feature-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(50px)';
+            card.style.transition = 'all 0.6s ease';
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>

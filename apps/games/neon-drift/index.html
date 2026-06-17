@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>NEON DRIFT — SKY RACER</title>
+  <link rel="stylesheet" href="/src/styles.css">
+</head>
+<body>
+  <div id="ui">
+    <div id="hud">
+      <div>LAP <span id="lap">1</span>/3</div>
+      <div>TIME <span id="time">0:00.00</span></div>
+      <div id="lap-current">LAP TIME <span id="current-lap">0:00.00</span></div>
+    </div>
+    <div id="lap-times"></div>
+    <div id="rank-badge">1st</div>
+    <div id="track-name">QUANTUM COMMAND</div>
+    <div id="speed-display"><div id="speed-number">0</div><div id="speed-unit">KM/H</div></div>
+    <div id="nitro-bar"><div id="nitro-fill"></div></div>
+    <canvas id="minimap" width="140" height="140"></canvas>
+    <div id="sound-toggle">🔊</div>
+    <div id="countdown"></div>
+    <div id="countdown-instruction">HOLD W TO ACCELERATE</div>
+    <div id="go-flash"></div>
+    <div id="speed-lines"></div>
+
+    <div id="start-screen">
+      <div id="start-bg"></div>
+      <div class="logo-container">
+        <div class="logo-main">NEON DRIFT</div>
+        <div class="logo-sub">SKY RACER</div>
+      </div>
+      <div id="track-select">
+        <div class="track-card selected" data-track="command-center">
+          <div class="track-icon">🌆</div>
+          <div class="track-name">Quantum Command</div>
+          <div class="track-desc">Race through 12 cyberpunk city-states. Neon towers pierce the sky.</div>
+          <div class="track-stats">12 waypoints • 2.4km</div>
+        </div>
+        <div class="track-card" data-track="starwars">
+          <div class="track-icon">🌌</div>
+          <div class="track-name">Galactic Core</div>
+          <div class="track-desc">Orbital racing around star systems. Low-gravity drift physics.</div>
+          <div class="track-stats">4 waypoints • 1.8km</div>
+        </div>
+        <div class="track-card" data-track="world-map">
+          <div class="track-icon">🌍</div>
+          <div class="track-name">Earth Circuit</div>
+          <div class="track-desc">8 real-world cities, one epic global sky race.</div>
+          <div class="track-stats">8 waypoints • 2.0km</div>
+        </div>
+      </div>
+      <button id="start-btn">⚡ START RACE ⚡</button>
+      <button id="ai-btn" class="ai-toggle">🤖 AI DEMO</button>
+      <div id="controls-info">W/↑ ACCELERATE &nbsp; S/↓ BRAKE &nbsp; A/← D/→ STEER &nbsp; SPACE NITRO &nbsp; SHIFT DRIFT &nbsp; ESC QUIT</div>
+    </div>
+
+    <div id="game-over">
+      <h1>🏁 RACE COMPLETE 🏁</h1>
+      <p class="stats">Time: <span id="final-time">0:00.00</span></p>
+      <p class="stats">Best Lap: <span id="best-lap">0:00.00</span></p>
+      <p class="stats">Top Speed: <span id="top-speed">0</span> KM/H</p>
+      <p class="stats">Position: <span id="final-position">1st</span></p>
+      <div id="lap-breakdown"></div>
+      <button id="restart-btn">🔄 RACE AGAIN</button>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

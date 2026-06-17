@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦄 ALPHA PONY MCP SUPERVISION</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0a12;
+            --bg-panel: rgba(15, 15, 25, 0.95);
+            --gold: #FFD700;
+            --gold-glow: #FFD700;
+            --cyan: #00f5ff;
+            --purple: #8B5CF6;
+            --green: #00ff88;
+            --red: #ff4757;
+            --border: rgba(255, 215, 0, 0.2);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Space Mono', monospace;
+            background: var(--bg-dark);
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Animated Background */
+        .bg-grid {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: 
+                linear-gradient(rgba(255,215,0,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,215,0,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+            z-index: -1;
+        }
+        
+        @keyframes gridMove {
+            0% { transform: perspective(500px) rotateX(60deg); }
+            100% { transform: perspective(500px) rotateX(60deg) translateY(50px); }
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(20px);
+        }
+        
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--gold), #FFE55C);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .badge {
+            padding: 8px 20px;
+            background: linear-gradient(135deg, var(--gold), #B8860B);
+            border-radius: 25px;
+            color: #000;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        /* Status Bar */
+        .status-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .status-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .status-card.active {
+            border-color: var(--green);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.1);
+        }
+        
+        .status-card .value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            color: var(--gold);
+        }
+        
+        .status-card .label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .status-dot {
+            display: inline-block;
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+            background: var(--green);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 900px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+        
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: rgba(255, 215, 0, 0.05);
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .panel-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            color: var(--gold);
+        }
+        
+        .panel-body {
+            padding: 20px;
+            min-height: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        /* Server List */
+        .server-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 3px solid var(--green);
+        }
+        
+        .server-item.offline {
+            border-left-color: var(--red);
+        }
+        
+        .server-name {
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .server-status {
+            font-size: 11px;
+            color: var(--green);
+        }
+        
+        .server-status.offline {
+            color: var(--red);
+        }
+        
+        /* Log Console */
+        .log-entry {
+            padding: 8px 12px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            font-size: 12px;
+            border-left: 3px solid var(--gold);
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .log-entry.info { border-left-color: var(--cyan); }
+        .log-entry.success { border-left-color: var(--green); }
+        .log-entry.warning { border-left-color: var(--gold); }
+        .log-entry.error { border-left-color: var(--red); }
+        
+        .log-time {
+            color: #666;
+            margin-right: 10px;
+        }
+        
+        /* MCP Protocol Status */
+        .protocol-flow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .flow-node {
+            width: 80px;
+            text-align: center;
+        }
+        
+        .flow-icon {
+            font-size: 30px;
+            margin-bottom: 5px;
+        }
+        
+        .flow-label {
+            font-size: 11px;
+            color: #888;
+        }
+        
+        .flow-arrow {
+            font-size: 20px;
+            color: var(--gold);
+        }
+        
+        /* Input */
+        .cmd-input {
+            width: 100%;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--gold);
+            font-family: 'Space Mono', monospace;
+            font-size: 14px;
+            outline: none;
+        }
+        
+        .cmd-input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+        }
+        
+        /* Stats */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-num {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            color: var(--cyan);
+        }
+        
+        .stat-name {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    
+    <div class="container">
+        <header>
+            <div class="logo">🔗 MCP SUPERVISION v2.0</div>
+            <div class="badge">👑 Hazem Soussi</div>
+        </header>
+        
+        <div class="status-bar">
+            <div class="status-card active">
+                <div class="value"><span class="status-dot"></span>8</div>
+                <div class="label">Active Servers</div>
+            </div>
+            <div class="status-card">
+                <div class="value" id="requests">1,247</div>
+                <div class="label">Requests</div>
+            </div>
+            <div class="status-card">
+                <div class="value">99.7%</div>
+                <div class="label">Uptime</div>
+            </div>
+            <div class="status-card">
+                <div class="value">852 Hz</div>
+                <div class="label">Resonance</div>
+            </div>
+        </div>
+        
+        <div class="main-grid">
+            <!-- Server Status Panel -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title">🖥️ MCP SERVERS</span>
+                    <span style="color: var(--green); font-size: 12px;">● ONLINE</span>
+                </div>
+                <div class="panel-body" id="serverList">
+                    <div class="server-item">
+                        <div>
+                            <div class="server-name">Memory Server</div>
+                            <div style="font-size: 11px; color: #666;">Context & Knowledge Graph</div>
+                        </div>
+                        <div class="server-status">● ACTIVE</div>
+                    </div>
+                    <div class="server-item">
+                        <div>
+                            <div class="server-name">File System</div>
+                            <div style="font-size: 11px; color: #666;">Local File Access</div>
+                        </div>
+                        <div class="server-status">● ACTIVE</div>
+                    </div>
+                    <div class="server-item">
+                        <div>
+                            <div class="server-name">OpenRouter</div>
+                            <div style="font-size: 11px; color: #666;">AI Model Integration</div>
+                        </div>
+                        <div class="server-status">● ACTIVE</div>
+                    </div>
+                    <div class="server-item">
+                        <div>
+                            <div class="server-name">Neural Bridge</div>
+                            <div style="font-size: 11px; color: #666;">Email & Intelligence</div>
+                        </div>
+                        <div class="server-status">● ACTIVE</div>
+                    </div>
+                    <div class="server-item">
+                        <div>
+                            <div class="server-name">Hazoom OS</div>
+                            <div style="font-size: 11px; color: #666;">Web OS Core</div>
+                        </div>
+                        <div class="server-status">● ACTIVE</div>
+                    </div>
+                    <div class="server-item">
+                        <div>
+                            <div class="server-name">Ollama Engine</div>
+                            <div style="font-size: 11px; color: #666;">Local AI</div>
+                        </div>
+                        <div class="server-status">● ACTIVE</div>
+                    </div>
+                    <div class="server-item offline">
+                        <div>
+                            <div class="server-name">Quantum Monitor</div>
+                            <div style="font-size: 11px; color: #666;">System Metrics</div>
+                        </div>
+                        <div class="server-status offline">○ OFFLINE</div>
+                    </div>
+                    <div class="server-item">
+                        <div>
+                            <div class="server-name">Auth Service</div>
+                            <div style="font-size: 11px; color: #666;">Security</div>
+                        </div>
+                        <div class="server-status">● ACTIVE</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Protocol Flow Panel -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title">🔄 PROTOCOL FLOW</span>
+                    <span style="color: var(--cyan); font-size: 12px;">MCP/2.0</span>
+                </div>
+                <div class="panel-body">
+                    <div class="protocol-flow">
+                        <div class="flow-node">
+                            <div class="flow-icon">🦄</div>
+                            <div class="flow-label">Client</div>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-node">
+                            <div class="flow-icon">🔗</div>
+                            <div class="flow-label">Router</div>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-node">
+                            <div class="flow-icon">🖥️</div>
+                            <div class="flow-label">Servers</div>
+                        </div>
+                    </div>
+                    
+                    <div style="font-size: 12px; color: #888; margin-bottom: 15px;">
+                        <strong style="color: var(--gold);">MCP Protocol v2.0</strong> - Multi-Context Protocol for intelligent request routing and parallel execution across multiple AI services.
+                    </div>
+                    
+                    <input type="text" class="cmd-input" id="cmdInput" placeholder="Type MCP command (e.g., /search AI, /context neural)..." onkeypress="if(event.key==='Enter')executeCmd()">
+                    
+                    <div style="margin-top: 20px;">
+                        <div class="panel-title" style="margin-bottom: 10px;">📝 ACTIVITY LOG</div>
+                        <div id="logConsole">
+                            <div class="log-entry info"><span class="log-time">00:00:01</span>MCP Router initialized</div>
+                            <div class="log-entry success"><span class="log-time">00:00:02</span>8 servers connected</div>
+                            <div class="log-entry info"><span class="log-time">00:00:03</span>Protocol v2.0 ready</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 20px; text-align: center; padding: 20px; color: #666; font-size: 12px;">
+            🦄 ALPHA PONY MCP SUPERVISION | Created by Hazem Soussi | First Tunisian Engineer to Achieve SUPER INTELLIGENCE | 2026
+        </div>
+    </div>
+    
+    <script>
+        let requestCount = 1247;
+        
+        function executeCmd() {
+            const input = document.getElementById('cmdInput');
+            const cmd = input.value.trim();
+            if (!cmd) return;
+            
+            addLog('info', `Executing: ${cmd}`);
+            
+            // Simulate command processing
+            setTimeout(() => {
+                addLog('success', `Command processed: ${cmd}`);
+                requestCount++;
+                document.getElementById('requests').textContent = requestCount.toLocaleString();
+                input.value = '';
+            }, 500);
+        }
+        
+        function addLog(type, msg) {
+            const console = document.getElementById('logConsole');
+            const time = new Date().toTimeString().split(' ')[0];
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.innerHTML = `<span class="log-time">${time}</span>${msg}`;
+            console.appendChild(entry);
+            console.scrollTop = console.scrollHeight;
+        }
+        
+        // Simulate live updates
+        setInterval(() => {
+            const activities = [
+                {type: 'info', msg: 'New connection from OpenRouter'},
+                {type: 'success', msg: 'Memory cache updated'},
+                {type: 'info', msg: 'Neural bridge sync complete'},
+                {type: 'success', msg: 'Request handled in 12ms'}
+            ];
+            const rand = activities[Math.floor(Math.random() * activities.length)];
+            if (Math.random() > 0.7) {
+                addLog(rand.type, rand.msg);
+            }
+        }, 5000);
+    </script>
+</body>
+</html>

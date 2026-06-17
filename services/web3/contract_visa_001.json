@@ -1,0 +1,12 @@
+{
+  "contract_id": "visa_001",
+  "type": "visa_payment",
+  "service_provider": "AlphaPony",
+  "client_id": "client_123",
+  "amount_usd": 1500.00,
+  "visa_last4": "4242",
+  "status": "succeeded",
+  "created_at": "2026-04-28T12:00:00",
+  "legal_agreement": "VISA PAYMENT AGREEMENT\nAlpha Pony Neural Systems - Payment ID: visa_001\nDate: 2026-04-28T12:00:00\n\nPARTIES:\nService Provider: AlphaPony\nClient: client_123\n\nPAYMENT TERMS:\nTotal Amount: $1500.00 USD\nPayment Method: VISA (ending in 4242)\nStatus: succeeded\n\nJURISDICTION: International Commercial Arbitration Rules",
+  "stripe_payment_id": "pi_123456789"
+}
