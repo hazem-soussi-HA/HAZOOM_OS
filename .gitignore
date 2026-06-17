@@ -31,6 +31,14 @@ Thumbs.db
 # SSL certificates (generate locally)
 ssl/server.key
 ssl/server.crt
+config/ssl/
+config/security/
+core/server.crt
+core/server.key
+
+# Rust build artifacts (games)
+apps/games/super-mario-gta6/rust/mario_gta6_physics/target/
+apps/games/neon-drift/wasm/target/
 
 # Logs
 logs/
