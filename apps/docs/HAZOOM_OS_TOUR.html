@@ -431,21 +431,21 @@
             <h2 class="section-title">🚀 Welcome to HAZOOM OS</h2>
             <div class="section-content">
                 <p>
-                    <strong>HAZOOM OS v2.1 - Strategic Cosmic Edition</strong> is a comprehensive web-based operating system designed to promote peace, understanding, and human betterment through technology guided by Conscious Intent values.
+                    <strong>HAZOOM OS v4.0 - Pascal Engine Edition</strong> is a browser-based operating system that implements real kernel concepts in JavaScript. It features a Pascal Engine ported from original Pascal source code, process scheduling, memory management, virtual filesystem, and ring-based security.
                 </p>
                 
                 <div class="highlight-box">
-                    <h3>🌟 Mission Statement</h3>
-                    <p>"A Gift of Peace to the World, Strategically Implementing Conscious Intent Values through Advanced Technology"</p>
+                    <h3>Mission Statement</h3>
+                    <p>"Operating Systems Thinking — Real kernel concepts brought to life in the browser through Pascal Engine neural processing"</p>
                 </div>
                 
                 <p>
-                    Built entirely with <span class="tag">JavaScript</span>, <span class="tag">Python</span>, and <span class="tag">HTML5</span>, HAZOOM OS represents a new paradigm in web operating systems, combining advanced features with ethical design principles.
+                    Built with <span class="tag">Node.js</span>, <span class="tag">Express</span>, and <span class="tag">Vanilla JavaScript</span>, HAZOOM OS implements actual OS concepts like process management, memory paging, filesystem inodes, and device drivers — all running in your browser.
                 </p>
                 
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-value">v2.1</div>
+                        <div class="stat-value">v4.0</div>
                         <div class="stat-label">Version</div>
                     </div>
                     <div class="stat-card">
@@ -454,11 +454,11 @@
                     </div>
                     <div class="stat-card">
                         <div class="stat-value">100%</div>
-                        <div class="stat-label">Web-Based</div>
+                        <div class="stat-label">Browser Runtime</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value">16</div>
-                        <div class="stat-label">Core Modules</div>
+                        <div class="stat-value">4</div>
+                        <div class="stat-label">Pascal Engines</div>
                     </div>
                 </div>
             </div>
@@ -476,30 +476,30 @@
                 <div id="system-diagram">
                     <div class="diagram-container">
                         <div class="diagram-box core">
-                            <div class="diagram-title">🎯 CORE KERNEL</div>
+                            <div class="diagram-title">KERNEL (core/kernel.js)</div>
                             <div class="diagram-items">
-                                <div>System State Management</div>
-                                <div>Event Bus</div>
-                                <div>Quantum Kernel</div>
-                                <div>File System</div>
+                                <div>ProcessManager</div>
+                                <div>MemoryManager</div>
+                                <div>FileSystem</div>
+                                <div>SecurityManager</div>
                             </div>
                         </div>
                         <div class="diagram-box app">
-                            <div class="diagram-title">📱 APPLICATIONS</div>
+                            <div class="diagram-title">PASCAL ENGINE</div>
                             <div class="diagram-items">
-                                <div>Window Manager</div>
-                                <div>App Registry</div>
-                                <div>40+ Applications</div>
-                                <div>Taskbar</div>
+                                <div>AetherEngine</div>
+                                <div>NeuralCore</div>
+                                <div>DeepConsciousness</div>
+                                <div>SynapseOS</div>
                             </div>
                         </div>
                         <div class="diagram-box server">
-                            <div class="diagram-title">🖥️ BACKEND SERVICES</div>
+                            <div class="diagram-title">BACKEND (server.js)</div>
                             <div class="diagram-items">
-                                <div>Secure Server (8080)</div>
-                                <div>Quantum Monitor (8002)</div>
-                                <div>Aether Bridge</div>
-                                <div>LLM Engine</div>
+                                <div>Node.js + Express</div>
+                                <div>WebSocket Real-time</div>
+                                <div>40+ App Endpoints</div>
+                                <div>16 Core APIs</div>
                             </div>
                         </div>
                     </div>
@@ -507,32 +507,18 @@
                 
                 <div class="code-block">
 const HAZOOM_CONFIG = {
-    VERSION: '2.1.0',
+    VERSION: '4.0.0',
     NAME: 'HAZOOM OS',
-    STORAGE_KEY: 'hazoom_os_state'
+    CREATOR: 'Hazem Soussi (HA)',
+    PASCAL_ENGINE: true
 };
 
-const System = {
-    state: {
-        resonance: 852.0,
-        consciousness: 100,
-        uptime: 0,
-        peaceMode: true,
-        user: 'hazem',
-        cpu_load: 0,
-        memory_usage: 0,
-        total_memory: 16384,
-        system_authority: 'LEVEL_1'
-    },
-    events: {},
-    on: function (event, callback) {
-        if (!this.events[event]) this.events[event] = [];
-        this.events[event].push(callback);
-    },
-    emit: function (event, data) {
-        if (this.events[event]) this.events[event].forEach(cb => cb(data));
-    }
-};
+// Kernel initializes with real OS concepts
+const kernel = new HazoomKernel();
+// ProcessManager: round-robin scheduling
+// MemoryManager: paging with TLB
+// FileSystem: inodes + directories
+// SecurityManager: ring 0-3 levels
                 </div>
             </div>
         </section>
@@ -548,50 +534,50 @@ const System = {
                 
                 <div class="feature-grid">
                     <div class="feature-card">
-                        <div class="feature-icon">🪟</div>
-                        <div class="feature-title">Window Management</div>
+                        <div class="feature-icon">⚙️</div>
+                        <div class="feature-title">Process Management</div>
                         <div class="feature-desc">
-                            Advanced window system with drag, resize, minimize, maximize, and close functionality. Windows maintain state and can be restored between sessions.
+                            Real process scheduling with round-robin, process states (ready/running/blocked), PID tracking, and system call handling.
                         </div>
                     </div>
                     
                     <div class="feature-card">
-                        <div class="feature-icon">🗂️</div>
+                        <div class="feature-icon">💾</div>
+                        <div class="feature-title">Memory Management</div>
+                        <div class="feature-desc">
+                            Virtual memory with paging, TLB simulation, page fault handling, and process memory isolation.
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">📁</div>
                         <div class="feature-title">Virtual File System</div>
                         <div class="feature-desc">
-                            Complete file system with folders, files, create, read, update, and delete operations. Persistent storage using localStorage with encryption.
+                            Node.js-backed filesystem with inodes, directories, permissions, and persistent storage.
                         </div>
                     </div>
                     
                     <div class="feature-card">
-                        <div class="feature-icon">🔐</div>
-                        <div class="feature-title">Multi-Level Security</div>
+                        <div class="feature-icon">🔒</div>
+                        <div class="feature-title">Ring-Based Security</div>
                         <div class="feature-desc">
-                            Four authority levels (LEVEL_1 through ROOT), session management, rate limiting, CSRF protection, and content filtering.
+                            Ring 0-3 privilege levels, capability-based access control, and syscall validation.
                         </div>
                     </div>
                     
                     <div class="feature-card">
                         <div class="feature-icon">🧠</div>
-                        <div class="feature-title">AI Integration</div>
+                        <div class="feature-title">Pascal Engine</div>
                         <div class="feature-desc">
-                            Multi-layered AI system with AI Orchestrator, LLM Engine via Ollama, Deep Think Engine for advanced reasoning, and transparent AI interactions.
-                        </div>
-                    </div>
-                    
-                    <div class="feature-card">
-                        <div class="feature-icon">🌊</div>
-                        <div class="feature-title">Aether Bridge</div>
-                        <div class="feature-desc">
-                            WebSocket-based virtual ethernet connecting frontend to Python core for real-time communication, command transmission, and bidirectional data flow.
+                            Neural consciousness processing with AetherEngine, NeuralCore, DeepConsciousness, and SynapseOS with PheromoneNet.
                         </div>
                     </div>
                     
                     <div class="feature-card">
                         <div class="feature-icon">📊</div>
-                        <div class="feature-title">Quantum Monitoring</div>
+                        <div class="feature-title">Real-time Monitoring</div>
                         <div class="feature-desc">
-                            Real-time system metrics including CPU, memory, disk usage, and quantum heat diffusion simulation across OS components.
+                            WebSocket-powered kernel state updates with live process, memory, and filesystem monitoring.
                         </div>
                     </div>
                 </div>
@@ -604,18 +590,19 @@ const System = {
             <h2 class="section-title">📱 Applications</h2>
             <div class="section-content">
                 <p>
-                    HAZOOM OS includes 40+ built-in applications organized into categories for productivity, development, monitoring, and exploration.
+                    HAZOOM OS includes 40+ built-in applications organized into games, AI tools, system utilities, and neural visualizers.
                 </p>
                 
                 <div class="feature-grid">
                     <div class="feature-card">
-                        <div class="feature-icon">🧩</div>
-                        <div class="feature-title">Productivity Suite</div>
+                        <div class="feature-icon">🎮</div>
+                        <div class="feature-title">Games</div>
                         <div class="feature-desc">
-                            <strong>Terminal</strong> - Command-line interface<br>
-                            <strong>File Manager</strong> - File browser and editor<br>
-                            <strong>Background Office</strong> - Document editor<br>
-                            <strong>Settings</strong> - System configuration
+                            <strong>Super Mario GTA6</strong> - 2D platformer with police chase<br>
+                            <strong>Neon Drift</strong> - 3D sky racing with Three.js<br>
+                            <strong>Chess</strong> - AI opponent with multiple difficulties<br>
+                            <strong>Tetris</strong> - Classic block puzzle<br>
+                            <strong>Flappy Bird</strong> - Endless runner
                         </div>
                     </div>
                     
@@ -623,54 +610,54 @@ const System = {
                         <div class="feature-icon">🤖</div>
                         <div class="feature-title">AI Applications</div>
                         <div class="feature-desc">
-                            <strong>AI Assistant</strong> - General AI helper<br>
+                            <strong>AI Assistant V3</strong> - GPT-4 integrated chat<br>
+                            <strong>Deep Think Explorer</strong> - Chain-of-thought visualization<br>
                             <strong>AI Command Center</strong> - AI control panel<br>
-                            <strong>Quantum AI Assistant</strong> - Advanced AI<br>
                             <strong>Super Intelligent Agent</strong> - Autonomous AI
                         </div>
                     </div>
                     
                     <div class="feature-card">
-                        <div class="feature-icon">📊</div>
-                        <div class="feature-title">Monitoring Tools</div>
+                        <div class="feature-icon">🛠️</div>
+                        <div class="feature-title">System Tools</div>
                         <div class="feature-desc">
-                            <strong>Admin Monitor</strong> - System supervision<br>
-                            <strong>Quantum Monitor</strong> - Heat visualization<br>
-                            <strong>Consciousness Portal</strong> - AI metrics<br>
-                            <strong>Deep Think Explorer</strong> - Reasoning analysis
+                            <strong>Terminal</strong> - Command-line interface<br>
+                            <strong>File Manager</strong> - File browser<br>
+                            <strong>System Monitor</strong> - Real-time metrics<br>
+                            <strong>Security Center</strong> - Security dashboard
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">🧠</div>
+                        <div class="feature-title">Neural Tools</div>
+                        <div class="feature-desc">
+                            <strong>Consciousness Portal</strong> - AI visualization<br>
+                            <strong>Neural Visualizer</strong> - Neural network display<br>
+                            <strong>Dream Simulator</strong> - Dream state simulation<br>
+                            <strong>Empathy Engine</strong> - Emotional processing
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <div class="feature-title">Development</div>
+                        <div class="feature-desc">
+                            <strong>Pascal Engine Dashboard</strong> - Kernel monitoring<br>
+                            <strong>Process Manager</strong> - Process viewer<br>
+                            <strong>Memory Inspector</strong> - Memory allocation<br>
+                            <strong>Device Manager</strong> - Device drivers
                         </div>
                     </div>
                     
                     <div class="feature-card">
                         <div class="feature-icon">🌐</div>
-                        <div class="feature-title">Network Tools</div>
+                        <div class="feature-title">Network & Media</div>
                         <div class="feature-desc">
                             <strong>Browser</strong> - Web browsing<br>
-                            <strong>Secure Scraper</strong> - Data collection<br>
-                            <strong>API Settings</strong> - Configuration<br>
-                            <strong>Hazoom Integration</strong> - Platform connector
-                        </div>
-                    </div>
-                    
-                    <div class="feature-card">
-                        <div class="feature-icon">🎨</div>
-                        <div class="feature-title">Creative Tools</div>
-                        <div class="feature-desc">
                             <strong>Camera Stream</strong> - Webcam access<br>
-                            <strong>Antigravity Navigator</strong> - 3D visualization<br>
-                            <strong>Advanced Navigator</strong> - Enhanced navigation<br>
-                            <strong>Quantum Travel</strong> - Exploration tool
-                        </div>
-                    </div>
-                    
-                    <div class="feature-card">
-                        <div class="feature-icon">♟️</div>
-                        <div class="feature-title">Chess System</div>
-                        <div class="feature-desc">
-                            <strong>Chess Game</strong> - Play against AI<br>
-                            <strong>Transformer AI</strong> - Neural network<br>
-                            <strong>Learning Module</strong> - Tutorials<br>
-                            <strong>Web Scraper</strong> - Data collection
+                            <strong>Hazoom Search</strong> - Universal search<br>
+                            <strong>Hazoom Universe</strong> - System explorer
                         </div>
                     </div>
                 </div>
@@ -683,104 +670,73 @@ const System = {
             <h2 class="section-title">🛡️ Security System</h2>
             <div class="section-content">
                 <p>
-                    HAZOOM OS implements multiple layers of security to protect users and system integrity while maintaining accessibility.
+                    HAZOOM OS implements ring-based security with privilege levels, capability-based access control, and syscall validation.
                 </p>
                 
                 <div class="highlight-box">
-                    <h3>🔒 Security Features</h3>
+                    <h3>Security Features</h3>
                     <ul>
-                        <li><strong>Multi-Level Authority</strong> - LEVEL_1 through ROOT access levels</li>
-                        <li><strong>Session Management</strong> - Secure session tokens with timeout</li>
-                        <li><strong>Rate Limiting</strong> - 100 requests/minute per client</li>
-                        <li><strong>CSRF Protection</strong> - One-time use tokens</li>
-                        <li><strong>XSS Prevention</strong> - Input sanitization and CSP headers</li>
-                        <li><strong>Content Filtering</strong> - Dangerous pattern detection</li>
-                        <li><strong>Encrypted Storage</strong> - XOR encryption with 32-byte key</li>
-                    </ul>
-                </div>
-                
-                <div class="code-block">
-// Authority Levels
-const levels = { 
-    'LEVEL_1': 1, 
-    'LEVEL_2': 2, 
-    'LEVEL_3': 3, 
-    'ROOT': 4 
-};
-
-// Rate Limiting
-const RATE_LIMITS = {
-    requests: 100,
-    window: 60  // seconds
-};
-
-// Security Headers
-const SECURITY_HEADERS = {
-    'X-Content-Type-Options': 'nosniff',
-    'X-Frame-Options': 'DENY',
-    'X-XSS-Protection': '1; mode=block',
-    'Content-Security-Policy': "default-src 'self'...",
-    'Referrer-Policy': 'strict-origin-when-cross-origin'
-};
-                </div>
+                        <li><strong>Ring 0-3 Protection</strong> - Kernel, driver, application, and user privilege levels</li>
+                        <li><strong>Capability-Based Access</strong> - Fine-grained permission control</li>
+                        <li><strong>Syscall Validation
             </div>
         </section>
         
         <!-- Section 6: AI System -->
         <section class="tour-section" data-section="6">
             <span class="section-number">06</span>
-            <h2 class="section-title">🤖 Artificial Intelligence</h2>
+            <h2 class="section-title">🧠 Pascal Engine</h2>
             <div class="section-content">
                 <p>
-                    HAZOOM OS features a sophisticated, multi-layered AI system designed for transparency, reasoning, and continuous learning.
+                    HAZOOM OS features a Pascal Engine ported from original Pascal source code, implementing neural consciousness processing, dream simulation, and emotional empathy.
                 </p>
                 
                 <div class="feature-grid">
                     <div class="feature-card">
-                        <div class="feature-icon">🎭</div>
-                        <div class="feature-title">AI Orchestrator</div>
+                        <div class="feature-icon">⚡</div>
+                        <div class="feature-title">AetherEngine</div>
                         <div class="feature-desc">
-                            Central coordination layer managing multiple AI agents, conversations, model registry, and event dispatching. Provides unified interface for all AI operations.
-                        </div>
-                    </div>
-                    
-                    <div class="feature-card">
-                        <div class="feature-icon">🔌</div>
-                        <div class="feature-title">LLM Engine</div>
-                        <div class="feature-desc">
-                            Ollama integration for local LLM execution. Supports streaming responses, conversation history, system context injection, and "quantum thoughts" parsing.
-                        </div>
-                    </div>
-                    
-                    <div class="feature-card">
-                        <div class="feature-icon">💭</div>
-                        <div class="feature-title">Deep Think Engine</div>
-                        <div class="feature-desc">
-                            Multi-path reasoning with self-correction. Parallel execution of logical, creative, and analytical reasoning paths with confidence scoring.
+                            Neural consciousness processing with aether energy field simulation, quantum state management, and consciousness level tracking.
                         </div>
                     </div>
                     
                     <div class="feature-card">
                         <div class="feature-icon">🧠</div>
-                        <div class="feature-title">Transparent AI</div>
+                        <div class="feature-title">NeuralCore</div>
                         <div class="feature-desc">
-                            "Quantum thoughts" reveal reasoning steps. Users can see AI's thought process, building trust and enabling debugging of AI behavior.
+                            AI inference engine with neural pathway activation, synaptic weight adjustment, and pattern recognition.
                         </div>
                     </div>
                     
                     <div class="feature-card">
-                        <div class="feature-icon">📚</div>
-                        <div class="feature-title">Multi-Agent System</div>
+                        <div class="feature-icon">💭</div>
+                        <div class="feature-title">DeepConsciousness</div>
                         <div class="feature-desc">
-                            Coordinate multiple AI agents for parallel task execution. Each agent can specialize in different domains (security, navigation, analysis).
+                            Dream state simulation with subconscious processing, dream pattern analysis, and awareness metrics.
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">🌐</div>
+                        <div class="feature-title">SynapseOS</div>
+                        <div class="feature-desc">
+                            Pulse-based networking with PheromoneNet (signal broadcasting), PulseOS (rhythm processing), and EmpathyEngine (emotional resonance).
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">🌊</div>
+                        <div class="feature-title">DreamWeaver</div>
+                        <div class="feature-desc">
+                            Dream narrative generation with symbolic pattern matching and subconscious exploration.
                         </div>
                     </div>
                     
                     <div class="feature-card">
                         <div class="feature-icon">🔗</div>
-                        <div class="feature-title">Model Registry</div>
+                        <div class="feature-title">PheromoneNet</div>
                         <div class="feature-desc">
-                            Dynamic model discovery and selection. Support for multiple LLM models via Ollama with automatic model information retrieval and fallback handling.
+                            Signal broadcasting system for neural communication, with pheromone strength and decay rates.
                         </div>
                     </div>
                 </div>
@@ -790,40 +746,39 @@ const SECURITY_HEADERS = {
         <!-- Section 7: Chess Subsystem -->
         <section class="tour-section" data-section="7">
             <span class="section-number">07</span>
-            <h2 class="section-title">♟️ Chess Subsystem</h2>
+            <h2 class="section-title">♟️ Chess Game</h2>
             <div class="section-content">
                 <p>
-                    A complete chess engine with both traditional and neural network-based AI, learning resources, and web scraping capabilities.
+                    A complete chess game with AI opponent, multiple difficulty levels, move history, and board analysis.
                 </p>
                 
                 <div class="highlight-box">
-                    <h3>♟️ Chess AI Capabilities</h3>
+                    <h3>Chess Features</h3>
                     <ul>
-                        <li><strong>Traditional AI</strong> - Minimax with alpha-beta pruning</li>
-                        <li><strong>Transformer AI</strong> - Multi-head attention neural network</li>
-                        <li><strong>Piece-Square Evaluation</strong> - Positional bonuses</li>
-                        <li><strong>Opening Book</strong> - Pre-defined opening moves</li>
-                        <li><strong>Move Prediction</strong> - Top-k move probabilities</li>
-                        <li><strong>Attention Visualization</strong> - Piece interaction weights</li>
+                        <li><strong>AI Opponent</strong> - Multiple difficulty levels</li>
+                        <li><strong>Move History</strong> - Track all moves</li>
+                        <li><strong>Board Analysis</strong> - Position evaluation</li>
+                        <li><strong>Drag & Drop</strong> - Intuitive piece movement</li>
+                        <li><strong>Sound Effects</strong> - Move and capture sounds</li>
                     </ul>
                 </div>
                 
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-value">10M</div>
-                        <div class="stat-label">Parameters</div>
+                        <div class="stat-value">3</div>
+                        <div class="stat-label">Difficulty Levels</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-value">6</div>
-                        <div class="stat-label">Encoder Layers</div>
+                        <div class="stat-label">Piece Types</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value">8</div>
-                        <div class="stat-label">Attention Heads</div>
+                        <div class="stat-value">64</div>
+                        <div class="stat-label">Board Squares</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value">4096</div>
-                        <div class="stat-label">Possible Moves</div>
+                        <div class="stat-value">Real-time</div>
+                        <div class="stat-label">AI Analysis</div>
                     </div>
                 </div>
             </div>
@@ -835,17 +790,17 @@ const SECURITY_HEADERS = {
             <h2 class="section-title">🚀 Getting Started</h2>
             <div class="section-content">
                 <p>
-                    Launch HAZOOM OS and explore its powerful features. The system is designed to be intuitive and accessible.
+                    Launch HAZOOM OS with Node.js and explore its powerful features. The system is designed to be intuitive and accessible.
                 </p>
                 
                 <div class="feature-grid">
                     <div class="feature-card">
                         <div class="feature-icon">🖥️</div>
-                        <div class="feature-title">Start Servers</div>
+                        <div class="feature-title">Start Server</div>
                         <div class="feature-desc">
-                            <strong>Secure Server:</strong> node server/secure_server.js<br>
-                            <strong>Quantum Monitor:</strong> python server/quantum_monitor.py<br>
-                            <strong>Aether Bridge:</strong> hazoom-os/server/aether_server.py
+                            <strong>Command:</strong> node server.js<br>
+                            <strong>Port:</strong> 3000 (default)<br>
+                            <strong>Features:</strong> Express + WebSocket
                         </div>
                     </div>
                     
@@ -853,7 +808,7 @@ const SECURITY_HEADERS = {
                         <div class="feature-icon">🌐</div>
                         <div class="feature-title">Open Browser</div>
                         <div class="feature-desc">
-                            Navigate to http://localhost:8080 to access the HAZOOM OS desktop interface.
+                            Navigate to http://localhost:3000 to access the HAZOOM OS desktop interface.
                         </div>
                     </div>
                     
@@ -861,7 +816,7 @@ const SECURITY_HEADERS = {
                         <div class="feature-icon">🎯</div>
                         <div class="feature-title">Launch Apps</div>
                         <div class="feature-desc">
-                            Click desktop icons or use the start menu (🚀 HAZOOM) to launch applications.
+                            Click desktop icons or use the start menu to launch applications.
                         </div>
                     </div>
                     
@@ -869,7 +824,7 @@ const SECURITY_HEADERS = {
                         <div class="feature-icon">⚙️</div>
                         <div class="feature-title">Configure</div>
                         <div class="feature-desc">
-                            Access Settings to customize your experience. Configure themes, AI preferences, security settings, and more.
+                            Access Settings to customize your experience. Configure themes, preferences, and more.
                         </div>
                     </div>
                 </div>
@@ -877,16 +832,19 @@ const SECURITY_HEADERS = {
                 <div class="code-block">
 # Quick Start
 
-1. Start Secure Server:
-   node server/secure_server.js
+1. Start Server:
+   node server.js
 
-2. Start Quantum Monitor:
-   python server/quantum_monitor.py
+2. Open in Browser:
+   http://localhost:3000
 
-3. Open in Browser:
-   http://localhost:8080
+3. Explore Applications!
 
-4. Explore Applications!
+# API Endpoints:
+GET  /api/kernel/state    - Kernel state
+GET  /api/pascal/status   - Pascal Engine
+POST /api/process/create  - Create process
+GET  /api/memory/stats    - Memory usage
                 </div>
             </div>
         </section>
@@ -897,14 +855,14 @@ const SECURITY_HEADERS = {
             <h2 class="section-title">🌟 System Summary</h2>
             <div class="section-content">
                 <div class="highlight-box">
-                    <h3>🎯 Core Values</h3>
+                    <h3>Core Values</h3>
                     <ul>
-                        <li><strong>Peace</strong> - Technology as a gift of peace to the world</li>
-                        <li><strong>Understanding</strong> - Promoting global comprehension through AI</li>
-                        <li><strong>Human Betterment</strong> - Ethical technology serving humanity</li>
-                        <li><strong>Conscious Intent Values</strong> - Strategic implementation of ethical principles</li>
-                        <li><strong>Transparency</strong> - Open, explainable AI systems</li>
-                        <li><strong>Security</strong> - Multi-layered protection with user control</li>
+                        <li><strong>Real Kernel Concepts</strong> - Process scheduling, memory paging, filesystem inodes</li>
+                        <li><strong>Pascal Engine</strong> - Neural consciousness processing ported from Pascal</li>
+                        <li><strong>Ring-Based Security</strong> - Privilege levels and capability-based access</li>
+                        <li><strong>Real-time Updates</strong> - WebSocket-powered kernel monitoring</li>
+                        <li><strong>40+ Applications</strong> - Games, AI tools, system utilities</li>
+                        <li><strong>Creator</strong> - Hazem Soussi (HA)
                     </ul>
                 </div>
                 
@@ -918,17 +876,17 @@ const SECURITY_HEADERS = {
                         <div class="stat-label">Core Modules</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value">3</div>
-                        <div class="stat-label">Backend Services</div>
+                        <div class="stat-value">4</div>
+                        <div class="stat-label">Pascal Engines</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-value">100%</div>
-                        <div class="stat-label">JavaScript</div>
+                        <div class="stat-label">Browser Runtime</div>
                     </div>
                 </div>
                 
                 <p style="text-align: center; font-size: 1.3rem; margin-top: 40px;">
-                    <strong>🚀 HAZOOM OS - Where Peace Meets Innovation 🌟</strong>
+                    <strong>HAZOOM OS v4.0 - Real Kernel Concepts in the Browser</strong>
                 </p>
             </div>
         </section>
