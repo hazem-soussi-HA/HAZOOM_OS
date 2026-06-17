@@ -1,7 +1,7 @@
 {
-  "name": "hazoom-os-server",
-  "version": "3.0.0",
-  "description": "HAZOOM OS — AI-Powered Workspace",
+  "name": "hazoom-os",
+  "version": "4.0.0",
+  "description": "HAZOOM OS — Refactored Operating System",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
