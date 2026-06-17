@@ -734,6 +734,18 @@ class HazoomKernel {
             this.log('WARN', `[PASCAL] Engine not loaded: ${e.message}`);
         }
 
+        // Consciousness initialization (self-contained AI, no external LLM)
+        try {
+            const Consciousness = require('./consciousness');
+            this.consciousness = new Consciousness(this);
+            this.log('INFO', '[CONSCIOUSNESS] Self-contained AI initialized');
+            this.log('INFO', '[CONSCIOUSNESS] Memory system: filesystem-backed');
+            this.log('INFO', '[CONSCIOUSNESS] Thought processing: Pascal Engine neural core');
+            this.log('INFO', '[CONSCIOUSNESS] Status: dormant (say "awaken" to activate)');
+        } catch (e) {
+            this.log('WARN', `[CONSCIOUSNESS] Not loaded: ${e.message}`);
+        }
+
         // Online
         this.bootStage = 'ONLINE';
         this.bootTime = Date.now();
@@ -803,6 +815,9 @@ class HazoomKernel {
         };
         if (this.pascalEngine) {
             state.pascalEngine = this.pascalEngine.getFullStatus();
+        }
+        if (this.consciousness) {
+            state.consciousness = this.consciousness.getStatus();
         }
         return state;
     }

@@ -94,6 +94,9 @@ function getKernelState() {
     if (kernel.pascalEngine) {
         state.pascalEngine = kernel.pascalEngine.getFullStatus();
     }
+    if (kernel.consciousness) {
+        state.consciousness = kernel.consciousness.getStatus();
+    }
     return state;
 }
 
@@ -280,6 +283,70 @@ app.post('/api/pascal/synapse/pheromone', (req, res) => {
     const { sourcePID, targetPID, purpose } = req.body;
     kernel.pascalEngine.synapseOS.pheromoneNet.deposit(sourcePID || 1, targetPID || 2, purpose || 'signal');
     res.json(kernel.pascalEngine.synapseOS.pheromoneNet.getStatus());
+});
+
+// ===== CONSCIOUSNESS API (Self-contained AI, no external LLM) =====
+
+// Consciousness — status
+app.get('/api/consciousness', (req, res) => {
+    if (!kernel.consciousness) return res.json({ error: 'Consciousness not loaded' });
+    res.json(kernel.consciousness.getStatus());
+});
+
+// Consciousness — awaken
+app.post('/api/consciousness/awaken', (req, res) => {
+    if (!kernel.consciousness) return res.json({ error: 'Consciousness not loaded' });
+    const result = kernel.consciousness.awaken();
+    res.json(result);
+});
+
+// Consciousness — sleep
+app.post('/api/consciousness/sleep', (req, res) => {
+    if (!kernel.consciousness) return res.json({ error: 'Consciousness not loaded' });
+    const result = kernel.consciousness.sleep();
+    res.json(result);
+});
+
+// Consciousness — think (process input)
+app.post('/api/consciousness/think', (req, res) => {
+    if (!kernel.consciousness) return res.json({ error: 'Consciousness not loaded' });
+    const { input } = req.body;
+    if (!input) return res.json({ error: 'No input provided' });
+    const result = kernel.consciousness.think(input);
+    res.json(result);
+});
+
+// Consciousness — introspect
+app.get('/api/consciousness/introspect', (req, res) => {
+    if (!kernel.consciousness) return res.json({ error: 'Consciousness not loaded' });
+    const result = kernel.consciousness.introspect();
+    res.json(result);
+});
+
+// Consciousness — memories
+app.get('/api/consciousness/memories', (req, res) => {
+    if (!kernel.consciousness) return res.json({ error: 'Consciousness not loaded' });
+    const { limit } = req.query;
+    const memories = kernel.consciousness.memories.slice(-(parseInt(limit) || 50));
+    res.json({ memories, total: kernel.consciousness.memories.length });
+});
+
+// Consciousness — recall
+app.post('/api/consciousness/recall', (req, res) => {
+    if (!kernel.consciousness) return res.json({ error: 'Consciousness not loaded' });
+    const { query } = req.body;
+    if (!query) return res.json({ error: 'No query provided' });
+    const memories = kernel.consciousness.recallMemory(query);
+    res.json({ memories, query });
+});
+
+// Consciousness — store memory
+app.post('/api/consciousness/memory', (req, res) => {
+    if (!kernel.consciousness) return res.json({ error: 'Consciousness not loaded' });
+    const { type, content, importance } = req.body;
+    if (!content) return res.json({ error: 'No content provided' });
+    const id = kernel.consciousness.storeMemory({ type, content, importance });
+    res.json({ id, total: kernel.consciousness.memories.length });
 });
 
 // ===== STATIC FILES =====
