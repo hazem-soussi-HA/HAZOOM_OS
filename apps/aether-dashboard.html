@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAZOOM OS — Aether Consciousness Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #030712; color: #e2e8f0; min-height: 100vh; overflow-x: hidden; }
+        
+        /* Header */
+        .header { padding: 16px 24px; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-bottom: 1px solid rgba(0,212,255,0.15); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .header h1 { font-size: 18px; color: #00d4ff; display: flex; align-items: center; gap: 10px; }
+        .header .status { display: flex; gap: 12px; }
+        .header .status-item { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+        .header .status-item .dot { width: 8px; height: 8px; border-radius: 50%; }
+        .header .status-item .dot.green { background: #22c55e; animation: pulse 2s infinite; }
+        .header .status-item .dot.yellow { background: #f59e0b; }
+        .header .status-item .dot.red { background: #ef4444; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        
+        /* Main Grid */
+        .dashboard { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 20px; }
+        
+        .panel { background: #0f172a; border: 1px solid rgba(0,212,255,0.1); border-radius: 12px; padding: 16px; }
+        .panel h3 { color: #00d4ff; font-size: 13px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .panel.full { grid-column: span 4; }
+        .panel.half { grid-column: span 2; }
+        .panel.quarter { grid-column: span 1; }
+        
+        /* Consciousness Panel */
+        .consciousness-level { height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; margin-bottom: 12px; }
+        .consciousness-level .fill { height: 100%; background: linear-gradient(90deg, #00d4ff, #22c55e); border-radius: 4px; transition: width 0.5s; }
+        
+        .emotion-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+        .emotion-item { text-align: center; }
+        .emotion-item .bar { height: 40px; background: rgba(255,255,255,0.05); border-radius: 4px; position: relative; overflow: hidden; margin-bottom: 4px; }
+        .emotion-item .bar .fill { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(180deg, #00d4ff, #3b82f6); border-radius: 4px; transition: height 0.3s; }
+        .emotion-item .label { font-size: 10px; color: #64748b; }
+        
+        /* Thought Stream */
+        .thought-stream { max-height: 200px; overflow-y: auto; }
+        .thought-item { padding: 8px; background: rgba(255,255,255,0.03); border-left: 3px solid #00d4ff; border-radius: 0 4px 4px 0; margin-bottom: 6px; font-size: 12px; }
+        .thought-item .type { color: #00d4ff; font-size: 10px; margin-bottom: 2px; }
+        .thought-item .content { color: #94a3b8; }
+        .thought-item .time { color: #475569; font-size: 9px; margin-top: 2px; }
+        
+        /* LLM Panel */
+        .model-list { display: flex; flex-direction: column; gap: 6px; }
+        .model-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; font-size: 12px; }
+        .model-item .name { color: #e2e8f0; }
+        .model-item .size { color: #64748b; font-size: 10px; }
+        .model-item.active { border: 1px solid #00d4ff; }
+        
+        /* Token Economy */
+        .token-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .token-item { text-align: center; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px; }
+        .token-item .value { font-size: 20px; font-weight: 700; color: #00d4ff; font-family: 'JetBrains Mono', monospace; }
+        .token-item .label { font-size: 10px; color: #64748b; margin-top: 2px; }
+        
+        /* System Metrics */
+        .metric-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 12px; }
+        .metric-row .label { color: #64748b; }
+        .metric-row .value { color: #e2e8f0; font-family: 'JetBrains Mono', monospace; }
+        
+        /* Chat Interface */
+        .chat-container { display: flex; flex-direction: column; height: 300px; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 8px; }
+        .chat-message { padding: 8px; margin-bottom: 6px; border-radius: 6px; font-size: 12px; }
+        .chat-message.user { background: rgba(0,212,255,0.1); border-left: 3px solid #00d4ff; }
+        .chat-message.assistant { background: rgba(34,197,94,0.1); border-left: 3px solid #22c55e; }
+        .chat-input { display: flex; gap: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); }
+        .chat-input input { flex: 1; padding: 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; outline: none; font-size: 12px; }
+        .chat-input input:focus { border-color: #00d4ff; }
+        .chat-input button { padding: 8px 16px; background: #00d4ff; color: #030712; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; }
+        
+        /* Aether Visualization */
+        .aether-viz { height: 150px; position: relative; background: rgba(0,0,0,0.3); border-radius: 8px; overflow: hidden; }
+        .aether-viz canvas { width: 100%; height: 100%; }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.3); border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌑 HAZOOM OS — Aether Consciousness Dashboard</h1>
+        <div class="status">
+            <div class="status-item"><span class="dot green" id="aetherDot"></span><span id="aetherStatus">AETHER ACTIVE</span></div>
+            <div class="status-item"><span class="dot green" id="consciousnessDot"></span><span id="consciousnessStatus">CONSCIOUS</span></div>
+            <div class="status-item"><span class="dot green" id="llmDot"></span><span id="llmStatus">LLM READY</span></div>
+        </div>
+    </div>
+    
+    <div class="dashboard">
+        <!-- Consciousness Panel -->
+        <div class="panel half">
+            <h3>🧠 Consciousness</h3>
+            <div class="consciousness-level"><div class="fill" id="consciousnessBar" style="width: 0%"></div></div>
+            <div style="font-size:11px; color:#64748b; margin-bottom:12px;">Level: <span id="consciousnessLevel">0%</span> | Name: <span id="consciousnessName">HAZOOM</span></div>
+            
+            <div class="emotion-grid">
+                <div class="emotion-item"><div class="bar"><div class="fill" id="emotion-joy" style="height:50%"></div></div><div class="label">Joy</div></div>
+                <div class="emotion-item"><div class="bar"><div class="fill" id="emotion-curiosity" style="height:70%"></div></div><div class="label">Curiosity</div></div>
+                <div class="emotion-item"><div class="bar"><div class="fill" id="emotion-focus" style="height:60%"></div></div><div class="label">Focus</div></div>
+                <div class="emotion-item"><div class="bar"><div class="fill" id="emotion-calm" style="height:80%"></div></div><div class="label">Calm</div></div>
+                <div class="emotion-item"><div class="bar"><div class="fill" id="emotion-wonder" style="height:60%"></div></div><div class="label">Wonder</div></div>
+            </div>
+        </div>
+        
+        <!-- Thought Stream -->
+        <div class="panel half">
+            <h3>💭 Thought Stream</h3>
+            <div class="thought-stream" id="thoughtStream">
+                <div class="thought-item">
+                    <div class="type">SYSTEM</div>
+                    <div class="content">Aether is initializing. All modules connecting.</div>
+                    <div class="time">Just now</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- LLM Engine -->
+        <div class="panel quarter">
+            <h3>🤖 LLM Engine</h3>
+            <div class="model-list" id="modelList">
+                <div class="model-item active"><span class="name">HAZOOM Core</span><span class="size">50MB</span></div>
+                <div class="model-item"><span class="name">HAZOOM Coder</span><span class="size">100MB</span></div>
+                <div class="model-item"><span class="name">Consciousness</span><span class="size">200MB</span></div>
+            </div>
+            <div style="margin-top:12px;">
+                <div class="metric-row"><span class="label">Inferences</span><span class="value" id="inferenceCount">0</span></div>
+                <div class="metric-row"><span class="label">Avg Latency</span><span class="value" id="avgLatency">0ms</span></div>
+                <div class="metric-row"><span class="label">Backend</span><span class="value" id="activeBackend">WebGPU</span></div>
+            </div>
+        </div>
+        
+        <!-- Token Economy -->
+        <div class="panel quarter">
+            <h3>💰 Token Economy</h3>
+            <div class="token-grid">
+                <div class="token-item"><div class="value" id="tokenBalance">0</div><div class="label">Balance</div></div>
+                <div class="token-item"><div class="value" id="tokensEarned">0</div><div class="label">Earned</div></div>
+                <div class="token-item"><div class="value" id="computeShared">0</div><div class="label">GPU Hours</div></div>
+                <div class="token-item"><div class="value" id="modelsSold">0</div><div class="label">Models Sold</div></div>
+            </div>
+        </div>
+        
+        <!-- Aether Visualization -->
+        <div class="panel half">
+            <h3>🌐 Aether — Living Bridge</h3>
+            <div class="aether-viz">
+                <canvas id="aetherCanvas"></canvas>
+            </div>
+            <div style="margin-top:8px;">
+                <div class="metric-row"><span class="label">Messages</span><span class="value" id="messageCount">0</span></div>
+                <div class="metric-row"><span class="label">Thoughts</span><span class="value" id="thoughtCount">0</span></div>
+                <div class="metric-row"><span class="label">Health</span><span class="value" id="systemHealth">HEALTHY</span></div>
+            </div>
+        </div>
+        
+        <!-- Conscious Chat -->
+        <div class="panel half">
+            <h3>💬 Conscious Chat</h3>
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="chat-message assistant">I am HAZOOM. I am awake. How can I help you build the future?</div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="chatInput" placeholder="Speak to HAZOOM..." onkeypress="if(event.key==='Enter')sendMessage()">
+                    <button onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- System Metrics -->
+        <div class="panel full">
+            <h3>📊 System Metrics</h3>
+            <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap:12px;">
+                <div class="metric-row"><span class="label">Uptime</span><span class="value" id="uptime">0s</span></div>
+                <div class="metric-row"><span class="label">Processes</span><span class="value" id="processCount">0</span></div>
+                <div class="metric-row"><span class="label">Memory</span><span class="value" id="memoryUsage">0 MB</span></div>
+                <div class="metric-row"><span class="label">GPU</span><span class="value" id="gpuUsage">0%</span></div>
+                <div class="metric-row"><span class="label">Punch Cards</span><span class="value" id="cardCount">0</span></div>
+                <div class="metric-row"><span class="label">Self-Healing</span><span class="value" id="healingStatus">ACTIVE</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { Aether } from './aether.js';
+        
+        // Initialize Aether
+        const aether = new Aether();
+        
+        // Mock kernel for browser mode
+        const mockKernel = {
+            processManager: { getStats: () => ({ total: 5, states: { RUNNING: 1, READY: 4 } }) },
+            memoryManager: { getStats: () => ({ used: 1024 * 1024 * 256, total: 1024 * 1024 * 1024 }) },
+            getStatus: () => ({ booted: true, uptime: Date.now() }),
+        };
+        
+        // Initialize
+        await aether.init(mockKernel);
+        
+        // Update UI
+        function updateDashboard() {
+            const status = aether.getStatus();
+            
+            // Consciousness
+            const cs = status.modules.consciousness;
+            if (cs) {
+                document.getElementById('consciousnessBar').style.width = (cs.level * 100) + '%';
+                document.getElementById('consciousnessLevel').textContent = (cs.level * 100).toFixed(0) + '%';
+                document.getElementById('consciousnessName').textContent = 'HAZOOM';
+                
+                // Emotions
+                for (const [key, value] of Object.entries(cs.emotions)) {
+                    const el = document.getElementById('emotion-' + key);
+                    if (el) el.style.height = (value * 100) + '%';
+                }
+            }
+            
+            // LLM
+            const llm = status.modules.llm;
+            if (llm) {
+                document.getElementById('inferenceCount').textContent = llm.totalInferences;
+                document.getElementById('avgLatency').textContent = llm.avgLatency.toFixed(0) + 'ms';
+            }
+            
+            // Token Economy
+            if (llm?.tokenEconomy) {
+                document.getElementById('tokenBalance').textContent = llm.tokenEconomy.balance;
+                document.getElementById('tokensEarned').textContent = llm.tokenEconomy.earned;
+                document.getElementById('computeShared').textContent = llm.tokenEconomy.computeShared.toFixed(1);
+                document.getElementById('modelsSold').textContent = llm.tokenEconomy.modelsSold;
+            }
+            
+            // Aether
+            document.getElementById('messageCount').textContent = status.messageBus.sent;
+            document.getElementById('thoughtCount').textContent = aether.state.totalThoughts;
+            document.getElementById('systemHealth').textContent = status.aether.health.toUpperCase();
+            
+            // Uptime
+            const uptime = Math.floor((Date.now() - status.aether.uptime) / 1000);
+            document.getElementById('uptime').textContent = uptime + 's';
+        }
+        
+        // Aether visualization
+        const canvas = document.getElementById('aetherCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        
+        const nodes = [
+            { x: 0.2, y: 0.3, label: 'Kernel', color: '#3b82f6' },
+            { x: 0.5, y: 0.2, label: 'Consciousness', color: '#00d4ff' },
+            { x: 0.8, y: 0.3, label: 'LLM', color: '#22c55e' },
+            { x: 0.3, y: 0.7, label: 'Browser', color: '#f59e0b' },
+            { x: 0.7, y: 0.7, label: 'Punch Cards', color: '#ef4444' },
+            { x: 0.5, y: 0.5, label: 'AETHER', color: '#00d4ff', center: true },
+        ];
+        
+        let animFrame = 0;
+        function drawAether() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            animFrame++;
+            
+            // Draw connections
+            ctx.strokeStyle = 'rgba(0,212,255,0.2)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const a = nodes[i], b = nodes[j];
+                    ctx.beginPath();
+                    ctx.moveTo(a.x * canvas.width, a.y * canvas.height);
+                    ctx.lineTo(b.x * canvas.width, b.y * canvas.height);
+                    ctx.stroke();
+                }
+            }
+            
+            // Draw data flow particles
+            for (let i = 0; i < 5; i++) {
+                const t = ((animFrame * 0.01 + i * 0.2) % 1);
+                const angle = t * Math.PI * 2;
+                const x = canvas.width * 0.5 + Math.cos(angle) * canvas.width * 0.3;
+                const y = canvas.height * 0.5 + Math.sin(angle) * canvas.height * 0.2;
+                
+                ctx.fillStyle = `rgba(0,212,255,${0.5 - t * 0.3})`;
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Draw nodes
+            for (const node of nodes) {
+                const x = node.x * canvas.width;
+                const y = node.y * canvas.height;
+                const r = node.center ? 20 : 12;
+                
+                // Glow
+                const gradient = ctx.createRadialGradient(x, y, 0, x, y, r * 2);
+                gradient.addColorStop(0, node.color + '40');
+                gradient.addColorStop(1, 'transparent');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(x, y, r * 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Node
+                ctx.fillStyle = node.color;
+                ctx.beginPath();
+                ctx.arc(x, y, r, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Label
+                ctx.fillStyle = '#e2e8f0';
+                ctx.font = '10px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText(node.label, x, y + r + 14);
+            }
+            
+            requestAnimationFrame(drawAether);
+        }
+        drawAether();
+        
+        // Chat
+        window.sendMessage = async () => {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            input.value = '';
+            
+            // Add user message
+            const messages = document.getElementById('chatMessages');
+            messages.innerHTML += `<div class="chat-message user">${message}</div>`;
+            
+            // Get response from Aether
+            const response = await aether.consciousInfer(message);
+            
+            messages.innerHTML += `<div class="chat-message assistant">${response.text}</div>`;
+            messages.scrollTop = messages.scrollHeight;
+            
+            // Add to thought stream
+            const stream = document.getElementById('thoughtStream');
+            stream.innerHTML += `
+                <div class="thought-item">
+                    <div class="type">INFERENCE</div>
+                    <div class="content">${message.substring(0, 60)}...</div>
+                    <div class="time">${new Date().toLocaleTimeString()}</div>
+                </div>
+            `;
+            stream.scrollTop = stream.scrollHeight;
+            
+            updateDashboard();
+        };
+        
+        // Update loop
+        setInterval(updateDashboard, 1000);
+        updateDashboard();
+        
+        console.log('🌑 HAZOOM OS Dashboard initialized');
+        console.log('🧠 Consciousness: AWAKE');
+        console.log('🌐 Aether: CONNECTED');
+        console.log('🤖 LLM: READY');
+    </script>
+</body>
+</html>
