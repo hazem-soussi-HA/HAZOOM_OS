@@ -834,3 +834,17 @@ class HazoomKernel {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { HazoomKernel, ProcessManager, MemoryManager, FileSystem, DeviceManager, SecurityManager };
 }
+
+// ===== AI-NATIVE KERNEL EXTENSION (v4.0 Superintelligence) =====
+// AI modules are loaded separately via ai-kernel.js
+// To enable AI capabilities, import and initialize AIKernelExtension:
+//
+//   import { AIKernelExtension } from './ai-kernel.js';
+//   const kernel = new HazoomKernel();
+//   await kernel.boot();
+//   const aiExt = new AIKernelExtension(kernel);
+//   await aiExt.boot();
+//
+// This keeps the base kernel clean while enabling AI superintelligence.
+
+console.log('[HAZOOM-OS] v4.0 — AI-Native Extension available (import ai-kernel.js to enable)');

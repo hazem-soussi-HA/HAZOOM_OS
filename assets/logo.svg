@@ -1,53 +1,54 @@
-<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
   <defs>
-    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#00f0ff"/>
-      <stop offset="50%" style="stop-color:#8b5cf6"/>
-      <stop offset="100%" style="stop-color:#ffd700"/>
+    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="50%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#a855f7"/>
     </linearGradient>
-    <linearGradient id="logoGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#00f0ff;stop-opacity:0.3"/>
-      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:0.1"/>
+    <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
     </linearGradient>
-    <filter id="glow">
-      <feGaussianBlur stdDeviation="3" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-    <filter id="glowStrong">
-      <feGaussianBlur stdDeviation="6" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
+    <linearGradient id="g3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#ec4899"/>
+    </linearGradient>
   </defs>
 
-  <!-- Outer glow ring -->
-  <circle cx="100" cy="100" r="90" fill="none" stroke="url(#logoGrad)" stroke-width="1" opacity="0.15"/>
-  <circle cx="100" cy="100" r="80" fill="none" stroke="url(#logoGrad)" stroke-width="1.5" opacity="0.25"/>
+  <!-- Outer ring -->
+  <circle cx="256" cy="256" r="240" stroke="url(#g1)" stroke-width="4" fill="none" opacity="0.3"/>
 
-  <!-- Hexagon outer -->
-  <polygon points="100,12 175,55 175,145 100,188 25,145 25,55"
-           fill="none" stroke="url(#logoGrad)" stroke-width="3" opacity="0.6"
-           filter="url(#glow)"/>
+  <!-- Inner orbit ring -->
+  <circle cx="256" cy="256" r="180" stroke="url(#g2)" stroke-width="2" fill="none" opacity="0.2"/>
 
-  <!-- Hexagon inner -->
-  <polygon points="100,30 155,62.5 155,137.5 100,170 45,137.5 45,62.5"
-           fill="none" stroke="#00f0ff" stroke-width="1.5" opacity="0.35"/>
+  <!-- Core hexagon -->
+  <polygon points="256,100 361,151 361,253 256,304 151,253 151,151"
+    fill="url(#g1)" opacity="0.15" stroke="url(#g1)" stroke-width="3"/>
 
-  <!-- Hexagon core fill -->
-  <polygon points="100,30 155,62.5 155,137.5 100,170 45,137.5 45,62.5"
-           fill="url(#logoGrad2)"/>
+  <!-- Inner hexagon (the H) -->
+  <polygon points="256,130 340,172 340,256 256,298 172,256 172,172"
+    fill="url(#g1)" opacity="0.08" stroke="url(#g2)" stroke-width="2"/>
 
-  <!-- Letter H -->
-  <text x="100" y="115" text-anchor="middle" font-size="72" font-weight="900"
-        font-family="Inter, system-ui, -apple-system, sans-serif"
-        fill="url(#logoGrad)" filter="url(#glowStrong)">H</text>
+  <!-- Center "H" letterform -->
+  <g transform="translate(256,214)">
+    <rect x="-48" y="-60" width="16" height="120" rx="4" fill="url(#g1)" opacity="0.9"/>
+    <rect x="32" y="-60" width="16" height="120" rx="4" fill="url(#g1)" opacity="0.9"/>
+    <rect x="-48" y="-10" width="96" height="16" rx="4" fill="url(#g3)" opacity="0.8"/>
+  </g>
 
-  <!-- Small accent dots -->
-  <circle cx="100" cy="22" r="2" fill="#00f0ff" opacity="0.5"/>
-  <circle cx="100" cy="178" r="2" fill="#ffd700" opacity="0.5"/>
+  <!-- Orbital dots -->
+  <circle cx="256" cy="76" r="6" fill="url(#g2)" opacity="0.8"/>
+  <circle cx="256" cy="436" r="6" fill="url(#g2)" opacity="0.8"/>
+  <circle cx="76" cy="256" r="6" fill="url(#g3)" opacity="0.8"/>
+  <circle cx="436" cy="256" r="6" fill="url(#g3)" opacity="0.8"/>
+
+  <!-- Small decorative dots on inner orbit -->
+  <circle cx="256" cy="76" r="3" fill="url(#g2)" opacity="0.4"/>
+  <circle cx="367" cy="130" r="3" fill="url(#g1)" opacity="0.4"/>
+  <circle cx="420" cy="256" r="3" fill="url(#g1)" opacity="0.4"/>
+  <circle cx="367" cy="382" r="3" fill="url(#g1)" opacity="0.4"/>
+  <circle cx="256" cy="436" r="3" fill="url(#g2)" opacity="0.4"/>
+  <circle cx="145" cy="382" r="3" fill="url(#g1)" opacity="0.4"/>
+  <circle cx="92" cy="256" r="3" fill="url(#g1)" opacity="0.4"/>
+  <circle cx="145" cy="130" r="3" fill="url(#g1)" opacity="0.4"/>
 </svg>

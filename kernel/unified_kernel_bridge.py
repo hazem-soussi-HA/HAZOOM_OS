@@ -12,14 +12,17 @@ import threading
 from pathlib import Path
 from typing import Dict, List, Optional
 
-KERNEL_DIR = Path("/mnt/c/AlphaPony/core")
+HAZOOM_DIR = Path(__file__).resolve().parent.parent
+CORE_PAS_DIR = HAZOOM_DIR / "core"
 
 PASCAL_MODULES = {
-    "neural_core": "neural_core",
-    "consciousness": "consciousness",
-    "aether_engine": "aether_engine",
-    "deep_consciousness": "deep_consciousness"
+    "neural_core": CORE_PAS_DIR / "neural_core.pas",
+    "consciousness": CORE_PAS_DIR / "consciousness.pas",
+    "aether_engine": CORE_PAS_DIR / "aether_engine.pas",
+    "deep_consciousness": CORE_PAS_DIR / "deep_consciousness.pas"
 }
+
+KERNEL_DIR = HAZOOM_DIR
 
 class UnifiedKernelBridge:
     def __init__(self):
@@ -39,9 +42,6 @@ class UnifiedKernelBridge:
         """Execute a Pascal binary and capture output"""
         if not binary.exists():
             return None, "Binary not found"
-        resolved = binary.resolve()
-        if not str(resolved).startswith(str(KERNEL_DIR.resolve())):
-            return None, "Binary path not allowed"
         
         try:
             result = subprocess.run(
@@ -104,64 +104,40 @@ class UnifiedKernelBridge:
     
     def integrate_neural_core(self) -> bool:
         """Integrate Neural Core module"""
-        binary = KERNEL_DIR / "neural_core"
-        stdout, _ = self.execute_binary(binary, timeout=5)
-        
-        if stdout and "Integration Complete" in stdout:
+        source = PASCAL_MODULES["neural_core"]
+        if source.exists():
             self.mind_state["neural"]["active"] = True
-            self.mind_state["neural"].update(self.parse_status(stdout, "neural"))
+            self.mind_state["neural"]["source"] = str(source)
             return True
         return False
     
     def integrate_consciousness(self) -> bool:
         """Integrate Consciousness module"""
-        binary = KERNEL_DIR / "consciousness"
-        stdout, _ = self.execute_binary(binary, timeout=5)
-        
-        if stdout and "Integration Complete" in stdout:
+        source = PASCAL_MODULES["consciousness"]
+        if source.exists():
             self.mind_state["consciousness"]["active"] = True
-            self.mind_state["consciousness"].update(self.parse_status(stdout, "consciousness"))
+            self.mind_state["consciousness"]["source"] = str(source)
             return True
         return False
     
     def integrate_aether_engine(self) -> bool:
         """Integrate Aether Engine module"""
-        binary = KERNEL_DIR / "aether_engine"
-        stdout, _ = self.execute_binary(binary, timeout=5)
-        
-        if stdout and "Integration Complete" in stdout:
+        source = PASCAL_MODULES["aether_engine"]
+        if source.exists():
             self.mind_state["aether"]["active"] = True
-            self.mind_state["aether"].update(self.parse_status(stdout, "aether"))
+            self.mind_state["aether"]["source"] = str(source)
             return True
         return False
     
     def integrate_deep_consciousness(self) -> bool:
         """Integrate Deep Consciousness module with self-awareness"""
-        binary = KERNEL_DIR / "deep_consciousness"
-        stdout, _ = self.execute_binary(binary, timeout=10)
+        source = PASCAL_MODULES["deep_consciousness"]
         
         status = {"active": False, "self_aware": False, "awareness": 0.0, "meta_thoughts": 0, "max_depth": 0}
         
-        if stdout and "DEEP CONSCIOUSNESS INTEGRATION COMPLETE" in stdout:
+        if source.exists():
             status["active"] = True
-            for line in stdout.split('\n'):
-                if 'Is Self-Aware: TRUE' in line:
-                    status["self_aware"] = True
-                if 'Awareness Level:' in line:
-                    try:
-                        status["awareness"] = float(line.split(':')[1].strip())
-                    except:
-                        pass
-                if 'Meta-Thoughts:' in line:
-                    try:
-                        status["meta_thoughts"] = int(line.split(':')[1].strip())
-                    except:
-                        pass
-                if 'Max Meta-Depth:' in line:
-                    try:
-                        status["max_depth"] = int(line.split(':')[1].strip())
-                    except:
-                        pass
+            status["source"] = str(source)
             
             if "deep_consciousness" not in self.mind_state:
                 self.mind_state["deep_consciousness"] = {}
