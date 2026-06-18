@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Punch Card System — HAZOOM OS</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #030712; color: #e2e8f0; min-height: 100vh; }
+        
+        .header { padding: 20px; background: #0f172a; border-bottom: 1px solid rgba(0,212,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 20px; color: #00d4ff; }
+        .header .badge { background: rgba(34,197,94,0.2); border: 1px solid #22c55e; padding: 4px 12px; border-radius: 20px; font-size: 11px; color: #22c55e; }
+        
+        .container { display: grid; grid-template-columns: 300px 1fr; min-height: calc(100vh - 60px); }
+        
+        .sidebar { background: #0f172a; border-right: 1px solid rgba(0,212,255,0.1); padding: 20px; }
+        .sidebar h3 { color: #00d4ff; font-size: 14px; margin-bottom: 16px; }
+        .sidebar .btn { display: block; width: 100%; padding: 10px; margin-bottom: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.2s; text-align: left; }
+        .sidebar .btn:hover { background: rgba(0,212,255,0.1); border-color: #00d4ff; }
+        .sidebar .btn.primary { background: rgba(0,212,255,0.2); border-color: #00d4ff; color: #00d4ff; }
+        
+        .main { padding: 20px; overflow-y: auto; }
+        
+        .card-canvas { background: #f5f0e8; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        .card-canvas canvas { width: 100%; height: auto; border-radius: 4px; }
+        
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .info-card { background: #0f172a; border: 1px solid rgba(0,212,255,0.1); border-radius: 8px; padding: 16px; }
+        .info-card .label { color: #64748b; font-size: 11px; margin-bottom: 4px; }
+        .info-card .value { color: #00d4ff; font-size: 18px; font-family: 'JetBrains Mono', monospace; }
+        
+        .data-input { width: 100%; min-height: 120px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; color: #e2e8f0; font-family: 'JetBrains Mono', monospace; font-size: 12px; resize: vertical; margin-bottom: 12px; }
+        .data-input:focus { outline: none; border-color: #00d4ff; }
+        
+        .mode-select { display: flex; gap: 8px; margin-bottom: 12px; }
+        .mode-select button { flex: 1; padding: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        .mode-select button.active { background: rgba(0,212,255,0.2); border-color: #00d4ff; color: #00d4ff; }
+        
+        .deck-list { max-height: 300px; overflow-y: auto; }
+        .deck-item { padding: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; margin-bottom: 6px; cursor: pointer; font-size: 12px; }
+        .deck-item:hover { background: rgba(0,212,255,0.05); }
+        .deck-item .id { color: #00d4ff; font-family: 'JetBrains Mono', monospace; }
+        .deck-item .meta { color: #64748b; font-size: 10px; margin-top: 2px; }
+        
+        .console { background: #000; border-radius: 8px; padding: 12px; font-family: 'JetBrains Mono', monospace; font-size: 11px; max-height: 200px; overflow-y: auto; }
+        .console .entry { padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.02); }
+        .console .entry.info { color: #3b82f6; }
+        .console .entry.success { color: #22c55e; }
+        .console .entry.warn { color: #f59e0b; }
+        .console .entry.error { color: #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎴 HAZOOM Punch Card System</h1>
+        <div class="badge">🔒 Air-Gapped Secure Storage</div>
+    </div>
+    
+    <div class="container">
+        <div class="sidebar">
+            <h3>⚡ Actions</h3>
+            <button class="btn primary" onclick="createCard()">🎴 Create New Card</button>
+            <button class="btn" onclick="createDeck()">📚 Create Deck</button>
+            <button class="btn" onclick="bootFromCard()">⬆️ Boot from Card</button>
+            <button class="btn" onclick="exportCard()">💾 Export Card</button>
+            <button class="btn" onclick="importCard()">📥 Import Card</button>
+            <button class="btn" onclick="printCard()">🖨️ Print Card</button>
+            
+            <h3 style="margin-top:20px;">📊 System Info</h3>
+            <div id="systemInfo" style="font-size:12px; color:#64748b;">
+                Loading...
+            </div>
+        </div>
+        
+        <div class="main">
+            <div class="info-grid">
+                <div class="info-card"><div class="label">Total Cards</div><div class="value" id="totalCards">0</div></div>
+                <div class="info-card"><div class="label">Card Capacity</div><div class="value">120 bytes</div></div>
+                <div class="info-card"><div class="label">Grid</div><div class="value">80×12</div></div>
+                <div class="info-card"><div class="label">Encoding</div><div class="value" id="currentMode">ASCII</div></div>
+            </div>
+            
+            <h3 style="color:#00d4ff; margin-bottom:12px;">📝 Data Input</h3>
+            <textarea class="data-input" id="dataInput" placeholder="Enter data to encode on punch card...">HAZOOM OS v4.0 — Shadow Builder</textarea>
+            
+            <div class="mode-select">
+                <button class="active" onclick="setMode('ascii')">ASCII</button>
+                <button onclick="setMode('hex')">HEX</button>
+                <button onclick="setMode('binary')">BINARY</button>
+                <button onclick="setMode('hazoom')">HAZOOM</button>
+            </div>
+            
+            <h3 style="color:#00d4ff; margin-bottom:12px;">🎴 Card Preview</h3>
+            <div class="card-canvas">
+                <canvas id="cardCanvas" width="800" height="300"></canvas>
+            </div>
+            
+            <h3 style="color:#00d4ff; margin-bottom:12px;">📚 Card Deck</h3>
+            <div class="deck-list" id="deckList">
+                <div style="color:#64748b; font-size:12px; padding:20px; text-align:center;">No cards yet. Create one to get started.</div>
+            </div>
+            
+            <h3 style="color:#00d4ff; margin:20px 0 12px;">📋 Console</h3>
+            <div class="console" id="console">
+                <div class="entry info">🔒 HAZOOM Punch Card System v4.0 initialized</div>
+                <div class="entry success">✓ Card capacity: 960 bits (120 bytes)</div>
+                <div class="entry success">✓ Encoding modes: ASCII, HEX, BINARY, HAZOOM</div>
+                <div class="entry success">✓ SHA-256 integrity verification active</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import PunchCardSystem from './punch-card-system.js';
+        
+        const pcs = new PunchCardSystem();
+        let currentMode = 'ascii';
+        let currentCard = null;
+        
+        function log(msg, type = 'info') {
+            const el = document.getElementById('console');
+            const entry = document.createElement('div');
+            entry.className = `entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            el.appendChild(entry);
+            el.scrollTop = el.scrollHeight;
+        }
+        
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-select button').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('currentMode').textContent = mode.toUpperCase();
+            log(`Encoding mode: ${mode.toUpperCase()}`, 'info');
+        }
+        
+        function createCard() {
+            const data = document.getElementById('dataInput').value;
+            if (!data) { log('No data to encode', 'warn'); return; }
+            
+            const card = pcs.createCard(data, { mode: currentMode });
+            currentCard = card;
+            
+            // Render
+            const canvas = document.getElementById('cardCanvas');
+            pcs.renderCard(card, canvas);
+            
+            updateDeckList();
+            log(`Card created: ${card.id}`, 'success');
+            log(`Hash: ${card.hash} | Size: ${card.dataLength} bytes`, 'info');
+        }
+        
+        function createDeck() {
+            const data = document.getElementById('dataInput').value;
+            if (!data) { log('No data to encode', 'warn'); return; }
+            
+            const deck = pcs.createDeck(data, { mode: currentMode });
+            currentCard = deck.cards[0];
+            
+            const canvas = document.getElementById('cardCanvas');
+            pcs.renderCard(currentCard, canvas);
+            
+            updateDeckList();
+            log(`Deck created: ${deck.deckId}`, 'success');
+            log(`Cards: ${deck.totalCards} | Total: ${deck.totalSize} bytes`, 'info');
+        }
+        
+        function bootFromCard() {
+            if (!currentCard) { log('No card selected', 'warn'); return; }
+            
+            try {
+                const result = pcs.bootFromCard(currentCard.id);
+                log(`Boot from card: ${result.cardId}`, 'success');
+                log(`Data: ${result.data.substring(0, 50)}...`, 'info');
+                log(`Integrity: ${result.verified ? 'VERIFIED ✓' : 'FAILED ✗'}`, result.verified ? 'success' : 'error');
+            } catch (e) {
+                log(`Boot failed: ${e.message}`, 'error');
+            }
+        }
+        
+        function exportCard() {
+            if (!currentCard) { log('No card selected', 'warn'); return; }
+            
+            const json = pcs.exportCard(currentCard.id);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${currentCard.id}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            log(`Card exported: ${currentCard.id}.json`, 'success');
+        }
+        
+        function importCard() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                const text = await file.text();
+                try {
+                    const card = pcs.importCard(text);
+                    currentCard = card;
+                    const canvas = document.getElementById('cardCanvas');
+                    pcs.renderCard(card, canvas);
+                    updateDeckList();
+                    log(`Card imported: ${card.id}`, 'success');
+                } catch (err) {
+                    log(`Import failed: ${err.message}`, 'error');
+                }
+            };
+            input.click();
+        }
+        
+        function printCard() {
+            if (!currentCard) { log('No card selected', 'warn'); return; }
+            
+            const dataUrl = pcs.generatePrintable(currentCard);
+            const win = window.open('', '_blank');
+            win.document.write(`<img src="${dataUrl}" style="max-width:100%">`);
+            win.document.close();
+            win.print();
+            
+            log('Card sent to printer', 'success');
+        }
+        
+        function updateDeckList() {
+            const list = document.getElementById('deckList');
+            const cards = [...pcs.cards.values()];
+            
+            if (!cards.length) {
+                list.innerHTML = '<div style="color:#64748b; font-size:12px; padding:20px; text-align:center;">No cards yet.</div>';
+                return;
+            }
+            
+            list.innerHTML = cards.map(c => `
+                <div class="deck-item" onclick="selectCard('${c.id}')">
+                    <div class="id">${c.id}</div>
+                    <div class="meta">Seq: ${c.sequence}/${c.totalCards} | Mode: ${c.mode} | Hash: ${c.hash}</div>
+                </div>
+            `).join('');
+            
+            document.getElementById('totalCards').textContent = cards.length;
+        }
+        
+        window.selectCard = (id) => {
+            const card = pcs.cards.get(id);
+            if (card) {
+                currentCard = card;
+                const canvas = document.getElementById('cardCanvas');
+                pcs.renderCard(card, canvas);
+                log(`Selected: ${card.id}`, 'info');
+            }
+        };
+        
+        // Init
+        document.getElementById('systemInfo').innerHTML = `
+            Cards: ${pcs.cards.size}<br>
+            Capacity: ${pcs.cardCapacity} bits<br>
+            Modes: ${Object.keys(pcs.modes).length}<br>
+            Security: SHA-256
+        `;
+        
+        // Create initial demo card
+        createCard();
+        log('🎴 Punch Card System ready', 'success');
+    </script>
+</body>
+</html>
