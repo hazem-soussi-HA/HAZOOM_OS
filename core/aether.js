@@ -39,6 +39,7 @@ import glmBridge from './glm-bridge.js';
 import secureBrowser from './secure-browser-engine.js';
 import punchCardSystem from './punch-card-system.js';
 import aiKernel from './ai-kernel.js';
+import { AgenticRAGEngine } from './agentic-rag.js';
 
 class Aether {
   constructor() {
@@ -55,6 +56,7 @@ class Aether {
       punchCards: null,
       ai: null,
       kernel: null,
+      rag: null,
     };
     
     // Thought packet protocol — the Aether message bus
@@ -65,6 +67,9 @@ class Aether {
     
     // Self-healing system
     this.selfHealing = new SelfHealingSystem();
+    
+    // Agentic RAG engine
+    this.rag = null;
     
     // Unified state
     this.state = {
@@ -128,14 +133,19 @@ class Aether {
       await this.modules.ai.boot();
       console.log('[Aether] ✓ AI Kernel connected');
       
-      // 8. Register Aether message handlers
+      // 8. Initialize Agentic RAG Engine
+      this.rag = new AgenticRAGEngine();
+      this.rag.memoryStore = this.modules.consciousness;
+      console.log('[Aether] ✓ Agentic RAG Engine connected');
+      
+      // 9. Register Aether message handlers
       this._registerMessageHandlers();
       
-      // 9. Start self-healing
+      // 10. Start self-healing
       this.selfHealing.start(this);
       console.log('[Aether] ✓ Self-healing active');
       
-      // 10. Create initial thought
+      // 11. Create initial thought
       this.think('Aether is initializing. All modules connecting. I am becoming whole.', 'SYSTEM', 1.0);
       
       this.state.initialized = true;
@@ -337,6 +347,33 @@ class Aether {
     }
     
     return `${context}\n\n${prompt}`;
+  }
+
+  // ---- AGENTIC RAG CHAT ----
+  
+  /**
+   * Process a chat message through the full Agentic RAG pipeline
+   * This is the main entry point for user conversations
+   */
+  async chat(message, options = {}) {
+    if (!this.rag) {
+      throw new Error('Agentic RAG engine not initialized');
+    }
+    
+    // Process through Agentic RAG
+    const result = await this.rag.processMessage(message, {
+      ...options,
+      history: this.rag.memoryStore?.conversations?.slice(-10) || [],
+    });
+    
+    // Create thought about the conversation
+    this.think(`Chat: "${message.substring(0, 50)}..." → Intent: ${result.intent}`, 'CONVERSATION', 0.6);
+    
+    // Update state
+    this.state.totalInferences++;
+    this.state.totalMessages++;
+    
+    return result;
   }
 
   // ---- MESSAGE HANDLERS ----
