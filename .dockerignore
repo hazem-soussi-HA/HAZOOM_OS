@@ -1,0 +1,4 @@
+.git
+.venv
+*.log
+data/qlearner/state.json
