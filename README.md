@@ -1,3 +1,31 @@
+# HAZOOM OS — v5.0.0 CONVERGENCE (IN DEVELOPMENT)
+
+> **STATUS: Active development on main branch**
+> 
+> v5.0 is the unification of ALL previous versions (v1–v4) into one coherent system.
+> Every working piece from every version, cleaned, deduplicated, and wired together.
+> 
+> **What's new in v5:**
+> - Q-Learning system (tabular + Double DQN) — the OS learns optimal policies
+> - Modular desktop (not a monolith)
+> - Clean imports (no broken exports)
+> - Zero duplicate files
+> - Unified AI engine with graceful fallback
+> - Real boot sequence: POST → kernel → services → scheduler
+> - ~80 clean source files (down from 200+)
+> 
+> **Archive branches:**
+> - `v1-v3-archive` — earliest versions (proof of concept, kernel v1, AI v1)
+> - `v4.0-archive` — v4.0.0 complete state (Pascal brain, services, 100+ apps)
+> - Tag `v4.0.0` — marks the v4.0.0 release
+> 
+> **Quick start:** `./start.sh` → http://localhost:3000/os.html
+> 
+> See `V5_UNIFICATION_PLAN.md` for the full architecture and migration plan.
+> See `docs/QLEARNING_DESIGN.md` for the Q-Learning system design.
+
+---
+
 # HAZOOM OS — v4.0.0
 
 **Refactored Operating System** — Browser-based OS with real kernel simulation, process management, memory management, file system, device I/O, and security.
