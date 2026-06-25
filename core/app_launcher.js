@@ -39,8 +39,7 @@ const SecureAppLauncher = {
 
         // Handle apps with a custom launch function
         if (typeof app.launch === 'function') {
-            app.launch(config);
-            return;
+            return app.launch(config);
         }
 
         const sandboxId = `sandbox_${Date.now()}`;

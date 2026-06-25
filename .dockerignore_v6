@@ -1,0 +1,12 @@
+# Docker ignore for image build
+node_modules
+.git
+.venv
+__pycache__
+*.pyc
+*.log
+data/qlearner/state.json
+README.md
+# Keep apps/ small - exclude large subdirs
+apps/games/super-mario-gta6/website/js/engine/
+apps/games/super-mario-gta6/website/audio/

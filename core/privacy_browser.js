@@ -72,7 +72,7 @@
             for (const [key, value] of Object.entries(permissions)) {
                 if (value.prompt && !value.allowed) {
                     this.audit('app_launch_blocked', { appId, reason: key });
-                    return true;
+                    return false;
                 }
             }
             this.audit('app_launch', { appId });

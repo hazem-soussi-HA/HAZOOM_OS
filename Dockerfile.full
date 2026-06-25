@@ -1,0 +1,23 @@
+# HAZOOM OS — Frontend Docker Image
+# Serves the full OS via nginx with SPA routing
+
+FROM nginx:1.27-alpine
+
+# Set working directory
+WORKDIR /usr/share/nginx/html/hazoom-os
+
+# Copy the entire project (static files + apps + config)
+COPY . .
+
+# Copy custom nginx config for SPA routing
+COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
+
+# Expose port
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget -qO- http://localhost/ || exit 1
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
