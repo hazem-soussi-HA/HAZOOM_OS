@@ -1,20 +1,15 @@
 {
-  "version": "4.0.0",
-  "owner": "Hazem Soussi (HA)",
-  "codename": "Superintelligence",
-  "created": "2025-06-18T19:00:00Z",
-  "description": "SHA-256 integrity manifest for HAZOOM OS v4.0 AI-Native Kernel. Any modification will invalidate the hash.",
+  "version": "5.0.0",
+  "generated": "2026-06-25T14:51:39.830655",
+  "note": "Integrity hashes will be regenerated after Phase 5 completion.",
   "modules": {
-    "core/kernel.js": "4bedcdcf414ae333a6ccc91c85670d00cd1d847c5dc185502a954df9224f0a0f",
-    "core/ai-kernel.js": "4fa448dbdd38912cc3445737b0fc725358d6e424b73aee401e1ffc471a969dcd",
-    "core/ai-bootstrap.js": "a2282d832d4b822ebe2c5e6d92ed9f22da7c0bc6cb1a70c9e3ae80884485329d",
-    "services/ai/neural/neural-kernel.js": "31d78da3d3f08e8a17e2040b2ead6fbd7c10eb9ccbd6a1c5a0b16879ec2d56a8",
-    "services/ai/neural/ai-runtime.js": "413e93348bb2f3c5c8b2b5cff259b39270b762c6086ad0de86f8367d6731293d",
-    "services/ai/neural/intelligence-fabric.js": "acbda05a385f3dc3ff38eb6e87bf45d26185c3e072a58658f4c703f7a4ceba10",
-    "services/ai/neural/post-quantum-crypto.js": "2e29340893d7ad669102a24300fc927d51bbe3984803adc2cdf232ba9746b463",
-    "services/ai/neural/autonomous-optimizer.js": "80b09aa3a39d41955d63931b92539b584826d03f9f2a47ce181f438924cd80bf"
-  },
-  "license": "All rights reserved. Unauthorized copying, modification, or redistribution is strictly prohibited.",
-  "watermark": "c2hhZG93LWJ1aWxkZXItcHJvdGVjdGVk",
-  "notice": "This code is the intellectual property of Hazem Soussi (HA). SHA-256 hashes are computed on the original source files. Any tampering will be detectable by comparing current file hashes against this manifest."
+    "core/config.js": "pending_hash",
+    "core/logger.js": "pending_hash",
+    "core/boot.js": "pending_hash",
+    "core/api.js": "pending_hash",
+    "core/websocket.js": "pending_hash",
+    "kernel/q-learning.js": "pending_hash",
+    "core/kernel.js": "pending_hash",
+    "server.js": "pending_hash"
+  }
 }

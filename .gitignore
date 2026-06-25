@@ -64,3 +64,9 @@ tmp/
 dist/
 build/
 .next/
+# v5.0 Security
+ssl/*.key
+core/*.key
+config/credentials.json
+data/qlearner/state.json
+*.log

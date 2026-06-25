@@ -1,54 +1,21 @@
 {
   "users": [
     {
-      "id": "1",
       "username": "admin",
-      "password": "admin123",
-      "email": "admin@hazoom.os",
       "role": "admin",
-      "level": 3,
-      "display_name": "Administrator"
+      "password_hash": "NEEDS_BCRYPT_MIGRATION"
     },
     {
-      "id": "2",
-      "username": "demo",
-      "password": "demo123",
-      "email": "demo@hazoom.os",
+      "username": "hazem",
       "role": "user",
-      "level": 1,
-      "display_name": "Demo User"
+      "password_hash": "NEEDS_BCRYPT_MIGRATION"
+    },
+    {
+      "username": "demo",
+      "role": "demo",
+      "password_hash": "NEEDS_BCRYPT_MIGRATION"
     }
   ],
-  "sessions": {
-    "56e095a5-1eff-4f7b-99d3-e0d063df359e": {
-      "user_id": "1",
-      "created": "2026-05-15T01:00:56.860172",
-      "expires": "2026-05-16T01:00:56.860178"
-    },
-    "aa95ccc5-1160-414d-aecf-f323c165b5cd": {
-      "user_id": "2",
-      "created": "2026-05-15T01:01:03.792184",
-      "expires": "2026-05-16T01:01:03.792228"
-    },
-    "b57b15cc-3b40-426a-ac07-8fd5a8c22f20": {
-      "user_id": "1",
-      "created": "2026-05-15T01:01:10.113681",
-      "expires": "2026-05-16T01:01:10.113687"
-    },
-    "9b58842a-30c6-4fb3-bfaf-55d756c078f4": {
-      "user_id": "1",
-      "created": "2026-05-15T01:01:22.751283",
-      "expires": "2026-05-16T01:01:22.751292"
-    },
-    "522548e9-f466-4f3b-a31b-a6b627e493a2": {
-      "user_id": "1",
-      "created": "2026-05-15T01:12:17.291075",
-      "expires": "2026-05-16T01:12:17.291114"
-    },
-    "0140345f-ada4-4579-8c9d-8041bce876fb": {
-      "user_id": "1",
-      "created": "2026-05-20T18:14:46.420975",
-      "expires": "2026-05-21T18:14:46.420981"
-    }
-  }
+  "sessions": [],
+  "note": "Passwords must be migrated to bcrypt in v5.0"
 }
