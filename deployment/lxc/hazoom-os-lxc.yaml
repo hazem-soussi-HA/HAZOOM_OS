@@ -1,0 +1,27 @@
+# HAZOOM OS LXC — Test Environment Container
+# Ubuntu Noble (24.04) container for testing
+
+config:
+  raw.lxc: |
+    lxc.apparmor.profile = unconfined
+    lxc.cgroup.devices.allow = a
+    lxc.cap.drop =
+  security.nesting: true
+  security.syscalls.intercept.mknod: true
+  security.syscalls.intercept.setxattr: true
+
+devices:
+  eth0:
+    name: eth0
+    network: lxdbr0
+    type: nic
+  qlearner:
+    path: /opt/hazoom-os/data/qlearner
+    source: /home/hazem/HAZOOM_OS/data/qlearner
+    type: disk
+
+  root:
+    path: /
+    pool: default
+    size: 100GB
+    type: disk

@@ -1,0 +1,51 @@
+# HAZOOM OS — Charmed Kubernetes Deployment
+# Using Juju charms for production-grade orchestration
+
+# Deploy MicroK8s (or use existing Charmed K8s cluster)
+# Then deploy HAZOOM OS as a Juju application
+
+description: HAZOOM OS v6.0 — The Operating System That Learns
+series: jammy
+
+applications:
+  hazoom-os:
+    charm: hazoom-os-k8s
+    channel: stable
+    revision: 1
+    num_units: 3
+    to:
+      - "0"
+      - "1"
+      - "2"
+    constraints: cores=2 mem=4G root-disk=50G
+    resources:
+      app-image: ghcr.io/hazem-soussi-HA/hazoom-os:latest
+    options:
+      port: 3000
+      log_level: info
+      qlearning_mode: hybrid
+      qlearning_enabled: true
+      consciousness_enabled: true
+      pascal_brain_enabled: true
+    storage:
+      qlearner-data:
+        type: filesystem
+        location: /srv/hazoom-os/qlearner
+
+  nginx-ingress:
+    charm: nginx-ingress-integrator
+    channel: stable
+    trust: true
+    options:
+      service-hostname: hazoom.peaceful.world
+      tls-secret-name: hazoom-tls
+
+  cert-manager:
+    charm: self-signed-certificates
+    channel: stable
+    options:
+      ca-common-name: hazoom.peaceful.world
+
+relations:
+  - [hazoom-os, nginx-ingress]
+  - [nginx-ingress, cert-manager]

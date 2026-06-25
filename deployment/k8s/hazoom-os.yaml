@@ -1,0 +1,163 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hazoom-os
+  labels:
+    app: hazoom-os
+    version: "6.0"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hazoom-os-app
+  namespace: hazoom-os
+  labels:
+    app: hazoom-os
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hazoom-os
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: hazoom-os
+    spec:
+      containers:
+        - name: app
+          image: ghcr.io/hazem-soussi-HA/hazoom-os:latest
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          volumeMounts:
+            - name: qlearner-data
+              mountPath: /app/data/qlearner
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "3000"
+            - name: LOG_LEVEL
+              value: "info"
+      volumes:
+        - name: qlearner-data
+          persistentVolumeClaim:
+            claimName: hazoom-qlearner-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hazoom-os-service
+  namespace: hazoom-os
+spec:
+  selector:
+    app: hazoom-os
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: ClusterIP
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hazoom-os-ingress
+  namespace: hazoom-os
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+spec:
+  tls:
+    - hosts:
+        - hazoom.peaceful.world
+        - api.hazoom.peaceful.world
+      secretName: hazoom-tls
+  rules:
+    - host: hazoom.peaceful.world
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: hazoom-os-service
+                port:
+                  number: 80
+    - host: api.hazoom.peaceful.world
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: hazoom-os-service
+                port:
+                  number: 80
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: hazoom-qlearner-pvc
+  namespace: hazoom-os
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: standard
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hazoom-os-hpa
+  namespace: hazoom-os
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: hazoom-os-app
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
