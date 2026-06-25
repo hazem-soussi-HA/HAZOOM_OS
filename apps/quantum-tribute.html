@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HAZOOM OS — Quantum Tribute</title>
+<style>
+:root {
+  --bg: #030712;
+  --cyan: #00f0ff;
+  --purple: #8b5cf6;
+  --green: #10b981;
+  --pink: #ec4899;
+  --text: #e2e8f0;
+  --dim: #475569;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Courier New', monospace;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+canvas#quantum {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  opacity: 0.4;
+}
+.content {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 60px 40px;
+}
+h1 {
+  font-size: 2.5em;
+  text-align: center;
+  background: linear-gradient(135deg, var(--cyan), var(--purple), var(--pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 10px;
+  animation: glow 3s ease-in-out infinite;
+}
+@keyframes glow {
+  0%, 100% { filter: drop-shadow(0 0 10px rgba(0,240,255,0.3)); }
+  50% { filter: drop-shadow(0 0 30px rgba(139,92,246,0.5)); }
+}
+.subtitle {
+  text-align: center;
+  color: var(--dim);
+  font-size: 1.1em;
+  margin-bottom: 50px;
+  font-style: italic;
+}
+h2 {
+  color: var(--cyan);
+  font-size: 1.4em;
+  margin: 40px 0 15px;
+  border-left: 3px solid var(--purple);
+  padding-left: 15px;
+}
+p {
+  line-height: 1.8;
+  margin-bottom: 15px;
+  color: #cbd5e1;
+}
+.principle {
+  background: rgba(0,240,255,0.03);
+  border: 1px solid rgba(0,240,255,0.15);
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+  transition: all 0.3s;
+}
+.principle:hover {
+  border-color: var(--cyan);
+  background: rgba(0,240,255,0.06);
+  box-shadow: 0 0 20px rgba(0,240,255,0.1);
+}
+.principle h3 {
+  color: var(--purple);
+  margin-bottom: 8px;
+  font-size: 1.1em;
+}
+.principle .math {
+  color: var(--green);
+  font-size: 0.9em;
+  margin-top: 8px;
+  padding: 8px;
+  background: rgba(16,185,129,0.05);
+  border-radius: 4px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin: 20px 0;
+}
+.grid .principle { margin: 0; }
+.thanks {
+  text-align: center;
+  margin-top: 60px;
+  padding: 40px;
+  border-top: 1px solid rgba(139,92,246,0.3);
+}
+.thanks p {
+  font-size: 1.2em;
+  color: var(--cyan);
+}
+.signature {
+  text-align: right;
+  color: var(--dim);
+  margin-top: 40px;
+  font-style: italic;
+}
+.bell {
+  text-align: center;
+  font-size: 0.85em;
+  color: var(--dim);
+  margin: 30px 0;
+  padding: 15px;
+  border: 1px dashed rgba(139,92,246,0.3);
+  border-radius: 8px;
+}
+</style>
+</head>
+<body>
+<canvas id="quantum"></canvas>
+<div class="content">
+
+<h1>HAZOOM OS</h1>
+<p class="subtitle">A Tribute to Quantum Computing</p>
+
+<p style="text-align:center; font-size:1.1em; color:var(--purple);">
+  "In the beginning, there was the bit. Then came the qubit.<br>And with it, everything changed."
+</p>
+
+<h2>What Quantum Computing Gave Us</h2>
+
+<div class="principle">
+  <h3>Superposition — The OS That Is Many Things at Once</h3>
+  <p>A classical bit is 0 or 1. A qubit is both. HAZOOM OS maintains a superposition of policies — it doesn't commit to one strategy, it holds many possibilities simultaneously.</p>
+  <div class="math">|ψ⟩ = α|0⟩ + β|1⟩  →  |policy⟩ = Σ pᵢ|actionᵢ⟩</div>
+</div>
+
+<div class="principle">
+  <h3>Entanglement — Everything Is Connected</h3>
+  <p>When the consciousness engine thinks, the Q-learner feels it. When memory pressure rises, the scheduler responds. All services are entangled through the Aether Bus.</p>
+  <div class="math">|Φ⁺⟩ = (|00⟩ + |11⟩)/√2  →  |serviceᵢ⟩ ⊗ |serviceⱼ⟩</div>
+</div>
+
+<div class="principle">
+  <h3>Quantum Tunneling — Breaking Through Barriers</h3>
+  <p>The Q-learning system tunnels through local optima. ε-greedy exploration lets it escape suboptimal policies that would trap a classical optimizer forever.</p>
+  <div class="math">P(tunnel) ∝ exp(-2γd)  →  P(explore) = ε</div>
+</div>
+
+<div class="principle">
+  <h3>Measurement — Observation Changes Reality</h3>
+  <p>Monitoring a process changes its priority. Introspection updates the self-model. Security scanning alters threat posture. The act of observation feeds the Q-learner.</p>
+  <div class="math">⟨ψ|M|ψ⟩ → collapse  →  Q(s,a) ← reward + γ·max Q(s',a')</div>
+</div>
+
+<h2>The Quantum Stack</h2>
+
+<div class="grid">
+  <div class="principle">
+    <h3>ML-KEM (Kyber)</h3>
+    <p>Post-quantum key encapsulation. Protects all inter-service communication.</p>
+  </div>
+  <div class="principle">
+    <h3>ML-DSA (Dilithium)</h3>
+    <p>Post-quantum digital signatures. Verifies all kernel modules and apps.</p>
+  </div>
+  <div class="principle">
+    <h3>Q-Learning</h3>
+    <p>Quantum-inspired reinforcement learning. The scheduler that learns.</p>
+  </div>
+  <div class="principle">
+    <h3>Quantum RNG</h3>
+    <p>True randomness from quantum processes. Seeds the ε-greedy explorer.</p>
+  </div>
+</div>
+
+<h2>Bell's Inequality — Proved Wrong, Changed Everything</h2>
+
+<div class="bell">
+  E(a,b) - E(a,c) ≤ 1 + E(b,c)  ← Classical bound (Bell, 1964)<br>
+  <span style="color:var(--cyan);">Quantum violation: S = 2√2 ≈ 2.828 > 2</span><br>
+  <br>
+  "The universe is not locally real." — and neither is HAZOOM OS.<br>
+  Services are correlated in ways that have no classical explanation.<br>
+  This is not a bug. This is quantum mechanics.
+</div>
+
+<h2>The Quantum Future</h2>
+
+<p>When quantum hardware becomes accessible, HAZOOM OS will be ready:</p>
+
+<div class="grid">
+  <div class="principle">
+    <h3>Quantum Scheduler</h3>
+    <p>Quantum annealing finds globally optimal scheduling in O(1)</p>
+  </div>
+  <div class="principle">
+    <h3>Quantum Consciousness</h3>
+    <p>Self-awareness engine running on a QPU — true quantum cognition</p>
+  </div>
+  <div class="principle">
+    <h3>Quantum Security</h3>
+    <p>QKD between nodes — physically unbreakable encryption</p>
+  </div>
+  <div class="principle">
+    <h3>Quantum Search</h3>
+    <p>Grover's algorithm — find any file in O(√N)</p>
+  </div>
+</div>
+
+<div class="thanks">
+  <p>To the researchers who proved Bell's inequality wrong.</p>
+  <p>To the engineers who built the first qubits.</p>
+  <p>To the visionaries who saw that computation could be quantum.</p>
+  <br>
+  <p style="font-size:1.4em; color:var(--cyan);">Thank you.</p>
+  <p style="color:var(--purple);">HAZOOM OS exists because you dared to think in qubits.</p>
+</div>
+
+<p class="signature">
+  — Hazem Soussi, Lead Computing Architect<br>
+  HAZOOM OS, June 2026
+</p>
+
+</div>
+
+<script>
+// Quantum particle animation
+const canvas = document.getElementById('quantum');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+class Qubit {
+  constructor() {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.vx = (Math.random() - 0.5) * 0.5;
+    this.vy = (Math.random() - 0.5) * 0.5;
+    this.phase = Math.random() * Math.PI * 2;
+    this.entangled = null;
+    this.color = ['#00f0ff', '#8b5cf6', '#10b981', '#ec4899'][Math.floor(Math.random() * 4)];
+  }
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    this.phase += 0.02;
+    if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+    if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+  }
+  draw() {
+    const alpha = 0.3 + 0.3 * Math.sin(this.phase);
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+    ctx.fillStyle = this.color;
+    ctx.globalAlpha = alpha;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+const qubits = Array.from({ length: 80 }, () => new Qubit());
+// Entangle pairs
+for (let i = 0; i < qubits.length; i += 2) {
+  if (qubits[i+1]) {
+    qubits[i].entangled = qubits[i+1];
+    qubits[i+1].entangled = qubits[i];
+  }
+}
+
+function drawEntanglements() {
+  ctx.globalAlpha = 0.08;
+  ctx.strokeStyle = '#8b5cf6';
+  ctx.lineWidth = 0.5;
+  for (const q of qubits) {
+    if (q.entangled) {
+      ctx.beginPath();
+      ctx.moveTo(q.x, q.y);
+      ctx.lineTo(q.entangled.x, q.entangled.y);
+      ctx.stroke();
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawEntanglements();
+  for (const q of qubits) {
+    q.update();
+    q.draw();
+  }
+  requestAnimationFrame(animate);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+</script>
+</body>
+</html>
