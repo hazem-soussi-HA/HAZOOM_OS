@@ -1,0 +1,9 @@
+{
+  "httpPort": 3000,
+  "httpsPort": 8443,
+  "logLevel": "info",
+  "qLearning": {
+    "enabled": true,
+    "mode": "hybrid"
+  }
+}

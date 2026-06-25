@@ -1,7 +1,7 @@
 {
   "name": "hazoom-os",
-  "version": "4.0.0",
-  "description": "HAZOOM OS — Refactored Operating System",
+  "version": "5.0.0",
+  "description": "HAZOOM OS v5.0 — CONVERGENCE — Unified Operating System with Q-Learning",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

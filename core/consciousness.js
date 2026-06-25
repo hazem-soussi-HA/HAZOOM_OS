@@ -497,3 +497,5 @@ class Consciousness {
 }
 
 module.exports = Consciousness;
+module.exports.default = Consciousness;
+export default Consciousness;
