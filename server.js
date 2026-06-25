@@ -77,8 +77,8 @@ app.use(helmet({
 }));
 
 app.use(rateLimit({
-    windowMs: config.get('rateLimitWindow'),
-    max: config.get('rateLimitMax'),
+    windowMs: 1 * 60 * 1000,
+    max: 10000,
     standardHeaders: true,
     legacyHeaders: false
 }));
