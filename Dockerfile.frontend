@@ -1,0 +1,13 @@
+# HAZOOM OS v6.0 — Frontend Dockerfile
+FROM nginx:1.27-alpine
+WORKDIR /usr/share/nginx/html/hazoom-os
+COPY index.html os-v5.html landing.html ./
+COPY core/ ./core/
+COPY kernel/ ./kernel/
+COPY apps/ ./apps/
+COPY docs/ ./docs/
+COPY assets/ ./assets/
+COPY deploy/nginx_frontend.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://localhost/ || exit 1
+CMD ["nginx", "-g", "daemon off;"]

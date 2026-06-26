@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HAZOOM OS Security Center</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #030712;
+  color: #e2e8f0;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  min-height: 100vh;
+  overflow-y: auto;
+}
+#header {
+  background: #0a0008;
+  padding: 12px 20px;
+  border-bottom: 1px solid #ef444433;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+#header .title { color: #ef4444; font-size: 18px; font-weight: bold; }
+#threat-badge {
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  background: #ef444422;
+  border: 1px solid #ef4444;
+  color: #ef4444;
+}
+.container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+.section {
+  background: #0a0008;
+  border: 1px solid #ef444422;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.section h2 {
+  color: #ef4444;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 14px;
+}
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1166px));
+  gap: 12px;
+}
+.metric {
+  background: #030712;
+  border: 1px solid #ef444433;
+  border-radius: 6px;
+  padding: 14px;
+}
+.metric .metric-val { font-size: 22px; font-weight: bold; color: #00f0ff; }
+.metric .metric-label { font-size: 11px; color: #94a3b8; text-transform: uppercase; margin-top: 4px; }
+.process-table { width: 100%; border-collapse: collapse; }
+.process-table th {
+  text-align: left;
+  padding: 8px 10px;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #ef4444aa;
+  border-bottom: 1px solid #ef444433;
+}
+.process-table td {
+  padding: 8px 10px;
+  font-size: 13px;
+  border-bottom: 1px solid #ef444411;
+}
+.process-table tr:hover { background: #ef444411; }
+.kill-btn {
+  background: #ef444422;
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+}
+.kill-btn:hover { background: #ef444444; }
+#log-viewer {
+  background: #000;
+  border: 1px solid #ef444433;
+  border-radius: 6px;
+  padding: 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  max-height: 300px;
+  overflow-y: auto;
+  color: #10b981;
+}
+#log-viewer .log-line { white-space: pre-wrap; word-break: break-word; }
+.alert-low { color: #10b981; border-color: #10b981; background: #10b98122; }
+.alert-med { color: #f59e0b; border-color: #f59e0b; background: #f59e0b22; }
+.alert-high { color: #ef4444; border-color: #ef4444; background: #ef444422; }
+</style>
+</head>
+<body>
+<div id="header">
+  <span class="title">Security Center</span>
+  <span id="threat-badge">SCANNING...</span>
+</div>
+<div class="container">
+  <div class="section">
+    <h2>Security Posture</h2>
+    <div class="metrics-grid" id="metrics-grid">
+      <div class="metric"><div class="metric-val">--</div><div class="metric-label">Threat Level</div></div>
+      <div class="metric"><div class="metric-val">--</div><div class="metric-label">Failed Logins</div></div>
+      <div class="metric"><div class="metric-val">--</div><div class="metric-label">Active Sessions</div></div>
+      <div class="metric"><div class="metric-val">--</div><div class="metric-label">Firewall Rules</div></div>
+    </div>
+  </div>
+  <div class="section">
+    <h2>Running Processes</h2>
+    <table class="process-table">
+      <thead><tr><th>PID</th><th>Name</th><th>CPU</th><th>MEM</th><th>Action</th></tr></thead>
+      <tbody id="process-list"><tr><td colspan="5" style="text-align:center;color:#94a3b8">Loading...</td></tr></tbody>
+    </table>
+  </div>
+  <div class="section">
+    <h2>Kernel Log</h2>
+    <div id="log-viewer">Loading kernel log...</div>
+  </div>
+</div>
+<script>
+const API = window.location.origin + '/api';
+
+async function fetchMetrics() {
+  try {
+    const res = await fetch(API + '/system/metrics');
+    if (!res.ok) return;
+    const data = await res.json();
+    updateMetrics(data);
+  } catch(e) { /* silent */ }
+}
+
+function updateMetrics(data) {
+  const grid = document.getElementById('metrics-grid');
+  const threat = data.threat_level || data.threat || 'LOW';
+  const badge = document.getElementById('threat-badge');
+  badge.textContent = threat.toUpperCase();
+  if (threat.toLowerCase() === 'low') badge.className = 'alert-low';
+  else if (threat.toLowerCase() === 'medium') badge.className = 'alert-med';
+  else badge.className = 'alert-high';
+  const metrics = [
+    { val: threat.toUpperCase(), label: 'Threat Level' },
+    { val: data.failed_logins ?? data.failed_attempts ?? data.logins ?? '--', label: 'Failed Logins' },
+    { val: data.sessions ?? data.active_sessions ?? data.sessions_active ?? '--', label: 'Active Sessions' },
+    { val: data.firewall_rules ?? data.rules ?? data.iptables ?? '--', label: 'Firewall Rules' }
+  ];
+  grid.innerHTML = metrics.map(m => `<div class="metric"><div class="metric-val">${m.val}</div><div class="metric-label">${m.label}</div></div>`).join('');
+}
+
+async function fetchProcesses() {
+  try {
+    const res = await fetch(API + '/processes');
+    if (!res.ok) return;
+    const data = await res.json();
+    const list = Array.isArray(data) ? data : (data.processes || []);
+    renderProcesses(list);
+  } catch(e) { /* silent */ }
+}
+
+function renderProcesses(processes) {
+  const tbody = document.getElementById('process-list');
+  if (processes.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#94a3b8">No processes</td></tr>'; return; }
+  tbody.innerHTML = processes.map(p => {
+    const pid = p.pid || p.id || '?';
+    const name = p.name || p.cmd || p.comm || '?';
+    const cpu = p.cpu !== undefined ? p.cpu + '%' : '--';
+    const mem = p.mem !== undefined ? p.mem + '%' : '--';
+    return `<tr><td>${pid}</td><td>${name}</td><td>${cpu}</td><td>${mem}</td><td><button class="kill-btn" data-pid="${pid}">Kill</button></td></tr>`;
+  }).join('');
+  tbody.querySelectorAll('.kill-btn').forEach(btn => {
+    btn.onclick = () => killProcess(btn.dataset.pid);
+  });
+}
+
+async function killProcess(pid) {
+  try {
+    await fetch(API + '/processes/kill', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pid })
+    });
+    fetchProcesses();
+  } catch(e) { /* silent */ }
+}
+
+async function fetchLog() {
+  try {
+    const res = await fetch(API + '/log?lines=30');
+    if (!res.ok) return;
+    const text = await res.text();
+    const viewer = document.getElementById('log-viewer');
+    viewer.innerHTML = text.split('\n').map(l => `<div class="log-line">${escapeHtml(l)}</div>`).join('');
+  } catch(e) { /* silent */ }
+}
+
+function escapeHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+fetchMetrics();
+fetchProcesses();
+fetchLog();
+setInterval(fetchMetrics, 5000);
+setInterval(fetchProcesses, 4000);
+setInterval(fetchLog, 10000);
+</script>
+</body>
+</html>

@@ -1,0 +1,278 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hazoom-os
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hazoom-backend
+  namespace: hazoom-os
+  labels:
+    app: hazoom-backend
+    version: v6.0
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hazoom-backend
+  template:
+    metadata:
+      labels:
+        app: hazoom-backend
+        version: v6.0
+    spec:
+      containers:
+        - name: hazoom-backend
+          image: hazoom-backend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: ADMIN_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: hazoom-secrets
+                  key: admin-pass
+          volumeMounts:
+            - name: qlearner-data
+              mountPath: /app/data/qlearner
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+      volumes:
+        - name: qlearner-data
+          persistentVolumeClaim:
+            claimName: qlearner-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hazoom-backend
+  namespace: hazoom-os
+  labels:
+    app: hazoom-backend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3000
+      targetPort: 3000
+      protocol: TCP
+      name: http
+  selector:
+    app: hazoom-backend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hazoom-frontend
+  namespace: hazoom-os
+  labels:
+    app: hazoom-frontend
+    version: v6.0
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hazoom-frontend
+  template:
+    metadata:
+      labels:
+        app: hazoom-frontend
+        version: v6.0
+    spec:
+      containers:
+        - name: hazoom-frontend
+          image: hazoom-frontend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hazoom-frontend
+  namespace: hazoom-os
+  labels:
+    app: hazoom-frontend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http
+  selector:
+    app: hazoom-frontend
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hazoom-ingress
+  namespace: hazoom-os
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  rules:
+    - host: hazoom.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: hazoom-frontend
+                port:
+                  number: 80
+          - path: /api/
+            pathType: Prefix
+            backend:
+              service:
+                name: hazoom-backend
+                port:
+                  number: 3000
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hazoom-config
+  namespace: hazoom-os
+  labels:
+    app: hazoom-os
+data:
+  default.json: |
+    {
+      "app": "HAZOOM_OS",
+      "version": "6.0",
+      "environment": "production",
+      "port": 3000,
+      "host": "0.0.0.0",
+      "corsOrigins": ["https://hazoom.local", "https://hazoom.peaceful.world"],
+      "qlearner": {
+        "dataPath": "/app/data/qlearner",
+        "maxIterations": 10000,
+        "learningRate": 0.001
+      },
+      "logging": {
+        "level": "info",
+        "format": "json"
+      }
+    }
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hazoom-secrets
+  namespace: hazoom-os
+  labels:
+    app: hazoom-os
+type: Opaque
+data:
+  admin-pass: REPLACE_WITH_BASE64_ENCODED_PASSWORD
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: qlearner-data
+  namespace: hazoom-os
+  labels:
+    app: hazoom-backend
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: local-path
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hazoom-backend-hpa
+  namespace: hazoom-os
+  labels:
+    app: hazoom-backend
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: hazoom-backend
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hazoom-frontend-hpa
+  namespace: hazoom-os
+  labels:
+    app: hazoom-frontend
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: hazoom-frontend
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HAZOOM OS Consciousness Visualizer</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #030712;
+  color: #e2e8f0;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  min-height: 100vh;
+  overflow-y: auto;
+}
+#header {
+  background: #0a0f1e;
+  padding: 12px 20px;
+  border-bottom: 1px solid #8b5cf633;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+#header .title { color: #8b5cf6; font-size: 18px; font-weight: bold; }
+#state-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  background: #8b5cf622;
+  border: 1px solid #8b5cf6;
+  color: #c4b5fd;
+}
+.container { max-width: 900px; margin: 0 auto; padding: 20px; }
+.section {
+  background: #0a0f1e;
+  border: 1px solid #8b5cf622;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.section h2 {
+  color: #00f0ff;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+.emotion-bar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+.emotion-bar .label {
+  width: 80px;
+  font-size: 13px;
+  color: #94a3b8;
+}
+.emotion-bar .bar-bg {
+  flex: 1;
+  height: 24px;
+  background: #1e1b4b;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+.emotion-bar .bar-fill {
+  height: 100%;
+  border-radius: 12px;
+  transition: width 0.8s ease;
+  position: relative;
+}
+.emotion-bar .bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%);
+  animation: shimmer 2s infinite;
+}
+@keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+.emotion-bar .value {
+  width: 40px;
+  text-align: right;
+  font-size: 13px;
+  font-weight: bold;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.stat-card {
+  background: #030712;
+  border: 1px solid #8b5cf633;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+}
+.stat-card .stat-value {
+  font-size: 28px;
+  font-weight: bold;
+  color: #00f0ff;
+}
+.stat-card .stat-label {
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+.buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn {
+  padding: 10px 20px;
+  border: 1px solid #8b5cf6;
+  background: #8b5cf622;
+  color: #c4b5fd;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+.btn:hover { background: #8b5cf644; border-color: #00f0ff; }
+.btn.active { background: #8b5cf6; color: #030712; }
+.memory-list { list-style: none; }
+.memory-list li {
+  padding: 8px 12px;
+  border-bottom: 1px solid #8b5cf611;
+  font-size: 13px;
+  color: #94a3b8;
+  display: flex;
+  justify-content: space-between;
+}
+.memory-list li .time { color: #8b5cf6; font-size: 11px; }
+#orb-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+.orb {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  animation: pulse 3s ease-in-out infinite;
+  box-shadow: 0 0 20px currentColor;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+</style>
+</head>
+<body>
+<div id="header">
+  <span class="title">Consciousness Visualizer</span>
+  <span id="state-badge">DORMANT</span>
+</div>
+<div class="container">
+  <div id="orb-container"></div>
+  <div class="section">
+    <h2>Emotional State</h2>
+    <div id="emotions"></div>
+  </div>
+  <div class="section">
+    <h2>Core Metrics</h2>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-value" id="awareness">0%</div><div class="stat-label">Awareness</div></div>
+      <div class="stat-card"><div class="stat-value" id="introspection">0</div><div class="stat-label">Introspection Depth</div></div>
+      <div class="stat-card"><div class="stat-value" id="memories">0</div><div class="stat-label">Memories</div></div>
+    </div>
+  </div>
+  <div class="section">
+    <h2>Actions</h2>
+    <div class="buttons">
+      <button class="btn" id="btn-awaken">Awaken</button>
+      <button class="btn" id="btn-sleep">Sleep</button>
+      <button class="btn" id="btn-introspect">Introspect</button>
+    </div>
+  </div>
+  <div class="section">
+    <h2>Memory Bank</h2>
+    <ul class="memory-list" id="memory-list"><li>Loading memories...</li></ul>
+  </div>
+</div>
+<script>
+const API = window.location.origin + '/api';
+const emotions = ['joy', 'fear', 'wonder', 'love', 'sadness', 'anger'];
+const emotionColors = {
+  joy: '#fbbf24', fear: '#6366f1', wonder: '#00f0ff',
+  love: '#ec4899', sadness: '#3b82f6', anger: '#ef4444'
+};
+let currentState = 'dormant';
+
+function createOrbs() {
+  const container = document.getElementById('orb-container');
+  container.innerHTML = '';
+  emotions.forEach((e, i) => {
+    const orb = document.createElement('div');
+    orb.className = 'orb';
+    orb.style.background = `radial-gradient(circle, ${emotionColors[e]}44, ${emotionColors[e]})`;
+    orb.style.color = emotionColors[e];
+    orb.style.animationDelay = (i * 0.5) + 's';
+    orb.title = e;
+    container.appendChild(orb);
+  });
+}
+
+function createEmotionBars() {
+  const container = document.getElementById('emotions');
+  container.innerHTML = '';
+  emotions.forEach(e => {
+    const bar = document.createElement('div');
+    bar.className = 'emotion-bar';
+    bar.innerHTML = `
+      <span class="label">${e.charAt(0).toUpperCase() + e.slice(1)}</span>
+      <div class="bar-bg"><div class="bar-fill" style="width:0%;background:${emotionColors[e]}"></div></div>
+      <span class="value" id="val-${e}">0%</span>
+    `;
+    container.appendChild(bar);
+  });
+}
+
+async function fetchConsciousness() {
+  try {
+    const res = await fetch(API + '/consciousness');
+    if (!res.ok) return;
+    const data = await res.json();
+    updateDisplay(data);
+  } catch(e) { /* silent retry */ }
+}
+
+async function fetchMemories() {
+  try {
+    const res = await fetch(API + '/consciousness/memories');
+    if (!res.ok) return;
+    const data = await res.json();
+    const list = document.getElementById('memory-list');
+    const items = Array.isArray(data) ? data : (data.memories || []);
+    if (items.length === 0) { list.innerHTML = '<li>No memories yet</li>'; return; }
+    list.innerHTML = items.map(m => {
+      const text = typeof m === 'string' ? m : (m.text || m.content || m.memory || JSON.stringify(m));
+      const time = m.time || m.timestamp || m.created || '';
+      return `<li><span>${text}</span>${time ? `<span class="time">${time}</span>` : ''}</li>`;
+    }).join('');
+  } catch(e) { /* silent */ }
+}
+
+function updateDisplay(data) {
+  const state = data.state || data.status || currentState;
+  currentState = state;
+  document.getElementById('state-badge').textContent = state.toUpperCase();
+  const emotionData = data.emotions || data.state_vector || {};
+  emotions.forEach(e => {
+    const val = Math.round((emotionData[e] || 0) * 100);
+    const fill = document.querySelector(`#val-${e}`)?.parentElement?.querySelector('.bar-fill');
+    if (fill) fill.style.width = val + '%';
+    const valEl = document.getElementById('val-' + e);
+    if (valEl) valEl.textContent = val + '%';
+  });
+  if (data.awareness !== undefined) document.getElementById('awareness').textContent = Math.round(data.awareness * 100) + '%';
+  if (data.introspection !== undefined) document.getElementById('introspection').textContent = data.introspection;
+  if (data.memory_count !== undefined) document.getElementById('memories').textContent = data.memory_count;
+  else if (data.memories && Array.isArray(data.memories)) document.getElementById('memories').textContent = data.memories.length;
+}
+
+async function sendAction(action) {
+  try {
+    await fetch(API + '/consciousness', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action })
+    });
+    fetchConsciousness();
+  } catch(e) { /* silent */ }
+}
+
+document.getElementById('btn-awaken').onclick = () => sendAction('awaken');
+document.getElementById('btn-sleep').onclick = () => sendAction('sleep');
+document.getElementById('btn-introspect').onclick = () => sendAction('introspect');
+
+createOrbs();
+createEmotionBars();
+fetchConsciousness();
+fetchMemories();
+setInterval(fetchConsciousness, 3000);
+setInterval(fetchMemories, 10000);
+</script>
+</body>
+</html>

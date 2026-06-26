@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HAZOOM OS Terminal</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #030712;
+  color: #10b981;
+  font-family: 'Courier New', monospace;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+#header {
+  background: #0a0f1e;
+  padding: 8px 16px;
+  border-bottom: 1px solid #10b98133;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#header .title { color: #00f0ff; font-size: 14px; font-weight: bold; }
+#output {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  background: #000000;
+}
+#output .line { white-space: pre-wrap; word-break: break-word; }
+#output .line.cmd { color: #10b981; }
+#output .line.err { color: #ef4444; }
+#output .line.out { color: #d1fae5; }
+#input-area {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  background: #0a0f1e;
+  border-top: 1px solid #10b98133;
+}
+#prompt {
+  color: #00f0ff;
+  margin-right: 8px;
+  white-space: nowrap;
+  font-size: 14px;
+}
+#cmd-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #10b981;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  outline: none;
+}
+#cmd-input::placeholder { color: #10b98155; }
+</style>
+</head>
+<body>
+<div id="header"><span class="title">HAZOOM OS Terminal v6.0</span></div>
+<div id="output"></div>
+<div id="input-area">
+  <span id="prompt">hazem@hazoom-os $</span>
+  <input type="text" id="cmd-input" autofocus autocomplete="off" spellcheck="false">
+</div>
+<script>
+const output = document.getElementById('output');
+const input = document.getElementById('cmd-input');
+const API = window.location.origin + '/api';
+let MAX_LINES = 400;
+let currentDir = '/home/hazem';
+
+function addLine(text, cls) {
+  const line = document.createElement('div');
+  line.className = 'line ' + (cls || 'out');
+  line.textContent = text;
+  output.appendChild(line);
+  while (output.children.length > MAX_LINES) output.removeChild(output.firstChild);
+  output.scrollTop = output.scrollHeight;
+}
+
+async function apiFetch(path) {
+  try {
+    const r = await fetch(API + path);
+    if (!r.ok) return '[ERROR] HTTP ' + r.status;
+    return await r.text();
+  } catch(e) {
+    return '[ERROR] ' + e.message;
+  }
+}
+
+async function apiFetchJSON(path) {
+  try {
+    const r = await fetch(API + path);
+    if (!r.ok) return { error: 'HTTP ' + r.status };
+    return await r.json();
+  } catch(e) {
+    return { error: e.message };
+  }
+}
+
+const commands = {
+  help: () => `Available commands:
+  help      - Show this help
+  status    - System status
+  ps        - List processes
+  mem       - Memory usage
+  ls [path] - List directory
+  cd <dir>  - Change directory
+  cat <file>- Show file contents
+  echo <txt>- Print text
+  tick      - Current timestamp
+  clear     - Clear screen
+  neofetch  - System info
+  date      - Current date/time
+  whoami    - Current user`,
+  status: async () => apiFetch('/system/status'),
+  ps: async () => {
+    const data = await apiFetchJSON('/processes');
+    if (data.error) return data.error;
+    if (!Array.isArray(data)) return JSON.stringify(data);
+    return data.slice(0, 30).map(p => `${String(p.pid || p.id || '').padEnd(8)} ${p.name || p.cmd || 'unknown'}`).join('\n');
+  },
+  mem: async () => apiFetch('/system/mem'),
+  ls: async (args) => {
+    const path = args[0] || currentDir;
+    const data = await apiFetchJSON('/fs/list?path=' + encodeURIComponent(path));
+    if (data.error) return data.error;
+    if (!Array.isArray(data)) return JSON.stringify(data);
+    return data.map(f => {
+      const icon = f.type === 'dir' || f.isDirectory ? '📁' : '📄';
+      return icon + ' ' + f.name;
+    }).join('\n');
+  },
+  cd: (args) => {
+    if (args[0]) {
+      if (args[0] === '..') {
+        const parts = currentDir.split('/').filter(Boolean);
+        parts.pop();
+        currentDir = '/' + parts.join('/');
+      } else if (args[0].startsWith('/')) {
+        currentDir = args[0];
+      } else {
+        currentDir = currentDir.replace(/\/$/, '') + '/' + args[0];
+      }
+    }
+    return 'Changed to ' + currentDir;
+  },
+  cat: async (args) => {
+    if (!args[0]) return 'Usage: cat <filename>';
+    const path = args[0].startsWith('/') ? args[0] : currentDir.replace(/\/$/, '') + '/' + args[0];
+    return await apiFetch('/fs/read?path=' + encodeURIComponent(path));
+  },
+  echo: (args) => args.join(' '),
+  tick: () => 'Tick: ' + Date.now() + ' | Uptime: ' + Math.floor(performance.now() / 1000) + 's',
+  clear: () => { output.innerHTML = ''; return null; },
+  neofetch: async () => {
+    const info = await apiFetchJSON('/system/info');
+    return `        ╭──────────╮
+        │ HAZOOM OS │  v6.0
+        │  ◉    ◉  │  Kernel: ${info.kernel || '6.0.0'}
+        │    ──    │  Host: ${info.hostname || 'hazoom-os'}
+        │  ╰────╯  │  Shell: hazesh
+        ╰──────────╘  Uptime: ${info.uptime || 'unknown'}`;
+  },
+  date: () => new Date().toString(),
+  whoami: () => 'hazem (uid=1000, sudo)'
+};
+
+input.addEventListener('keydown', async (e) => {
+  if (e.key !== 'Enter') return;
+  const raw = input.value.trim();
+  if (!raw) return;
+  addLine('hazem@hazoom-os $ ' + raw, 'cmd');
+  input.value = '';
+  const parts = raw.split(/\s+/);
+  const cmd = parts[0].toLowerCase();
+  const args = parts.slice(1);
+  if (cmd === 'clear') { commands.clear(); return; }
+  if (commands[cmd]) {
+    try {
+      const result = commands[cmd](args);
+      if (typeof result === 'string' || typeof result === 'number') {
+        if (result) addLine(result);
+      } else if (result && result.then) {
+        const res = await result;
+        if (res) addLine(res);
+      }
+    } catch(err) {
+      addLine('[ERROR] ' + err.message, 'err');
+    }
+  } else {
+    addLine('Command not found: ' + cmd + ' (type "help" for commands)', 'err');
+  }
+});
+
+addLine('HAZOOM OS Terminal v6.0 — Type "help" for available commands.', 'out');
+</script>
+</body>
+</html>

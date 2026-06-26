@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HAZOOM OS API Explorer</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #030712;
+  color: #e2e8f0;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  min-height: 100vh;
+  overflow-y: auto;
+}
+#header {
+  background: #0a0f1e;
+  padding: 12px 20px;
+  border-bottom: 1px solid #00f0ff33;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+#header .title { color: #00f0ff; font-size: 18px; font-weight: bold; }
+#header .subtitle { color: #94a3b8; font-size: 12px; margin-top: 2px; }
+.container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+.endpoint {
+  background: #0a0f1e;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.endpoint:hover { border-color: #00f0ff44; }
+.endpoint-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  gap: 10px;
+}
+.endpoint-header:hover { background: #00f0ff08; }
+.method-badge {
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+  min-width: 55px;
+  text-align: center;
+}
+.method-GET { background: #0ea5e922; color: #0ea5e9; border: 1px solid #0ea5e9; }
+.method-POST { background: #10b98122; color: #10b981; border: 1px solid #10b981; }
+.method-PUT { background: #f59e0b22; color: #f59e0b; border: 1px solid #f59e0b; }
+.method-DELETE { background: #ef444422; color: #ef4444; border: 1px solid #ef4444; }
+.endpoint-path {
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  color: #e2e8f0;
+  flex: 1;
+}
+.endpoint-desc { font-size: 12px; color: #94a3b8; }
+.endpoint-body { display: none; padding: 0 16px 16px; }
+.endpoint.expanded .endpoint-body { display: block; }
+.test-btn {
+  background: #00f0ff22;
+  border: 1px solid #00f0ff;
+  color: #00f0ff;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  margin-top: 10px;
+}
+.test-btn:hover { background: #00f0ff44; }
+.test-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.response-box {
+  background: #000;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  padding: 12px;
+  margin-top: 10px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  max-height: 300px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.response-box .key { color: #00f0ff; }
+.response-box .string { color: #10b981; }
+.response-box .number { color: #f59e0b; }
+.response-box .boolean { color: #8b5cf6; }
+.response-box .null { color: #ef4444; }
+.status-line {
+  font-size: 12px;
+  margin-bottom: 8px;
+  color: #94a3b8;
+}
+.status-line .status-code { font-weight: bold; }
+.status-line .status-code.ok { color: #10b981; }
+.status-line .status-code.err { color: #ef4444; }
+</style>
+</head>
+<body>
+<div id="header">
+  <div class="title">API Explorer</div>
+  <div class="subtitle">HAZOOM OS v6.0 — 20 Endpoints</div>
+</div>
+<div class="container" id="endpoints"></div>
+<script>
+const API = window.location.origin + '/api';
+
+const endpoints = [
+  { method: 'GET', path: '/system/status', desc: 'Get overall system status and health' },
+  { method: 'GET', path: '/system/info', desc: 'System information (kernel, hostname, uptime)' },
+  { method: 'GET', path: '/system/metrics', desc: 'System metrics (CPU, memory, threat level)' },
+  { method: 'GET', path: '/system/mem', desc: 'Memory usage details' },
+  { method: 'GET', path: '/processes', desc: 'List all running processes' },
+  { method: 'POST', path: '/processes/kill', desc: 'Kill a process by PID', body: { pid: 0 } },
+  { method: 'GET', path: '/fs/list', desc: 'List directory contents', query: 'path=/home/hazem' },
+  { method: 'GET', path: '/fs/read', desc: 'Read file contents', query: 'path=/home/hazem/README.md' },
+  { method: 'POST', path: '/fs/write', desc: 'Write to a file', body: { path: '', content: '' } },
+  { method: 'POST', path: '/fs/delete', desc: 'Delete a file or directory', body: { path: '' } },
+  { method: 'GET', path: '/log', desc: 'Get kernel log lines', query: 'lines=30' },
+  { method: 'GET', path: '/consciousness', desc: 'Get current consciousness state' },
+  { method: 'POST', path: '/consciousness/think', desc: 'Send input to consciousness', body: { input: '' } },
+  { method: 'GET', path: '/consciousness/memories', desc: 'List consciousness memories' },
+  { method: 'POST', path: '/consciousness', desc: 'Change consciousness state', body: { action: 'awaken' } },
+  { method: 'GET', path: '/api/stats', desc: 'API usage statistics' },
+  { method: 'GET', path: '/api/endpoints', desc: 'List all available API endpoints' },
+  { method: 'POST', path: '/api/echo', desc: 'Echo back the request body', body: {} },
+  { method: 'GET', path: '/api/time', desc: 'Get server time and tick count' },
+  { method: 'POST', path: '/api/notify', desc: 'Send a system notification', body: { message: '' } }
+];
+
+function highlightJSON(obj) {
+  if (obj === null) return '<span class="null">null</span>';
+  if (typeof obj === 'boolean') return '<span class="boolean">' + obj + '</span>';
+  if (typeof obj === 'number') return '<span class="number">' + obj + '</span>';
+  if (typeof obj === 'string') return '<span class="string">"' + obj.replace(/&/g,'&amp;').replace(/</g,'&lt;') + '"</span>';
+  if (Array.isArray(obj)) {
+    return '[' + obj.map(highlightJSON).join(', ') + ']';
+  }
+  if (typeof obj === 'object') {
+    const pairs = Object.entries(obj).map(([k, v]) => '<span class="key">"' + k + '":</span> ' + highlightJSON(v));
+    return '{' + pairs.join(', ') + '}';
+  }
+  return String(obj);
+}
+
+function renderEndpoints() {
+  const container = document.getElementById('endpoints');
+  container.innerHTML = endpoints.map((ep, i) => `
+    <div class="endpoint" id="ep-${i}">
+      <div class="endpoint-header" data-idx="${i}">
+        <span class="method-badge method-${ep.method}">${ep.method}</span>
+        <span class="endpoint-path">${ep.path}</span>
+        <span class="endpoint-desc">${ep.desc}</span>
+      </div>
+      <div class="endpoint-body">
+        ${ep.query ? `<div style="font-size:12px;color:#94a3b8;margin-bottom:8px;">Query: <code style="color:#00f0ff">${ep.query}</code></div>` : ''}
+        ${ep.body ? `<div style="font-size:12px;color:#94a3b8;margin-bottom:8px;">Body: <code style="color:#10b981">${JSON.stringify(ep.body)}</code></div>` : ''}
+        <button class="test-btn" data-idx="${i}">Test</button>
+        <div class="response-box" id="resp-${i}" style="display:none;"></div>
+      </div>
+    </div>
+  `).join('');
+  container.querySelectorAll('.endpoint-header').forEach(h => {
+    h.onclick = () => {
+      const idx = h.dataset.idx;
+      document.getElementById('ep-' + idx).classList.toggle('expanded');
+    };
+  });
+  container.querySelectorAll('.test-btn').forEach(btn => {
+    btn.onclick = (e) => { e.stopPropagation(); testEndpoint(btn.dataset.idx); };
+  });
+}
+
+async function testEndpoint(idx) {
+  const ep = endpoints[idx];
+  const respBox = document.getElementById('resp-' + idx);
+  const btn = document.querySelector(`.test-btn[data-idx="${idx}"]`);
+  btn.disabled = true;
+  btn.textContent = 'Testing...';
+  respBox.style.display = 'block';
+  respBox.innerHTML = '<span style="color:#94a3b8">Sending request...</span>';
+  let url = API + ep.path;
+  const opts = { method: ep.method, headers: { 'Content-Type': 'application/json' } };
+  if (ep.body) opts.body = JSON.stringify(ep.body);
+  const start = performance.now();
+  try {
+    const res = await fetch(url, opts);
+    const elapsed = Math.round(performance.now() - start);
+    const text = await res.text();
+    let json = null;
+    try { json = JSON.parse(text); } catch(e) {}
+    let html = `<div class="status-line">Status: <span class="status-code ${res.ok ? 'ok' : 'err'}">${res.status} ${res.statusText}</span> — ${elapsed}ms</div>`;
+    if (json) html += highlightJSON(json);
+    else html += '<span class="string">' + (text || '(empty response)') + '</span>';
+    respBox.innerHTML = html;
+  } catch(e) {
+    const elapsed = Math.round(performance.now() - start);
+    respBox.innerHTML = `<div class="status-line">Error — ${elapsed}ms</div><span class="err">${e.message}</span>`;
+  }
+  btn.disabled = false;
+  btn.textContent = 'Test';
+}
+
+renderEndpoints();
+</script>
+</body>
+</html>
