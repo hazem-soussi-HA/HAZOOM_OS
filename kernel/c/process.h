@@ -39,6 +39,7 @@ typedef struct PCB {
     uint64_t        entry_point;    /* Process entry point */
     uint64_t        wake_ticks;     /* Wake-up time for blocked processes */
     char            name[32];       /* Process name */
+    uint32_t        pool_index;     /* Index in process_pool[] (for O(1) free) */
     struct PCB     *next;           /* Next process in list */
 } PCB_t;
 

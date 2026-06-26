@@ -87,7 +87,13 @@ void isr_handler(uint64_t int_num, void *frame) {
         /* Exception */
         vga_set_color(VGA_WHITE, VGA_RED);
         vga_print("\n[EXCEPTION] ");
-        vga_print(exception_messages[int_num]);
+        /* Bounds check to prevent out-of-bounds read */
+        if (int_num < sizeof(exception_messages)/sizeof(exception_messages[0])) {
+            vga_print(exception_messages[int_num]);
+        } else {
+            vga_print("Unknown exception ");
+            /* Print number in hex would go here */
+        }
         vga_print(" - System halted.");
         asm volatile("cli; hlt");
     }

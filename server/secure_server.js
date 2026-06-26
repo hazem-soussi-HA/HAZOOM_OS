@@ -160,7 +160,23 @@ function handleLogin(req, res, postData) {
     try {
         const data = JSON.parse(postData);
         
-        if (data.username === 'admin' && data.password === 'admin123') {
+        const adminUser = process.env.ADMIN_USER || 'admin';
+        const adminPass = process.env.ADMIN_PASS;
+        if (!adminPass) {
+            res.status(500).json({ error: 'Server not configured: ADMIN_PASS not set' });
+            return;
+        }
+        // SECURITY FIX: Use constant-time comparison to prevent timing attacks
+        const crypto = require('crypto');
+        const userMatch = crypto.timingSafeEqual(
+            Buffer.from(data.username),
+            Buffer.from(adminUser)
+        );
+        const passMatch = crypto.timingSafeEqual(
+            Buffer.from(data.password),
+            Buffer.from(adminPass)
+        );
+        if (userMatch && passMatch) {
             const sessionId = createSession(data.username);
             
             log(`Login successful for ${data.username}`, 'success');

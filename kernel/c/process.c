@@ -35,6 +35,7 @@ static PCB_t *alloc_pcb(void) {
     for (int i = 0; i < MAX_PROCESSES; i++) {
         if (!process_used[i]) {
             process_used[i] = 1;
+            process_pool[i].pool_index = i;  /* Store index for O(1) free */
             return &process_pool[i];
         }
     }
@@ -119,8 +120,8 @@ void terminate_process(uint32_t pid) {
         }
     }
 
-    /* Mark PCB as free */
-    process_used[pid % MAX_PROCESSES] = 0;
+    /* Mark PCB as free — use stored pool index, not pid (avoids hash collision) */
+    process_used[proc->pool_index] = 0;
 }
 
 /* Get process by PID */

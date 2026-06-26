@@ -290,7 +290,8 @@
         };
         
         function initCesium() {
-            Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWE1OWUxNy1mMWZiLTQzYjYtYTQ0OS1kMWFjYmFjNmM1NzEiLCJpZCI6NTYwODUsImlhdCI6MTY5NzU0MjM0N30.OO1yM3NjKDpN4K5Q6K5Q6K5Q6K5Q6K5Q6K5Q6K5Q6K';
+            // SECURITY FIX: Token removed — must be provided via server-side proxy
+            // Cesium.Ion.defaultAccessToken = process.env.CESIUM_ION_TOKEN;
             viewer = new Cesium.Viewer('cesiumContainer', {
                 animation: false, timeline: false, baseLayerPicker: false,
                 geocoder: false, homeButton: false, sceneModePicker: false,

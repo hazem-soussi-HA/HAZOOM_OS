@@ -149,7 +149,7 @@ class HAZOOMSecureClient {
                     </div>
                     <div class="form-group">
                         <label for="password">Password</label>
-                        <input type="password" id="password" placeholder="Enter admin password" value="admin123">
+                        <input type="password" id="password" placeholder="Enter admin password" value="">
                     </div>
                     <button class="btn" onclick="client.handleLogin()">Login</button>
                     <div style="margin-top: 15px; color: #777; font-size: 0.8em; text-align: center;">

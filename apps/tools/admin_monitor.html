@@ -1678,7 +1678,14 @@
             const username = document.getElementById('adminUser').value;
             const password = document.getElementById('adminPass').value;
 
-            if (username === 'admin' && password === 'admin123') {
+            // SECURITY FIX: Authentication moved to server-side
+            // Client-side auth is prohibited; this is now a UI shell only
+            fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username, password})
+            }).then(r => r.json()).then(d => {
+                if (d.token) {
                 const session = {
                     username: username,
                     valid: true,

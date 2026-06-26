@@ -486,18 +486,20 @@ class DeepQNetwork {
 
         for (const { state, actionIdx, reward, nextState, done } of batch) {
             // Target from FROZEN Q_target (patent's key innovation)
+            // CRITICAL FIX: Use qOnline to SELECT action, qTarget to EVALUATE (Double DQN)
             const targetQ = this.qOnline.predict(state);
             let targetValue;
             if (done) {
                 targetValue = reward;
             } else {
-                const nextQ = this.qTarget.predict(nextState);
-                targetValue = reward;
-                let maxQ = -Infinity;
-                for (let i = 0; i < nextQ.length; i++) {
-                    if (nextQ[i] > maxQ) maxQ = nextQ[i];
+                // Double DQN: qOnline selects best action, qTarget evaluates it
+                const onlineNextQ = this.qOnline.predict(nextState);
+                let bestActionIdx = 0;
+                for (let i = 1; i < onlineNextQ.length; i++) {
+                    if (onlineNextQ[i] > onlineNextQ[bestActionIdx]) bestActionIdx = i;
                 }
-                targetValue += this.gamma * maxQ;
+                const targetNextQ = this.qTarget.predict(nextState);
+                targetValue = reward + this.gamma * targetNextQ[bestActionIdx];
             }
 
             const oldQ = targetQ[actionIdx];
@@ -773,16 +775,28 @@ class HazoomQLearner {
         this.lastState = { ...currentState };
         this.totalDecisions++;
 
-        this.history.push({
-            tick: Date.now(),
-            state: currentState,
-            action,
-            mode: this.mode === 'hybrid'
-                ? (this.assessComplexity(currentState) < this.complexityThreshold ? 'tabular' : 'dqn')
-                : this.mode,
-            epsilon: this.mode === 'tabular' ? this.tabular.epsilon : this.dqn.epsilon
-        });
-        if (this.history.length > this.maxHistory) this.history.shift();
+        // Circular buffer: O(1) instead of O(n) shift
+        if (this.history.length >= this.maxHistory) {
+            this.history[this.history.length % this.maxHistory] = {
+                tick: Date.now(),
+                state: currentState,
+                action,
+                mode: this.mode === 'hybrid'
+                    ? (this.assessComplexity(currentState) < this.complexityThreshold ? 'tabular' : 'dqn')
+                    : this.mode,
+                epsilon: this.mode === 'tabular' ? this.tabular.epsilon : this.dqn.epsilon
+            };
+        } else {
+            this.history.push({
+                tick: Date.now(),
+                state: currentState,
+                action,
+                mode: this.mode === 'hybrid'
+                    ? (this.assessComplexity(currentState) < this.complexityThreshold ? 'tabular' : 'dqn')
+                    : this.mode,
+                epsilon: this.mode === 'tabular' ? this.tabular.epsilon : this.dqn.epsilon
+            });
+        }
 
         return action;
     }

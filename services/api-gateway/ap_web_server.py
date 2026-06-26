@@ -98,7 +98,9 @@ class NeuralHandler(http.server.SimpleHTTPRequestHandler):
             valid_users = {}
             if admin_user and admin_pass:
                 valid_users[admin_user] = admin_pass
-            valid_users['admin'] = 'admin123'  # Default fallback
+            valid_users['admin'] = os.environ.get('ADMIN_PASSWORD')
+            if not valid_users['admin']:
+                raise RuntimeError('ADMIN_PASSWORD environment variable must be set')
             
             if username in valid_users and valid_users[username] == password:
                 session_token = os.urandom(32).hex()

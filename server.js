@@ -57,30 +57,31 @@ const app = express();
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
-            defaultSrc: ["'self'", "https:", "http:"],
+            defaultSrc: ["'self'"],
             scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.jsdelivr.net", "https://unpkg.com", "https://cdnjs.cloudflare.com"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"],
             fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdn.jsdelivr.net"],
-            imgSrc: ["'self'", "data:", "https:", "http:", "blob:"],
-            connectSrc: ["'self'", "http://localhost:*", "https:", "http:", "wss:", "ws:"],
-            frameSrc: ["*"],
+            imgSrc: ["'self'", "data:", "https:", "blob:"],
+            connectSrc: ["'self'", "http://localhost:*", "https:", "wss:", "ws:"],
+            frameSrc: ["'self'"],
             frameAncestors: ["'self'"],
             baseUri: ["'self'"],
-            formAction: ["'self'", "https:", "http:"],
-            upgradeInsecureRequests: null
+            formAction: ["'self'", "https:"],
+            upgradeInsecureRequests: []
         }
     },
     crossOriginEmbedderPolicy: false,
     crossOriginResourcePolicy: { policy: "cross-origin" },
     crossOriginOpenerPolicy: { policy: "same-origin" },
-    hsts: false
+    hsts: { maxAge: 31536000, includeSubDomains: true, preload: true }
 }));
 
 app.use(rateLimit({
-    windowMs: 1 * 60 * 1000,
-    max: 10000,
+    windowMs: 15 * 60 * 1000,
+    max: 300,
     standardHeaders: true,
-    legacyHeaders: false
+    legacyHeaders: false,
+    message: { error: 'Too many requests, please try again later.' }
 }));
 app.disable('x-powered-by');
 app.use(express.json({ limit: config.get('maxRequestBody') }));

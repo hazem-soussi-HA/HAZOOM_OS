@@ -44,7 +44,7 @@ contract HAZOOMIP {
     string public constant PROJECT_NAME = "HAZOOM OS v6.0";
     string public constant VERSION = "6.0.0";
     string public constant AUTHOR_NAME = "Hazem Soussi";
-    string public constant AUTHOR_CIN = "09876443";        // Tunisian National ID
+    string public constant AUTHOR_CIN = "REDACTED_FOR_PRIVACY";  // CIN stored off-chain, verified via ZK-proof
     string public constant AUTHOR_COUNTRY = "Tunisia";
     string public constant COPYRIGHT_YEAR = "2024-2026";
     string public constant LEGAL_ENTITY = "HAZOOM — Private Digital Artefact Namespace";
