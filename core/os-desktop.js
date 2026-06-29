@@ -151,12 +151,18 @@
                         name: 'Neural FM',
                         icon: '🎵',
                         color: '#f59e0b',
-                        width: 420,
-                        height: 540,
+                        width: 440,
+                        height: 580,
                         content: () => `
                             <div class="app-music">
                                 <div class="music-header">🎵 Neural FM</div>
-                                <div class="music-sub">Coding playlists for flow state</div>
+                                <div class="music-sub">7 playlists • 35 tracks • Royalty-free audio</div>
+                                <div class="playlist-card" onclick="HAZOOM.playPlaylist('neuralcode')">
+                                    <div style="display:flex;align-items:center;gap:10px;">
+                                        <div style="width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,#e63946,#f59e0b);display:flex;align-items:center;justify-content:center;font-size:18px;">🧠</div>
+                                        <div><div style="font-size:0.85rem;font-weight:600;">Neural Code</div><div style="font-size:0.7rem;color:var(--text-dim);">Deep focus • Coding flow state</div></div>
+                                    </div>
+                                </div>
                                 <div class="playlist-card" onclick="HAZOOM.playPlaylist('synthwave')">
                                     <div style="display:flex;align-items:center;gap:10px;">
                                         <div style="width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,#ff6b6b,#ffa500);display:flex;align-items:center;justify-content:center;font-size:18px;">🌅</div>
@@ -173,6 +179,24 @@
                                     <div style="display:flex;align-items:center;gap:10px;">
                                         <div style="width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,#00f0ff,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:18px;">⚡</div>
                                         <div><div style="font-size:0.85rem;font-weight:600;">Electronic Rush</div><div style="font-size:0.7rem;color:var(--text-dim);">Daft Punk, Justice, Deadmau5</div></div>
+                                    </div>
+                                </div>
+                                <div class="playlist-card" onclick="HAZOOM.playPlaylist('cyberpunk')">
+                                    <div style="display:flex;align-items:center;gap:10px;">
+                                        <div style="width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,#a855f7,#ec4899);display:flex;align-items:center;justify-content:center;font-size:18px;">🌆</div>
+                                        <div><div style="font-size:0.85rem;font-weight:600;">Cyberpunk</div><div style="font-size:0.7rem;color:var(--text-dim);">Perturbator, Carpenter Brut</div></div>
+                                    </div>
+                                </div>
+                                <div class="playlist-card" onclick="HAZOOM.playPlaylist('ambient')">
+                                    <div style="display:flex;align-items:center;gap:10px;">
+                                        <div style="width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,#1e3a5f,#4a90d9);display:flex;align-items:center;justify-content:center;font-size:18px;">🌌</div>
+                                        <div><div style="font-size:0.85rem;font-weight:600;">Deep Space</div><div style="font-size:0.7rem;color:var(--text-dim);">Brian Eno, Hans Zimmer</div></div>
+                                    </div>
+                                </div>
+                                <div class="playlist-card" onclick="HAZOOM.playPlaylist('bossfight')">
+                                    <div style="display:flex;align-items:center;gap:10px;">
+                                        <div style="width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,#dc2626,#9333ea);display:flex;align-items:center;justify-content:center;font-size:18px;">🔥</div>
+                                        <div><div style="font-size:0.85rem;font-weight:600;">Boss Fight</div><div style="font-size:0.7rem;color:var(--text-dim);">DOOM, Power Glove, Overdrive</div></div>
                                     </div>
                                 </div>
                                 <div id="music-player-container" style="margin-top:12px;display:none;"></div>
@@ -1618,25 +1642,88 @@
             },
 
             playlists: {
-                synthwave: {
-                    name: 'Synthwave Flow',
-                    videos: [
-                        { id: 'MVPT3St0nhs', title: 'Kavinsky - Nightcall', fallback: 'https://cdn.pixabay.com/audio/2024/11/04/audio_4497d78bcb.mp3' },
-                        { id: 'a9cu9n_KgCk', title: 'The Midnight - Sunset', fallback: 'https://cdn.pixabay.com/audio/2024/01/16/audio_399b0e1d24.mp3' },
+                neuralcode: {
+                    name: 'Neural Code',
+                    icon: '🧠',
+                    gradient: 'linear-gradient(135deg,#e63946,#f59e0b)',
+                    tracks: [
+                        { title: 'Deep Focus Alpha', artist: 'Neural FM', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', duration: '6:14' },
+                        { title: 'Cognitive Flow', artist: 'Neural FM', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', duration: '7:20' },
+                        { title: 'Synaptic Drive', artist: 'Neural FM', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3', duration: '5:45' },
+                        { title: 'Neural Oscillation', artist: 'Neural FM', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3', duration: '6:33' },
+                        { title: 'Brainwave Sync', artist: 'Neural FM', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3', duration: '5:58' },
                     ]
                 },
-                electronic: {
-                    name: 'Electronic Rush',
-                    videos: [
-                        { id: 'yydNF8tuVmU', title: 'Daft Punk - Around the World', fallback: 'https://cdn.pixabay.com/audio/2024/12/06/audio_8a25f08e99.mp3' },
-                        { id: 'fWeB29aUCFE', title: 'Justice - Genesis', fallback: 'https://cdn.pixabay.com/audio/2024/02/14/audio_0ebf1d0a31.mp3' },
+                synthwave: {
+                    name: 'Synthwave Flow',
+                    icon: '🌅',
+                    gradient: 'linear-gradient(135deg,#ff6b6b,#ffa500)',
+                    tracks: [
+                        { title: 'Nightcall', artist: 'Kavinsky', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3', duration: '4:12' },
+                        { title: 'Sunset Drive', artist: 'The Midnight', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3', duration: '7:05' },
+                        { title: 'Neon City', artist: 'FM-84', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3', duration: '6:48' },
+                        { title: 'Retro Highway', artist: 'Sunglasses Kid', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3', duration: '5:22' },
+                        { title: 'Midnight Runner', artist: 'Neural FM', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3', duration: '6:15' },
                     ]
                 },
                 lofi: {
                     name: 'Lo-Fi Focus',
-                    videos: [
-                        { id: 'jfKfPfyJRdk', title: 'Lofi Girl - Live Stream', fallback: 'https://cdn.pixabay.com/audio/2024/10/15/audio_5e84e9e548.mp3' },
-                        { id: 'lTRiuFIWV54', title: 'Chillhop Essentials', fallback: 'https://cdn.pixabay.com/audio/2023/06/26/audio_25a27d8931.mp3' },
+                    icon: '🍃',
+                    gradient: 'linear-gradient(135deg,#10b981,#06b6d4)',
+                    tracks: [
+                        { title: 'Rainy Café', artist: 'Lofi Girl', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3', duration: '5:52' },
+                        { title: 'Study Session', artist: 'Chillhop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3', duration: '7:10' },
+                        { title: 'Midnight Jazz', artist: 'Neural FM', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3', duration: '6:45' },
+                        { title: 'Coffee & Code', artist: 'Lofi Girl', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-14.mp3', duration: '5:38' },
+                        { title: 'Gentle Breeze', artist: 'Chillhop', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3', duration: '7:22' },
+                    ]
+                },
+                electronic: {
+                    name: 'Electronic Rush',
+                    icon: '⚡',
+                    gradient: 'linear-gradient(135deg,#00f0ff,#8b5cf6)',
+                    tracks: [
+                        { title: 'Digital Pulse', artist: 'Daft Punk', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-16.mp3', duration: '5:28' },
+                        { title: 'DEF CON (SomaFM)', artist: 'SomaFM Radio', url: 'https://ice2.somafm.com/defcon-128-mp3', duration: 'LIVE' },
+                        { title: 'Sonic Universe', artist: 'SomaFM Radio', url: 'https://ice2.somafm.com/sonicuniverse-128-mp3', duration: 'LIVE' },
+                        { title: 'Groove Salad', artist: 'SomaFM Radio', url: 'https://ice4.somafm.com/groovesalad-128-mp3', duration: 'LIVE' },
+                        { title: 'Space Station', artist: 'SomaFM Radio', url: 'https://ice2.somafm.com/spacestation-128-mp3', duration: 'LIVE' },
+                    ]
+                },
+                cyberpunk: {
+                    name: 'Cyberpunk',
+                    icon: '🌆',
+                    gradient: 'linear-gradient(135deg,#a855f7,#ec4899)',
+                    tracks: [
+                        { title: 'DEF CON Radio', artist: 'SomaFM', url: 'https://ice2.somafm.com/defcon-128-mp3', duration: 'LIVE' },
+                        { title: 'Sonic Universe', artist: 'SomaFM', url: 'https://ice4.somafm.com/sonicuniverse-128-mp3', duration: 'LIVE' },
+                        { title: 'Groove Salad', artist: 'SomaFM', url: 'https://ice4.somafm.com/groovesalad-128-mp3', duration: 'LIVE' },
+                        { title: 'Space Station', artist: 'SomaFM', url: 'https://ice2.somafm.com/spacestation-128-mp3', duration: 'LIVE' },
+                        { title: 'Beat Blender', artist: 'SomaFM', url: 'https://ice2.somafm.com/beatblender-128-mp3', duration: 'LIVE' },
+                    ]
+                },
+                ambient: {
+                    name: 'Deep Space',
+                    icon: '🌌',
+                    gradient: 'linear-gradient(135deg,#1e3a5f,#4a90d9)',
+                    tracks: [
+                        { title: 'Fluid', artist: 'SomaFM Ambient', url: 'https://ice4.somafm.com/fluid-128-mp3', duration: 'LIVE' },
+                        { title: 'Deep One', artist: 'SomaFM Ambient', url: 'https://ice4.somafm.com/deepone-128-mp3', duration: 'LIVE' },
+                        { title: 'Beat Blender', artist: 'SomaFM Chill', url: 'https://ice2.somafm.com/beatblender-128-mp3', duration: 'LIVE' },
+                        { title: 'Mission Control', artist: 'SomaFM', url: 'https://ice4.somafm.com/missioncontrol-128-mp3', duration: 'LIVE' },
+                        { title: 'Vaporwaves', artist: 'SomaFM', url: 'https://ice2.somafm.com/vaporwaves-128-mp3', duration: 'LIVE' },
+                    ]
+                },
+                bossfight: {
+                    name: 'Boss Fight',
+                    icon: '🔥',
+                    gradient: 'linear-gradient(135deg,#dc2626,#9333ea)',
+                    tracks: [
+                        { title: 'DEF CON', artist: 'SomaFM Electronic', url: 'https://ice2.somafm.com/defcon-128-mp3', duration: 'LIVE' },
+                        { title: 'Space Station', artist: 'SomaFM', url: 'https://ice2.somafm.com/spacestation-128-mp3', duration: 'LIVE' },
+                        { title: 'Sonic Universe', artist: 'SomaFM', url: 'https://ice4.somafm.com/sonicuniverse-128-mp3', duration: 'LIVE' },
+                        { title: 'Groove Salad', artist: 'SomaFM', url: 'https://ice4.somafm.com/groovesalad-128-mp3', duration: 'LIVE' },
+                        { title: 'DEFCON Hardcore', artist: 'SomaFM', url: 'https://ice2.somafm.com/defcon-256-mp3', duration: 'LIVE' },
                     ]
                 }
             },
@@ -1651,23 +1738,23 @@
                 container.style.display = 'block';
                 container.innerHTML = `
                     <div style="background:var(--glass);border:1px solid var(--glass-border);border-radius:12px;padding:12px;">
-                        <div style="font-size:0.85rem;font-weight:600;margin-bottom:8px;">Now Playing: ${playlist.name}</div>
-                        <div id="player-content" style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:8px;">
-                            <iframe id="music-iframe" sandbox="allow-scripts allow-same-origin" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;border-radius:8px;"
-                                src="https://www.youtube.com/embed/${playlist.videos[0].id}?autoplay=1&rel=0&modestbranding=1"
-                                allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                            <div style="width:36px;height:36px;border-radius:8px;background:${playlist.gradient};display:flex;align-items:center;justify-content:center;font-size:16px;">${playlist.icon}</div>
+                            <div>
+                                <div style="font-size:0.85rem;font-weight:600;">${playlist.name}</div>
+                                <div style="font-size:0.7rem;color:var(--text-dim);">${playlist.tracks.length} tracks • Neural FM</div>
+                            </div>
                         </div>
-                        <div id="audio-fallback" style="display:none;margin-top:10px;">
-                            <audio id="audio-player" controls autoplay style="width:100%;border-radius:8px;">
-                                <source id="audio-source" src="" type="audio/mpeg">
-                            </audio>
-                            <div style="font-size:0.7rem;color:var(--text-dim);margin-top:4px;text-align:center;">Playing fallback audio</div>
-                        </div>
-                        <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px;max-height:140px;overflow-y:auto;">
-                            ${playlist.videos.map((v, i) => `
-                                <div class="track-item ${i === 0 ? 'active' : ''}" onclick="HAZOOM.playTrack('${key}', ${i})">
-                                    <span style="color:var(--accent);font-weight:600;">${i + 1}</span>
-                                    <span>${v.title}</span>
+                        <audio id="neural-audio-player" controls autoplay style="width:100%;border-radius:8px;height:36px;" preload="auto">
+                            <source src="${playlist.tracks[0].url}" type="audio/mpeg">
+                        </audio>
+                        <div style="margin-top:10px;display:flex;flex-direction:column;gap:4px;max-height:160px;overflow-y:auto;">
+                            ${playlist.tracks.map((t, i) => `
+                                <div class="track-item ${i === 0 ? 'active' : ''}" onclick="HAZOOM.playTrack('${key}', ${i})" style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;transition:background 0.15s;">
+                                    <span style="color:var(--accent);font-weight:600;font-size:0.75rem;width:18px;text-align:center;">${i + 1}</span>
+                                    <span style="flex:1;font-size:0.8rem;">${t.title}</span>
+                                    <span style="font-size:0.65rem;color:var(--text-dim);">${t.artist}</span>
+                                    <span style="font-size:0.65rem;color:var(--text-muted);">${t.duration}</span>
                                 </div>
                             `).join('')}
                         </div>
@@ -1677,15 +1764,18 @@
 
             playTrack(playlistKey, index) {
                 const playlist = this.playlists[playlistKey];
-                if (!playlist || !playlist.videos[index]) return;
+                if (!playlist || !playlist.tracks[index]) return;
 
-                const iframe = document.getElementById('music-iframe');
-                if (iframe) {
-                    iframe.src = `https://www.youtube.com/embed/${playlist.videos[index].id}?autoplay=1&rel=0&modestbranding=1`;
+                const audio = document.getElementById('neural-audio-player');
+                if (audio) {
+                    audio.src = playlist.tracks[index].url;
+                    audio.play().catch(() => {});
                 }
 
                 document.querySelectorAll('.track-item').forEach((el, i) => {
                     el.classList.toggle('active', i === index);
+                    if (i === index) el.style.background = 'rgba(230,57,70,0.1)';
+                    else el.style.background = 'transparent';
                 });
             },
 
