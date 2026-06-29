@@ -203,6 +203,17 @@
                             </div>
                         `
                     },
+                    descer: {
+                        id: 'descer',
+                        name: 'DESCER',
+                        icon: '🥁',
+                        color: '#ff3366',
+                        width: 900,
+                        height: 720,
+                        desktop: true,
+                        category: 'music',
+                        src: 'apps/music/descer.html'
+                    },
                     settings: {
                         id: 'settings',
                         name: 'Settings',
