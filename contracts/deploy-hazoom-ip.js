@@ -165,7 +165,7 @@ async function generateCertificate(privateKey) {
       kernels: ['entry.asm', 'main.c', 'gdt.c', 'idt.c', 'console.c', 'pmm.c', 'process.c', 'qlearn.c'],
       ai: ['q-learning.js', 'consciousness.js', 'aether.js', 'deep_think_engine.js', 'agentic-rag.js'],
       pascal: ['aether_engine.pas', 'consciousness.pas', 'neural_core.pas'],
-      frontend: ['index.html', 'os-v5.html', 'app_launcher.js', 'app_registry.js', 'privacy_browser.js'],
+      frontend: ['index.html', 'app_launcher.js', 'app_registry.js', 'privacy_browser.js'],
       crypto: ['post-quantum-crypto.js', 'security.js', 'ai-runtime.js'],
       license: 'HA-2.0 Proprietary — All Rights Reserved'
     },
