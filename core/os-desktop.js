@@ -153,6 +153,7 @@
                         color: '#f59e0b',
                         width: 440,
                         height: 580,
+                        desktop: true,
                         content: () => `
                             <div class="app-music">
                                 <div class="music-header">🎵 Neural FM</div>
@@ -245,38 +246,7 @@
                             </div>
                         `
                     },
-                    'ai-assistant': {
-                        id: 'ai-assistant',
-                        name: 'AI Assistant',
-                        icon: '🤖',
-                        color: '#8b5cf6',
-                        width: 480,
-                        height: 520,
-                        desktop: true,
-                        category: 'ai',
-                        src: 'apps/ai-apps/ai_assistant.html'
-                    },
-                    'quantum-ai': {
-                        id: 'quantum-ai',
-                        name: 'Quantum AI',
-                        icon: '🧠',
-                        color: '#a855f7',
-                        width: 500,
-                        height: 540,
-                        category: 'ai',
-                        src: 'apps/ai-apps/quantum_ai_assistant.html'
-                    },
-                    copilot: {
-                        id: 'copilot',
-                        name: 'Copilot',
-                        icon: '🚀',
-                        color: '#3b82f6',
-                        width: 500,
-                        height: 500,
-                        desktop: true,
-                        category: 'ai',
-                        src: 'apps/ai-apps/copilot.html'
-                    },
+                    // ai-assistant, quantum-ai, copilot removed — files deleted
                     'hazoom-ai': {
                         id: 'hazoom-ai',
                         name: 'Hazoom AI',
@@ -287,16 +257,7 @@
                         category: 'ai',
                         src: 'apps/ai-apps/hazoom_ai_assistant.html'
                     },
-                    'super-agent': {
-                        id: 'super-agent',
-                        name: 'Super Agent',
-                        icon: '🌟',
-                        color: '#f59e0b',
-                        width: 700,
-                        height: 550,
-                        category: 'ai',
-                        src: 'apps/ai-apps/super_intelligent_agent.html'
-                    },
+                    // super-agent removed — file deleted
                     'deep-think': {
                         id: 'deep-think',
                         name: 'Deep Think',
@@ -317,26 +278,8 @@
                         category: 'ai',
                         src: 'apps/ai-apps/ai_command_center.html'
                     },
-                    glm: {
-                        id: 'glm',
-                        name: 'GLM',
-                        icon: '🔮',
-                        color: '#14b8a6',
-                        width: 600,
-                        height: 500,
-                        category: 'ai',
-                        src: 'apps/ai-apps/glm_integration.html'
-                    },
-                    hazoom: {
-                        id: 'hazoom',
-                        name: 'Hazoom',
-                        icon: '🌌',
-                        color: '#8b5cf6',
-                        width: 600,
-                        height: 500,
-                        category: 'ai',
-                        src: 'apps/ai-apps/hazoom.html'
-                    },
+                    // glm removed — file deleted
+                    // hazoom removed — file deleted
                     'quantum-search': {
                         id: 'quantum-search',
                         name: 'Search',
@@ -418,16 +361,7 @@
                         category: 'tools',
                         src: 'apps/tools/api_settings.html'
                     },
-                    camera: {
-                        id: 'camera',
-                        name: 'Camera',
-                        icon: '📷',
-                        color: '#64748b',
-                        width: 550,
-                        height: 450,
-                        category: 'tools',
-                        src: 'apps/tools/camera_stream.html'
-                    },
+                    // camera removed — file deleted
                     navigator: {
                         id: 'navigator',
                         name: 'Navigator',
@@ -448,26 +382,8 @@
                         category: 'tools',
                         src: 'apps/tools/antigravity_navigator.html'
                     },
-                    'screen-light': {
-                        id: 'screen-light',
-                        name: 'Screen Light',
-                        icon: '💡',
-                        color: '#fbbf24',
-                        width: 400,
-                        height: 350,
-                        category: 'tools',
-                        src: 'apps/tools/screen_light_controller.html'
-                    },
-                    'usb-portal': {
-                        id: 'usb-portal',
-                        name: 'USB Portal',
-                        icon: '🔌',
-                        color: '#6b7280',
-                        width: 500,
-                        height: 450,
-                        category: 'tools',
-                        src: 'apps/tools/usb_portal.html'
-                    },
+                    // screen-light removed — file deleted
+                    // usb-portal removed — file deleted
                     'focus-timer': {
                         id: 'focus-timer',
                         name: 'Focus Timer',
@@ -521,16 +437,6 @@
                         category: 'tools',
                         src: 'apps/tools/quantum_travel.html'
                     },
-                    consciousness: {
-                        id: 'consciousness',
-                        name: 'Consciousness',
-                        icon: '🧠',
-                        color: '#a855f7',
-                        width: 600,
-                        height: 500,
-                        category: 'tools',
-                        src: 'apps/tools/consciousness_portal.html'
-                    },
                     'prompt-engineering': {
                         id: 'prompt-engineering',
                         name: 'Prompt Eng',
@@ -540,17 +446,6 @@
                         height: 480,
                         category: 'tools',
                         src: 'apps/tools/prompt_engineering_system.html'
-                    },
-                    chess: {
-                        id: 'chess',
-                        name: 'Chess',
-                        icon: '♟️',
-                        color: '#78716c',
-                        width: 500,
-                        height: 500,
-                        desktop: true,
-                        category: 'games',
-                        src: 'apps/games/chess.html'
                     },
                     cartoon: {
                         id: 'cartoon',
@@ -565,23 +460,15 @@
                     map: {
                         id: 'map',
                         name: 'Map',
-                        icon: '🗺️',
+                        icon: '',
                         color: '#10b981',
                         width: 700,
                         height: 550,
+                        desktop: true,
                         category: 'visualizers',
                         src: 'apps/visualizers/futuristic-map.html'
                     },
-                    circuit: {
-                        id: 'circuit',
-                        name: 'Circuit Scan',
-                        icon: '🔬',
-                        color: '#06b6d4',
-                        width: 650,
-                        height: 500,
-                        category: 'visualizers',
-                        src: 'apps/visualizers/circuit-scan/circuit-scan/index.html'
-                    },
+                    // circuit (circuit-scan) removed — file deleted
                     growflow: {
                         id: 'growflow',
                         name: 'GrowFlow',
@@ -612,16 +499,7 @@
                         category: 'docs',
                         src: 'apps/docs/HAZOOM_OS_TOUR.html'
                     },
-                    pricing: {
-                        id: 'pricing',
-                        name: 'Pricing',
-                        icon: '💰',
-                        color: '#f59e0b',
-                        width: 450,
-                        height: 400,
-                        category: 'docs',
-                        src: 'apps/docs/pricing.html'
-                    },
+                    // pricing removed — file deleted
                     universe: {
                         id: 'universe',
                         name: 'Universe',
@@ -678,118 +556,14 @@
                         category: 'games',
                         src: 'apps/games/arcade.html'
                     },
-                    'ap-voice-chat': {
-                        id: 'ap-voice-chat',
-                        name: 'Voice Chat',
-                        icon: '🎙️',
-                        color: '#8b5cf6',
-                        width: 600,
-                        height: 500,
-                        desktop: true,
-                        category: 'ai',
-                        src: 'apps/ai-apps/voice-chat.html'
-                    },
-                    'ap-web-chat': {
-                        id: 'ap-web-chat',
-                        name: 'Web Chat',
-                        icon: '💬',
-                        color: '#ffd700',
-                        width: 700,
-                        height: 550,
-                        desktop: true,
-                        category: 'ai',
-                        src: 'apps/ai-apps/web-chat.html'
-                    },
-                    'ap-meeting': {
-                        id: 'ap-meeting',
-                        name: 'Meeting Scheduler',
-                        icon: '📅',
-                        color: '#10b981',
-                        width: 550,
-                        height: 480,
-                        desktop: true,
-                        category: 'tools',
-                        src: 'apps/tools/meeting-scheduler.html'
-                    },
-                    'ap-mcp-monitor': {
-                        id: 'ap-mcp-monitor',
-                        name: 'MCP Monitor',
-                        icon: '🔍',
-                        color: '#00f0ff',
-                        width: 800,
-                        height: 550,
-                        desktop: true,
-                        category: 'tools',
-                        src: 'apps/tools/mcp-monitor.html'
-                    },
-                    'ap-admin-panel': {
-                        id: 'ap-admin-panel',
-                        name: 'Admin Panel',
-                        icon: '⚙️',
-                        color: '#ef4444',
-                        width: 700,
-                        height: 500,
-                        desktop: true,
-                        category: 'tools',
-                        src: 'apps/tools/admin-panel.html'
-                    },
-                    'ap-ledger': {
-                        id: 'ap-ledger',
-                        name: 'Ledger Pro',
-                        icon: '📊',
-                        color: '#06b6d4',
-                        width: 900,
-                        height: 600,
-                        desktop: true,
-                        category: 'tools',
-                        src: 'apps/tools/ledger-pro.html'
-                    },
-                    'ap-control-center': {
-                        id: 'ap-control-center',
-                        name: 'Control Center',
-                        icon: '🎛️',
-                        color: '#a855f7',
-                        width: 800,
-                        height: 550,
-                        desktop: true,
-                        category: 'tools',
-                        src: 'apps/tools/control-center.html'
-                    },
-                    'ap-process-viz': {
-                        id: 'ap-process-viz',
-                        name: 'Process Visualizer',
-                        icon: '🧠',
-                        color: '#22c55e',
-                        width: 700,
-                        height: 500,
-                        desktop: true,
-                        category: 'tools',
-                        src: 'apps/tools/process-visualizer.html'
-                    },
 
-                    // === NEW FROM ALPHA PONY INTEGRATION ===
-                    'sys-monitor': {
-                        id: 'sys-monitor',
-                        name: 'System Monitor',
-                        icon: '📊',
-                        color: '#10b981',
-                        width: 800,
-                        height: 600,
-                        desktop: true,
-                        category: 'tools',
-                        src: 'apps/tools/system-monitor.html'
-                    },
-                    'ai-assistant-v3': {
-                        id: 'ai-assistant-v3',
-                        name: 'AI Assistant V3',
-                        icon: '🤖',
-                        color: '#8b5cf6',
-                        width: 700,
-                        height: 550,
-                        desktop: true,
-                        category: 'ai',
-                        src: 'apps/ai-apps/ai-assistant-v3.html'
-                    },
+
+
+                    // ap-admin-panel removed — file deleted
+
+
+
+
 
                     // === GAMES ===
                     'game-smg6': {
@@ -814,17 +588,6 @@
                         category: 'games',
                         src: 'apps/games/neon-drift/index.html'
                     },
-                    'game-chess': {
-                        id: 'game-chess',
-                        name: 'Chess',
-                        icon: '♟️',
-                        color: '#8b5cf6',
-                        width: 700,
-                        height: 600,
-                        desktop: true,
-                        category: 'games',
-                        src: 'apps/games/chess.html'
-                    }
                 };
             },
 
@@ -889,7 +652,7 @@
 
             buildDock() {
                 const dock = document.getElementById('dock');
-                const appOrder = ['dashboard', 'terminal', 'ai', 'consciousness-core', 'user-guide', 'files', 'browser', 'music', 'focus-timer', 'copilot', 'hazoom-ai', 'quantum-monitor', 'chess', 'settings', 'system-monitor', 'security-center', 'hazoom-net'];
+                const appOrder = ['dashboard', 'terminal', 'ai', 'consciousness-core', 'user-guide', 'files', 'browser', 'music', 'focus-timer', 'hazoom-ai', 'quantum-monitor', 'settings', 'system-monitor', 'security-center', 'hazoom-net'];
 
                 appOrder.forEach(id => {
                     const app = this.apps[id];
@@ -928,16 +691,28 @@
                 const maxZ = this.windows.reduce((max, w) => Math.max(max, parseInt(w.element.style.zIndex) || 100), 100);
                 const desktopW = window.innerWidth;
                 const desktopH = window.innerHeight;
-                const winW = app.width || 600;
-                const winH = app.height || 450;
-                // Cascade from center, offset by count
-                const count = this.windows.length;
-                const baseX = Math.max(60, (desktopW - winW) / 2);
-                const baseY = Math.max(50, (desktopH - winH) / 2);
-                const offsetX = (count * 30) % 180;
-                const offsetY = (count * 25) % 140;
-                const x = Math.min(baseX + offsetX, desktopW - winW - 20);
-                const y = Math.min(baseY + offsetY, desktopH - winH - 60);
+                // Responsive window sizing
+                const maxW = desktopW - 20;
+                const maxH = desktopH - 80;
+                let winW = Math.min(app.width || 800, maxW);
+                let winH = Math.min(app.height || 600, maxH);
+                // On mobile, make it fullscreen-ish
+                let x, y;
+                if (desktopW < 768) {
+                    winW = desktopW;
+                    winH = desktopH - 48;
+                    x = 0;
+                    y = 0;
+                } else {
+                    // Cascade from center, offset by count
+                    const count = this.windows.length;
+                    const baseX = Math.max(60, (desktopW - winW) / 2);
+                    const baseY = Math.max(50, (desktopH - winH) / 2);
+                    const offsetX = (count * 30) % 180;
+                    const offsetY = (count * 25) % 140;
+                    x = Math.min(baseX + offsetX, desktopW - winW - 20);
+                    y = Math.min(baseY + offsetY, desktopH - winH - 60);
+                }
 
                 let contentHTML;
                 if (app.src) {
@@ -2315,19 +2090,33 @@
                 const container = document.getElementById('desktop-icons');
                 if (!container) return;
                 container.innerHTML = '';
+                // Apply CSS Grid layout
+                container.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill, minmax(90px, 1fr));gap:12px;padding:16px;overflow-y:auto;height:calc(100vh - 60px);align-content:start;';
                 const desktopApps = Object.values(this.apps).filter(a => a.desktop);
-                const colWidth = 100, rowHeight = 110, padding = 20;
-                desktopApps.forEach((app, idx) => {
-                    const col = Math.floor(idx / Math.floor((window.innerHeight - 120) / rowHeight));
-                    const row = idx % Math.floor((window.innerHeight - 120) / rowHeight);
+                desktopApps.forEach((app) => {
                     const icon = document.createElement('div');
                     icon.className = 'desktop-icon';
-                    icon.style.cssText = `left:${col * colWidth + padding}px;top:${row * rowHeight + padding}px;`;
+                    icon.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;border-radius:12px;cursor:pointer;transition:background 0.2s;width:100%;box-sizing:border-box;';
                     icon.innerHTML = `
                         <div class="desktop-icon-img" style="border-color:${app.color}30;">${app.icon}</div>
                         <div class="desktop-icon-label">${app.name}</div>
                     `;
-                    icon.addEventListener('dblclick', () => this.openApp(app.id));
+                    // Touch: double-tap opens. Desktop: double-click opens.
+                    let tapCount = 0;
+                    let tapTimer = null;
+                    const openHandler = () => { this.openApp(app.id); };
+                    icon.addEventListener('dblclick', openHandler);
+                    icon.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        tapCount++;
+                        if (tapCount === 1) {
+                            tapTimer = setTimeout(() => { tapCount = 0; }, 300);
+                        } else if (tapCount === 2) {
+                            clearTimeout(tapTimer);
+                            tapCount = 0;
+                            openHandler();
+                        }
+                    });
                     container.appendChild(icon);
                 });
             },
@@ -2470,8 +2259,7 @@
                 // Apply mood (auto or saved)
                 this.applyAutoMood();
 
-                // Initialize desktop icons with grid arrangement
-                this.buildDesktopIcons();
+                // Initialize desktop icons with responsive CSS grid layout
                 this.arrangeDesktopIcons();
 
                 // Restore previous session state

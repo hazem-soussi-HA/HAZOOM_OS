@@ -70,3 +70,4 @@ core/*.key
 config/credentials.json
 data/qlearner/state.json
 *.log
+__pycache__/

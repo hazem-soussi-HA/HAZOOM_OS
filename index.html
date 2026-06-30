@@ -55,8 +55,9 @@
             font-family: 'Inter', system-ui, sans-serif;
             background: var(--bg-primary);
             color: var(--text);
-            overflow: hidden;
-            height: 100vh;
+            overflow-x: hidden;
+            min-height: 100dvh;
+            height: 100dvh;
             user-select: none;
         }
 
@@ -216,13 +217,17 @@
 
         /* === DESKTOP ICONS === */
         #desktop-icons {
-            position: absolute;
-            top: 50px;
-            left: 20px;
+            position: relative;
             z-index: 10;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 12px;
+            padding: 16px;
+            overflow-y: auto;
+            align-content: start;
+            height: calc(100dvh - 60px);
+            width: 100%;
+            box-sizing: border-box;
         }
         .desktop-icon {
             display: flex;
@@ -1009,6 +1014,28 @@
         body.theme-purple { --accent: #a855f7; --accent-glow: rgba(168,85,247,0.3); }
         body.theme-gold { --accent: #ffd700; --accent-glow: rgba(255,215,0,0.3); }
         body.theme-cyan { --accent: #00f0ff; --accent-glow: rgba(0,240,255,0.3); }
+
+        /* === MOBILE RESPONSIVE === */
+        @media (max-width: 768px) {
+            body { overflow: auto; height: auto; min-height: 100dvh; }
+            #desktop-icons {
+                grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+                height: auto;
+                min-height: calc(100dvh - 48px);
+                position: relative;
+                top: 0;
+                left: 0;
+            }
+            .desktop-icon-img { width: 42px; height: 42px; font-size: 20px; }
+            .desktop-icon-label { font-size: 9px; }
+            .taskbar, #dock { height: 48px; }
+            .os-window, .window { border-radius: 0 !important; }
+            #desktop { overflow-y: auto; }
+        }
+
+        @media (max-width: 480px) {
+            #desktop-icons { grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 12px; }
+        }
     </style>
 </head>
 <body>
