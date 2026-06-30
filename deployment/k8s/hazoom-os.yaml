@@ -31,7 +31,8 @@ spec:
     spec:
       containers:
         - name: app
-          image: ghcr.io/hazem-soussi-HA/hazoom-os:latest
+          image: hazoom-os:latest
+          imagePullPolicy: Never
           ports:
             - containerPort: 3000
           resources:
@@ -90,27 +91,10 @@ metadata:
   name: hazoom-os-ingress
   namespace: hazoom-os
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/rate-limit: "100"
+    traefik.ingress.kubernetes.io/router.entrypoints: web
 spec:
-  tls:
-    - hosts:
-        - hazoom.peaceful.world
-        - api.hazoom.peaceful.world
-      secretName: hazoom-tls
   rules:
-    - host: hazoom.peaceful.world
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: hazoom-os-service
-                port:
-                  number: 80
-    - host: api.hazoom.peaceful.world
+    - host: hazoom.local
       http:
         paths:
           - path: /
@@ -133,7 +117,7 @@ spec:
   resources:
     requests:
       storage: 1Gi
-  storageClassName: standard
+  storageClassName: local-path
 
 ---
 apiVersion: autoscaling/v2

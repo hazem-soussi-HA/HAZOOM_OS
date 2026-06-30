@@ -1,65 +1,56 @@
-/* HAZOOM OS v6.0 - Process Management Implementation */
+#include <stddef.h>
 #include "process.h"
 #include "pmm.h"
 #include "console.h"
 
-/* Process list */
 PCB_t *process_list_head = (PCB_t *)0;
 PCB_t *current_process   = (PCB_t *)0;
 uint32_t next_pid        = 0;
+uint64_t system_ticks    = 0;
 
-/* Static PCB pool */
 static PCB_t process_pool[MAX_PROCESSES];
 static uint8_t process_used[MAX_PROCESSES];
 
-/* Initialize process manager */
 void process_init(void) {
-    /* Clear process pool */
     for (int i = 0; i < MAX_PROCESSES; i++) {
         process_used[i] = 0;
         process_pool[i].pid = 0;
         process_pool[i].state = PROCESS_TERMINATED;
         process_pool[i].next = (PCB_t *)0;
     }
-
     process_list_head = (PCB_t *)0;
     current_process = (PCB_t *)0;
     next_pid = 0;
-
-    /* Create PID 0 - kernel idle process */
+    system_ticks = 0;
     create_process("kernel_idle", 0, PRIORITY_IDLE, 0);
 }
 
-/* Allocate a free PCB slot */
 static PCB_t *alloc_pcb(void) {
     for (int i = 0; i < MAX_PROCESSES; i++) {
         if (!process_used[i]) {
             process_used[i] = 1;
-            process_pool[i].pool_index = i;  /* Store index for O(1) free */
+            process_pool[i].pool_index = i;
             return &process_pool[i];
         }
     }
-    return (PCB_t *)0; /* No free PCBs */
+    return (PCB_t *)0;
 }
 
-/* Create a new process */
 PCB_t *create_process(const char *name, uint64_t entry, uint8_t priority, int user_mode) {
     PCB_t *pcb = alloc_pcb();
     if (pcb == (PCB_t *)0) {
         vga_print("[PMM] Failed to allocate PCB\n");
         return (PCB_t *)0;
     }
-
-    /* Assign PID */
     pcb->pid  = next_pid++;
     pcb->ppid = (current_process) ? current_process->pid : 0;
     pcb->state = PROCESS_READY;
     pcb->priority = priority;
     pcb->entry_point = entry;
     pcb->wake_ticks = 0;
+    pcb->ticks_remaining = TIME_QUANTUM;
     pcb->next = (PCB_t *)0;
 
-    /* Copy name */
     int i = 0;
     while (name[i] && i < 31) {
         pcb->name[i] = name[i];
@@ -67,23 +58,28 @@ PCB_t *create_process(const char *name, uint64_t entry, uint8_t priority, int us
     }
     pcb->name[i] = '\0';
 
-    /* Allocate kernel stack */
-    pcb->kernel_stack = (uint64_t)pmm_alloc(2); /* 16KB = 4 pages */
+    pcb->kernel_stack = (uint64_t)pmm_alloc(2);
     if (pcb->kernel_stack == 0) {
         process_used[pcb->pid % MAX_PROCESSES] = 0;
         vga_print("[PMM] Failed to allocate kernel stack\n");
         return (PCB_t *)0;
     }
-    pcb->kernel_stack += KERNEL_STACK_SIZE; /* Stack grows down */
+    pcb->kernel_stack += KERNEL_STACK_SIZE;
 
-    /* Set up initial register state */
-    pcb->esp = pcb->kernel_stack;
-    pcb->eip = entry;
-    pcb->cr3 = 0; /* Will be set to kernel page table for kernel processes */
+    if (entry == 0) {
+        pcb->cpu_state.rip = (uint64_t)0;
+    } else {
+        pcb->cpu_state.rip = entry;
+    }
+    pcb->cpu_state.rsp = user_mode ? 0 : pcb->kernel_stack;
+    pcb->cpu_state.cs  = user_mode ? 0x18 : 0x08;
+    pcb->cpu_state.ss  = user_mode ? 0x20 : 0x10;
+    pcb->cpu_state.rflags = 0x202;
 
-    /* Add to process list */
     if (process_list_head == (PCB_t *)0) {
         process_list_head = pcb;
+        current_process = pcb;
+        current_process->state = PROCESS_RUNNING;
     } else {
         PCB_t *cur = process_list_head;
         while (cur->next != (PCB_t *)0) {
@@ -91,23 +87,16 @@ PCB_t *create_process(const char *name, uint64_t entry, uint8_t priority, int us
         }
         cur->next = pcb;
     }
-
     return pcb;
 }
 
-/* Terminate a process */
 void terminate_process(uint32_t pid) {
     PCB_t *proc = get_process(pid);
     if (proc == (PCB_t *)0) return;
-
     proc->state = PROCESS_TERMINATED;
-
-    /* Free kernel stack */
     if (proc->kernel_stack) {
         pmm_free((void *)(proc->kernel_stack - KERNEL_STACK_SIZE), 2);
     }
-
-    /* Remove from process list */
     if (process_list_head == proc) {
         process_list_head = proc->next;
     } else {
@@ -119,12 +108,9 @@ void terminate_process(uint32_t pid) {
             cur->next = proc->next;
         }
     }
-
-    /* Mark PCB as free — use stored pool index, not pid (avoids hash collision) */
     process_used[proc->pool_index] = 0;
 }
 
-/* Get process by PID */
 PCB_t *get_process(uint32_t pid) {
     PCB_t *cur = process_list_head;
     while (cur != (PCB_t *)0) {
@@ -134,20 +120,70 @@ PCB_t *get_process(uint32_t pid) {
     return (PCB_t *)0;
 }
 
-/* Yield CPU (placeholder for scheduler) */
 void process_yield(void) {
-    /* Will trigger timer interrupt when scheduler is implemented */
+    __asm__ volatile("int $0x80");
 }
 
-/* Dump process statistics */
-void process_dump_stats(void) {
-    uint32_t count = 0;
-    uint32_t ready = 0;
-    uint32_t running = 0;
-    uint32_t blocked = 0;
+void schedule(cpu_state_t *state) {
+    if (current_process) {
+        current_process->cpu_state = *state;
+    }
 
+    PCB_t *start = current_process;
+    PCB_t *next = current_process ? current_process->next : process_list_head;
+
+    int searched = 0;
+    while (searched < MAX_PROCESSES) {
+        if (next == (PCB_t *)0) {
+            next = process_list_head;
+        }
+        if (next == (PCB_t *)0) break;
+
+        if (next->state == PROCESS_READY && next->priority > 0) {
+            if (current_process && current_process != next) {
+                current_process->state = PROCESS_READY;
+            }
+            current_process = next;
+            current_process->state = PROCESS_RUNNING;
+            *state = current_process->cpu_state;
+            return;
+        }
+
+        if (next->state == PROCESS_BLOCKED && next->wake_ticks > 0 && next->wake_ticks <= system_ticks) {
+            next->state = PROCESS_READY;
+            next->wake_ticks = 0;
+        }
+
+        next = next->next;
+        searched++;
+        if (next == start) break;
+    }
+
+    if (!current_process || current_process->state != PROCESS_RUNNING) {
+        current_process = process_list_head;
+        if (current_process) {
+            current_process->state = PROCESS_RUNNING;
+            *state = current_process->cpu_state;
+        }
+    }
+}
+
+void process_dump_stats(void) {
+    vga_print("[PROC] System uptick: ");
+    uint64_t n = system_ticks;
+    char buf[20];
+    int pos = 0;
+    if (n == 0) { buf[pos++] = '0'; }
+    while (n > 0) {
+        buf[pos++] = '0' + (n % 10);
+        n /= 10;
+    }
+    for (int i = pos - 1; i >= 0; i--) vga_putchar(buf[i]);
+    vga_print(" | ");
+
+    uint32_t count = 0, ready = 0, running = 0, blocked = 0;
     PCB_t *cur = process_list_head;
-    while (cur != (PCB_t *)0) {
+    while (cur) {
         count++;
         switch (cur->state) {
             case PROCESS_READY:   ready++;   break;
@@ -157,13 +193,13 @@ void process_dump_stats(void) {
         }
         cur = cur->next;
     }
-
-    vga_print("[PROC] Total: ");
-    /* Simple number print - just print the count as indicator */
+    vga_print("P:");
     vga_putchar('0' + (count % 10));
-    vga_print(" Ready: ");
+    vga_print(" R:");
     vga_putchar('0' + (ready % 10));
-    vga_print(" Running: ");
+    vga_print(" Run:");
     vga_putchar('0' + (running % 10));
+    vga_print(" B:");
+    vga_putchar('0' + (blocked % 10));
     vga_print("\n");
 }

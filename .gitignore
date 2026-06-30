@@ -60,10 +60,26 @@ tmp/
 **/wasm/target/
 **/wasm/pkg/
 
+# Build artifacts
+*.o
+*.elf
+*.bin
+*.so
+*.iso
+*.img
+boot/*.o
+kernel/c/*.o
+kernel/*.o
+
+# Environment
+.env
+.hermes/
+
 # Node build outputs
 dist/
 build/
 .next/
+
 # v5.0 Security
 ssl/*.key
 core/*.key

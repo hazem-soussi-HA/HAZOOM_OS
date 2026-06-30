@@ -1,68 +1,40 @@
-/* HAZOOM OS v6.0 - IDT Header */
 #ifndef HAZOOM_IDT_H
 #define HAZOOM_IDT_H
 
 #include <stdint.h>
 
-/* IDT entry structure - 16 bytes for x86-64 */
 typedef struct {
-    uint16_t offset_low;     /* Offset bits 0-15 */
-    uint16_t selector;       /* Segment selector */
-    uint8_t  ist;            /* Interrupt Stack Table index (0 = disabled) */
-    uint8_t  type_attr;      /* Type and attributes */
-    uint16_t offset_mid;     /* Offset bits 16-31 */
-    uint32_t offset_high;    /* Offset bits 32-63 */
-    uint32_t reserved;       /* Reserved, must be 0 */
+    uint16_t offset_low;
+    uint16_t selector;
+    uint8_t  ist;
+    uint8_t  type_attr;
+    uint16_t offset_mid;
+    uint32_t offset_high;
+    uint32_t reserved;
 } __attribute__((packed)) idt_entry_t;
 
-/* IDT pointer structure for lidt */
 typedef struct {
-    uint16_t limit;          /* Size of IDT - 1 */
-    uint64_t base;           /* Base address of IDT */
+    uint16_t limit;
+    uint64_t base;
 } __attribute__((packed)) idt_ptr_t;
 
-/* Interrupt type attribute flags */
-#define IDT_TYPE_INTERRUPT  0x8E  /* Present, Ring 0, 64-bit Interrupt Gate */
-#define IDT_TYPE_TRAP       0x8F  /* Present, Ring 0, 64-bit Trap Gate */
-#define IDT_TYPE_USER       0xEE  /* Present, Ring 3, 64-bit Interrupt Gate */
+#define IDT_TYPE_INTERRUPT  0x8E
+#define IDT_TYPE_TRAP       0x8F
+#define IDT_TYPE_USER       0xEE
 
-/* Exception numbers (0-31) */
-#define IDT_EX_DIVIDE_BY_ZERO    0
-#define IDT_EX_DEBUG             1
-#define IDT_EX_NMI               2
-#define IDT_EX_BREAKPOINT        3
-#define IDT_EX_OVERFLOW          4
-#define IDT_EX_BOUND_RANGE       5
-#define IDT_EX_INVALID_OPCODE    6
-#define IDT_EX_DEVICE_NOT_AVAIL  7
-#define IDT_EX_DOUBLE_FAULT      8
-#define IDT_EX_INVALID_TSS       10
-#define IDT_EX_SEG_NOT_PRESENT   11
-#define IDT_EX_STACK_FAULT       12
-#define IDT_EX_GENERAL_PROTECT   13
-#define IDT_EX_PAGE_FAULT        14
-#define IDT_EX_FPU_ERROR         16
-#define IDT_EX_ALIGNMENT_CHECK   17
-#define IDT_EX_MACHINE_CHECK     18
-#define IDT_EX_SIMD_FPU_ERROR    19
+#define IDT_IRQ_BASE        32
+#define IDT_IRQ_TIMER       32
+#define IDT_IRQ_KEYBOARD    33
+#define IDT_SYSCALL         0x80
 
-/* IRQ numbers (mapped to 32-47) */
-#define IDT_IRQ_BASE            32
-#define IDT_IRQ_TIMER           32
-#define IDT_IRQ_KEYBOARD        33
-#define IDT_IRQ_SYSCALL         48  /* Remapped PIC2 cascade */
-
-/* Syscall interrupt */
-#define IDT_SYSCALL             0x80
-
-/* Function prototypes */
 void idt_init(void);
-void encode_idt_entry(idt_entry_t *entry, uint64_t offset, uint16_t selector,
-                      uint8_t type);
-void load_idt(idt_ptr_t *ptr);
 void set_idt_gate(uint8_t vector, uint64_t handler, uint8_t type);
+void load_idt(idt_ptr_t *ptr);
+void encode_idt_entry(idt_entry_t *entry, uint64_t offset, uint16_t selector, uint8_t type);
+void keyboard_init(void);
+char keyboard_getchar(void);
+int keyboard_data_available(void);
 
-/* Exception/SYScall handler stubs (defined in assembly or idt.c) */
 extern void isr0(void);
 extern void isr1(void);
 extern void isr2(void);
@@ -83,6 +55,6 @@ extern void isr18(void);
 extern void isr19(void);
 extern void irq0(void);
 extern void irq1(void);
-extern void irq128(void);  /* 0x80 syscall */
+extern void irq128(void);
 
-#endif /* HAZOOM_IDT_H */
+#endif

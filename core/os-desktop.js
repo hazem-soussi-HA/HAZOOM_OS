@@ -96,6 +96,7 @@
                         width: 480,
                         height: 520,
                         desktop: true,
+                        category: 'ai',
                         content: () => `
                             <div class="app-chat">
                                 <div class="chat-messages" id="ai-chat">
@@ -131,11 +132,12 @@
                     browser: {
                         id: 'browser',
                         name: 'Browser',
-                        icon: '🌐',
+                        icon: '�',
                         color: '#06b6d4',
                         width: 800,
                         height: 550,
                         desktop: true,
+                        category: 'core',
                         content: () => `
                             <div class="app-browser">
                                 <div class="browser-bar">
@@ -154,6 +156,7 @@
                         width: 440,
                         height: 580,
                         desktop: true,
+                        category: 'music',
                         content: () => `
                             <div class="app-music">
                                 <div class="music-header">🎵 Neural FM</div>
@@ -2084,63 +2087,136 @@
             },
 
             // ============================================
-            // DESKTOP ICON ARRANGEMENT
+            // DESKTOP ICON ARRANGEMENT (ZONE-BASEAG)
             // ============================================
             arrangeDesktopIcons: function() {
-                // MATRIX-STYLE: Free positioning with drag & drop
+                // ZONE-BASED LAYOUT: categories with labeled headers + grid arrangement
                 const container = document.getElementById('desktop-icons');
                 if (!container) return;
                 container.innerHTML = '';
-                // Container fills the desktop area, icons positioned absolutely
-                container.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;overflow:visible;';
+                container.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;overflow:auto;pointer-events:none;';
 
                 const desktopApps = Object.values(this.apps).filter(a => a.desktop);
                 const savedPositions = this._getSavedPositions();
-                const cols = Math.max(1, Math.floor((window.innerWidth - 40) / 100));
-                const colW = 90, rowH = 100, padX = 30, padY = 60;
 
-                desktopApps.forEach((app, idx) => {
-                    const pos = savedPositions[app.id];
-                    let x, y;
-                    if (pos && pos.x !== undefined) {
-                        x = parseInt(pos.x) || (padX + (idx % cols) * colW);
-                        y = parseInt(pos.y) || (padY + Math.floor(idx / cols) * rowH);
-                    } else {
-                        x = padX + (idx % cols) * colW;
-                        y = padY + Math.floor(idx / cols) * rowH;
-                    }
+                const zones = [
+                    { id: 'core',  label: '★ SYSTEM',        color: '#00f0ff' },
+                    { id: 'music', label: '🎵 MEDIA',         color: '#f59e0b' },
+                    { id: 'games', label: '�️ GAMES',        color: '#ff6b35' },
+                    { id: 'ai',    label: '🧠 AI & COGNITION', color: '#a855f7' },
+                    { id: 'tools', label: '🛠️ TOOLS',         color: '#10b981' },
+                    { id: 'docs',  label: '� DOCS',          color: '#64748b' },
+                    { id: 'visualizers', label: '🌱 VISUALIZERS', color: '#22c55e' },
+                ];
 
-                    const icon = document.createElement('div');
-                    icon.className = 'desktop-icon';
-                    icon.dataset.appId = app.id;
-                    icon.draggable = true;
-                    icon.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:80px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;border-radius:12px;cursor:pointer;transition:background 0.2s;user-select:none;`;
-                    icon.innerHTML = `
-                        <div class="desktop-icon-img" style="border-color:${app.color}30;">${app.icon}</div>
-                        <div class="desktop-icon-label">${app.name}</div>
-                    `;
-
-                    // Open on double-click (desktop) or double-tap (mobile)
-                    let tapCount = 0, tapTimer = null;
-                    const openHandler = () => { this.openApp(app.id); };
-                    icon.addEventListener('dblclick', openHandler);
-                    icon.addEventListener('touchend', (e) => {
-                        if (icon.dataset.dragging === '1') return;
-                        e.preventDefault();
-                        tapCount++;
-                        if (tapCount === 1) { tapTimer = setTimeout(() => { tapCount = 0; }, 300); }
-                        else if (tapCount === 2) { clearTimeout(tapTimer); tapCount = 0; openHandler(); }
-                    });
-
-                    container.appendChild(icon);
+                // Group apps by category
+                const appsByZone = {};
+                zones.forEach(z => { appsByZone[z.id] = []; });
+                desktopApps.forEach(app => {
+                    const cat = app.category || 'tools';
+                    if (!appsByZone[cat]) appsByZone[cat] = [];
+                    appsByZone[cat].push(app);
                 });
 
-                // Setup drag after all icons are in DOM
+                const ICON_W = 84, ICON_H = 90, COLS = 6;
+                const zonePadX = 30, zonePadY = 30;
+                let currentY = zonePadY;
+
+                zones.forEach(zone => {
+                    const apps = appsByZone[zone.id] || [];
+                    if (apps.length === 0) return;
+
+                    // Zone wrapper
+                    const zoneEl = document.createElement('div');
+                    zoneEl.className = 'desktop-zone';
+                    zoneEl.dataset.zoneId = zone.id;
+                    zoneEl.style.cssText = `position:absolute;left:${zonePadX}px;top:${currentY}px;pointer-events:auto;`;
+
+                    // Zone label (ghost header)
+                    const label = document.createElement('div');
+                    label.className = 'zone-label';
+                    label.textContent = zone.label;
+                    label.style.cssText = `font-size:11px;font-weight:700;letter-spacing:2px;color:${zone.color};opacity:0.5;margin-bottom:8px;padding:0 4px;text-transform:uppercase;`;
+                    zoneEl.appendChild(label);
+
+                    // Icons grid
+                    const cols = Math.min(apps.length, COLS);
+                    const rows = Math.ceil(apps.length / COLS);
+                    const gridW = cols * ICON_W;
+
+                    apps.forEach((app, idx) => {
+                        const col = idx % COLS;
+                        const row = Math.floor(idx / COLS);
+                        const x = col * ICON_W;
+                        const y = 24 + row * ICON_H; // 24px for label
+
+                        const icon = document.createElement('div');
+                        icon.className = 'desktop-icon';
+                        icon.dataset.appId = app.id;
+                        icon.dataset.zone = zone.id;
+                        icon.draggable = true;
+                        icon.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:76px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px;border-radius:12px;cursor:grab;transition:background 0.15s;user-select:none;`;
+                        icon.innerHTML = `
+                            <div class="desktop-icon-img" style="border-color:${app.color}30;width:44px;height:44px;font-size:22px;border-radius:10px;background:var(--glass);border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;">${app.icon}</div>
+                            <div class="desktop-icon-label" style="font-size:10px;text-align:center;color:var(--text);max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${app.name}</div>
+                        `;
+
+                        let tapCount = 0, tapTimer = null;
+                        const openHandler = () => { this.openApp(app.id); };
+                        icon.addEventListener('dblclick', openHandler);
+                        icon.addEventListener('touchend', (e) => {
+                            if (icon.dataset.dragging === '1') return;
+                            e.preventDefault();
+                            tapCount++;
+                            if (tapCount === 1) { tapTimer = setTimeout(() => { tapCount = 0; }, 300); }
+                            else if (tapCount === 2) { clearTimeout(tapTimer); tapCount = 0; openHandler(); }
+                        });
+
+                        zoneEl.appendChild(icon);
+                    });
+
+                    zoneEl.style.width = gridW + 'px';
+                    zoneEl.style.height = (24 + rows * ICON_H) + 'px';
+                    container.appendChild(zoneEl);
+                    currentY += (24 + rows * ICON_H) + 24; // gap between zones
+                });
+
+                // Restore saved positions (user may have dragged icons)
+                // Note: saved positions override zone positions
+                setTimeout(() => {
+                  document.querySelectorAll('.desktop-icon').forEach(icon => {
+                    var appId = icon.dataset.appId;
+                    if (savedPositions[appId]) {
+                      var p = savedPositions[appId];
+                      var z = icon.closest('.desktop-zone');
+                      if (z) {
+                        var zRect = z.getBoundingClientRect();
+                        icon.style.left = (parseInt(p.x) - zRect.left) + 'px';
+                        icon.style.top = (parseInt(p.y) - zRect.top + 24) + 'px';
+                      } else {
+                        icon.style.left = p.x + 'px';
+                        icon.style.top = p.y + 'px';
+                      }
+                    }
+                  });
+                }, 0);
+
                 this._setupDragDrop();
             },
 
             _getSavedPositions: function() {
-                try { return JSON.parse(localStorage.getItem('hazoom_desktop_positions') || '{}'); }
+                try {
+                    var raw = localStorage.getItem('hazoom_desktop_positions');
+                    if (!raw) return {};
+                    var ver = localStorage.getItem('hazoom_layout_ver');
+                    if (ver !== 'v6_zones') {
+                        // Clear old flat positions, use fresh zone layout
+                        localStorage.removeItem('hazoom_desktop_positions');
+                        localStorage.setItem('hazoom_layout_ver', 'v6_zones');
+                        return {};
+                    }
+                    return JSON.parse(raw);
+                }
                 catch(e) { return {}; }
             },
 
@@ -2729,7 +2805,7 @@
                         menu.innerHTML = `<div class="ctx-app-info"><div class="ctx-app-name">${app.icon || '📦'} ${app.name}</div><div class="ctx-app-type">${app.category || 'app'}</div></div><div class="ctx-app-actions"><div class="ctx-item" onclick="HAZOOM.openApp('${appId}');document.getElementById('context-menu').classList.remove('show')">� Open</div><div class="ctx-item" onclick="HAZOOM.showAppInfo('${appId}')">ℹ️ App Info</div><div class="ctx-separator"></div><div class="ctx-item" onclick="HAZOOM.arrangeDesktopIcons();this.parentElement.parentElement.classList.remove('show')">📐 Arrange Icons</div><div class="ctx-item" onclick="location.reload()">� Refresh Desktop</div></div>`;
                         positionMenu(e.clientX, e.clientY); menu.classList.add('show');
                     } else {
-                        menu.innerHTML = `<div class="ctx-app-info"><div class="ctx-app-name">️ Desktop</div><div class="ctx-app-type">${Object.keys(this.apps).length} apps · ${this.windows.length} windows</div></div><div class="ctx-app-actions"><div class="ctx-item" onclick="HAZOOM.openApp('terminal')">�️ Open Terminal</div><div class="ctx-item" onclick="HAZOOM.openApp('dashboard')">� Dashboard</div><div class="ctx-separator"></div><div class="ctx-item" onclick="HAZOOM.arrangeDesktopIcons();this.parentElement.parentElement.classList.remove('show')">📐 Arrange Icons</div><div class="ctx-item" onclick="HAZOOM.cycleMood()">🎨 Change Mood</div><div class="ctx-separator"></div><div class="ctx-item" onclick="location.reload()">� Refresh</div><div class="ctx-item destructive" onclick="HAZOOM.shutdown()">⏻ Shutdown</div></div>`;
+                        menu.innerHTML = `<div class="ctx-app-info"><div class="ctx-app-name">️ Desktop</div><div class="ctx-app-type">${Object.keys(this.apps).length} apps · ${this.windows.length} windows</div></div><div class="ctx-app-actions"><div class="ctx-item" onclick="HAZOOM.openApp('terminal')">�️ Open Terminal</div><div class="ctx-item" onclick="HAZOOM.openApp('dashboard')">� Dashboard</div><div class="ctx-separator"></div><div class="ctx-item" onclick="HAZOOM.arrangeDesktopIcons();this.parentElement.parentElement.classList.remove('show')">📐 Arrange Icons</div><div class="ctx-item" onclick="HAZOOM.cycleMood()">🎨 Change Mood</div><div class="ctx-separator"></div><div class="ctx-item" onclick="HAZOOM.refreshDesktop();this.parentElement.parentElement.classList.remove('show')">️ Refresh</div><div class="ctx-item destructive" onclick="HAZOOM.shutdown()">⏻ Shutdown</div></div>`;
                         positionMenu(e.clientX, e.clientY); menu.classList.add('show');
                     }
                 });
@@ -2765,10 +2841,27 @@
             },
 
             setupDesktopDragDrop: function() {
-                // Drag is already handled in _setupDragDrop() called from arrangeDesktopIcons
-                // This function exists for backward compat with initOS
                 const icons = document.querySelectorAll('.desktop-icon');
                 icons.forEach(icon => { icon.draggable = true; });
+            },
+
+            // Instant in-memory desktop refresh (no network request)
+            refreshDesktop: function() {
+                // Save open windows
+                const openWindows = this.windows.filter(w => !w.minimized).map(w => w.appId);
+                // Close all windows without saving
+                this.windows.forEach(w => {
+                    const el = document.getElementById('window-' + w.id);
+                    if (el) el.remove();
+                });
+                this.windows = [];
+                // Re-render desktop icons
+                this.arrangeDesktopIcons();
+                this.buildDock();
+                // Restore tray
+                this.updateDockIndicators();
+                // Show feedback
+                this.showNotification('️ Desktop Refreshed', 'All icons re-rendered in-place');
             },
 
             saveDesktopPositions: function() {

@@ -2,48 +2,39 @@
 #include "console.h"
 #include <stdint.h>
 
-/* Console state */
 uint16_t console_row = 0;
 uint16_t console_column = 0;
-uint8_t  console_color = 0x03; /* cyan on black */
+uint8_t  console_color = 0x03;
 
-/* I/O port functions */
 static inline void outb(uint16_t port, uint8_t value) {
-    asm volatile("outb %0, %1" : : "a"(value), "Nd"(port));
+    __asm__ volatile("outb %0, %1" : : "a"(value), "Nd"(port));
 }
 
-/* Update hardware cursor position */
 void vga_update_cursor(void) {
     uint16_t pos = console_row * VGA_WIDTH + console_column;
-
-    outb(0x3D4, 14);                  /* Select cursor high byte */
-    outb(0x3D5, (pos >> 8) & 0xFF);  /* Write high byte */
-    outb(0x3D4, 15);                  /* Select cursor low byte */
-    outb(0x3D5, pos & 0xFF);          /* Write low byte */
+    outb(0x3D4, 14);
+    outb(0x3D5, (pos >> 8) & 0xFF);
+    outb(0x3D4, 15);
+    outb(0x3D5, pos & 0xFF);
 }
 
-/* Set foreground and background color */
 void vga_set_color(uint8_t fg, uint8_t bg) {
     console_color = (bg << 4) | (fg & 0x0F);
 }
 
-/* Clear the entire screen */
 void vga_clear(void) {
-    uint16_t *buffer = VGA_BUFFER;
+    volatile uint16_t *buffer = (volatile uint16_t *)VGA_BUFFER;
     uint16_t blank = (uint16_t)' ' | ((uint16_t)console_color << 8);
-
-    for (uint16_t i = 0; i < VGA_WIDTH * VGA_HEIGHT; i++) {
+    for (int i = 0; i < VGA_WIDTH * VGA_HEIGHT; i++) {
         buffer[i] = blank;
     }
-
     console_row = 0;
     console_column = 0;
     vga_update_cursor();
 }
 
-/* Put a single character at current cursor position */
 void vga_putchar(char c) {
-    uint16_t *buffer = VGA_BUFFER;
+    volatile uint16_t *buffer = (volatile uint16_t *)VGA_BUFFER;
     uint16_t index;
     uint16_t entry = (uint16_t)c | ((uint16_t)console_color << 8);
 

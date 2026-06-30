@@ -237,8 +237,11 @@
             transition: var(--transition);
         }
         .desktop-icon:hover { background: var(--glass-hover); }
-        .desktop-icon.dragging { opacity: 0.6; transform: scale(1.08); box-shadow: 0 0 20px rgba(0,240,255,0.4); z-index: 9999; }
+        .desktop-icon.dragging { opacity: 0.5; transform: scale(1.1); box-shadow: 0 0 30px rgba(0,240,255,0.5), 0 0 60px rgba(0,240,255,0.2); z-index: 9999; cursor: grabbing; }
         .desktop-icon { touch-action: none; }
+        .desktop-zone { transition: none; }
+        .zone-label { cursor: default; }
+        .zone-label:hover { opacity: 1 !important; text-shadow: 0 0 12px currentColor; }
 
         /* === CONTEXT MENU === */
         .ctx-menu { position: fixed; z-index: 10000; min-width: 200px; background: rgba(10,10,20,0.95); backdrop-filter: blur(16px); border: 1px solid rgba(0,240,255,0.15); border-radius: 12px; padding: 6px 0; box-shadow: 0 12px 40px rgba(0,0,0,0.7), 0 0 20px rgba(0,240,255,0.1); display: none; }

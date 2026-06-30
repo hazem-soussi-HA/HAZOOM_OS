@@ -736,7 +736,8 @@ class HazoomKernel {
 
         // Consciousness initialization (self-contained AI, no external LLM)
         try {
-            const Consciousness = require('./consciousness');
+            const ConMod = require('./consciousness');
+            const Consciousness = ConMod.default || ConMod;
             this.consciousness = new Consciousness(this);
             this.log('INFO', '[CONSCIOUSNESS] Self-contained AI initialized');
             this.log('INFO', '[CONSCIOUSNESS] Memory system: filesystem-backed');

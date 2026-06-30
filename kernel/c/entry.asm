@@ -1,29 +1,27 @@
-; HAZOOM OS v6.0 - Kernel Entry Point
-; x86-64 Assembly entry point
+section .multiboot
+align 8
+mb_header_start:
+    dd 0xe85250d6
+    dd 0
+    dd mb_header_end - mb_header_start
+    dd 0x100000000 - (0xe85250d6 + 0 + (mb_header_end - mb_header_start))
+
+    dw 0
+    dw 0
+    dd 8
+mb_header_end:
 
 section .text
 global _start
 extern kernel_main
 
 _start:
-    ; Set up initial stack at top of 4MB identity-mapped area
-    ; UEFI/bootloader should have identity-mapped first 4MB
-    mov rsp, 0x3FFFFF0000    ; Top of 4MB area (below 4MB mark)
-    and rsp, ~0xF            ; Align to 16 bytes
-
-    ; Clear direction flag for string operations
+    mov rsp, 0x3FFFFF0000
+    and rsp, ~0xF
     cld
-
-    ; Pass boot info (if in rdi/esi from bootloader) to kernel_main
-    ; kernel_main receives: boot_magic (rdi), boot_info (rsi)
-    ; For now, pass 0, 0 as defaults
     xor rdi, rdi
     xor rsi, rsi
-
-    ; Call the C kernel main
     call kernel_main
-
-    ; If kernel_main returns, halt the CPU
 .hang:
     cli
     hlt

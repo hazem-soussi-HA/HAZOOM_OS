@@ -1,0 +1,170 @@
+version: "3.9"
+
+name: hazoom-os
+
+services:
+  # ─── Main Backend Server ─────────────────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: hazoom-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+      - "3443:3443"
+    volumes:
+      - hazoom_data:/app/data
+      - hazoom_config:/app/config
+      - ./ssl:/app/ssl:ro
+    environment:
+      - NODE_ENV=production
+      - HTTP_PORT=3000
+      - HTTPS_PORT=3443
+      - HOST=0.0.0.0
+      - LOG_LEVEL=info
+      - QLEARNING_ENABLED=true
+      - QLEARNING_MODE=hybrid
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - hazoom-net
+
+  # ─── AI Services ─────────────────────────────────────────────────
+  ai-service:
+    build:
+      context: ./services/ai
+      dockerfile: Dockerfile
+    container_name: hazoom-ai
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - hazoom_data:/app/data
+      - ./config:/app/config:ro
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - OLLAMA_HOST=${OLLAMA_HOST:-http://host.docker.internal:11434}
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - backend
+    networks:
+      - hazoom-net
+
+  # ─── API Gateway ─────────────────────────────────────────────────
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    container_name: hazoom-gateway
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    volumes:
+      - hazoom_data:/app/data
+      - ./ssl:/app/ssl:ro
+    environment:
+      - SERVER_PORT=8080
+      - SECURE_PORT=8443
+      - BACKEND_URL=http://backend:3000
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - backend
+      - ai-service
+    networks:
+      - hazoom-net
+
+  # ─── Orchestrator ────────────────────────────────────────────────
+  orchestrator:
+    build:
+      context: ./services/orchestrator
+      dockerfile: Dockerfile
+    container_name: hazoom-orchestrator
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    volumes:
+      - hazoom_data:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - backend
+      - ai-service
+    networks:
+      - hazoom-net
+
+  # ─── WebSocket Server ────────────────────────────────────────────
+  websocket:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile.ws
+    container_name: hazoom-websocket
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    environment:
+      - WS_PORT=9090
+      - EVENT_BUS_URL=http://orchestrator:9000
+    depends_on:
+      - orchestrator
+    networks:
+      - hazoom-net
+
+  # ─── Frontend (Static Nginx) ────────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: hazoom-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./ssl:/etc/nginx/ssl:ro
+      - ./deploy/nginx_frontend.conf:/etc/nginx/conf.d/default.conf:ro
+    environment:
+      - BACKEND_URL=http://backend:3000
+      - WS_URL=ws://websocket:9090
+    depends_on:
+      - backend
+      - websocket
+    networks:
+      - hazoom-net
+
+  # ─── Q-Learner (C Kernel VM) ────────────────────────────────────
+  qkernel:
+    image: qemux86_64:latest
+    container_name: hazoom-qkernel
+    restart: "no"
+    profiles: ["kernel"]
+    build:
+      context: ./kernel/c
+      dockerfile: Dockerfile.qemu
+    devices:
+      - /dev/kvm:/dev/kvm
+    volumes:
+      - ./kernel/c/hazoom-kernel.bin:/kernel.bin:ro
+    networks:
+      - hazoom-net
+
+volumes:
+  hazoom_data:
+    driver: local
+  hazoom_config:
+    driver: local
+
+networks:
+  hazoom-net:
+    driver: bridge

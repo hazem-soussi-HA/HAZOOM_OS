@@ -1,82 +1,90 @@
 # HAZOOM OS v6.0 - Kernel Makefile
-# Builds C/Assembly sources into hazoom-kernel.elf, then strips to .bin
+# Auto-detects toolchain, tries common cross-compiler names
 
-# Toolchain
-CC      := x86_64-elf-gcc
+# Auto-detect toolchain
+X64_ELF_CC := $(shell command -v x86_64-elf-gcc 2>/dev/null)
+X64_LINUX_CC := $(shell command -v x86_64-linux-gnu-gcc 2>/dev/null)
+X64_GCC := $(shell command -v x86_64-gcc 2>/dev/null)
+NATIVE_GCC := $(shell command -v gcc 2>/dev/null)
+
+ifneq ($(X64_ELF_CC),)
+    CC := x86_64-elf-gcc
+    LD := x86_64-elf-gcc
+    OBJCOPY := x86_64-elf-objcopy
+    STRIP := x86_64-elf-strip
+else ifneq ($(X64_LINUX_CC),)
+    CC := x86_64-linux-gnu-gcc
+    LD := x86_64-linux-gnu-gcc
+    OBJCOPY := x86_64-linux-gnu-objcopy
+    STRIP := x86_64-linux-gnu-strip
+else ifneq ($(X64_GCC),)
+    CC := x86_64-gcc
+    LD := x86_64-gcc
+    OBJCOPY := objcopy
+    STRIP := strip
+else
+    CC := gcc
+    LD := gcc
+    OBJCOPY := objcopy
+    STRIP := strip
+endif
+
 AS      := nasm
-LD      := x86_64-elf-gcc
-OBJCOPY := x86_64-elf-objcopy
-STRIP   := x86_64-elf-strip
 
-# Target
 TARGET  := hazoom-kernel
 ELF     := $(TARGET).elf
 BIN     := $(TARGET).bin
 
-# Compiler flags
 CFLAGS  := -ffreestanding             \
            -O2                        \
            -Wall -Wextra              \
            -fno-exceptions            \
-           -fno-rtti                 \
            -fno-stack-protector       \
-           -fno-pic                  \
+           -fno-pic                   \
            -mno-red-zone              \
-           -mno-sse                   \
-           -mno-sse2                  \
-           -mno-mmx                   \
+
            -mabi=sysv                 \
-           -std=c11                   \
+           -std=gnu11                 \
            -I.
 
-# Assembly flags
 ASFLAGS := -f elf64
 
-# Linker flags
 LDFLAGS := -T linker.ld              \
            -nostdlib                  \
            -nostartfiles              \
            -static                     \
            -z max-page-size=0x1000
 
-# Source files
 C_SOURCES   := main.c gdt.c idt.c console.c pmm.c process.c qlearn.c
 ASM_SOURCES := entry.asm isr_stubs.asm
 
-# Object files
 C_OBJECTS   := $(C_SOURCES:.c=.o)
 ASM_OBJECTS := $(ASM_SOURCES:.asm=.o)
 OBJECTS     := $(C_OBJECTS) $(ASM_OBJECTS)
 
-# Default target
 .PHONY: all clean info
 
 all: $(BIN)
 
-# Link ELF
 $(ELF): $(OBJECTS) linker.ld
 	$(LD) $(LDFLAGS) -o $@ $(OBJECTS)
 
-# Strip to binary
 $(BIN): $(ELF)
 	$(STRIP) -O elf64-x86-64 $< -o $@
 	@echo "Kernel binary built: $@"
 	@echo "Size: $$(stat -c%s $@) bytes"
+	@echo "Toolchain: $(CC)"
 
-# Compile C sources
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Assemble NASM sources
 %.o: %.asm
 	$(AS) $(ASFLAGS) $< -o $@
 
-# Clean build artifacts
 clean:
 	rm -f $(OBJECTS) $(ELF) $(BIN)
 	@echo "Build cleaned."
 
-# Print info
 info:
 	@echo "HAZOOM OS v6.0 Kernel Build System"
 	@echo "CC:      $(CC)"

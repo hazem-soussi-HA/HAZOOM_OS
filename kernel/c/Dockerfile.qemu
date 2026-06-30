@@ -1,0 +1,10 @@
+FROM alpine:latest AS builder
+
+RUN apk add --no-cache gcc nasm make x86_64-elf-gcc x86_64-elf-binutils
+
+COPY . /build
+WORKDIR /build
+RUN make clean && make
+
+FROM scratch
+COPY --from=builder /build/hazoom-kernel.bin /kernel.bin

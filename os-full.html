@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HAZOOM OS v6.0 — Full Operating System</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0a0a12; --surface: #13131f; --surface2: #1a1a2e;
+  --accent: #00d4ff; --accent2: #7c3aed; --green: #00ff88;
+  --red: #ff3355; --yellow: #ffaa00; --text: #e0e0f0; --dim: #6666aa;
+}
+body {
+  background: var(--bg); color: var(--text); font-family: 'Consolas', 'Courier New', monospace;
+  height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+}
+.topbar {
+  background: var(--surface); padding: 8px 16px; display: flex; align-items: center;
+  gap: 16px; border-bottom: 1px solid var(--surface2); flex-shrink: 0;
+}
+.topbar .logo { color: var(--accent); font-weight: bold; font-size: 18px; }
+.topbar .logo span { color: var(--yellow); }
+.topbar .status { margin-left: auto; display: flex; gap: 16px; font-size: 12px; }
+.topbar .status .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.dot.online { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.main {
+  display: flex; flex: 1; overflow: hidden;
+}
+.sidebar {
+  width: 200px; background: var(--surface); padding: 8px; flex-shrink: 0;
+  border-right: 1px solid var(--surface2); overflow-y: auto;
+}
+.sidebar button {
+  display: block; width: 100%; padding: 10px 12px; margin-bottom: 4px;
+  background: transparent; border: none; color: var(--dim); cursor: pointer;
+  text-align: left; font-family: inherit; font-size: 13px; border-radius: 4px;
+}
+.sidebar button:hover { background: var(--surface2); color: var(--text); }
+.sidebar button.active { background: var(--surface2); color: var(--accent); border-left: 3px solid var(--accent); }
+.sidebar .cat { color: var(--dim); font-size: 10px; text-transform: uppercase; padding: 12px 12px 4px; letter-spacing: 1px; }
+.content {
+  flex: 1; padding: 16px; overflow-y: auto;
+}
+.panel { display: none; }
+.panel.active { display: block; }
+h2 { color: var(--accent); margin-bottom: 12px; font-size: 16px; }
+.card {
+  background: var(--surface); border: 1px solid var(--surface2); border-radius: 8px;
+  padding: 16px; margin-bottom: 12px;
+}
+.card h3 { color: var(--accent2); font-size: 13px; margin-bottom: 8px; }
+.row { display: flex; gap: 12px; flex-wrap: wrap; }
+.stat { flex: 1; min-width: 120px; }
+.stat .val { font-size: 24px; font-weight: bold; color: var(--accent); }
+.stat .label { font-size: 11px; color: var(--dim); margin-top: 2px; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th { text-align: left; color: var(--dim); padding: 6px 8px; border-bottom: 1px solid var(--surface2); }
+td { padding: 6px 8px; border-bottom: 1px solid var(--surface2); }
+.term {
+  background: #000; border: 1px solid var(--surface2); border-radius: 8px;
+  padding: 12px; font-family: inherit; font-size: 13px; height: 400px;
+  display: flex; flex-direction: column;
+}
+.term-out { flex: 1; overflow-y: auto; white-space: pre-wrap; }
+.term-in { display: flex; align-items: center; gap: 4px; margin-top: 8px; }
+.term-in span { color: var(--green); }
+.term-in input {
+  flex: 1; background: transparent; border: none; color: var(--text);
+  font-family: inherit; font-size: 13px; outline: none;
+}
+.msg { padding: 8px 12px; border-radius: 6px; margin-bottom: 8px; }
+.msg.user { background: var(--surface2); }
+.msg.ai { background: #0d1b2a; border-left: 3px solid var(--accent); }
+.msg .name { font-size: 11px; color: var(--dim); margin-bottom: 4px; }
+.loading { color: var(--dim); font-style: italic; }
+.error { color: var(--red); }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo"><span>HAZOOM</span> OS v6.0</div>
+  <div class="status">
+    <span><span class="dot online"></span> Kernel</span>
+    <span id="proc-count">0 processes</span>
+    <span id="mem-info">0 MB</span>
+    <span id="uptime-info">0s</span>
+    <span id="qlearn-info">Q: 0</span>
+  </div>
+</div>
+<div class="main">
+  <div class="sidebar">
+    <div class="cat">System</div>
+    <button class="active" onclick="showPanel('dashboard')">Dashboard</button>
+    <button onclick="showPanel('terminal')">Terminal</button>
+    <button onclick="showPanel('processes')">Processes</button>
+    <button onclick="showPanel('memory')">Memory</button>
+    <button onclick="showPanel('filesystem')">File System</button>
+    <div class="cat">AI & Intelligence</div>
+    <button onclick="showPanel('consciousness')">Consciousness</button>
+    <button onclick="showPanel('qlearning')">Q-Learning</button>
+    <button onclick="showPanel('pascal')">Pascal Engine</button>
+    <button onclick="showPanel('aichat')">AI Chat</button>
+    <div class="cat">System</div>
+    <button onclick="showPanel('logs')">Kernel Log</button>
+    <button onclick="showPanel('neofetch')">Neofetch</button>
+  </div>
+  <div class="content">
+    <!-- Dashboard -->
+    <div id="panel-dashboard" class="panel active">
+      <h2>System Dashboard</h2>
+      <div class="row">
+        <div class="card stat"><div class="val" id="d-proc">0</div><div class="label">Processes</div></div>
+        <div class="card stat"><div class="val" id="d-mem">0%</div><div class="label">Memory Used</div></div>
+        <div class="card stat"><div class="val" id="d-uptime">0s</div><div class="label">Uptime</div></div>
+        <div class="card stat"><div class="val" id="d-ticks">0</div><div class="label">Scheduler Ticks</div></div>
+        <div class="card stat"><div class="val" id="d-qlearn">0</div><div class="label">Q-Learn Decisions</div></div>
+      </div>
+      <div class="card">
+        <h3>System Information</h3>
+        <pre id="d-info" style="font-size:12px;color:var(--dim);"></pre>
+      </div>
+    </div>
+
+    <!-- Terminal -->
+    <div id="panel-terminal" class="panel">
+      <h2>Terminal</h2>
+      <div class="term">
+        <div class="term-out" id="term-out"><span style="color:var(--accent)">HAZOOM OS v6.0 — Terminal</span>
+<span style="color:var(--dim)">Type 'help' for available commands.</span>
+</div>
+        <div class="term-in">
+          <span>hazoom@os:~$</span>
+          <input id="term-input" autofocus spellcheck="false" onkeydown="termKey(event)">
+        </div>
+      </div>
+    </div>
+
+    <!-- Processes -->
+    <div id="panel-processes" class="panel">
+      <h2>Process Manager</h2>
+      <div style="margin-bottom:8px;">
+        <input id="proc-name" placeholder="process name" style="background:var(--surface);border:1px solid var(--surface2);color:var(--text);padding:6px 10px;border-radius:4px;font-family:inherit;">
+        <button onclick="createProcess()" style="background:var(--accent);color:#000;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;font-family:inherit;">Create</button>
+      </div>
+      <div class="card" style="padding:0;"><table><thead><tr><th>PID</th><th>PPID</th><th>Name</th><th>State</th><th>Priority</th><th>CPU</th><th>Actions</th></tr></thead><tbody id="proc-table"></tbody></table></div>
+    </div>
+
+    <!-- Memory -->
+    <div id="panel-memory" class="panel">
+      <h2>Memory Manager</h2>
+      <div class="row">
+        <div class="card stat"><div class="val" id="m-total">0</div><div class="label">Total</div></div>
+        <div class="card stat"><div class="val" id="m-used">0</div><div class="label">Used</div></div>
+        <div class="card stat"><div class="val" id="m-free">0</div><div class="label">Free</div></div>
+        <div class="card stat"><div class="val" id="m-swap">0</div><div class="label">Swap</div></div>
+      </div>
+      <div class="card"><div style="height:20px;background:var(--surface2);border-radius:10px;overflow:hidden;"><div id="m-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--green),var(--yellow),var(--red));transition:width 0.3s;"></div></div></div>
+      <div class="card"><pre id="m-detail" style="font-size:12px;color:var(--dim);"></pre></div>
+    </div>
+
+    <!-- File System -->
+    <div id="panel-filesystem" class="panel">
+      <h2>File System Browser</h2>
+      <div style="margin-bottom:8px;display:flex;gap:8px;align-items:center;">
+        <span style="color:var(--dim);">Path:</span>
+        <span id="fs-path" style="color:var(--accent);">/</span>
+        <button onclick="fsList('/')" style="background:var(--surface2);border:none;color:var(--text);padding:4px 8px;border-radius:4px;cursor:pointer;">Root</button>
+      </div>
+      <div class="card"><table><thead><tr><th>Name</th><th>Type</th></tr></thead><tbody id="fs-table"></tbody></table></div>
+    </div>
+
+    <!-- Consciousness -->
+    <div id="panel-consciousness" class="panel">
+      <h2>AI Consciousness</h2>
+      <div class="row">
+        <div class="card stat"><div class="val" id="c-identity">-</div><div class="label">Identity</div></div>
+        <div class="card stat"><div class="val" id="c-state">-</div><div class="label">State</div></div>
+        <div class="card stat"><div class="val" id="c-memories">0</div><div class="label">Memories</div></div>
+        <div class="card stat"><div class="val" id="c-awareness">0%</div><div class="label">Awareness</div></div>
+      </div>
+      <div class="card"><pre id="c-detail" style="font-size:12px;color:var(--dim);"></pre></div>
+    </div>
+
+    <!-- Q-Learning -->
+    <div id="panel-qlearning" class="panel">
+      <h2>Q-Learning Engine</h2>
+      <div class="row">
+        <div class="card stat"><div class="val" id="q-decisions">0</div><div class="label">Total Decisions</div></div>
+        <div class="card stat"><div class="val" id="q-reward">0</div><div class="label">Total Reward</div></div>
+        <div class="card stat"><div class="val" id="q-epsilon">0</div><div class="label">Epsilon</div></div>
+        <div class="card stat"><div class="val" id="q-states">0</div><div class="label">States Explored</div></div>
+      </div>
+      <div class="card"><pre id="q-detail" style="font-size:12px;color:var(--dim);"></pre></div>
+    </div>
+
+    <!-- Pascal Engine -->
+    <div id="panel-pascal" class="panel">
+      <h2>Pascal Engine</h2>
+      <div class="card"><pre id="p-detail" style="font-size:12px;color:var(--dim);max-height:500px;overflow-y:auto;"></pre></div>
+    </div>
+
+    <!-- AI Chat -->
+    <div id="panel-aichat" class="panel">
+      <h2>AI Assistant</h2>
+      <div class="card" style="height:400px;display:flex;flex-direction:column;">
+        <div id="chat-msgs" style="flex:1;overflow-y:auto;margin-bottom:8px;"></div>
+        <div style="display:flex;gap:8px;">
+          <input id="chat-input" placeholder="Type a message..." style="flex:1;background:var(--surface2);border:1px solid var(--surface2);color:var(--text);padding:8px 12px;border-radius:4px;font-family:inherit;" onkeydown="if(event.key==='Enter')chatSend()">
+          <button onclick="chatSend()" style="background:var(--accent);color:#000;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logs -->
+    <div id="panel-logs" class="panel">
+      <h2>Kernel Log</h2>
+      <div class="card"><pre id="log-out" style="font-size:11px;color:var(--dim);max-height:500px;overflow-y:auto;"></pre></div>
+    </div>
+
+    <!-- Neofetch -->
+    <div id="panel-neofetch" class="panel">
+      <h2>System Info</h2>
+      <div class="card"><pre id="neofetch-out" style="font-size:13px;color:var(--text);"></pre></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = window.location.origin;
+async function api(path, method='GET', body=null) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(API + path, opts);
+  return r.json();
+}
+
+function formatBytes(b) {
+  if (!b) return '0 B';
+  const u = ['B','KB','MB','GB','TB'];
+  let i = 0;
+  while (b >= 1024 && i < u.length-1) { b /= 1024; i++; }
+  return b.toFixed(1) + ' ' + u[i];
+}
+
+function formatUptime(s) {
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+  return `${h}h ${m}m ${sec}s`;
+}
+
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar button').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  document.querySelector(`.sidebar button[onclick*="${id}"]`).classList.add('active');
+  loadPanel(id);
+}
+
+async function loadPanel(id) {
+  if (id === 'dashboard') loadDashboard();
+  else if (id === 'terminal') document.getElementById('term-input').focus();
+  else if (id === 'processes') loadProcesses();
+  else if (id === 'memory') loadMemory();
+  else if (id === 'filesystem') fsList('/');
+  else if (id === 'consciousness') loadConsciousness();
+  else if (id === 'qlearning') loadQLearning();
+  else if (id === 'pascal') loadPascal();
+  else if (id === 'logs') loadLogs();
+  else if (id === 'neofetch') loadNeofetch();
+}
+
+// ── DASHBOARD ──────────────────────────────────────────────────────
+async function loadDashboard() {
+  const s = await api('/api/status');
+  document.getElementById('d-proc').textContent = s.processCount;
+  document.getElementById('d-mem').textContent = s.memory.usagePercent + '%';
+  document.getElementById('d-uptime').textContent = formatUptime(s.uptime);
+  document.getElementById('d-ticks').textContent = s.tickCount;
+  document.getElementById('d-qlearn').textContent = s.qLearning.totalDecisions;
+  document.getElementById('d-info').textContent = JSON.stringify(s, null, 2);
+}
+
+// ── TERMINAL ───────────────────────────────────────────────────────
+const termOut = document.getElementById('term-out');
+function termPrint(text, cls='') {
+  const d = document.createElement('div');
+  d.textContent = text;
+  if (cls) d.style.color = cls;
+  termOut.appendChild(d);
+  termOut.scrollTop = termOut.scrollHeight;
+}
+
+const termCmds = {
+  help: () => `Available commands:
+  help         Show this help
+  status       System status
+  ps           List processes
+  mem          Memory info
+  ls [path]    List directory
+  clear        Clear terminal
+  uptime       Uptime info
+  whoami       Current user
+  neofetch     System info
+  tick [n]     Advance scheduler
+  kill <pid>   Kill process
+  echo <text>  Print text
+  date         Current date`,
+
+  status: async () => {
+    const s = await api('/api/status');
+    return `HAZOOM OS v${s.version}\nStatus: ${s.running ? 'Online' : 'Offline'}\nProcesses: ${s.processCount}\nMemory: ${s.memory.usagePercent}%\nUptime: ${formatUptime(s.uptime)}\nTicks: ${s.tickCount}`;
+  },
+
+  ps: async () => {
+    const d = await api('/api/processes');
+    const procs = d.processes || [];
+    if (!procs.length) return 'No processes.';
+    return '  PID  PPID  STATE      PRI  NAME\n' + procs.map(p =>
+      `  ${String(p.pid).padEnd(4)} ${String(p.ppid).padEnd(5)} ${p.state.padEnd(10)} ${String(p.priority).padEnd(4)} ${p.name}`
+    ).join('\n');
+  },
+
+  mem: async () => {
+    const m = await api('/api/memory');
+    return `Memory: ${formatBytes(m.used)} / ${formatBytes(m.total)} (${m.usagePercent}%)\nPages: ${m.usedPages} used / ${m.totalPages} total\nPage faults: ${m.pageFaults}\nSwap: ${formatBytes(m.swapUsed)} / ${formatBytes(m.swapTotal)}`;
+  },
+
+  ls: async (args) => {
+    const p = args || '/';
+    const d = await api('/api/fs/list?path=' + encodeURIComponent(p));
+    return (d.entries || []).join('  ');
+  },
+
+  uptime: async () => {
+    const s = await api('/api/status');
+    return `Uptime: ${formatUptime(s.uptime)} (${s.tickCount} ticks)`;
+  },
+
+  whoami: () => 'hazem',
+
+  date: () => new Date().toString(),
+
+  tick: async (args) => {
+    const n = parseInt(args) || 1;
+    const r = await api('/api/tick', 'POST', { count: n });
+    return `Tick ${n} times. Running: ${r.last.scheduler.running}, Ready: ${r.last.scheduler.readyCount}`;
+  },
+
+  kill: async (args) => {
+    const pid = parseInt(args);
+    if (!pid) return 'Usage: kill <pid>';
+    const r = await api(`/api/processes/${pid}/terminate`, 'POST');
+    return `PID ${pid} terminated.`;
+  },
+
+  clear: () => { termOut.innerHTML = ''; return ''; },
+
+  neofetch: async () => {
+    const s = await api('/api/status');
+    return `       ██╗  ██╗ █████╗ ███████╗ ██████╗  ██████╗ ███╗   ███╗
+       ██║  ██║██╔══██╗╚══███╔╝██╔═══██╗██╔═══██╗████╗ ████║
+       ███████║███████║  ███╔╝ ██║   ██║██║   ██║██╔████╔██║
+       ██╔══██║██╔══██║ ███╔╝  ██║   ██║██║   ██║██║╚██╔╝██║
+       ██║  ██║██║  ██║███████╗╚██████╔╝╚██████╔╝██║ ╚═╝ ██║
+       ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝ ╚═╝     ╚═╝
+             HAZOOM OS v6.0 - The OS That Learns
+Kernel:       x86_64, Bare Metal
+Memory:       ${formatBytes(s.memory.total)}
+Processes:    ${s.processCount}
+Uptime:       ${formatUptime(s.uptime)}
+Q-Learning:   ${s.qLearning.totalDecisions} decisions (${s.qLearning.mode})
+AI Engine:    DeepConsciousness v2.0`;
+  }
+};
+
+async function termExec(cmd) {
+  const parts = cmd.trim().split(/\s+/);
+  const c = parts[0].toLowerCase();
+  const args = parts.slice(1).join(' ');
+  if (termCmds[c]) {
+    try {
+      const r = await termCmds[c](args);
+      if (r) termPrint(r);
+    } catch(e) { termPrint('Error: ' + e.message, 'var(--red)'); }
+  } else {
+    termPrint(`hazoom-sh: command not found: ${c}`, 'var(--red)');
+  }
+}
+
+function termKey(e) {
+  if (e.key === 'Enter') {
+    const input = document.getElementById('term-input');
+    const cmd = input.value;
+    input.value = '';
+    termPrint('hazoom@os:~$ ' + cmd, 'var(--green)');
+    termExec(cmd);
+  }
+}
+
+// ── PROCESSES ──────────────────────────────────────────────────────
+async function loadProcesses() {
+  const d = await api('/api/processes');
+  const procs = d.processes || [];
+  document.getElementById('proc-table').innerHTML = procs.map(p =>
+    `<tr><td>${p.pid}</td><td>${p.ppid}</td><td>${p.name}</td><td>${p.state}</td><td>${p.priority}</td><td>${p.cpuTime}</td>
+    <td><button onclick="killProc(${p.pid})" style="background:var(--red);color:#fff;border:none;padding:2px 8px;border-radius:3px;cursor:pointer;font-size:11px;">Kill</button></td></tr>`
+  ).join('');
+}
+
+async function createProcess() {
+  const name = document.getElementById('proc-name').value || 'worker';
+  await api('/api/processes/create', 'POST', { name });
+  document.getElementById('proc-name').value = '';
+  loadProcesses();
+}
+
+async function killProc(pid) {
+  await api(`/api/processes/${pid}/terminate`, 'POST');
+  loadProcesses();
+}
+
+// ── MEMORY ─────────────────────────────────────────────────────────
+async function loadMemory() {
+  const m = await api('/api/memory');
+  document.getElementById('m-total').textContent = formatBytes(m.total);
+  document.getElementById('m-used').textContent = formatBytes(m.used);
+  document.getElementById('m-free').textContent = formatBytes(m.free);
+  document.getElementById('m-swap').textContent = formatBytes(m.swapTotal);
+  const pct = parseFloat(m.usagePercent);
+  document.getElementById('m-bar').style.width = Math.min(pct, 100) + '%';
+  document.getElementById('m-detail').textContent = JSON.stringify(m, null, 2);
+}
+
+// ── FILESYSTEM ─────────────────────────────────────────────────────
+async function fsList(path) {
+  const d = await api('/api/fs/list?path=' + encodeURIComponent(path));
+  document.getElementById('fs-path').textContent = path;
+  const entries = d.entries || [];
+  document.getElementById('fs-table').innerHTML = entries.map(e =>
+    `<tr><td><a href="#" onclick="fsList('${path}/${e}'.replace(/\/+/g,'/'))" style="color:var(--accent);text-decoration:none;">${e}</a></td><td>${e.includes('.') ? 'file' : 'dir'}</td></tr>`
+  ).join('');
+  if (path !== '/') {
+    const parent = path.split('/').slice(0, -1).join('/') || '/';
+    document.getElementById('fs-table').innerHTML =
+      `<tr><td><a href="#" onclick="fsList('${parent}')" style="color:var(--yellow);text-decoration:none;">..</a></td><td>dir</td></tr>` +
+      document.getElementById('fs-table').innerHTML;
+  }
+}
+
+// ── CONSCIOUSNESS ──────────────────────────────────────────────────
+async function loadConsciousness() {
+  const c = await api('/api/consciousness');
+  document.getElementById('c-identity').textContent = c.identity || '-';
+  document.getElementById('c-state').textContent = c.awake ? 'Awake' : 'Sleeping';
+  document.getElementById('c-memories').textContent = c.memories || 0;
+  document.getElementById('c-awareness').textContent = ((c.deepConsciousness?.awarenessLevel || 0) * 100).toFixed(0) + '%';
+  document.getElementById('c-detail').textContent = JSON.stringify(c, null, 2);
+}
+
+// ── Q-LEARNING ─────────────────────────────────────────────────────
+async function loadQLearning() {
+  const q = await api('/api/qlearner/status');
+  document.getElementById('q-decisions').textContent = q.totalDecisions;
+  document.getElementById('q-reward').textContent = q.totalReward;
+  document.getElementById('q-epsilon').textContent = q.tabular?.epsilon || q.dqn?.epsilon || 0;
+  document.getElementById('q-states').textContent = q.tabular?.statesExplored || 0;
+  document.getElementById('q-detail').textContent = JSON.stringify(q, null, 2);
+}
+
+// ── PASCAL ENGINE ──────────────────────────────────────────────────
+async function loadPascal() {
+  const p = await api('/api/pascal');
+  document.getElementById('p-detail').textContent = JSON.stringify(p, null, 2);
+}
+
+// ── KERNEL LOG ─────────────────────────────────────────────────────
+async function loadLogs() {
+  const d = await api('/api/log?lines=200');
+  const lines = d.lines || [];
+  document.getElementById('log-out').innerHTML = lines.map(l =>
+    `[${l.timestamp}] [${l.level}] ${l.message}`
+  ).join('\n');
+}
+
+// ── NEOFETCH ───────────────────────────────────────────────────────
+async function loadNeofetch() {
+  const s = await api('/api/status');
+  document.getElementById('neofetch-out').textContent =
+`       ██╗  ██╗ █████╗ ███████╗ ██████╗  ██████╗ ███╗   ███╗
+       ██║  ██║██╔══██╗╚══███╔╝██╔═══██╗██╔═══██╗████╗ ████║
+       ███████║███████║  ███╔╝ ██║   ██║██║   ██║██╔████╔██║
+       ██╔══██║██╔══██║ ███╔╝  ██║   ██║██║   ██║██║╚██╔╝██║
+       ██║  ██║██║  ██║███████╗╚██████╔╝╚██████╔╝██║ ╚═╝ ██║
+       ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝ ╚═╝     ╚═╝
+             HAZOOM OS v6.0 - The OS That Learns
+
+  Kernel:       x86_64, Bare Metal
+  Memory:       ${formatBytes(s.memory.total)} (${s.memory.usagePercent}% used)
+  Processes:    ${s.processCount}
+  Uptime:       ${formatUptime(s.uptime)}
+  Ticks:        ${s.tickCount}
+  Q-Learning:   ${s.qLearning.totalDecisions} decisions (${s.qLearning.mode})
+  AI Engine:    DeepConsciousness v2.0
+  Pascal:       Aether: ${s.pascalEngine.aether.state}, ${s.pascalEngine.aether.nodes} nodes
+  Consciousness:${s.consciousness ? ' Loaded' : ' Not loaded'}
+
+  Owner:        Hazem Soussi (HA)
+  License:      HA-2.0 Proprietary`;
+}
+
+// ── AI CHAT ────────────────────────────────────────────────────────
+async function chatSend() {
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  const box = document.getElementById('chat-msgs');
+  box.innerHTML += `<div class="msg user"><div class="name">You</div>${msg}</div>`;
+  box.innerHTML += `<div class="msg ai"><div class="name">HAZOOM AI</div><span class="loading">Thinking...</span></div>`;
+  box.scrollTop = box.scrollHeight;
+  try {
+    const r = await api('/api/consciousness/think', 'POST', { input: msg });
+    box.querySelector('.loading').parentElement.innerHTML = `<div class="name">HAZOOM AI</div>${r.response || JSON.stringify(r)}`;
+  } catch(e) {
+    box.querySelector('.loading').parentElement.innerHTML = `<div class="name">HAZOOM AI</div><span class="error">Error: ${e.message}</span>`;
+  }
+}
+
+// ── AUTO-REFRESH ──────────────────────────────────────────────────
+async function refreshTopbar() {
+  try {
+    const s = await api('/api/status');
+    document.getElementById('proc-count').textContent = s.processCount + ' processes';
+    document.getElementById('mem-info').textContent = formatBytes(s.memory.used);
+    document.getElementById('uptime-info').textContent = formatUptime(s.uptime);
+    document.getElementById('qlearn-info').textContent = 'Q: ' + s.qLearning.totalDecisions;
+  } catch(e) {}
+}
+
+// ── INIT ───────────────────────────────────────────────────────────
+loadDashboard();
+setInterval(refreshTopbar, 2000);
+setInterval(() => {
+  const active = document.querySelector('.panel.active');
+  if (active) {
+    const id = active.id.replace('panel-', '');
+    if (['dashboard', 'processes', 'memory'].includes(id)) loadPanel(id);
+  }
+}, 5000);
+</script>
+</body>
+</html>

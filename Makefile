@@ -1,163 +1,97 @@
-# HAZOOM OS v6.0 - Top-Level Makefile
-# Build system for HAZOOM OS userspace, kernel, and bootloader
-#
-# Targets:
-#   all       - Build everything (boot + kernel + userspace)
-#   boot      - Build bootloader
-#   kernel    - Build kernel
-#   userspace - Build all userspace programs
-#   clean     - Remove all built files
-#   qemu      - Build all and run in QEMU
-#   test      - Build and run basic checks
-#   help      - Show available targets
+.PHONY: all kernel kernel-v6 kernel-v1 clean run-qemu iso dev-install \
+        check bootloader userspace services python-services help
 
-.PHONY: all boot kernel userspace clean qemu test help
+all: kernel
 
-# Default target
-all: boot kernel userspace
-	@echo ""
-	@echo "============================================"
-	@echo "  HAZOOM OS v6.0 - Build Complete"
-	@echo "============================================"
-	@echo ""
+# Build v6.0 64-bit kernel (primary target)
+kernel:
+	@echo "Building HAZOOM OS v6.0 kernel..."
+	$(MAKE) -C kernel/c all
+	@echo "Kernel built: kernel/c/hazoom-kernel.bin"
+
+# Build v1.0 32-bit kernel (legacy)
+kernel-v1:
+	@echo "Building HAZOOM OS v1.0 kernel (32-bit)..."
+	$(MAKE) -C kernel all
+	@echo "Kernel built: kernel/hazoom-kernel.bin"
 
 # Build bootloader
-boot:
-	@echo "[BOOT] Building bootloader..."
-	@if [ -d boot ]; then \
-		$(MAKE) -C boot; \
-	else \
-		echo "  [SKIP] boot/ directory not found"; \
-		echo "  [INFO] Create boot/ with bootloader source"; \
-	fi
+bootloader:
+	@echo "Building UEFI bootloader..."
+	$(MAKE) -C boot all
+	@echo "Bootloader built: boot/hazoom_boot.efi"
 
-# Build kernel
-kernel:
-	@echo "[KERNEL] Building kernel..."
-	@if [ -d kernel/c ]; then \
-		$(MAKE) -C kernel/c; \
-	else \
-		echo "  [SKIP] kernel/c/ directory not found"; \
-		echo "  [INFO] Create kernel/c/ with kernel source"; \
-	fi
+# Build userspace components
+userspace:
+	@echo "Building userspace components..."
+	-for dir in userspace/libc userspace/init userspace/shell userspace/compositor; do \
+		if [ -f "$$dir/Makefile" ]; then \
+			$(MAKE) -C $$dir || true; \
+		fi \
+	done
 
-# Build userspace programs
-userspace: userspace-init userspace-shell userspace-compositor
-	@echo ""
-	@echo "[USERSPACE] All userspace programs built."
-
-userspace-init:
-	@echo "[USERSPACE] Building init..."
-	@$(MAKE) -C userspace/init
-
-userspace-shell:
-	@echo "[USERSPACE] Building shell..."
-	@$(MAKE) -C userspace/shell
-
-userspace-compositor:
-	@echo "[USERSPACE] Building compositor..."
-	@$(MAKE) -C userspace/compositor
-
-# Create initramfs
-initramfs: userspace
-	@echo "[INITRAMFS] Creating initramfs..."
-	@mkdir -p initramfs
-	@find initramfs -print0 2>/dev/null | cpio --null -ov --format=newc 2>/dev/null | gzip -9 > initramfs/initramfs.cpio.gz 2>/dev/null || echo "  [WARN] Initramfs creation skipped (may be empty)"
-	@echo "[INITRAMFS] Done."
-
-# Clean all built files
 clean:
-	@echo "[CLEAN] Removing all built files..."
-	@if [ -d boot ]; then $(MAKE) -C boot clean 2>/dev/null || true; fi
-	@if [ -d kernel/c ]; then $(MAKE) -C kernel/c clean 2>/dev/null || true; fi
-	@$(MAKE) -C userspace/init clean 2>/dev/null || true
-	@$(MAKE) -C userspace/shell clean 2>/dev/null || true
-	@$(MAKE) -C userspace/compositor clean 2>/dev/null || true
-	@rm -f initramfs/initramfs.cpio.gz
-	@echo "[CLEAN] Done."
+	$(MAKE) -C kernel/c clean 2>/dev/null || true
+	$(MAKE) -C kernel clean 2>/dev/null || true
+	$(MAKE) -C boot clean 2>/dev/null || true
+	@echo "Build cleaned."
 
-# Build and run in QEMU
-qemu: all initramfs
-	@echo "[QEMU] Launching HAZOOM OS in QEMU..."
-	@chmod +x scripts/run-qemu.sh
-	@./scripts/run-qemu.sh
+run-qemu: kernel
+	qemu-system-x86_64 \
+		-bios /usr/share/ovmf/OVMF.fd \
+		-drive format=raw,file=kernel/c/hazoom-kernel.bin \
+		-serial stdio \
+		-s \
+		-m 512M \
+		-machine q35,accel=kvm:hvf:tcg \
+		-cpu max
 
-# Run basic tests
-test: all
-	@echo ""
-	@echo "============================================"
-	@echo "  HAZOOM OS v6.0 - Basic Tests"
-	@echo "============================================"
-	@echo ""
-	@echo "[TEST] Checking built files..."
-	@echo ""
-	@echo "  Userspace binaries:"
-	@for f in initramfs/init initramfs/hazoom-shell initramfs/hazoom-compositor; do \
-		if [ -f "$$f" ]; then \
-			size=$$(stat -c%s "$$f" 2>/dev/null || echo "?"); \
-			echo "    [OK] $$f ($$size bytes)"; \
-		else \
-			echo "    [MISS] $$f"; \
-		fi; \
-	done
-	@echo ""
-	@echo "  Library files:"
-	@for f in userspace/libc/stdlib.c userspace/libc/syscall.h; do \
-		if [ -f "$$f" ]; then \
-			echo "    [OK] $$f"; \
-		else \
-			echo "    [MISS] $$f"; \
-		fi; \
-	done
-	@echo ""
-	@echo "  Source files:"
-	@for f in userspace/init/init.c userspace/shell/shell.c userspace/compositor/compositor.c; do \
-		if [ -f "$$f" ]; then \
-			echo "    [OK] $$f"; \
-		else \
-			echo "    [MISS] $$f"; \
-		fi; \
-	done
-	@echo ""
-	@echo "  Build scripts:"
-	@for f in scripts/run-qemu.sh scripts/build-kernel.sh; do \
-		if [ -f "$$f" ]; then \
-			echo "    [OK] $$f"; \
-		else \
-			echo "    [MISS] $$f"; \
-		fi; \
-	done
-	@echo ""
-	@echo "  Makefiles:"
-	@for f in Makefile userspace/init/Makefile userspace/shell/Makefile userspace/compositor/Makefile; do \
-		if [ -f "$$f" ]; then \
-			echo "    [OK] $$f"; \
-		else \
-			echo "    [MISS] $$f"; \
-		fi; \
-	done
-	@echo ""
-	@echo "============================================"
-	@echo "  All basic checks passed!"
-	@echo "============================================"
+iso: kernel
+	@echo "Building HAOZOOM OS ISO..."
+	mkdir -p iso_root/boot/grub
+	cp kernel/c/hazoom-kernel.elf iso_root/boot/hazoom-kernel.elf
+	echo 'set timeout=5' > iso_root/boot/grub/grub.cfg
+	echo 'set default=0' >> iso_root/boot/grub/grub.cfg
+	echo '' >> iso_root/boot/grub/grub.cfg
+	echo 'menuentry "HAZOOM OS v6.0" {' >> iso_root/boot/grub/grub.cfg
+	echo '  multiboot2 /boot/hazoom-kernel.elf' >> iso_root/boot/grub/grub.cfg
+	echo '}' >> iso_root/boot/grub/grub.cfg
+	grub-mkrescue -o hazoom-os.iso iso_root/ 2>&1
+	rm -rf iso_root
+	@echo "ISO built: hazoom-os.iso"
+	@ls -lh hazoom-os.iso
 
-# Show help
+dev-install:
+	@echo "Installing development dependencies..."
+	sudo apt-get update && sudo apt-get install -y \
+		gcc nasm qemu-system-x86 ovmf gdb-multiarch \
+		xorriso mtools || true
+	@echo "Done."
+
+check:
+	@echo "=== Kernel v6.0 (64-bit) ==="
+	@ls -la kernel/c/hazoom-kernel.bin 2>/dev/null || echo "Not built yet"
+	@echo "=== Kernel v1.0 (32-bit) ==="
+	@ls -la kernel/hazoom-kernel.bin 2>/dev/null || echo "Not built yet"
+	@echo "=== Bootloader ==="
+	@ls -la boot/hazoom_boot.efi 2>/dev/null || echo "Not built yet"
+	@echo "=== Done ==="
+
 help:
-	@echo "HAZOOM OS v6.0 Build System"
+	@echo "HAZOOM OS v6.0 - Build System"
 	@echo ""
-	@echo "Available targets:"
-	@echo "  all        - Build bootloader + kernel + userspace"
-	@echo "  boot       - Build bootloader only"
-	@echo "  kernel     - Build kernel only"
-	@echo "  userspace  - Build all userspace programs (init, shell, compositor)"
-	@echo "  initramfs  - Create initramfs archive"
-	@echo "  clean      - Remove all built files"
-	@echo "  qemu       - Build all and run in QEMU"
-	@echo "  test       - Build and run basic checks"
-	@echo "  help       - Show this help message"
+	@echo "Targets:"
+	@echo "  make              - Build v6.0 kernel"
+	@echo "  make kernel       - Build v6.0 kernel"
+	@echo "  make kernel-v1    - Build v1.0 kernel (32-bit)"
+	@echo "  make bootloader   - Build UEFI bootloader"
+	@echo "  make userspace    - Build userspace components"
+	@echo "  make iso          - Build bootable ISO"
+	@echo "  make run-qemu     - Boot kernel in QEMU"
+	@echo "  make clean        - Clean all builds"
+	@echo "  make dev-install  - Install build dependencies"
 	@echo ""
-	@echo "Examples:"
-	@echo "  make all          # Build everything"
-	@echo "  make userspace    # Build just userspace"
-	@echo "  make qemu         # Build and run in QEMU"
-	@echo "  make clean        # Clean build artifacts"
+	@echo "Run:"
+	@echo "  ./start.sh simulation  - Browser-based OS"
+	@echo "  ./start.sh kernel      - Boot in QEMU"
+	@echo "  ./start.sh docker      - Full stack via Docker"
