@@ -2087,37 +2087,147 @@
             // DESKTOP ICON ARRANGEMENT
             // ============================================
             arrangeDesktopIcons: function() {
+                // MATRIX-STYLE: Free positioning with drag & drop
                 const container = document.getElementById('desktop-icons');
                 if (!container) return;
                 container.innerHTML = '';
-                // Apply CSS Grid layout
-                container.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill, minmax(90px, 1fr));gap:12px;padding:16px;overflow-y:auto;height:calc(100vh - 60px);align-content:start;';
+                // Container fills the desktop area, icons positioned absolutely
+                container.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;overflow:visible;';
+
                 const desktopApps = Object.values(this.apps).filter(a => a.desktop);
-                desktopApps.forEach((app) => {
+                const savedPositions = this._getSavedPositions();
+                const cols = Math.max(1, Math.floor((window.innerWidth - 40) / 100));
+                const colW = 90, rowH = 100, padX = 30, padY = 60;
+
+                desktopApps.forEach((app, idx) => {
+                    const pos = savedPositions[app.id];
+                    let x, y;
+                    if (pos && pos.x !== undefined) {
+                        x = parseInt(pos.x) || (padX + (idx % cols) * colW);
+                        y = parseInt(pos.y) || (padY + Math.floor(idx / cols) * rowH);
+                    } else {
+                        x = padX + (idx % cols) * colW;
+                        y = padY + Math.floor(idx / cols) * rowH;
+                    }
+
                     const icon = document.createElement('div');
                     icon.className = 'desktop-icon';
-                    icon.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;border-radius:12px;cursor:pointer;transition:background 0.2s;width:100%;box-sizing:border-box;';
+                    icon.dataset.appId = app.id;
+                    icon.draggable = true;
+                    icon.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:80px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;border-radius:12px;cursor:pointer;transition:background 0.2s;user-select:none;`;
                     icon.innerHTML = `
                         <div class="desktop-icon-img" style="border-color:${app.color}30;">${app.icon}</div>
                         <div class="desktop-icon-label">${app.name}</div>
                     `;
-                    // Touch: double-tap opens. Desktop: double-click opens.
-                    let tapCount = 0;
-                    let tapTimer = null;
+
+                    // Open on double-click (desktop) or double-tap (mobile)
+                    let tapCount = 0, tapTimer = null;
                     const openHandler = () => { this.openApp(app.id); };
                     icon.addEventListener('dblclick', openHandler);
                     icon.addEventListener('touchend', (e) => {
+                        if (icon.dataset.dragging === '1') return;
                         e.preventDefault();
                         tapCount++;
-                        if (tapCount === 1) {
-                            tapTimer = setTimeout(() => { tapCount = 0; }, 300);
-                        } else if (tapCount === 2) {
-                            clearTimeout(tapTimer);
-                            tapCount = 0;
-                            openHandler();
-                        }
+                        if (tapCount === 1) { tapTimer = setTimeout(() => { tapCount = 0; }, 300); }
+                        else if (tapCount === 2) { clearTimeout(tapTimer); tapCount = 0; openHandler(); }
                     });
+
                     container.appendChild(icon);
+                });
+
+                // Setup drag after all icons are in DOM
+                this._setupDragDrop();
+            },
+
+            _getSavedPositions: function() {
+                try { return JSON.parse(localStorage.getItem('hazoom_desktop_positions') || '{}'); }
+                catch(e) { return {}; }
+            },
+
+            _setupDragDrop: function() {
+                const container = document.getElementById('desktop-icons');
+                if (!container) return;
+                let dragged = null, offsetX = 0, offsetY = 0;
+                const icons = () => container.querySelectorAll('.desktop-icon');
+
+                icons().forEach(icon => {
+                    // Mouse drag
+                    icon.addEventListener('mousedown', (e) => {
+                        if (e.button !== 0) return; // left click only
+                        // Don't start drag if clicking during dragend protection
+                        dragged = icon;
+                        const rect = icon.getBoundingClientRect();
+                        const cRect = container.getBoundingClientRect();
+                        offsetX = e.clientX - rect.left;
+                        offsetY = e.clientY - rect.top;
+                        icon.style.zIndex = '9999';
+                        icon.dataset.dragging = '0';
+                        e.preventDefault();
+                    });
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (!dragged) return;
+                    dragged.dataset.dragging = '1';
+                    const cRect = container.getBoundingClientRect();
+                    let nx = e.clientX - cRect.left - offsetX;
+                    let ny = e.clientY - cRect.top - offsetY;
+                    nx = Math.max(0, Math.min(nx, container.offsetWidth - 80));
+                    ny = Math.max(0, Math.min(ny, container.offsetHeight - 100));
+                    dragged.style.left = nx + 'px';
+                    dragged.style.top = ny + 'px';
+                    dragged.classList.add('dragging');
+                });
+
+                document.addEventListener('mouseup', () => {
+                    if (!dragged) return;
+                    dragged.style.zIndex = '';
+                    dragged.classList.remove('dragging');
+                    // Save position
+                    const appId = dragged.dataset.appId;
+                    if (appId) {
+                        const pos = this._getSavedPositions();
+                        pos[appId] = { x: parseInt(dragged.style.left), y: parseInt(dragged.style.top) };
+                        try { localStorage.setItem('hazoom_desktop_positions', JSON.stringify(pos)); } catch(e) {}
+                    }
+                    setTimeout(() => { if (dragged) dragged.dataset.dragging = '0'; }, 50);
+                    dragged = null;
+                });
+
+                // Touch drag support
+                icons().forEach(icon => {
+                    let touchStartX, touchStartY, startL, startT;
+                    icon.addEventListener('touchstart', (e) => {
+                        if (e.touches.length !== 1) return;
+                        const touch = e.touches[0];
+                        touchStartX = touch.clientX; touchStartY = touch.clientY;
+                        startL = parseInt(icon.style.left) || 0;
+                        startT = parseInt(icon.style.top) || 0;
+                        icon.dataset.dragging = '0';
+                    }, { passive: true });
+                    icon.addEventListener('touchmove', (e) => {
+                        if (e.touches.length !== 1) return;
+                        e.preventDefault();
+                        icon.dataset.dragging = '1';
+                        const touch = e.touches[0];
+                        const cRect = container.getBoundingClientRect();
+                        let nx = startL + (touch.clientX - touchStartX);
+                        let ny = startT + (touch.clientY - touchStartY);
+                        nx = Math.max(0, Math.min(nx, container.offsetWidth - 80));
+                        ny = Math.max(0, Math.min(ny, container.offsetHeight - 100));
+                        icon.style.left = nx + 'px';
+                        icon.style.top = ny + 'px';
+                    }, { passive: false });
+                    icon.addEventListener('touchend', (icon_e) => {
+                        // Save position
+                        const appId = icon.dataset.appId;
+                        if (appId) {
+                            const pos = this._getSavedPositions();
+                            pos[appId] = { x: parseInt(icon.style.left), y: parseInt(icon.style.top) };
+                            try { localStorage.setItem('hazoom_desktop_positions', JSON.stringify(pos)); } catch(e) {}
+                        }
+                        setTimeout(() => { icon.dataset.dragging = '0'; }, 50);
+                    });
                 });
             },
 
@@ -2584,9 +2694,92 @@
             applyAutoMood() {
                 const auto = this.autoMood();
                 const saved = this.getCurrentMood();
-                // Only auto-switch if user hasn't manually set a non-default mood
                 if (['focused','calm'].includes(saved)) {
                     this.setMood(auto);
                 }
+            },
+
+            // ============================================
+            // APP-AWARE CONTEXT MENU (Right-Click)
+            // ============================================
+            initContextMenu() {
+                let menu = document.getElementById('context-menu');
+                if (!menu) {
+                    menu = document.createElement('div');
+                    menu.id = 'context-menu';
+                    menu.className = 'ctx-menu';
+                    document.body.appendChild(menu);
+                }
+                const closeMenu = () => { menu.classList.remove('show'); };
+                const positionMenu = (x, y) => {
+                    const r = menu.getBoundingClientRect();
+                    const vw = window.innerWidth, vh = window.innerHeight;
+                    if (x + 220 > vw) x = vw - 230;
+                    if (y + 300 > vh) y = vh - 310;
+                    menu.style.left = x + 'px'; menu.style.top = y + 'px';
+                };
+
+                // Right-click on desktop icons
+                document.getElementById('desktop-icons').addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    const icon = e.target.closest('.desktop-icon');
+                    if (icon) {
+                        const appId = icon.dataset.appId;
+                        const app = this.apps[appId] || { name: 'Unknown' };
+                        menu.innerHTML = `<div class="ctx-app-info"><div class="ctx-app-name">${app.icon || '📦'} ${app.name}</div><div class="ctx-app-type">${app.category || 'app'}</div></div><div class="ctx-app-actions"><div class="ctx-item" onclick="HAZOOM.openApp('${appId}');document.getElementById('context-menu').classList.remove('show')">� Open</div><div class="ctx-item" onclick="HAZOOM.showAppInfo('${appId}')">ℹ️ App Info</div><div class="ctx-separator"></div><div class="ctx-item" onclick="HAZOOM.arrangeDesktopIcons();this.parentElement.parentElement.classList.remove('show')">📐 Arrange Icons</div><div class="ctx-item" onclick="location.reload()">� Refresh Desktop</div></div>`;
+                        positionMenu(e.clientX, e.clientY); menu.classList.add('show');
+                    } else {
+                        menu.innerHTML = `<div class="ctx-app-info"><div class="ctx-app-name">️ Desktop</div><div class="ctx-app-type">${Object.keys(this.apps).length} apps · ${this.windows.length} windows</div></div><div class="ctx-app-actions"><div class="ctx-item" onclick="HAZOOM.openApp('terminal')">�️ Open Terminal</div><div class="ctx-item" onclick="HAZOOM.openApp('dashboard')">� Dashboard</div><div class="ctx-separator"></div><div class="ctx-item" onclick="HAZOOM.arrangeDesktopIcons();this.parentElement.parentElement.classList.remove('show')">📐 Arrange Icons</div><div class="ctx-item" onclick="HAZOOM.cycleMood()">🎨 Change Mood</div><div class="ctx-separator"></div><div class="ctx-item" onclick="location.reload()">� Refresh</div><div class="ctx-item destructive" onclick="HAZOOM.shutdown()">⏻ Shutdown</div></div>`;
+                        positionMenu(e.clientX, e.clientY); menu.classList.add('show');
+                    }
+                });
+
+                // Right-click blank desktop area
+                const desktop = document.getElementById('desktop');
+                if (desktop) {
+                    desktop.addEventListener('contextmenu', (e) => {
+                        if (!e.target.closest('.desktop-icon') && !e.target.closest('.window') && !e.target.closest('#context-menu')) {
+                            e.preventDefault();
+                            menu.innerHTML = `<div class="ctx-app-info"><div class="ctx-app-name">️ Desktop</div><div class="ctx-app-type">${Object.keys(this.apps).length} apps · ${this.windows.length} windows</div></div><div class="ctx-app-actions"><div class="ctx-item" onclick="HAZOOM.openApp('terminal')">�️ Open Terminal</div><div class="ctx-item" onclick="HAZOOM.openApp('dashboard')">📊 Dashboard</div><div class="ctx-separator"></div><div class="ctx-item" onclick="HAZOOM.arrangeDesktopIcons();this.parentElement.parentElement.classList.remove('show')">📐 Arrange Icons</div><div class="ctx-item" onclick="HAZOOM.cycleMood()">🎨 Change Mood</div><div class="ctx-item" onclick="document.body.requestFullscreen?.()">� Fullscreen</div><div class="ctx-separator"></div><div class="ctx-item" onclick="location.reload()">🔄 Refresh</div></div>`;
+                            positionMenu(e.clientX, e.clientY); menu.classList.add('show');
+                        }
+                    });
+                }
+
+                // Close on click elsewhere
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('#context-menu')) closeMenu();
+                });
+            },
+
+            showAppInfo(appId) {
+                const app = this.apps[appId]; if (!app) return;
+                alert(`📦 ${app.name}\nID: ${app.id}\nCategory: ${app.category || 'general'}\nSize: ${app.width}×${app.height}`);
+                document.getElementById('context-menu')?.classList.remove('show');
+            },
+
+            shutdown() {
+                if (confirm('Shut down HAZOOM OS?')) {
+                    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#000;color:#00f0ff;font-family:monospace;flex-direction:column;"><div style="font-size:48px;margin-bottom:20px;">️</div><div>HAZOOM OS Shutdown</div><div style="margin-top:16px;font-size:12px;color:#333;">Refresh to reboot</div></div>';
+                }
+            },
+
+            setupDesktopDragDrop: function() {
+                // Drag is already handled in _setupDragDrop() called from arrangeDesktopIcons
+                // This function exists for backward compat with initOS
+                const icons = document.querySelectorAll('.desktop-icon');
+                icons.forEach(icon => { icon.draggable = true; });
+            },
+
+            saveDesktopPositions: function() {
+                try {
+                    const positions = {};
+                    document.querySelectorAll('.desktop-icon').forEach(icon => {
+                        const appId = icon.dataset.appId;
+                        if (appId) positions[appId] = { x: icon.style.left || '30px', y: icon.style.top || '60px' };
+                    });
+                    localStorage.setItem('hazoom_desktop_positions', JSON.stringify(positions));
+                } catch(e) {}
             }
+
         };
