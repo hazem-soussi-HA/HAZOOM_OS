@@ -52,10 +52,10 @@ ASFLAGS := -f elf64
 LDFLAGS := -T linker.ld              \
            -nostdlib                  \
            -nostartfiles              \
-           -static                     \
+           -static                    \
            -z max-page-size=0x1000
 
-C_SOURCES   := main.c gdt.c idt.c console.c pmm.c process.c qlearn.c
+C_SOURCES   := main.c gdt.c idt.c console.c pmm.c process.c qlearn.c pic.c serial.c
 ASM_SOURCES := entry.asm isr_stubs.asm
 
 C_OBJECTS   := $(C_SOURCES:.c=.o)
@@ -74,6 +74,24 @@ $(BIN): $(ELF)
 	@echo "Kernel binary built: $@"
 	@echo "Size: $$(stat -c%s $@) bytes"
 	@echo "Toolchain: $(CC)"
+
+# Flat raw multiboot binary (loads directly via QEMU -kernel, no GRUB needed)
+FLAT := $(TARGET).flat
+
+$(FLAT): $(ELF)
+	$(OBJCOPY) -O binary $< $@
+	@echo "Flat multiboot binary: $@ ($$(stat -c%s $@) bytes)"
+
+run: $(FLAT)
+	qemu-system-x86_64 \
+		-kernel $(FLAT) \
+		-serial stdio \
+		-monitor none \
+		-nographic \
+		-m 512M \
+		-machine pc,accel=tcg \
+		-cpu max \
+		-no-reboot
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@

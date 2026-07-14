@@ -1,12 +1,28 @@
 /* HAZOOM OS v6.0 - Linker Script */
-/* Kernel loaded at 1MB (0x100000) by bootloader */
 
 ENTRY(_start)
 
 SECTIONS
 {
-    /* Kernel starts at 1MB */
+    /* The multiboot headers MUST sit at file offset 0 so bootloaders and
+       QEMU's -kernel multiboot probe (which scans the first bytes of the
+       file) can find the 0x1BADB002 / 0xe85250d6 magic. We give it vaddr 0
+       but it is never executed there; the kernel proper lives at 1 MiB. */
+    . = 0x0;
+    .multiboot : {
+        *(.multiboot)
+    }
+
+    /* Kernel proper starts at 1 MiB. */
     . = 0x100000;
+
+    /* Boot-time page tables and GDT (must be in the loaded image). */
+    .bootbss : {
+        *(.bootbss)
+    }
+    .bootdata : {
+        *(.bootdata)
+    }
 
     /* Align to 4KB page boundary */
     . = ALIGN(4K);
@@ -56,7 +72,6 @@ SECTIONS
     /* Discard unnecessary sections */
     /DISCARD/ : {
         *(.comment)
-        *(.note.*)
         *(.eh_frame)
         *(.eh_frame_hdr)
     }

@@ -93,6 +93,7 @@ isr_common_stub:
     iretq
 
 extern irq_handler
+extern pic_eoi
 irq_common_stub:
     push rax
     push rcx
@@ -114,9 +115,11 @@ irq_common_stub:
     mov rsi, rsp
     call irq_handler
 
-    mov al, 0x20
-    out 0xA0, al
-    out 0x20, al
+    ; Signal End-Of-Interrupt to the PIC(s). pic_eoi maps the vector
+    ; back to the IRQ line (vector - 0x20) and writes to master/slave.
+    mov rdi, [rsp + 120]
+    sub rdi, 0x20
+    call pic_eoi
 
     pop r15
     pop r14
