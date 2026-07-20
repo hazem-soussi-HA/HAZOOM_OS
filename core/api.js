@@ -44,6 +44,11 @@ class APIRouter {
         if (k.pascalEngine) state.pascalEngine = k.pascalEngine.getFullStatus();
         if (k.consciousness) state.consciousness = k.consciousness.getStatus();
         if (k.qLearner) state.qLearning = k.qLearner.getStatus();
+        if (k.serviceManager) state.services = {
+            stats: k.serviceManager.getStats(),
+            list: k.serviceManager.list(),
+        };
+        if (k.intelligence) state.intelligence = k.intelligence.getStatus();
 
         return state;
     }
@@ -275,7 +280,32 @@ class APIRouter {
             res.json({ id, total: k.consciousness.memories.length });
         });
 
-        // ── Q-LEARNING (NEW IN v5.0) ─────────────────────
+        // ── SERVICES (HAZOOM fullstack orchestrated by the OS) ──
+        r.get('/api/services', async (req, res) => {
+            if (!k.serviceManager) return res.json({ error: 'ServiceManager not loaded' });
+            const list = k.serviceManager.list();
+            const health = await k.serviceManager.health();
+            res.json({ stats: k.serviceManager.getStats(), list, health });
+        });
+        r.post('/api/services/start', async (req, res) => {
+            if (!k.serviceManager) return res.json({ error: 'ServiceManager not loaded' });
+            res.json(await k.serviceManager.startAll());
+        });
+        r.post('/api/services/stop', async (req, res) => {
+            if (!k.serviceManager) return res.json({ error: 'ServiceManager not loaded' });
+            res.json(await k.serviceManager.stopAll());
+        });
+        r.post('/api/services/restart', async (req, res) => {
+            if (!k.serviceManager) return res.json({ error: 'ServiceManager not loaded' });
+            res.json(await k.serviceManager.restartAll());
+        });
+        r.post('/api/services/:name/toggle', async (req, res) => {
+            if (!k.serviceManager) return res.json({ error: 'ServiceManager not loaded' });
+            const enabled = req.body.enabled !== false;
+            res.json(k.serviceManager.setEnabled(req.params.name, enabled));
+        });
+
+        // ── Q-LARNING (NEW IN v5.0) ─────────────────────
 
         r.get('/api/qlearner/status', (req, res) => {
             if (!k.qLearner) return res.json({ error: 'Q-Learning not loaded' });
@@ -345,9 +375,41 @@ class APIRouter {
                 qLearning: k.qLearner ? k.qLearner.getStatus() : null
             });
         });
-    }
 
-    /** Build OS state object for Q-learning */
+        // ── INTELLIGENCE CORE (real local-LLM reasoning) ──
+
+        r.get('/api/intelligence/status', (req, res) => {
+            if (!k.intelligence) return res.json({ error: 'Intelligence Core not loaded' });
+            res.json(k.intelligence.getStatus());
+        });
+
+        r.get('/api/intelligence/health', async (req, res) => {
+            if (!k.intelligence) return res.json({ error: 'Intelligence Core not loaded' });
+            res.json(await k.intelligence.health());
+        });
+
+        r.post('/api/intelligence/think', async (req, res) => {
+            if (!k.intelligence) return res.json({ error: 'Intelligence Core not loaded' });
+            const { input, model } = req.body || {};
+            if (!input) return res.json({ error: 'No input provided' });
+            res.json(await k.intelligence.think(input, { model }));
+        });
+
+        r.post('/api/intelligence/stream', async (req, res) => {
+            if (!k.intelligence) return res.json({ error: 'Intelligence Core not loaded' });
+            const { input, model } = req.body || {};
+            if (!input) return res.json({ error: 'No input provided' });
+            res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+            res.setHeader('Cache-Control', 'no-store');
+            const out = await k.intelligence.streamThink(input, (delta) => res.write(delta), { model });
+            res.end();
+        });
+
+        r.post('/api/intelligence/reset', (req, res) => {
+            if (!k.intelligence) return res.json({ error: 'Intelligence Core not loaded' });
+            res.json(k.intelligence.reset());
+        });
+    }
     _getOSState() {
         const k = this.kernel;
         const pm = k.processManager;

@@ -634,8 +634,42 @@ class HazoomKernel {
         this.deviceManager = new DeviceManager();
         this.security = new SecurityManager();
 
+        // Service Manager — the OS brain orchestrates the fullstack projects
+        // (planet_earth, PEN, birds, hazoom_pod, collaborative_beat) as OS
+        // services, delegated to the proven loopback-only hazoom-os-launch.sh.
+        this.serviceManager = null;
+        try {
+            const { ServiceManager } = require('./services');
+            this.serviceManager = new ServiceManager(this, {
+                launchScript: this._servicesLaunchScript(),
+                persistencePath: 'data/services',
+            });
+        } catch (e) {
+            this.log('WARN', `[SVC] ServiceManager not loaded: ${e.message}`);
+        }
+
+        // Intelligence Core — the REAL reasoning engine (local Ollama / ornith:35b).
+        // Additive: sits alongside the symbolic consciousness, does not replace it.
+        this.intelligence = null;
+        try {
+            const { IntelligenceCore } = require('./intelligence-core');
+            const icCfg = (this._config && this._config.intelligence) || {};
+            this.intelligence = new IntelligenceCore({
+                enabled: icCfg.enabled !== false,
+                model: icCfg.model,
+                baseUrl: icCfg.baseUrl
+            });
+            this.log('INFO', '[INTEL] Intelligence Core loaded (local Ollama; offline-safe)');
+            // Resolve the best responsive local model now (so /api/status shows it).
+            this.intelligence._selectModel().then(m => {
+                if (m) this.log('INFO', `[INTEL] Reasoning model selected: ${m}`);
+                else this.log('WARN', '[INTEL] No responsive local model — core is offline');
+            });
+        } catch (e) {
+            this.log('WARN', `[INTEL] Intelligence Core not loaded: ${e.message}`);
+        }
+
         // Pascal Engine (ported from .pas kernel modules)
-        this.pascalEngine = null;
 
         // Boot sequence state
         this.bootStage = 'OFF';
@@ -720,6 +754,23 @@ class HazoomKernel {
         this.log('INFO', '[SVC] Device Manager: 6 devices registered');
         this.log('INFO', '[SVC] Security Manager: 2 users, 3 groups');
         this.log('INFO', '[SVC] Scheduler: Round-Robin, quantum=100ms');
+
+        // HAZOOM OS as the brain: bring the fullstack projects online
+        // (planet_earth, PEN, birds, hazoom_pod, collaborative_beat) via the
+        // proven loopback-only launcher. This is the "everything under
+        // HAZOOM OS" integration point.
+        if (this.serviceManager) {
+            try {
+                this.log('INFO', '[SVC] Orchestrating HAZOOM fullstack (6 services, 127.0.0.1)...');
+                this.serviceManager.startAll().then(r => {
+                    this.log('INFO', `[SVC] Fullstack launcher: ${r.ok ? 'ok' : 'error'}`);
+                });
+            } catch (e) {
+                this.log('WARN', `[SVC] Fullstack start deferred: ${e.message}`);
+            }
+        } else {
+            this.log('INFO', '[SVC] ServiceManager not loaded (fullstack launch skipped)');
+        }
 
         // Pascal Engine initialization (ported from Pascal kernel modules)
         try {
@@ -814,13 +865,29 @@ class HazoomKernel {
             security: this.security.getStats(),
             logLines: this.logBuffer.length
         };
+
+        if (this.serviceManager) state.services = {
+            stats: this.serviceManager.getStats(),
+            list: this.serviceManager.list(),
+        };
         if (this.pascalEngine) {
             state.pascalEngine = this.pascalEngine.getFullStatus();
         }
         if (this.consciousness) {
             state.consciousness = this.consciousness.getStatus();
         }
+        if (this.intelligence) {
+            state.intelligence = this.intelligence.getStatus();
+        }
         return state;
+    }
+
+    _servicesLaunchScript() {
+        // Single source of truth for launching the fullstack projects.
+        // Override via env HAZOOM_LAUNCH or config services.launchScript.
+        if (process.env.HAZOOM_LAUNCH) return process.env.HAZOOM_LAUNCH;
+        const cfg = this._config && this._config.services && this._config.services.launchScript;
+        return cfg || '/mnt/c/Users/HP/Desktop/planet_earth/hazoom-os-launch.sh';
     }
 
     _formatBytes(bytes) {

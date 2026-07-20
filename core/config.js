@@ -63,6 +63,23 @@ const DEFAULTS = {
     logLevel: 'info',  // debug, info, warn, error
     logMaxLines: 5000,
 
+    // Services — HAZOOM fullstack orchestrated by the OS brain.
+    // Single source of truth for launching the projects is hazoom-os-launch.sh.
+    // Override its path here or via env HAZOOM_LAUNCH.
+    services: {
+        enabled: true,
+        launchScript: '/mnt/c/Users/HP/Desktop/planet_earth/hazoom-os-launch.sh',
+        persistencePath: 'data/services'
+    },
+
+    // Intelligence Core — real reasoning via local Ollama (offline-first).
+    // ornith:35b is the local model already pulled on this machine.
+    intelligence: {
+        enabled: true,
+        model: 'ornith:35b',
+        baseUrl: 'http://127.0.0.1:11434'
+    },
+
     // Paths
     sslDir: 'ssl',
     staticDir: '.'
