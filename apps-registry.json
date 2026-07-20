@@ -1,0 +1,42 @@
+{
+  "_meta": {
+    "generated": "2026-07-20",
+    "by": "DevSecOps MOE agent",
+    "note": "Single source of truth for HAZOOM OS desktop app surface. Consumed by core/os-desktop.js loadAppRegistry() via GET /apps-registry.json. Apps with 'path' are rendered as loopback-iframe apps (OS-enforced 127.0.0.1 only).",
+    "security": "Every 'path' MUST be 127.0.0.1/localhost. No LAN/external egress. The OS refuses non-loopback binds."
+  },
+  "categories": [
+    {
+      "id": "services",
+      "name": "Fullstack Services",
+      "apps": [
+        { "id": "svc-planet-earth", "name": "Planet Earth", "icon": "🌍", "path": "http://127.0.0.1:8080/" },
+        { "id": "svc-planet-news",  "name": "Planet Earth News", "icon": "📰", "path": "https://127.0.0.1:8000/" },
+        { "id": "svc-birds",        "name": "Birds Encyclopedia", "icon": "🐦", "path": "http://127.0.0.1:4100/" },
+        { "id": "svc-hazoom-pod",   "name": "Hazoom POD", "icon": "🛒", "path": "http://127.0.0.1:4000/" },
+        { "id": "svc-os-desktop",   "name": "HAZOOM OS Desktop", "icon": "🖥️", "path": "http://127.0.0.1:3000/" },
+        { "id": "svc-collab-beat",  "name": "CollaborativeBeat", "icon": "🧠", "path": "http://127.0.0.1:5000/" },
+        { "id": "svc-chatdev",      "name": "Ornith Chat", "icon": "💬", "path": "http://127.0.0.1:5055/" }
+      ]
+    },
+    {
+      "id": "ai",
+      "name": "AI & Reasoning",
+      "apps": [
+        { "id": "ai-intelligence", "name": "Intelligence Core", "icon": "🧠", "path": "http://127.0.0.1:3000/api/intelligence/status" },
+        { "id": "ai-quantum", "name": "Quantum AI Assistant", "icon": "⚛️", "path": "apps/ai-apps/quantum_ai_assistant.html" },
+        { "id": "ai-super", "name": "Super Intelligent Agent", "icon": "🤖", "path": "apps/ai-apps/super_intelligent_agent.html" },
+        { "id": "ai-deepthink", "name": "Deep Think Explorer", "icon": "🔭", "path": "apps/ai-apps/deep_think_explorer.html" }
+      ]
+    },
+    {
+      "id": "tools",
+      "name": "Tools",
+      "apps": [
+        { "id": "tool-terminal", "name": "Terminal", "icon": "⌨️", "path": "apps/core-apps/terminal.html" },
+        { "id": "tool-files", "name": "File Manager", "icon": "📁", "path": "apps/core-apps/filemanager.html" },
+        { "id": "tool-settings", "name": "Settings", "icon": "⚙️", "path": "apps/core-apps/settings.html" }
+      ]
+    }
+  ]
+}
