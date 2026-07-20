@@ -72,5 +72,20 @@
         { id: 'game-arcade', name: 'Arcade', icon: '🕹️' },
     ];
     gameApps.forEach(function(a) { Registry.registerApp(a.id, { name: a.name, icon: a.icon }); });
+
+    // === REGISTER INTEGRATED FULLSTACK SERVICES (launched by HAZOOM OS) ===
+    var osServices = [
+        { id: 'svc-planet-earth', name: 'Planet Earth', icon: '🌍', url: 'http://127.0.0.1:8080/' },
+        { id: 'svc-planet-news',  name: 'Planet Earth News', icon: '📰', url: 'https://127.0.0.1:8000/' },
+        { id: 'svc-birds',         name: 'Birds Encyclopedia', icon: '🐦', url: 'http://127.0.0.1:4100/' },
+        { id: 'svc-hazoom-pod',    name: 'Hazoom POD', icon: '🛒', url: 'http://127.0.0.1:4000/' },
+        { id: 'svc-os-desktop',    name: 'HAZOOM OS Desktop', icon: '🖥️', url: 'http://127.0.0.1:3000/' },
+        { id: 'svc-collab-beat',   name: 'CollaborativeBeat', icon: '🧠', url: 'http://127.0.0.1:5000/' },
+        { id: 'svc-chatdev',       name: 'Ornith Chat', icon: '💬', url: 'http://127.0.0.1:5055/' },
+    ];
+    osServices.forEach(function(a) {
+        Registry.registerApp(a.id, { name: a.name, icon: a.icon });
+        if (a.url) { try { Registry.meta[a.id] = Registry.meta[a.id] || {}; Registry.meta[a.id].url = a.url; } catch (e) {} }
+    });
 })(window);
 
