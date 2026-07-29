@@ -429,6 +429,68 @@
             border-radius: 0;
         }
 
+        /* === WINDOW RESTORE ANIMATION === */
+        .os-window.restoring {
+            animation: windowRestore 0.3s ease forwards;
+        }
+        @keyframes windowRestore {
+            from { opacity: 0; transform: scale(0.1) translateY(200px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* === IFRAME LOADING SPINNER === */
+        .iframe-loading {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(10,10,26,0.9);
+            z-index: 5;
+        }
+        .iframe-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid rgba(0,240,255,0.2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: iframeSpin 0.8s linear infinite;
+        }
+        @keyframes iframeSpin { to { transform: rotate(360deg); } }
+        .iframe-loading-text {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-top: 12px;
+        }
+
+        /* === SNAP INDICATOR === */
+        .snap-indicator {
+            position: fixed;
+            z-index: 99999;
+            pointer-events: none;
+            border: 2px solid var(--accent);
+            background: rgba(0,240,255,0.08);
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+
+        /* === ALT+TAB OVERLAY === */
+        #alt-tab-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            padding: 40px;
+            animation: fadeIn 0.15s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
         /* === APP STYLES === */
         .app-dashboard { display: flex; flex-direction: column; gap: 16px; }
         .stat-card {
@@ -766,7 +828,7 @@
             .dock-icon { font-size: 18px; }
             .dock-label { display: none; }
             .topbar-logo { display: none; }
-            .window { min-width: 300px; min-height: 200px; }
+            .os-window { min-width: 300px; min-height: 200px; }
             .start-menu { width: 280px; }
             .start-menu-apps { grid-template-columns: repeat(3, 1fr); }
         }
@@ -781,7 +843,7 @@
             #topbar { padding: 4px 8px; }
             .topbar-clock { display: none; }
             .start-menu { width: 90vw; height: 70vh; }
-            .window { border-radius: 8px; }
+            .os-window { border-radius: 8px; }
             .window-header { padding: 6px 10px; }
             .window-title { font-size: 0.7rem; }
         }
@@ -1142,7 +1204,7 @@
         </div>
         <div class="start-menu-apps" id="start-menu-apps"></div>
         <div class="start-menu-footer">
-            <span class="start-menu-version">v3.1.0</span>
+            <span class="start-menu-version">v4.0.0</span>
             <span class="start-menu-power" onclick="location.reload()">Restart</span>
         </div>
     </div>
@@ -1164,17 +1226,6 @@
                 HAZOOMConsciousness.start();
                 HAZOOM.consciousness = HAZOOMConsciousness;
             }
-        });
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 'f') { e.preventDefault(); HAZOOM.openApp('ai'); }
-            if (e.ctrlKey && e.key === 'q') { e.preventDefault(); if (HAZOOM.focusedWindow) HAZOOM.closeWindow(HAZOOM.focusedWindow); }
-            if (e.ctrlKey && e.key === 'm') { e.preventDefault(); if (HAZOOM.focusedWindow) HAZOOM.minimizeWindow(HAZOOM.focusedWindow); }
-            if (e.key === 'F11') { e.preventDefault(); HAZOOM.toggleFullscreen(); }
-            if (e.key === 'Meta' || (e.ctrlKey && e.key === ' ')) { e.preventDefault(); HAZOOM.toggleStartMenu(); }
-            // Shutdown: Ctrl+Alt+Shift+Q
-            if (e.ctrlKey && e.altKey && e.shiftKey && e.key === 'Q') { e.preventDefault(); HAZOOM.shutdown(); }
-            // Logout: Ctrl+Alt+Shift+L
-            if (e.ctrlKey && e.altKey && e.shiftKey && e.key === 'L') { e.preventDefault(); HAZOOM.logout(); }
         });
         document.addEventListener('click', (e) => {
             const startMenu = document.getElementById('start-menu');

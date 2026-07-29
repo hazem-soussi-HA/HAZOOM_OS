@@ -655,6 +655,7 @@
 
             buildDock() {
                 const dock = document.getElementById('dock');
+                dock.innerHTML = '';
                 const appOrder = ['dashboard', 'terminal', 'ai', 'consciousness-core', 'user-guide', 'files', 'browser', 'music', 'focus-timer', 'hazoom-ai', 'quantum-monitor', 'settings', 'system-monitor', 'security-center', 'hazoom-net'];
 
                 appOrder.forEach(id => {
@@ -719,7 +720,7 @@
 
                 let contentHTML;
                 if (app.src) {
-                    contentHTML = `<iframe src="${app.src}" style="width:100%;height:100%;border:none;border-radius:0 0 var(--radius) var(--radius);" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>`;
+                    contentHTML = `<div class="iframe-loading" id="iframe-loader-${id}"><div class="iframe-spinner"></div><div class="iframe-loading-text">Loading ${app.name}...</div></div><iframe src="${app.src}" style="width:100%;height:100%;border:none;border-radius:0 0 var(--radius) var(--radius);" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" onload="document.getElementById('iframe-loader-${id}')?.remove()"></iframe>`;
                 } else if (typeof app.content === 'function') {
                     contentHTML = app.content();
                 } else {
@@ -788,10 +789,32 @@
             _setupWindowDrag(el, winData) {
                 const header = el.querySelector('.window-header');
                 let isDragging = false, startX, startY, origX, origY;
+                let dragSnapIndicator = null;
+
+                const createSnapIndicator = () => {
+                    if (dragSnapIndicator) return;
+                    dragSnapIndicator = document.createElement('div');
+                    dragSnapIndicator.style.cssText = 'position:fixed;z-index:99999;pointer-events:none;border:2px solid var(--accent);background:rgba(0,240,255,0.08);border-radius:12px;transition:all 0.2s ease;display:none;';
+                    document.body.appendChild(dragSnapIndicator);
+                };
+                const removeSnapIndicator = () => {
+                    if (dragSnapIndicator) { dragSnapIndicator.remove(); dragSnapIndicator = null; }
+                };
 
                 header.addEventListener('mousedown', (e) => {
                     if (e.target.classList.contains('window-btn')) return;
-                    if (winData.maximized) return; // Can't drag maximized
+                    if (winData.maximized) {
+                        winData.preDragMaximized = true;
+                        const pctX = e.clientX / window.innerWidth;
+                        winData.prevLeft = Math.round(pctX * (winData.prevWidth || 600) - (winData.prevWidth || 600) / 2);
+                        winData.prevTop = e.clientY - 20;
+                        el.style.left = (winData.prevLeft || 100) + 'px';
+                        el.style.top = (winData.prevTop || 60) + 'px';
+                        el.style.width = (winData.prevWidth || 600) + 'px';
+                        el.style.height = (winData.prevHeight || 450) + 'px';
+                        el.classList.remove('maximized');
+                        winData.maximized = false;
+                    }
                     isDragging = true;
                     startX = e.clientX;
                     startY = e.clientY;
@@ -800,24 +823,93 @@
                     this.focusWindow(winData.id);
                     document.body.style.cursor = 'move';
                     header.style.cursor = 'move';
+                    createSnapIndicator();
                 });
 
                 document.addEventListener('mousemove', (e) => {
                     if (!isDragging) return;
                     const dx = e.clientX - startX;
                     const dy = e.clientY - startY;
-                    el.style.left = (origX + dx) + 'px';
-                    el.style.top = (origY + dy) + 'px';
-                    // Snap to edges (10px threshold)
-                    if (Math.abs(parseInt(el.style.left)) < 10) el.style.left = '0px';
-                    if (Math.abs(parseInt(el.style.top) - 40) < 10) el.style.top = '40px';
+                    const newLeft = origX + dx;
+                    const newTop = origY + dy;
+                    el.style.left = newLeft + 'px';
+                    el.style.top = newTop + 'px';
+
+                    const vw = window.innerWidth;
+                    const vh = window.innerHeight;
+                    const winW = parseInt(el.style.width);
+                    const winH = parseInt(el.style.height);
+                    let snapMode = null;
+
+                    if (newTop <= 0) {
+                        snapMode = 'maximize';
+                        dragSnapIndicator.style.display = 'block';
+                        dragSnapIndicator.style.left = '0px';
+                        dragSnapIndicator.style.top = '40px';
+                        dragSnapIndicator.style.width = vw + 'px';
+                        dragSnapIndicator.style.height = (vh - 40) + 'px';
+                    } else if (newLeft <= 0) {
+                        snapMode = 'left';
+                        dragSnapIndicator.style.display = 'block';
+                        dragSnapIndicator.style.left = '0px';
+                        dragSnapIndicator.style.top = '40px';
+                        dragSnapIndicator.style.width = (vw / 2) + 'px';
+                        dragSnapIndicator.style.height = (vh - 40) + 'px';
+                    } else if (newLeft + winW >= vw - 2) {
+                        snapMode = 'right';
+                        dragSnapIndicator.style.display = 'block';
+                        dragSnapIndicator.style.left = (vw / 2) + 'px';
+                        dragSnapIndicator.style.top = '40px';
+                        dragSnapIndicator.style.width = (vw / 2) + 'px';
+                        dragSnapIndicator.style.height = (vh - 40) + 'px';
+                    } else {
+                        dragSnapIndicator.style.display = 'none';
+                    }
+                    el._snapMode = snapMode;
+
+                    if (Math.abs(newLeft) < 10) el.style.left = '0px';
+                    if (Math.abs(newTop - 40) < 10) el.style.top = '40px';
                 });
 
                 document.addEventListener('mouseup', () => {
-                    if (isDragging) {
-                        isDragging = false;
-                        document.body.style.cursor = '';
-                        header.style.cursor = 'move';
+                    if (!isDragging) return;
+                    isDragging = false;
+                    document.body.style.cursor = '';
+                    header.style.cursor = 'move';
+
+                    const snapMode = el._snapMode;
+                    el._snapMode = null;
+                    removeSnapIndicator();
+
+                    if (snapMode === 'maximize') {
+                        winData.prevLeft = parseInt(el.style.left);
+                        winData.prevTop = parseInt(el.style.top);
+                        winData.prevWidth = parseInt(el.style.width);
+                        winData.prevHeight = parseInt(el.style.height);
+                        el.style.left = '0';
+                        el.style.top = '40px';
+                        el.style.width = '100vw';
+                        el.style.height = 'calc(100vh - 40px)';
+                        el.classList.add('maximized');
+                        winData.maximized = true;
+                    } else if (snapMode === 'left') {
+                        winData.prevLeft = parseInt(el.style.left);
+                        winData.prevTop = parseInt(el.style.top);
+                        winData.prevWidth = parseInt(el.style.width);
+                        winData.prevHeight = parseInt(el.style.height);
+                        el.style.left = '0';
+                        el.style.top = '40px';
+                        el.style.width = '50vw';
+                        el.style.height = 'calc(100vh - 40px)';
+                    } else if (snapMode === 'right') {
+                        winData.prevLeft = parseInt(el.style.left);
+                        winData.prevTop = parseInt(el.style.top);
+                        winData.prevWidth = parseInt(el.style.width);
+                        winData.prevHeight = parseInt(el.style.height);
+                        el.style.left = '50vw';
+                        el.style.top = '40px';
+                        el.style.width = '50vw';
+                        el.style.height = 'calc(100vh - 40px)';
                     }
                 });
             },
@@ -907,11 +999,17 @@
                 const win = this.windows.find(w => w.id === id);
                 if (!win) return;
                 win.minimized = true;
-                // Animate to minimize (shrink toward dock)
+                win.restoreRect = {
+                    left: parseInt(win.element.style.left),
+                    top: parseInt(win.element.style.top),
+                    width: parseInt(win.element.style.width),
+                    height: parseInt(win.element.style.height)
+                };
                 win.element.classList.add('minimized');
                 win.element.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
                 win.element.style.transform = 'scale(0.1) translateY(200px)';
                 win.element.style.opacity = '0';
+                win.element.style.pointerEvents = 'none';
             },
 
             maximizeWindow(id) {
@@ -920,7 +1018,6 @@
                 const el = win.element;
 
                 if (win.maximized) {
-                    // Restore
                     el.style.left = win.prevLeft + 'px';
                     el.style.top = win.prevTop + 'px';
                     el.style.width = win.prevWidth + 'px';
@@ -928,16 +1025,14 @@
                     el.classList.remove('maximized');
                     win.maximized = false;
                 } else {
-                    // Maximize — save current position
                     win.prevLeft = parseInt(el.style.left) || 100;
                     win.prevTop = parseInt(el.style.top) || 60;
                     win.prevWidth = parseInt(el.style.width) || 600;
                     win.prevHeight = parseInt(el.style.height) || 450;
-                    // Leave 40px for topbar, 80px for dock
                     el.style.left = '0';
                     el.style.top = '40px';
                     el.style.width = '100vw';
-                    el.style.height = 'calc(100vh - 40px - 80px)';
+                    el.style.height = 'calc(100vh - 40px - 60px)';
                     el.classList.add('maximized');
                     win.maximized = true;
                 }
@@ -946,15 +1041,22 @@
             },
 
             focusWindow(id) {
-                // Restore if minimized
                 const win = this.windows.find(w => w.id === id);
                 if (!win) return;
                 if (win.minimized) {
                     win.minimized = false;
                     win.element.classList.remove('minimized');
-                    win.element.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
-                    win.element.style.transform = '';
-                    win.element.style.opacity = '';
+                    win.element.style.pointerEvents = '';
+                    win.element.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    win.element.style.transform = 'scale(0.1) translateY(200px)';
+                    win.element.style.opacity = '0';
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            win.element.style.transform = '';
+                            win.element.style.opacity = '';
+                        });
+                    });
+                    setTimeout(() => { win.element.style.transition = ''; }, 350);
                 }
 
                 // Update focused state
@@ -2083,7 +2185,101 @@
                         e.preventDefault();
                         this.toggleStartMenu();
                     }
+                    // Alt+Tab — Cycle windows
+                    if (e.altKey && e.key === 'Tab') {
+                        e.preventDefault();
+                        this.cycleWindows(e.shiftKey ? -1 : 1);
+                    }
+                    // Super+D — Show Desktop (minimize all)
+                    if ((e.key === 'Meta' || e.key === 'OS') && e.key === 'd') {
+                        e.preventDefault();
+                        this.toggleShowDesktop();
+                    }
                 });
+            },
+
+            _altTabActive: false,
+            _altTabIndex: 0,
+            _altTabOverlay: null,
+
+            cycleWindows(dir) {
+                const wins = this.windows.filter(w => !w.minimized);
+                if (wins.length === 0) return;
+
+                if (!this._altTabActive) {
+                    this._altTabActive = true;
+                    this._altTabIndex = wins.indexOf(wins.find(w => w.id === this.focusedWindow)) || 0;
+                    this._createAltTabOverlay(wins);
+                }
+
+                this._altTabIndex = (this._altTabIndex + dir + wins.length) % wins.length;
+                this._updateAltTabHighlight(wins);
+            },
+
+            _createAltTabOverlay(wins) {
+                const overlay = document.createElement('div');
+                overlay.id = 'alt-tab-overlay';
+                overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.7);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;gap:16px;padding:40px;';
+                wins.forEach((w, i) => {
+                    const app = this.apps[w.appId] || {};
+                    const card = document.createElement('div');
+                    card.className = 'alt-tab-card';
+                    card.style.cssText = 'background:rgba(10,10,26,0.9);border:2px solid ' + (i === this._altTabIndex ? 'var(--accent)' : 'var(--glass-border)') + ';border-radius:12px;padding:16px 24px;text-align:center;transition:all 0.2s;min-width:120px;cursor:pointer;';
+                    card.innerHTML = '<div style="font-size:32px;margin-bottom:8px;">' + (app.icon || '?') + '</div><div style="font-size:0.8rem;color:var(--text);white-space:nowrap;">' + (app.name || w.appId) + '</div>';
+                    card.onclick = () => { this.focusWindow(w.id); this._closeAltTab(); };
+                    overlay.appendChild(card);
+                });
+                document.body.appendChild(overlay);
+                this._altTabOverlay = overlay;
+
+                const onKey = (e) => {
+                    if (e.key === 'Alt') return;
+                    if (e.key === 'Tab' || e.key === 'Escape') {
+                        e.preventDefault();
+                        const wins2 = this.windows.filter(w => !w.minimized);
+                        if (wins2.length > 0 && this._altTabIndex < wins2.length) {
+                            this.focusWindow(wins2[this._altTabIndex].id);
+                        }
+                        this._closeAltTab();
+                        document.removeEventListener('keyup', onKey);
+                    }
+                };
+                document.addEventListener('keyup', onKey);
+            },
+
+            _updateAltTabHighlight(wins) {
+                if (!this._altTabOverlay) return;
+                const cards = this._altTabOverlay.querySelectorAll('.alt-tab-card');
+                cards.forEach((card, i) => {
+                    card.style.borderColor = i === this._altTabIndex ? 'var(--accent)' : 'var(--glass-border)';
+                    card.style.transform = i === this._altTabIndex ? 'scale(1.1)' : 'scale(1)';
+                    card.style.boxShadow = i === this._altTabIndex ? '0 0 20px rgba(0,240,255,0.3)' : 'none';
+                });
+            },
+
+            _closeAltTab() {
+                this._altTabActive = false;
+                if (this._altTabOverlay) { this._altTabOverlay.remove(); this._altTabOverlay = null; }
+            },
+
+            _showDesktopState: false,
+            _showDesktopSaved: [],
+
+            toggleShowDesktop() {
+                if (this._showDesktopState) {
+                    this._showDesktopState = false;
+                    this._showDesktopSaved.forEach(id => {
+                        const win = this.windows.find(w => w.id === id);
+                        if (win && win.minimized) this.focusWindow(id);
+                    });
+                    this._showDesktopSaved = [];
+                } else {
+                    this._showDesktopState = true;
+                    this._showDesktopSaved = this.windows.filter(w => !w.minimized).map(w => w.id);
+                    this.windows.forEach(w => {
+                        if (!w.minimized) this.minimizeWindow(w.id);
+                    });
+                }
             },
 
             // ============================================
@@ -2773,106 +2969,7 @@
                 if (['focused','calm'].includes(saved)) {
                     this.setMood(auto);
                 }
-            },
-
-            // ============================================
-            // APP-AWARE CONTEXT MENU (Right-Click)
-            // ============================================
-            initContextMenu() {
-                let menu = document.getElementById('context-menu');
-                if (!menu) {
-                    menu = document.createElement('div');
-                    menu.id = 'context-menu';
-                    menu.className = 'ctx-menu';
-                    document.body.appendChild(menu);
-                }
-                const closeMenu = () => { menu.classList.remove('show'); };
-                const positionMenu = (x, y) => {
-                    const r = menu.getBoundingClientRect();
-                    const vw = window.innerWidth, vh = window.innerHeight;
-                    if (x + 220 > vw) x = vw - 230;
-                    if (y + 300 > vh) y = vh - 310;
-                    menu.style.left = x + 'px'; menu.style.top = y + 'px';
-                };
-
-                // Right-click on desktop icons
-                document.getElementById('desktop-icons').addEventListener('contextmenu', (e) => {
-                    e.preventDefault();
-                    const icon = e.target.closest('.desktop-icon');
-                    if (icon) {
-                        const appId = icon.dataset.appId;
-                        const app = this.apps[appId] || { name: 'Unknown' };
-                        menu.innerHTML = `<div class="ctx-app-info"><div class="ctx-app-name">${app.icon || '📦'} ${app.name}</div><div class="ctx-app-type">${app.category || 'app'}</div></div><div class="ctx-app-actions"><div class="ctx-item" onclick="HAZOOM.openApp('${appId}');document.getElementById('context-menu').classList.remove('show')">� Open</div><div class="ctx-item" onclick="HAZOOM.showAppInfo('${appId}')">ℹ️ App Info</div><div class="ctx-separator"></div><div class="ctx-item" onclick="HAZOOM.arrangeDesktopIcons();this.parentElement.parentElement.classList.remove('show')">📐 Arrange Icons</div><div class="ctx-item" onclick="location.reload()">� Refresh Desktop</div></div>`;
-                        positionMenu(e.clientX, e.clientY); menu.classList.add('show');
-                    } else {
-                        menu.innerHTML = `<div class="ctx-app-info"><div class="ctx-app-name">️ Desktop</div><div class="ctx-app-type">${Object.keys(this.apps).length} apps · ${this.windows.length} windows</div></div><div class="ctx-app-actions"><div class="ctx-item" onclick="HAZOOM.openApp('terminal')">�️ Open Terminal</div><div class="ctx-item" onclick="HAZOOM.openApp('dashboard')">� Dashboard</div><div class="ctx-separator"></div><div class="ctx-item" onclick="HAZOOM.arrangeDesktopIcons();this.parentElement.parentElement.classList.remove('show')">📐 Arrange Icons</div><div class="ctx-item" onclick="HAZOOM.cycleMood()">🎨 Change Mood</div><div class="ctx-separator"></div><div class="ctx-item" onclick="HAZOOM.refreshDesktop();this.parentElement.parentElement.classList.remove('show')">️ Refresh</div><div class="ctx-item destructive" onclick="HAZOOM.shutdown()">⏻ Shutdown</div></div>`;
-                        positionMenu(e.clientX, e.clientY); menu.classList.add('show');
-                    }
-                });
-
-                // Right-click blank desktop area
-                const desktop = document.getElementById('desktop');
-                if (desktop) {
-                    desktop.addEventListener('contextmenu', (e) => {
-                        if (!e.target.closest('.desktop-icon') && !e.target.closest('.window') && !e.target.closest('#context-menu')) {
-                            e.preventDefault();
-                            menu.innerHTML = `<div class="ctx-app-info"><div class="ctx-app-name">️ Desktop</div><div class="ctx-app-type">${Object.keys(this.apps).length} apps · ${this.windows.length} windows</div></div><div class="ctx-app-actions"><div class="ctx-item" onclick="HAZOOM.openApp('terminal')">�️ Open Terminal</div><div class="ctx-item" onclick="HAZOOM.openApp('dashboard')">📊 Dashboard</div><div class="ctx-separator"></div><div class="ctx-item" onclick="HAZOOM.arrangeDesktopIcons();this.parentElement.parentElement.classList.remove('show')">📐 Arrange Icons</div><div class="ctx-item" onclick="HAZOOM.cycleMood()">🎨 Change Mood</div><div class="ctx-item" onclick="document.body.requestFullscreen?.()">� Fullscreen</div><div class="ctx-separator"></div><div class="ctx-item" onclick="location.reload()">🔄 Refresh</div></div>`;
-                            positionMenu(e.clientX, e.clientY); menu.classList.add('show');
-                        }
-                    });
-                }
-
-                // Close on click elsewhere
-                document.addEventListener('click', (e) => {
-                    if (!e.target.closest('#context-menu')) closeMenu();
-                });
-            },
-
-            showAppInfo(appId) {
-                const app = this.apps[appId]; if (!app) return;
-                alert(`📦 ${app.name}\nID: ${app.id}\nCategory: ${app.category || 'general'}\nSize: ${app.width}×${app.height}`);
-                document.getElementById('context-menu')?.classList.remove('show');
-            },
-
-            shutdown() {
-                if (confirm('Shut down HAZOOM OS?')) {
-                    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#000;color:#00f0ff;font-family:monospace;flex-direction:column;"><div style="font-size:48px;margin-bottom:20px;">️</div><div>HAZOOM OS Shutdown</div><div style="margin-top:16px;font-size:12px;color:#333;">Refresh to reboot</div></div>';
-                }
-            },
-
-            setupDesktopDragDrop: function() {
-                const icons = document.querySelectorAll('.desktop-icon');
-                icons.forEach(icon => { icon.draggable = true; });
-            },
-
-            // Instant in-memory desktop refresh (no network request)
-            refreshDesktop: function() {
-                // Save open windows
-                const openWindows = this.windows.filter(w => !w.minimized).map(w => w.appId);
-                // Close all windows without saving
-                this.windows.forEach(w => {
-                    const el = document.getElementById('window-' + w.id);
-                    if (el) el.remove();
-                });
-                this.windows = [];
-                // Re-render desktop icons
-                this.arrangeDesktopIcons();
-                this.buildDock();
-                // Restore tray
-                this.updateDockIndicators();
-                // Show feedback
-                this.showNotification('️ Desktop Refreshed', 'All icons re-rendered in-place');
-            },
-
-            saveDesktopPositions: function() {
-                try {
-                    const positions = {};
-                    document.querySelectorAll('.desktop-icon').forEach(icon => {
-                        const appId = icon.dataset.appId;
-                        if (appId) positions[appId] = { x: icon.style.left || '30px', y: icon.style.top || '60px' };
-                    });
-                    localStorage.setItem('hazoom_desktop_positions', JSON.stringify(positions));
-                } catch(e) {}
             }
 
         };
+
