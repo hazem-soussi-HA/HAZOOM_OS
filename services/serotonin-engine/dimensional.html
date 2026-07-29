@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{overflow:hidden;background:#000;font-family:monospace;color:#fff}
+canvas{display:block;position:fixed;top:0;left:0}
+#ctrl{position:fixed;right:12px;top:12px;width:200px;z-index:20;background:rgba(0,0,0,0.85);border:1px solid #00ff8822;padding:8px;border-radius:4px}
+#ctrl h2{font-size:9px;letter-spacing:3px;color:#00ff8866;margin-bottom:6px;text-align:center}
+.inst{margin:4px 0;display:flex;align-items:center;gap:6px}
+.inst label{font-size:8px;width:38px;color:#00ff8888;letter-spacing:1px}
+.inst input[type=range]{flex:1;height:3px;-webkit-appearance:none;background:#00ff8822;outline:none;border-radius:2px}
+.inst input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;background:#00ff88;border-radius:50%;cursor:pointer}
+.inst .val{font-size:7px;width:22px;text-align:right;color:#00ff88aa}
+.inst .toggle{width:12px;height:12px;border:1px solid #00ff8844;border-radius:2px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:8px}
+.inst .toggle.on{background:#00ff8844}
+#overlay{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000;cursor:pointer;z-index:30;transition:opacity .8s}
+#overlay h1{font-size:clamp(14px,3vw,36px);letter-spacing:8px;font-weight:100;text-shadow:0 0 40px #00ff8822}
+#overlay div{font-size:10px;letter-spacing:4px;opacity:.35;margin-top:14px;animation:pulse 1.8s infinite}
+@keyframes pulse{0%,100%{opacity:.15}50%{opacity:.7}}
+</style>
+</head>
+<body>
+<div id="overlay">
+    <h1>NANO PROTOCOL</h1>
+    <div>FUNK ORIENTAL · 8 INSTRUMENTS · 100BPM</div>
+    <div style="font-size:8px;opacity:.15;margin-top:24px">CLICK TO ACTIVATE</div>
+</div>
+<div id="ctrl">
+    <h2>INSTRUMENTS</h2>
+</div>
+<canvas id="c"></canvas>
+<script>
+const c = document.getElementById('c'), x = c.getContext('2d');
+const o = document.getElementById('overlay');
+const ctrl = document.getElementById('ctrl');
+let W, H, frame = 0;
+let audioCtx, masterGain, drumData;
+let beat = 0, flash = 0, strobe = 0, phase = 0;
+let historyArr = [], rings = [], dots = [];
+
+const BPM = 100;
+const BEAT_SEC = 60 / BPM;
+const LOOP_BEATS = 8;
+const LOOP_SEC = LOOP_BEATS * BEAT_SEC;
+const SAMPLE_RATE = 44100;
+const FFT_SIZE = 4096;
+
+const instruments = [
+    { name: 'KICK', vol: 1.0, on: true, color: '#ff3355', freq: '20-120Hz', k: 0 },
+    { name: 'BASS', vol: 0.8, on: true, color: '#ff6633', freq: '55-82Hz', k: 0 },
+    { name: 'SNARE', vol: 0.75, on: true, color: '#ffaa00', freq: '400-3kHz', k: 0 },
+    { name: 'DARBUKA', vol: 0.9, on: true, color: '#ff00aa', freq: '50-5kHz', k: 0 },
+    { name: 'RIQ', vol: 0.7, on: true, color: '#aa00ff', freq: '4-8kHz', k: 0 },
+    { name: 'SHAKER', vol: 0.6, on: true, color: '#00aaff', freq: '5-10kHz', k: 0 },
+    { name: 'HAT', vol: 0.7, on: true, color: '#00ffaa', freq: '8-16kHz', k: 0 },
+    { name: 'FRAME', vol: 0.65, on: true, color: '#88ff00', freq: '30-800Hz', k: 0 },
+];
+
+instruments.forEach((inst, i) => {
+    const row = document.createElement('div');
+    row.className = 'inst';
+    row.innerHTML = `
+        <div class="toggle on" data-i="${i}">x</div>
+        <label>${inst.name}</label>
+        <input type="range" min="0" max="100" value="${inst.vol * 100}" data-i="${i}">
+        <span class="val">${Math.round(inst.vol * 100)}</span>
+    `;
+    ctrl.appendChild(row);
+    row.querySelector('.toggle').addEventListener('click', function() {
+        inst.on = !inst.on;
+        this.classList.toggle('on');
+        this.textContent = inst.on ? 'x' : '';
+    });
+    row.querySelector('input').addEventListener('input', function() {
+        inst.vol = this.value / 100;
+        row.querySelector('.val').textContent = Math.round(inst.vol * 100);
+    });
+});
+
+function resize() { W = c.width = window.innerWidth; H = c.height = window.innerHeight; }
+window.addEventListener('resize', resize); resize();
+
+o.addEventListener('click', async () => {
+    try {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: SAMPLE_RATE });
+        masterGain = audioCtx.createGain();
+        masterGain.gain.value = 0.85;
+        masterGain.connect(audioCtx.destination);
+        drumData = new Uint8Array(FFT_SIZE / 2);
+        startDrumLoop();
+        startAnalyzer();
+        o.style.opacity = '0';
+        setTimeout(() => o.style.display = 'none', 800);
+        loop();
+    } catch (e) {
+        o.innerHTML = '<h1>AUDIO FAILED</h1><div>REFRESH</div>';
+    }
+});
+
+function createNoise(time, dur) {
+    const len = SAMPLE_RATE * dur;
+    const buf = audioCtx.createBuffer(1, len, SAMPLE_RATE);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const src = audioCtx.createBufferSource();
+    src.buffer = buf;
+    src.start(time);
+    src.stop(time + dur);
+    return src;
+}
+
+function vol(i) { return instruments[i].on ? instruments[i].vol : 0; }
+
+function playKick(time) {
+    const v = vol(0);
+    if (v < 0.01) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(120, time);
+    osc.frequency.exponentialRampToValueAtTime(28, time + 0.2);
+    gain.gain.setValueAtTime(1.3 * v, time);
+    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.4);
+    osc.connect(gain); gain.connect(masterGain);
+    osc.start(time); osc.stop(time + 0.4);
+
+    const sub = audioCtx.createOscillator();
+    const subG = audioCtx.createGain();
+    sub.type = 'sine';
+    sub.frequency.setValueAtTime(60, time);
+    sub.frequency.exponentialRampToValueAtTime(20, time + 0.3);
+    subG.gain.setValueAtTime(0.8 * v, time);
+    subG.gain.exponentialRampToValueAtTime(0.01, time + 0.35);
+    sub.connect(subG); subG.connect(masterGain);
+    sub.start(time); sub.stop(time + 0.35);
+}
+
+function playGhostKick(time) {
+    const v = vol(0) * 0.4;
+    if (v < 0.01) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(90, time);
+    osc.frequency.exponentialRampToValueAtTime(35, time + 0.12);
+    gain.gain.setValueAtTime(0.5 * v, time);
+    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
+    osc.connect(gain); gain.connect(masterGain);
+    osc.start(time); osc.stop(time + 0.15);
+}
+
+function playSnare(time) {
+    const v = vol(2);
+    if (v < 0.01) return;
+    const noise = createNoise(time, 0.12);
+    const nGain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'bandpass'; filter.frequency.value = 3000; filter.Q.value = 0.8;
+    nGain.gain.setValueAtTime(0.7 * v, time);
+    nGain.gain.exponentialRampToValueAtTime(0.01, time + 0.12);
+    noise.connect(filter); filter.connect(nGain); nGain.connect(masterGain);
+
+    const osc = audioCtx.createOscillator();
+    const oGain = audioCtx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(220, time);
+    osc.frequency.exponentialRampToValueAtTime(90, time + 0.06);
+    oGain.gain.setValueAtTime(0.5 * v, time);
+    oGain.gain.exponentialRampToValueAtTime(0.01, time + 0.08);
+    osc.connect(oGain); oGain.connect(masterGain);
+    osc.start(time); osc.stop(time + 0.1);
+}
+
+function playHihat(time, open) {
+    const v = vol(6);
+    if (v < 0.01) return;
+    const dur = open ? 0.2 : 0.04;
+    const noise = createNoise(time, dur);
+    const gain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'highpass'; filter.frequency.value = 8000;
+    gain.gain.setValueAtTime((open ? 0.35 : 0.3) * v, time);
+    gain.gain.exponentialRampToValueAtTime(0.01, time + dur);
+    noise.connect(filter); filter.connect(gain); gain.connect(masterGain);
+}
+
+function playDarbukaDum(time) {
+    const v = vol(3);
+    if (v < 0.01) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(150, time);
+    osc.frequency.exponentialRampToValueAtTime(50, time + 0.15);
+    gain.gain.setValueAtTime(0.9 * v, time);
+    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.25);
+    osc.connect(gain); gain.connect(masterGain);
+    osc.start(time); osc.stop(time + 0.25);
+
+    const noise = createNoise(time, 0.05);
+    const nGain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'bandpass'; filter.frequency.value = 2000; filter.Q.value = 2;
+    nGain.gain.setValueAtTime(0.3 * v, time);
+    nGain.gain.exponentialRampToValueAtTime(0.01, time + 0.05);
+    noise.connect(filter); filter.connect(nGain); nGain.connect(masterGain);
+}
+
+function playDarbukaTak(time) {
+    const v = vol(3);
+    if (v < 0.01) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(1200, time);
+    osc.frequency.exponentialRampToValueAtTime(400, time + 0.04);
+    gain.gain.setValueAtTime(0.35 * v, time);
+    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.06);
+    osc.connect(gain); gain.connect(masterGain);
+    osc.start(time); osc.stop(time + 0.06);
+
+    const noise = createNoise(time, 0.03);
+    const nGain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'highpass'; filter.frequency.value = 5000;
+    nGain.gain.setValueAtTime(0.2 * v, time);
+    nGain.gain.exponentialRampToValueAtTime(0.01, time + 0.03);
+    noise.connect(filter); filter.connect(nGain); nGain.connect(masterGain);
+}
+
+function playDarbukaKa(time) {
+    const v = vol(3);
+    if (v < 0.01) return;
+    const noise = createNoise(time, 0.025);
+    const gain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'bandpass'; filter.frequency.value = 4000; filter.Q.value = 1.5;
+    gain.gain.setValueAtTime(0.18 * v, time);
+    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.025);
+    noise.connect(filter); filter.connect(gain); gain.connect(masterGain);
+}
+
+function playRiq(time) {
+    const v = vol(4);
+    if (v < 0.01) return;
+    const noise = createNoise(time, 0.08);
+    const gain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'bandpass'; filter.frequency.value = 6000; filter.Q.value = 1;
+    gain.gain.setValueAtTime(0.3 * v, time);
+    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.08);
+    noise.connect(filter); filter.connect(gain); gain.connect(masterGain);
+
+    for (let i = 0; i < 3; i++) {
+        const osc = audioCtx.createOscillator();
+        const oGain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(3000 + i * 1500, time + i * 0.008);
+        oGain.gain.setValueAtTime(0.08 * v, time + i * 0.008);
+        oGain.gain.exponentialRampToValueAtTime(0.001, time + i * 0.008 + 0.04);
+        osc.connect(oGain); oGain.connect(masterGain);
+        osc.start(time + i * 0.008); osc.stop(time + i * 0.008 + 0.05);
+    }
+}
+
+function playFrameDrum(time) {
+    const v = vol(7);
+    if (v < 0.01) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(80, time);
+    osc.frequency.exponentialRampToValueAtTime(30, time + 0.5);
+    gain.gain.setValueAtTime(0.6 * v, time);
+    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.6);
+    osc.connect(gain); gain.connect(masterGain);
+    osc.start(time); osc.stop(time + 0.6);
+
+    const noise = createNoise(time, 0.15);
+    const nGain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass'; filter.frequency.value = 800;
+    nGain.gain.setValueAtTime(0.25 * v, time);
+    nGain.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
+    noise.connect(filter); filter.connect(nGain); nGain.connect(masterGain);
+}
+
+function playShaker(time, dur) {
+    const v = vol(5);
+    if (v < 0.01) return;
+    const noise = createNoise(time, dur);
+    const gain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'bandpass'; filter.frequency.value = 7000; filter.Q.value = 0.5;
+    gain.gain.setValueAtTime(0.12 * v, time);
+    gain.gain.linearRampToValueAtTime(0.18 * v, time + dur * 0.5);
+    gain.gain.exponentialRampToValueAtTime(0.01, time + dur);
+    noise.connect(filter); filter.connect(gain); gain.connect(masterGain);
+}
+
+function playBass(time, note, dur) {
+    const v = vol(1);
+    if (v < 0.01) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(note, time);
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(500, time);
+    filter.frequency.exponentialRampToValueAtTime(120, time + dur);
+    filter.Q.value = 2;
+    gain.gain.setValueAtTime(0.3 * v, time);
+    gain.gain.setValueAtTime(0.3 * v, time + dur * 0.7);
+    gain.gain.exponentialRampToValueAtTime(0.01, time + dur);
+    osc.connect(filter); filter.connect(gain); gain.connect(masterGain);
+    osc.start(time); osc.stop(time + dur + 0.05);
+}
+
+function scheduleLoop() {
+    if (!audioCtx) return;
+    const now = audioCtx.currentTime;
+    const loopStart = Math.ceil(now / LOOP_SEC) * LOOP_SEC;
+
+    for (let beat = 0; beat < LOOP_BEATS; beat++) {
+        const t = loopStart + beat * BEAT_SEC;
+        const bt = beat % 4;
+        const half = BEAT_SEC / 2;
+        const quarter = BEAT_SEC / 4;
+        const eighth = BEAT_SEC / 8;
+
+        playKick(t);
+        if (bt === 2) playGhostKick(t + half);
+        if (bt === 3) playGhostKick(t + quarter * 3);
+
+        if (bt === 1 || bt === 3) playSnare(t);
+
+        for (let sub = 0; sub < 8; sub++) {
+            const st = t + sub * eighth;
+            if (sub % 2 === 0) playHihat(st, false);
+            if (sub === 3 && bt < 3) playHihat(st, true);
+        }
+
+        playDarbukaDum(t);
+        playDarbukaTak(t + quarter);
+        playDarbukaKa(t + half - eighth);
+        playDarbukaTak(t + half);
+        playDarbukaKa(t + half + eighth);
+        if (bt === 0 || bt === 2) {
+            playDarbukaDum(t + half);
+            playDarbukaTak(t + quarter * 3);
+        }
+
+        if (bt === 0) playRiq(t);
+        if (bt === 2) playRiq(t + half);
+
+        if (bt === 0) playFrameDrum(t);
+
+        for (let sub = 0; sub < 16; sub++) {
+            playShaker(t + sub * (BEAT_SEC / 16), BEAT_SEC / 16 * 0.8);
+        }
+
+        if (bt === 0) playBass(t, 55, BEAT_SEC * 0.8);
+        if (bt === 1) playBass(t + quarter, 73.4, BEAT_SEC * 0.4);
+        if (bt === 2) playBass(t, 55, BEAT_SEC * 0.6);
+        if (bt === 3) playBass(t + half, 82.4, BEAT_SEC * 0.3);
+    }
+
+    setTimeout(scheduleLoop, (LOOP_SEC * 0.75) * 1000);
+}
+
+function startDrumLoop() { scheduleLoop(); }
+
+function startAnalyzer() {
+    const analyser = audioCtx.createAnalyser();
+    analyser.fftSize = FFT_SIZE;
+    analyser.smoothingTimeConstant = 0.82;
+    masterGain.connect(analyser);
+
+    const bands = [
+        [20, 120],    // KICK
+        [55, 150],    // BASS
+        [400, 3000],  // SNARE
+        [50, 5000],   // DARBUKA
+        [4000, 8000], // RIQ
+        [5000, 10000],// SHAKER
+        [8000, 16000],// HAT
+        [30, 800],    // FRAME
+    ];
+
+    function analyze() {
+        if (!audioCtx) return;
+        analyser.getByteFrequencyData(drumData);
+        const len = drumData.length;
+        const sr = SAMPLE_RATE / 2;
+
+        for (let i = 0; i < 8; i++) {
+            const [lo, hi2] = bands[i];
+            const si = Math.floor(lo / sr * len);
+            const ei = Math.floor(hi2 / sr * len);
+            let sum = 0, cnt = 0;
+            for (let j = Math.max(0, si); j < Math.min(len, ei); j++) {
+                sum += drumData[j];
+                cnt++;
+            }
+            const raw = cnt > 0 ? sum / cnt / 255 : 0;
+            instruments[i].k = instruments[i].k * 0.7 + raw * 0.3;
+        }
+
+        const k = instruments[0].k;
+        const b = instruments[1].k;
+        const s = instruments[2].k;
+        const dr = instruments[3].k;
+        const rq = instruments[4].k;
+        const sh = instruments[5].k;
+        const hi = instruments[6].k;
+        const fr = instruments[7].k;
+
+        const inst = (k + b + s + dr + rq + sh + hi + fr) / 8;
+        historyArr.push(inst);
+        if (historyArr.length > 43) historyArr.shift();
+        const avg = historyArr.reduce((a, v) => a + v, 0) / historyArr.length;
+        const wasBeat = beat > 0;
+        beat = (inst > avg * 1.08 && k > 0.1) ? 1 : beat * 0.87;
+        flash = beat > 0.5 ? 1 : flash * 0.85;
+
+        if (beat > 0.5 && !wasBeat) {
+            for (let i = 0; i < 8; i++) {
+                rings.push({ r: 0, l: 1, sp: 1.2 + k * 4, w: 0.6 + k * 2, h: (i * 45 + frame * 3) % 360 });
+            }
+            for (let i = 0; i < 40 + dr * 60; i++) {
+                const a = Math.random() * 6.28, sp = 0.6 + k * 5;
+                dots.push({ x: W / 2 + (Math.random() - 0.5) * W * 0.12, y: H / 2 + (Math.random() - 0.5) * H * 0.12, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, l: 1, d: 0.005 + Math.random() * 0.008, sz: 1 + Math.random() * 3, h: (frame * 7 + i * 13) % 360 });
+            }
+        }
+
+        phase += (2 + k * 12 + b * 3) * 0.016;
+        strobe = Math.abs(Math.sin(phase * Math.PI));
+        if (beat > 0.3) strobe = Math.max(strobe, 0.75);
+        requestAnimationFrame(analyze);
+    }
+    analyze();
+}
+
+class Dancer {
+    constructor() {
+        this.cx = W * 0.42;
+        this.cy = H * 0.4;
+        this.trail = [];
+        this.spring = { bounce: 0, sway: 0, arm: 0, leg: 0, head: 0, twist: 0 };
+    }
+
+    update() {
+        const k = instruments[0].k;
+        const b = instruments[1].k;
+        const m = (instruments[3].k + instruments[4].k + instruments[5].k) / 3;
+        const hi = instruments[6].k;
+        const dr = instruments[3].k;
+
+        this.spring.bounce += (k * 45 + dr * 15 - this.spring.bounce) * 0.1;
+        this.spring.sway += (b * 0.7 + dr * 0.15 - this.spring.sway) * 0.08;
+        this.spring.arm += (m * 1.2 - this.spring.arm) * 0.07;
+        this.spring.leg += (b * 0.5 + k * 0.25 - this.spring.leg) * 0.06;
+        this.spring.head += (hi * 0.7 - this.spring.head) * 0.1;
+        this.spring.twist += (dr * 0.4 - this.spring.twist) * 0.05;
+
+        this.cx = W * 0.42 + Math.sin(frame * 0.013) * 10 * b + Math.cos(frame * 0.019) * 5 * dr;
+        this.cy = H * 0.4 + this.spring.bounce * 0.5;
+
+        if (frame % 2 === 0) {
+            this.trail.push({ x: this.cx, y: this.cy, l: 1, s: 8 + b * 14 + dr * 6, h: (frame * 5) % 360 });
+            if (this.trail.length > 12) this.trail.shift();
+        }
+    }
+
+    getJoints() {
+        const cx = this.cx, cy = this.cy;
+        const S = Math.min(W, H) / 700;
+        const k = instruments[0].k;
+        const b = instruments[1].k;
+        const m = (instruments[3].k + instruments[4].k + instruments[5].k) / 3;
+        const hi = instruments[6].k;
+        const bob = this.spring.head * 14 * S;
+        const sway = this.spring.sway;
+        const arm = this.spring.arm;
+        const leg = this.spring.leg;
+        const bounce = this.spring.bounce;
+        const twist = this.spring.twist;
+
+        const head = { x: cx + Math.sin(frame * 0.04) * 5 * S + twist * 7 * S, y: cy - 100 * S - bob + bounce * 0.1 };
+        const neck = { x: cx + sway * 4 * S + twist * 3 * S, y: cy - 76 * S + bob * 0.3 };
+        const shoulders = { x: cx + sway * 22 * S + twist * 8 * S, y: cy - 55 * S + bounce * 0.15 };
+        const chest = { x: cx + sway * 16 * S + twist * 5 * S, y: cy - 22 * S + bounce * 0.25 };
+        const hips = { x: cx - sway * 16 * S - twist * 3 * S, y: cy + 6 * S + bounce * 0.4 };
+
+        const shoulderL = { x: shoulders.x - 35 * S, y: shoulders.y };
+        const shoulderR = { x: shoulders.x + 35 * S, y: shoulders.y };
+        const elbowL = {
+            x: shoulderL.x - 42 * S * Math.sin(arm + Math.PI * 0.25),
+            y: shoulderL.y + 42 * S * Math.cos(arm + Math.PI * 0.25) + bounce * 0.08
+        };
+        const elbowR = {
+            x: shoulderR.x + 42 * S * Math.sin(arm - Math.PI * 0.25),
+            y: shoulderR.y + 42 * S * Math.cos(arm - Math.PI * 0.25) + bounce * 0.08
+        };
+        const handL = {
+            x: elbowL.x - 30 * S * Math.sin(arm + Math.PI * 0.25 + Math.sin(frame * 0.07) * 0.25),
+            y: elbowL.y + 30 * S * Math.cos(arm + Math.PI * 0.25) + hi * 8 * S
+        };
+        const handR = {
+            x: elbowR.x + 30 * S * Math.sin(arm - Math.PI * 0.25 - Math.sin(frame * 0.07) * 0.25),
+            y: elbowR.y + 30 * S * Math.cos(arm - Math.PI * 0.25) + hi * 8 * S
+        };
+
+        const hipL = { x: hips.x - 18 * S, y: hips.y };
+        const hipR = { x: hips.x + 18 * S, y: hips.y };
+        const kneeL = {
+            x: hipL.x - 28 * S * Math.sin(leg + Math.PI * 0.1) - beat * 14 * S,
+            y: hipL.y + 55 * S * Math.cos(leg + Math.PI * 0.1)
+        };
+        const kneeR = {
+            x: hipR.x + 28 * S * Math.sin(leg - Math.PI * 0.1) + beat * 14 * S,
+            y: hipR.y + 55 * S * Math.cos(leg - Math.PI * 0.1)
+        };
+        const footL = {
+            x: kneeL.x - 14 * S * Math.sin(leg + Math.PI * 0.1) - beat * 8 * S,
+            y: kneeL.y + 42 * S * Math.cos(leg + Math.PI * 0.1)
+        };
+        const footR = {
+            x: kneeR.x + 14 * S * Math.sin(leg - Math.PI * 0.1) + beat * 8 * S,
+            y: kneeR.y + 42 * S * Math.cos(leg - Math.PI * 0.1)
+        };
+
+        return { head, neck, shoulders, chest, hips, shoulderL, shoulderR, elbowL, elbowR, handL, handR, hipL, hipR, kneeL, kneeR, footL, footR };
+    }
+
+    drawTrail() {
+        for (const t of this.trail) {
+            t.l -= 0.04;
+            if (t.l <= 0) continue;
+            const sz = t.s * t.l * 0.3;
+            x.fillStyle = `hsla(${t.h},65%,50%,${t.l * 0.08})`;
+            x.beginPath(); x.arc(t.x, t.y, sz, 0, 6.28); x.fill();
+        }
+    }
+
+    draw() {
+        const cx = this.cx, cy = this.cy;
+        const j = this.getJoints();
+        const joints = [j.head, j.neck, j.shoulders, j.chest, j.hips,
+            j.shoulderL, j.shoulderR, j.elbowL, j.elbowR,
+            j.handL, j.handR, j.hipL, j.hipR, j.kneeL, j.kneeR, j.footL, j.footR];
+
+        const k = instruments[0].k;
+        const dr = instruments[3].k;
+        const m = (instruments[3].k + instruments[4].k + instruments[5].k) / 3;
+        const hi = instruments[6].k;
+
+        const hue = k > 0.3 ? 150 : dr > 0.3 ? 30 : hi > 0.3 ? 280 : 200;
+        const glow = 0.3 + strobe * 0.35 + flash * 0.45;
+        const col = `hsla(${hue},72%,52%,${0.8 + glow})`;
+
+        this.drawTrail();
+
+        const auraR = 90 + k * 75 + dr * 35 + flash * 45;
+        const auraGrad = x.createRadialGradient(cx, cy, 0, cx, cy, auraR);
+        auraGrad.addColorStop(0, `hsla(${hue},50%,42%,${0.04 + strobe * 0.04})`);
+        auraGrad.addColorStop(0.5, `hsla(${hue + 50},45%,38%,${0.02 + strobe * 0.02})`);
+        auraGrad.addColorStop(1, `hsla(${hue + 100},40%,30%,0)`);
+        x.fillStyle = auraGrad;
+        x.beginPath(); x.arc(cx, cy, auraR, 0, 6.28); x.fill();
+
+        x.shadowBlur = 18 + flash * 25;
+        x.shadowColor = `hsla(${hue},75%,55%,${glow})`;
+        x.strokeStyle = col;
+        x.fillStyle = col;
+        x.lineWidth = 2.2 + k * 1.8 + dr;
+
+        x.beginPath();
+        x.moveTo(j.head.x, j.head.y); x.lineTo(j.neck.x, j.neck.y);
+        x.lineTo(j.shoulders.x, j.shoulders.y); x.lineTo(j.chest.x, j.chest.y);
+        x.lineTo(j.hips.x, j.hips.y); x.stroke();
+
+        x.beginPath();
+        x.moveTo(j.shoulderL.x, j.shoulderL.y); x.lineTo(j.elbowL.x, j.elbowL.y);
+        x.lineTo(j.handL.x, j.handL.y); x.stroke();
+
+        x.beginPath();
+        x.moveTo(j.shoulderR.x, j.shoulderR.y); x.lineTo(j.elbowR.x, j.elbowR.y);
+        x.lineTo(j.handR.x, j.handR.y); x.stroke();
+
+        x.beginPath();
+        x.moveTo(j.hipL.x, j.hipL.y); x.lineTo(j.kneeL.x, j.kneeL.y);
+        x.lineTo(j.footL.x, j.footL.y); x.stroke();
+
+        x.beginPath();
+        x.moveTo(j.hipR.x, j.hipR.y); x.lineTo(j.kneeR.x, j.kneeR.y);
+        x.lineTo(j.footR.x, j.footR.y); x.stroke();
+
+        x.shadowBlur = 0;
+        for (const jt of joints) {
+            const sz = 3.5 + k * 3.5 + dr * 1.5;
+            x.fillRect(jt.x - sz / 2, jt.y - sz / 2, sz, sz);
+        }
+
+        if (beat > 0.5) {
+            x.shadowBlur = 25;
+            x.shadowColor = `hsla(${hue + 180},80%,65%,0.45)`;
+            x.strokeStyle = `hsla(${hue + 180},80%,65%,0.6)`;
+            x.lineWidth = 1.2;
+            x.setLineDash([4, 3]);
+            x.beginPath();
+            x.arc(j.head.x, j.head.y, 14 + hi * 10, 0, 6.28);
+            x.stroke();
+            x.setLineDash([]);
+            x.shadowBlur = 0;
+
+            const hx = (j.handL.x + j.handR.x) / 2;
+            const hy = (j.handL.y + j.handR.y) / 2;
+            const hGrad = x.createRadialGradient(hx, hy, 0, hx, hy, 7 + m * 9);
+            hGrad.addColorStop(0, `hsla(${hue + 60},85%,70%,${0.45 + m * 0.3})`);
+            hGrad.addColorStop(1, `hsla(${hue + 60},85%,45%,0)`);
+            x.fillStyle = hGrad;
+            x.beginPath(); x.arc(hx, hy, 7 + m * 9, 0, 6.28); x.fill();
+        }
+        x.shadowBlur = 0;
+    }
+}
+
+const dancer = new Dancer();
+
+function drawBg() {
+    x.fillStyle = '#000';
+    x.fillRect(0, 0, W, H);
+    const k = instruments[0].k;
+    const b = instruments[1].k;
+    const dr = instruments[3].k;
+    const g = x.createRadialGradient(W * 0.42, H * 0.42, 0, W * 0.42, H * 0.42, Math.max(W, H) * 0.5);
+    g.addColorStop(0, `rgba(0,${10 + k * 22 + dr * 12},${5 + k * 10 + b * 6},${0.08 + k * 0.05 + dr * 0.03})`);
+    g.addColorStop(0.5, `rgba(0,${4 + k * 8},${2 + b * 4},0.02)`);
+    g.addColorStop(1, '#000');
+    x.fillStyle = g;
+    x.fillRect(0, 0, W, H);
+}
+
+function drawRings() {
+    for (let i = rings.length - 1; i >= 0; i--) {
+        const ri = rings[i];
+        ri.r += ri.sp * (1 + instruments[0].k * 2 + instruments[3].k * 1.2);
+        ri.l -= 0.007;
+        if (ri.l <= 0) { rings.splice(i, 1); continue; }
+        const a = ri.l * (0.15 + strobe * 0.2);
+        x.strokeStyle = `hsla(${ri.h + instruments[0].k * 18},70%,40%,${a})`;
+        x.lineWidth = ri.w * ri.l;
+        x.beginPath(); x.arc(W * 0.42, H * 0.42, ri.r, 0, 6.28); x.stroke();
+    }
+}
+
+function drawDots() {
+    for (let i = dots.length - 1; i >= 0; i--) {
+        const p = dots[i];
+        p.x += p.vx; p.y += p.vy; p.vy += 0.004;
+        p.vx *= 0.993; p.l -= p.d;
+        if (p.l <= 0) { dots.splice(i, 1); continue; }
+        const a = p.l * (0.15 + strobe * 0.2 + flash * 0.1);
+        const sz = p.sz * p.l;
+        x.fillStyle = `hsla(${p.h + instruments[3].k * 35},70%,40%,${a})`;
+        x.beginPath(); x.arc(p.x, p.y, sz, 0, 6.28); x.fill();
+    }
+}
+
+function drawSpec() {
+    if (!drumData) return;
+    const bH = H * 0.3;
+    const bX = 12;
+    const bW = 8;
+    const gap = 2;
+    const n = drumData.length;
+
+    x.fillStyle = 'rgba(255,255,255,0.02)';
+    x.font = '7px monospace';
+    x.textAlign = 'left';
+    x.fillText('FREQUENCY SPECTRUM', bX, H * 0.08);
+
+    const totalW = 8 * (bW + gap) * 4;
+    let startX = bX;
+
+    for (let inst = 0; inst < 8; inst++) {
+        const [lo, hi2] = [[20, 120], [55, 150], [400, 3000], [50, 5000], [4000, 8000], [5000, 10000], [8000, 16000], [30, 800]][inst];
+        const si = Math.floor(lo / (SAMPLE_RATE / 2) * n);
+        const ei = Math.floor(hi2 / (SAMPLE_RATE / 2) * n);
+        const bins = Math.min(32, ei - si);
+
+        const colX = startX + inst * (bW + gap) * 4 + 4;
+        const colY = H * 0.1;
+
+        x.fillStyle = instruments[inst].color + '44';
+        x.font = '6px monospace';
+        x.fillText(instruments[inst].name, colX, H * 0.09);
+
+        for (let i = 0; i < bins; i++) {
+            const idx = si + Math.floor(i * (ei - si) / bins);
+            const v = drumData[idx] / 255;
+            const bh = v * bH * instruments[inst].vol;
+            const barX = colX + (i % 8) * (bW + gap);
+            const barY = colY + Math.floor(i / 8) * (bH / 4 + 2);
+            const barH = Math.max(1, bh * 0.24);
+
+            const ci = instruments[inst];
+            const intensity = ci.k;
+            x.fillStyle = `${ci.color}${Math.floor((0.3 + intensity * 0.5 + v * 0.3) * 255).toString(16).padStart(2, '0')}`;
+            x.fillRect(barX, barY + (bH / 4 - barH), bW, barH);
+        }
+
+        const meterX = colX;
+        const meterY = H * 0.1 + bH + 6;
+        const meterW = 34;
+        const meterH = 4;
+        x.fillStyle = '#ffffff08';
+        x.fillRect(meterX, meterY, meterW, meterH);
+        x.fillStyle = instruments[inst].color + '66';
+        x.fillRect(meterX, meterY, meterW * Math.min(1, instruments[inst].k * 1.5), meterH);
+    }
+
+    x.fillStyle = 'rgba(255,255,255,0.015)';
+    x.font = '7px monospace';
+    x.textAlign = 'center';
+    const lbs = ['KICK', 'BASS', 'SNARE', 'DARBUKA', 'RIQ', 'SHAKER', 'HAT', 'FRAME'];
+    const vs = instruments.map(i => i.k);
+    for (let i = 0; i < lbs.length; i++) {
+        x.fillStyle = instruments[i].color + '55';
+        x.fillText(`${lbs[i]} ${Math.round(vs[i] * 100)}%`, W * (i + 0.5) / lbs.length, H - 4);
+    }
+}
+
+function drawStrobe() {
+    const st = Math.max(strobe * 0.04, flash * 0.15);
+    if (st > 0.003) {
+        const h2 = instruments[0].k > 0.3 ? 150 : instruments[3].k > 0.3 ? 25 : instruments[6].k > 0.3 ? 280 : 45;
+        x.fillStyle = `hsla(${h2},65%,50%,${st})`;
+        x.fillRect(0, 0, W, H);
+    }
+}
+
+function drawHUD() {
+    x.fillStyle = `rgba(255,255,255,${0.018 + strobe * 0.03})`;
+    x.font = '8px monospace';
+    x.textAlign = 'center';
+    const bar = '\u2588'.repeat(Math.floor(strobe * 10)) + '\u2591'.repeat(10 - Math.floor(strobe * 10));
+    x.fillText(`NANO \u00b7 FUNK ORIENTAL \u00b7 ${bar}`, W * 0.42, 18);
+}
+
+function loop() {
+    frame++;
+    dancer.update();
+    drawBg();
+    drawRings();
+    drawDots();
+    drawStrobe();
+    dancer.draw();
+    drawSpec();
+    drawHUD();
+    requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>

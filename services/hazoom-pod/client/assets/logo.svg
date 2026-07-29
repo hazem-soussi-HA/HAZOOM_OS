@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 196 48" width="196" height="48" role="img" aria-label="Hazoom">
+  <defs>
+    <linearGradient id="hz" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7c5cff"/>
+      <stop offset="1" stop-color="#22d3ee"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="6" width="34" height="34" rx="10" fill="url(#hz)"/>
+  <g fill="#ffffff">
+    <rect x="11" y="14" width="4" height="18" rx="2"/>
+    <rect x="23" y="14" width="4" height="18" rx="2"/>
+    <rect x="11" y="21.5" width="16" height="4" rx="2"/>
+    <path d="M30 8 L31.5 11.4 L35 12 L31.5 12.6 L30 16 L28.5 12.6 L25 12 L28.5 11.4 Z"/>
+  </g>
+  <text x="46" y="33" font-family="'Space Grotesk','Inter',system-ui,sans-serif" font-size="26" font-weight="700" letter-spacing="-0.5" fill="url(#hz)">Hazoom</text>
+</svg>

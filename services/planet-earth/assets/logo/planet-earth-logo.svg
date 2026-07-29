@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Planet Earth emblem">
+  <defs>
+    <radialGradient id="space" cx="50%" cy="42%" r="62%">
+      <stop offset="0%" stop-color="#0b1426"/>
+      <stop offset="100%" stop-color="#05070f"/>
+    </radialGradient>
+    <radialGradient id="ocean" cx="38%" cy="32%" r="78%">
+      <stop offset="0%" stop-color="#3a8fd6"/>
+      <stop offset="55%" stop-color="#1b4f9c"/>
+      <stop offset="100%" stop-color="#0d2c63"/>
+    </radialGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6fc0ff"/>
+      <stop offset="100%" stop-color="#2b6fd6"/>
+    </linearGradient>
+    <clipPath id="earthClip"><circle cx="128" cy="128" r="86"/></clipPath>
+  </defs>
+
+  <rect width="256" height="256" fill="url(#space)"/>
+
+  <!-- atmospheric limb glow -->
+  <circle cx="128" cy="128" r="99" fill="none" stroke="url(#glow)" stroke-width="6"
+          opacity="0.5" stroke-linecap="round" stroke-dasharray="540 90"
+          transform="rotate(-28 128 128)"/>
+
+  <!-- earth body + stylized continents, clipped to the globe -->
+  <g clip-path="url(#earthClip)">
+    <circle cx="128" cy="128" r="86" fill="url(#ocean)"/>
+    <path fill="#2f9e5e" d="M70 95 q18 -14 40 -8 q14 4 10 18 q-6 16 -24 14 q-22 -2 -26 -24 z"/>
+    <path fill="#37b06b" d="M120 140 q26 -6 40 8 q10 10 0 22 q-18 14 -38 4 q-16 -10 -2 -34 z"/>
+    <path fill="#2f9e5e" d="M150 92 q20 -2 26 12 q4 14 -12 18 q-18 2 -20 -16 q-1 -10 6 -14 z"/>
+    <!-- soft night-side terminator -->
+    <rect x="172" y="40" width="88" height="176" fill="#05070f" opacity="0.5"
+          transform="rotate(16 172 128)"/>
+  </g>
+
+  <!-- sunlit rim -->
+  <circle cx="128" cy="128" r="86" fill="none" stroke="#bfe0ff" stroke-width="1.5" opacity="0.6"/>
+</svg>

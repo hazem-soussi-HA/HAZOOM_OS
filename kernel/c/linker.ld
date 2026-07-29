@@ -4,17 +4,14 @@ ENTRY(_start)
 
 SECTIONS
 {
-    /* The multiboot headers MUST sit at file offset 0 so bootloaders and
-       QEMU's -kernel multiboot probe (which scans the first bytes of the
-       file) can find the 0x1BADB002 / 0xe85250d6 magic. We give it vaddr 0
-       but it is never executed there; the kernel proper lives at 1 MiB. */
-    . = 0x0;
+    /* Kernel starts at 1 MiB. */
+    . = 0x100000;
+
+    /* Multiboot2 header MUST be within the first 32KB of the image so the
+       bootloader can find the magic. Place it first. */
     .multiboot : {
         *(.multiboot)
     }
-
-    /* Kernel proper starts at 1 MiB. */
-    . = 0x100000;
 
     /* Boot-time page tables and GDT (must be in the loaded image). */
     .bootbss : {

@@ -66,11 +66,26 @@ case "$MODE" in
         fi
         docker compose up --build -d
         echo "[INFO] All services started."
-        echo "[INFO] Frontend:  http://localhost:80"
-        echo "[INFO] Backend:   http://localhost:3000"
-        echo "[INFO] AI API:    http://localhost:8000"
-        echo "[INFO] Gateway:   http://localhost:8080"
-        echo "[INFO] WS:        ws://localhost:9090"
+        echo "[INFO] Frontend:         http://localhost:80"
+        echo "[INFO] Backend:          http://localhost:3000"
+        echo "[INFO] AI API:           http://localhost:8000"
+        echo "[INFO] Gateway:          http://localhost:8080"
+        echo "[INFO] WS:               ws://localhost:9090"
+        echo "[INFO] Planet Earth:     http://localhost:8080"
+        echo "[INFO] Planet News:      http://localhost:8001"
+        echo "[INFO] Planet History:   http://localhost:8002"
+        echo "[INFO] Hazoom POD:       http://localhost:4000"
+        echo "[INFO] Birds:            http://localhost:4100"
+        echo "[INFO] Collab Beat:      http://localhost:5000"
+        echo "[INFO] Ornith Chat:      http://localhost:5055"
+        echo "[INFO] DESCER:           http://localhost:6000"
+        echo "[INFO] Bouzelfa:         http://localhost:7000"
+        echo "[INFO] Sovereign State:  http://localhost:4747"
+        echo "[INFO] Hazoom Intel:     http://localhost:8003"
+        echo "[INFO] General Intel:    http://localhost:8004"
+        echo "[INFO] Serotonin:        http://localhost:8005"
+        echo "[INFO] Mario GTA6:       http://localhost:9001"
+        echo "[INFO] Portfolio:        http://localhost:9002"
         ;;
 
     docker:stop)

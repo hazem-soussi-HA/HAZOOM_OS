@@ -1,0 +1,9 @@
+{
+  "artifact": "HAZOOM OS v6.0 — codebase integrity fingerprint (UNSIGNED)",
+  "generatedAt": "2026-07-15T10:07:42.410Z",
+  "filesHashed": 9734,
+  "sha256": "34463d765e4b0c0bc2806f3ac103908a0c95cda2aca2fb87a8b19137cc51eb2d",
+  "procedure": "tar -cf - . | sha256sum equivalent (HAZOOM-IP.codebaseBundleHash)",
+  "note": "Unsigned — no private key used. For a legally binding on-chain registration, run contracts/deploy-hazoom-ip.js deploy <PRIVATE_KEY> <RPC_URL> with the copyright holder key.",
+  "license": "HA-2.0 Proprietary (Hazem Soussi, CIN 09876443, Tunisia)"
+}

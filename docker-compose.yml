@@ -1,6 +1,6 @@
 version: "3.9"
 
-name: hazoom-os
+name: hazoom-ecosystem
 
 services:
   # ─── Main Backend Server ─────────────────────────────────────────
@@ -140,6 +140,216 @@ services:
     depends_on:
       - backend
       - websocket
+    networks:
+      - hazoom-net
+
+  # ─── Planet Earth ────────────────────────────────────────────────
+  planet-earth:
+    build:
+      context: ./services/planet-earth
+      dockerfile: Dockerfile 2>/dev/null || true
+    container_name: hazoom-planet-earth
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./services/planet-earth:/app
+    command: python3 server.py
+    networks:
+      - hazoom-net
+
+  # ─── Planet Earth News ───────────────────────────────────────────
+  planet-earth-news:
+    build:
+      context: ./services/planet-earth-news
+      dockerfile: Dockerfile 2>/dev/null || true
+    container_name: hazoom-planet-news
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./services/planet-earth-news:/app
+    command: python3 serve.py
+    networks:
+      - hazoom-net
+
+  # ─── Planet Earth History ────────────────────────────────────────
+  planet-earth-history:
+    build:
+      context: ./services/planet-earth-history
+      dockerfile: Dockerfile 2>/dev/null || true
+    container_name: hazoom-planet-history
+    restart: unless-stopped
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./services/planet-earth-history:/app
+    command: python3 serve.py
+    networks:
+      - hazoom-net
+
+  # ─── Birds Encyclopedia ──────────────────────────────────────────
+  birds-encyclopedia:
+    build:
+      context: ./services/birds-encyclopedia
+      dockerfile: Dockerfile 2>/dev/null || true
+    container_name: hazoom-birds
+    restart: unless-stopped
+    ports:
+      - "4100:4100"
+    volumes:
+      - ./services/birds-encyclopedia:/app
+    command: node server/server.js
+    networks:
+      - hazoom-net
+
+  # ─── Hazoom POD (Print-on-Demand) ────────────────────────────────
+  hazoom-pod:
+    build:
+      context: ./services/hazoom-pod
+      dockerfile: Dockerfile 2>/dev/null || true
+    container_name: hazoom-pod
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./services/hazoom-pod:/app
+    command: node server/server.js
+    networks:
+      - hazoom-net
+
+  # ─── Ornith Chat (ChatDev) ───────────────────────────────────────
+  chatdev-ornith:
+    build:
+      context: ./services/chatdev-ornith
+      dockerfile: Dockerfile 2>/dev/null || true
+    container_name: hazoom-chatdev
+    restart: unless-stopped
+    ports:
+      - "5055:5055"
+    volumes:
+      - ./services/chatdev-ornith:/app
+    command: python3 ornith_server.py
+    networks:
+      - hazoom-net
+
+  # ─── Collaborative Beat ──────────────────────────────────────────
+  collaborative-beat:
+    build:
+      context: ./services/collaborative-beat
+      dockerfile: Dockerfile 2>/dev/null || true
+    container_name: hazoom-collab-beat
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./services/collaborative-beat:/app
+    command: python3 server.py
+    networks:
+      - hazoom-net
+
+  # ─── DESCER Drum Machine ─────────────────────────────────────────
+  descer:
+    build:
+      context: ./services/descer
+      dockerfile: Dockerfile 2>/dev/null || true
+    container_name: hazoom-descer
+    restart: unless-stopped
+    ports:
+      - "6000:6000"
+    volumes:
+      - ./services/descer:/app
+    command: python3 server.py
+    networks:
+      - hazoom-net
+
+  # ─── Sovereign State ─────────────────────────────────────────────
+  sovereign-state:
+    build:
+      context: ./services/sovereign-state
+      dockerfile: Dockerfile 2>/dev/null || true
+    container_name: hazoom-sovereign
+    restart: unless-stopped
+    ports:
+      - "4747:4747"
+    volumes:
+      - ./services/sovereign-state:/app
+    command: python3 gui.py
+    networks:
+      - hazoom-net
+
+  # ─── Bouzelfa Ndhifa ─────────────────────────────────────────────
+  bouzelfa-ndhifa:
+    build:
+      context: ./services/bouzelfa-ndhifa
+      dockerfile: Dockerfile
+    container_name: hazoom-bouzelfa
+    restart: unless-stopped
+    ports:
+      - "7000:7000"
+    volumes:
+      - ./services/bouzelfa-ndhifa:/app
+    environment:
+      - PORT=7000
+    networks:
+      - hazoom-net
+
+  # ─── Hazoom Intelligence ─────────────────────────────────────────
+  hazoom-intelligence:
+    build:
+      context: ./services/hazoom-intelligence
+      dockerfile: Dockerfile
+    container_name: hazoom-intel
+    restart: unless-stopped
+    ports:
+      - "8003:8003"
+    volumes:
+      - ./services/hazoom-intelligence:/app
+    command: node server.js
+    networks:
+      - hazoom-net
+
+  # ─── Serotonin Engine ────────────────────────────────────────────
+  serotonin-engine:
+    build:
+      context: ./services/serotonin-engine
+      dockerfile: Dockerfile 2>/dev/null || true
+    container_name: hazoom-serotonin
+    restart: unless-stopped
+    ports:
+      - "8005:8005"
+    volumes:
+      - ./services/serotonin-engine:/app
+    command: python3 -m http.server 8005
+    networks:
+      - hazoom-net
+
+  # ─── Mario GTA6 ──────────────────────────────────────────────────
+  mario-gta6:
+    build:
+      context: ./services/mario-gta6
+      dockerfile: Dockerfile 2>/dev/null || true
+    container_name: hazoom-mario-gta6
+    restart: unless-stopped
+    ports:
+      - "9001:9001"
+    volumes:
+      - ./services/mario-gta6:/app
+    command: python3 -m http.server 9001
+    networks:
+      - hazoom-net
+
+  # ─── Portfolio ────────────────────────────────────────────────────
+  portfolio:
+    build:
+      context: ./projects/portfolio
+      dockerfile: Dockerfile
+    container_name: hazoom-portfolio
+    restart: unless-stopped
+    ports:
+      - "9002:80"
+    volumes:
+      - ./projects/portfolio/dist:/usr/share/nginx/html:ro
     networks:
       - hazoom-net
 

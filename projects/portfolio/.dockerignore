@@ -1,0 +1,16 @@
+node_modules
+.git
+.github
+.gitignore
+.env
+.env.local
+.env.production
+*.md
+.dockerignore
+docker-compose.yml
+Dockerfile
+.vscode
+.idea
+*.log
+dist
+.cache

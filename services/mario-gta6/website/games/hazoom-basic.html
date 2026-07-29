@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>HAZOOM BASIC — Super HAZOOM: Liberty City</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a25;--bg4:#222233;
+  --green:#00ff88;--green-dim:#00cc66;--green-dark:#004422;
+  --cyan:#00e5ff;--red:#e63946;--gold:#ffd60a;
+  --orange:#f77f00;--purple:#9b5de5;--pink:#f15bb5;
+  --text:#e8e8f0;--text-dim:#8888aa;--text-muted:#555577;
+  --font:'JetBrains Mono','Courier New',monospace;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font)}
+#app{display:flex;flex-direction:column;height:100vh;user-select:none}
+
+/* Header */
+#header{display:flex;align-items:center;justify-content:space-between;padding:6px 14px;background:var(--bg2);border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0}
+#header .logo{font-size:13px;font-weight:700;color:var(--green);letter-spacing:3px;text-shadow:0 0 10px rgba(0,255,136,0.3)}
+#header .logo span{color:var(--gold)}
+#header .subtitle{font-size:9px;color:var(--text-dim);margin-left:10px;letter-spacing:1px}
+#stats{font-size:9px;color:var(--text-dim)}
+#stats span{color:var(--cyan);margin-right:8px}
+
+/* Main */
+#main{display:flex;flex:1;overflow:hidden}
+
+/* Editor panel */
+#editor-panel{width:360px;min-width:260px;display:flex;flex-direction:column;background:var(--bg2);border-right:1px solid rgba(255,255,255,0.06)}
+#editor-header{display:flex;align-items:center;gap:2px;padding:4px 8px;background:var(--bg3);border-bottom:1px solid rgba(255,255,255,0.04)}
+#editor-header .tab{font-size:9px;padding:3px 10px;border-radius:3px;cursor:pointer;color:var(--text-dim);transition:all 0.15s}
+#editor-header .tab:hover{color:var(--text)}
+#editor-header .tab.active{background:rgba(0,255,136,0.1);color:var(--green)}
+#editor{flex:1;overflow:auto;padding:6px 8px;font-size:11px;line-height:1.5;white-space:pre;color:var(--green-dim);background:var(--bg);border:none;outline:none;resize:none;font-family:var(--font);tab-size:4}
+#editor:focus{outline:none}
+#output{flex:1;overflow:auto;padding:6px 8px;font-size:10px;line-height:1.4;white-space:pre-wrap;color:var(--cyan);background:#050508;border-top:1px solid rgba(255,255,255,0.04);max-height:100px;word-break:break-all}
+#output:empty{display:none}
+
+/* Console panel */
+#console-panel{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000;position:relative;overflow:hidden}
+#game-canvas{width:100%;height:100%;max-width:640px;max-height:768px;image-rendering:pixelated;image-rendering:crisp-edges;background:#000;outline:none}
+#canvas-scaler{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100%}
+#console-overlay{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-size:9px;color:rgba(255,255,255,0.25);text-align:center;pointer-events:none;white-space:nowrap}
+
+/* Controls */
+#controls{display:flex;gap:4px;padding:5px 8px;background:var(--bg3);border-top:1px solid rgba(255,255,255,0.04);flex-wrap:wrap;align-items:center}
+.btn{font-size:9px;padding:3px 10px;border:1px solid rgba(255,255,255,0.08);border-radius:3px;background:transparent;color:var(--text);cursor:pointer;font-family:var(--font);transition:all 0.15s}
+.btn:hover{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.15)}
+.btn.primary{border-color:rgba(0,255,136,0.4);color:var(--green)}
+.btn.primary:hover{background:rgba(0,255,136,0.08);border-color:var(--green)}
+.btn.danger{border-color:rgba(230,57,70,0.4);color:var(--red)}
+.btn.danger:hover{background:rgba(230,57,70,0.08);border-color:var(--red)}
+.btn.active{background:rgba(255,214,10,0.1);border-color:var(--gold);color:var(--gold)}
+#speed-control{display:flex;align-items:center;gap:4px;margin-left:auto}
+#speed-control label{font-size:9px;color:var(--text-dim)}
+#speed-slider{width:60px;accent-color:var(--green)}
+
+/* Status bar */
+#status{display:flex;align-items:center;justify-content:space-between;padding:3px 14px;background:var(--bg2);border-top:1px solid rgba(255,255,255,0.06);font-size:9px;color:var(--text-dim);flex-shrink:0}
+#status .indicator{display:inline-block;width:5px;height:5px;border-radius:50%;margin-right:4px;vertical-align:middle}
+#status .indicator.ready{background:var(--green);box-shadow:0 0 4px var(--green)}
+#status .indicator.running{background:var(--gold);animation:blink 0.6s infinite}
+#status .indicator.error{background:var(--red);box-shadow:0 0 4px var(--red)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+#status-left{display:flex;align-items:center;gap:12px}
+#status-msg{max-width:400px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Error display in output */
+.error-line{color:var(--red);background:rgba(230,57,70,0.1);padding:1px 4px;border-radius:2px}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--text-muted)}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="header">
+    <div style="display:flex;align-items:center">
+      <div class="logo">HAZOOM<span>BASIC</span></div>
+      <div class="subtitle">RETRO CONSOLE — SUPER HAZOOM</div>
+    </div>
+    <div id="stats"><span>FPS:<span id="fps">0</span></span> <span>Frame:<span id="frame">0</span></span> <span>Lines:<span id="lines">0</span></span></div>
+  </div>
+
+  <div id="main">
+    <div id="editor-panel">
+      <div id="editor-header">
+        <div class="tab active" onclick="switchTab('program')" id="tab-program">PROGRAM</div>
+        <div class="tab" onclick="switchTab('output')" id="tab-output">OUTPUT</div>
+      </div>
+      <textarea id="editor" spellcheck="false" placeholder="' Welcome to HAZOOM BASIC\n' Load the game or write your own program\n' Then press RUN to execute"></textarea>
+      <div id="output"></div>
+      <div id="controls">
+        <button class="btn primary" onclick="runProgram()" title="Run program">▶ RUN</button>
+        <button class="btn" onclick="stepProgram()" title="Execute one step">⏭ STEP</button>
+        <button class="btn danger" onclick="stopProgram()" title="Stop execution">⏹ STOP</button>
+        <button class="btn" onclick="resetConsole()" title="Reset console">↺ RESET</button>
+        <button class="btn" onclick="loadGame()" title="Load Super HAZOOM">🎮 SUPER HAZOOM</button>
+        <button class="btn" onclick="loadDemo('hello')" title="Hello World demo">👋 HELLO</button>
+        <button class="btn" onclick="loadDemo('graphics')" title="Graphics demo">🎨 DRAW</button>
+        <button class="btn" onclick="clearEditor()" title="Clear editor">🗑 CLEAR</button>
+        <div id="speed-control">
+          <label>Speed:</label>
+          <input type="range" id="speed-slider" min="0" max="100" value="0" onchange="setSpeed(this.value)" title="Execution speed">
+        </div>
+      </div>
+    </div>
+
+    <div id="console-panel">
+      <div id="canvas-scaler">
+        <canvas id="game-canvas" width="160" height="192" tabindex="0"></canvas>
+      </div>
+      <div id="console-overlay">ARROWS/WASD = Move &nbsp;|&nbsp; SPACE/Z = Jump &nbsp;|&nbsp; ENTER = Start &nbsp;|&nbsp; Click canvas to focus</div>
+    </div>
+  </div>
+
+  <div id="status">
+    <div id="status-left">
+      <span><span class="indicator ready" id="status-ind"></span><span id="status-text">Ready — HAZOOM BASIC v2.0 | 32KB RAM | 160×192 | 16 colors | 8 sprites</span></span>
+    </div>
+    <div>HAZOOM OS — Super HAZOOM: Liberty City — Building = Healing — mon ami 💚</div>
+  </div>
+</div>
+
+<script src="../js/hazoom-basic/tokenizer.js"></script>
+<script src="../js/hazoom-basic/parser.js"></script>
+<script src="../js/hazoom-basic/hardware.js"></script>
+<script src="../js/hazoom-basic/interpreter.js"></script>
+<script src="../js/hazoom-basic/demos.js"></script>
+
+<script>
+// ========================================
+// HAZOOM BASIC — Browser Runtime v2
+// ========================================
+
+const canvas = document.getElementById('game-canvas');
+const editor = document.getElementById('editor');
+const output = document.getElementById('output');
+const statusInd = document.getElementById('status-ind');
+const statusText = document.getElementById('status-text');
+const fpsEl = document.getElementById('fps');
+const frameEl = document.getElementById('frame');
+const linesEl = document.getElementById('lines');
+
+const hw = new VirtualHardware(canvas);
+hw.loadDefaultTiles();
+let interp = new Interpreter(hw);
+
+// FPS tracking
+let lastTime = performance.now();
+let frameCount = 0;
+let fps = 0;
+
+interp.setOutputCallback((text) => {
+  output.textContent += text;
+  output.scrollTop = output.scrollHeight;
+});
+
+interp.setInputCallback((prompt) => window.prompt(prompt) || '');
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  if (tab === 'program') {
+    editor.style.display = 'block';
+    output.style.display = 'none';
+    document.getElementById('tab-program').classList.add('active');
+  } else {
+    editor.style.display = 'none';
+    output.style.display = 'block';
+    document.getElementById('tab-output').classList.add('active');
+  }
+}
+
+function compileSource(source) {
+  const tokenizer = new Tokenizer(source);
+  const tokens = tokenizer.tokenize();
+  const parser = new Parser(tokens);
+  return parser.parse();
+}
+
+function runProgram() {
+  stopProgram();
+  output.textContent = '';
+  const source = editor.value;
+  if (!source.trim()) { setStatus('error', 'No program to run'); return; }
+
+  try {
+    const program = compileSource(source);
+    interp = new Interpreter(hw);
+    interp.setOutputCallback((text) => { output.textContent += text; output.scrollTop = output.scrollHeight; });
+    interp.setInputCallback((p) => window.prompt(p) || '');
+    interp.load(program);
+    hw.clearScreen();
+    setStatus('running', 'Running ' + interp.sortedLines.length + ' lines...');
+    interp.run();
+    requestAnimationFrame(gameLoop);
+  } catch (e) {
+    setStatus('error', 'Compile error: ' + e.message);
+    output.textContent += '\n*** COMPILE ERROR: ' + e.message + ' ***\n';
+  }
+}
+
+function stepProgram() {
+  if (!interp.running) { runProgram(); return; }
+  try { interp.step(); hw.render(); }
+  catch(e) { setStatus('error', 'Runtime error: ' + e.message); }
+}
+
+function stopProgram() {
+  if (interp) interp.stop();
+  setStatus('ready', 'Stopped');
+}
+
+function resetConsole() {
+  stopProgram();
+  hw.clearScreen();
+  hw.render();
+  output.textContent = '';
+  setStatus('ready', 'Reset — Ready');
+}
+
+function clearEditor() { editor.value = ''; editor.focus(); }
+
+function setSpeed(val) {
+  if (interp) interp.speed = parseInt(val);
+}
+
+function loadGame() {
+  fetch('../js/hazoom-basic/game-super-hazoom.bas')
+    .then(r => r.text())
+    .then(text => { editor.value = text; setStatus('ready', 'Super HAZOOM: Liberty City loaded — Press RUN'); })
+    .catch(() => setStatus('error', 'Could not load game file'));
+}
+
+const demos = {
+  hello: `10 REM === HELLO WORLD DEMO ===
+20 CLS
+30 COLOR 5, 0
+40 RECT 10, 10, 140, 30
+50 COLOR 1, 0
+60 RECT 20, 50, 120, 20
+70 COLOR 2, 0
+80 CIRCLE 80, 120, 25
+90 COLOR 5, 0
+100 FOR I = 0 TO 15
+110 PLOT RND(160), RND(192)
+120 NEXT I
+130 COLOR 1, 0
+140 RECT 30, 160, 100, 15
+150 SOUND 440, 10
+160 SOUND 554, 10
+170 SOUND 659, 10
+180 WAIT 60
+190 END`,
+  graphics: `10 REM === GRAPHICS DEMO ===
+20 CLS
+30 REM Draw gradient bars
+40 FOR Y = 0 TO 191
+50 COLOR Y MOD 16, 0
+60 LINE 0, Y, 159, Y
+70 NEXT Y
+80 WAIT 30
+90 REM Draw circles
+100 CLS
+110 FOR R = 5 TO 80 STEP 5
+120 COLOR R MOD 16, 0
+130 CIRCLE 80, 96, R
+140 SOUND 200 + R * 5, 2
+150 NEXT R
+160 WAIT 30
+170 REM Draw rectangles
+180 CLS
+190 FOR I = 0 TO 15
+200 COLOR I, 0
+210 RECT I*10, I*10, 160-I*20, 192-I*20
+220 NEXT I
+230 WAIT 30
+240 REM Draw lines
+250 CLS
+260 FOR I = 0 TO 15
+270 COLOR I, 0
+280 LINE RND(160), RND(192), RND(160), RND(192)
+290 NEXT I
+300 WAIT 60
+310 GOTO 10`
+};
+
+function loadDemo(name) {
+  if (demos[name]) {
+    editor.value = demos[name];
+    setStatus('ready', name.toUpperCase() + ' demo loaded — Press RUN');
+  }
+}
+
+// Keyboard input
+const keyMap = {
+  'ArrowUp':'UP','ArrowDown':'DOWN','ArrowLeft':'LEFT','ArrowRight':'RIGHT',
+  'KeyW':'UP','KeyS':'DOWN','KeyA':'LEFT','KeyD':'RIGHT',
+  'Space':'SPACE','Enter':'ENTER','Escape':'ESC',
+  'KeyZ':'A','KeyX':'B',
+};
+
+document.addEventListener('keydown', (e) => {
+  const key = keyMap[e.code] || e.code;
+  hw.keys[key] = true;
+  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code)) e.preventDefault();
+});
+
+document.addEventListener('keyup', (e) => {
+  const key = keyMap[e.code] || e.code;
+  hw.keys[key] = false;
+});
+
+// Focus canvas on click
+canvas.addEventListener('click', () => canvas.focus());
+
+function setStatus(type, text) {
+  statusInd.className = 'indicator ' + type;
+  statusText.textContent = text;
+}
+
+function gameLoop() {
+  frameCount++;
+  const now = performance.now();
+  if (now - lastTime >= 1000) {
+    fps = frameCount; frameCount = 0; lastTime = now;
+    fpsEl.textContent = fps;
+  }
+  hw.frame();
+  frameEl.textContent = hw.frameCount;
+  if (interp) {
+    linesEl.textContent = interp.lineCount;
+    if (interp.error) {
+      setStatus('error', 'Runtime error: ' + interp.error);
+    } else if (interp.done && interp.running === false) {
+      setStatus('ready', 'Program finished — ' + interp.lineCount + ' lines executed');
+    }
+  }
+  if (interp && (interp.running || !interp.done)) {
+    requestAnimationFrame(gameLoop);
+  } else if (hw.frameCount > 0) {
+    hw.render();
+  }
+}
+
+// Init
+hw.clearScreen();
+hw.render();
+setStatus('ready', 'Ready — HAZOOM BASIC v2.0 | 32KB RAM | 160×192 | 16 colors | 8 sprites');
+loadGame();
+</script>
+</body>
+</html>

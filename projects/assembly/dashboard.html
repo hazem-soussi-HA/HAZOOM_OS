@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HAZOOM — Assembly Computing Dashboard</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{overflow:hidden;background:#0a0a0f;font:13px 'SF Mono','Cascadia Code','Consolas',monospace;color:#c0c0c8;display:flex;height:100vh}
+#sidebar{width:220px;min-width:220px;background:#101018;border-right:1px solid #1e1e2a;display:flex;flex-direction:column;user-select:none}
+#sidebar .logo{padding:18px 16px 12px;border-bottom:1px solid #1e1e2a}
+#sidebar .logo h1{font-size:15px;color:#0f0;letter-spacing:3px;font-weight:400}
+#sidebar .logo span{font-size:10px;color:#555}
+#sidebar .nav{padding:8px 0;flex:1}
+.nav-item{padding:10px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;color:#888;transition:.15s;border-left:2px solid transparent;font-size:12px}
+.nav-item:hover{color:#ddd;background:#151520}
+.nav-item.active{color:#0f0;background:#0a0a14;border-left-color:#0f0}
+.nav-item .ico{width:18px;text-align:center;font-size:14px}
+#sidebar .status{border-top:1px solid #1e1e2a;padding:12px 16px;font-size:10px}
+.status-row{display:flex;justify-content:space-between;margin:2px 0}
+.status-dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.dot-on{background:#0f0;box-shadow:0 0 4px #0f04}
+.dot-off{background:#333}
+.dot-warn{background:#fa0}
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#toolbar{height:40px;min-height:40px;background:#101018;border-bottom:1px solid #1e1e2a;display:flex;align-items:center;padding:0 16px;gap:12px}
+#toolbar .mode-btn{padding:4px 12px;border:1px solid #333;background:transparent;color:#888;border-radius:4px;cursor:pointer;font:inherit;font-size:11px;transition:.15s}
+#toolbar .mode-btn:hover{color:#ddd;border-color:#555}
+#toolbar .mode-btn.active{color:#0f0;border-color:#0f0;background:#0f01}
+#toolbar .spacer{flex:1}
+#toolbar .gen-btn{padding:5px 20px;border:none;background:#0f0;color:#000;border-radius:4px;cursor:pointer;font:inherit;font-size:11px;font-weight:700}
+#toolbar .gen-btn:hover{background:#0c0}
+#toolbar .gen-btn:disabled{background:#333;color:#666;cursor:default}
+#content{flex:1;display:flex;overflow:hidden}
+.tab-pane{display:none;width:100%;height:100%;position:relative}
+.tab-pane.active{display:flex}
+.tab-pane.view-3d{flex-direction:column}
+.view-3d canvas{flex:1;width:100%;display:block}
+#panel-terrain .split{display:flex;height:100%;width:100%}
+#panel-terrain .split .view-3d{flex:1}
+#panel-terrain .split .side{width:340px;min-width:340px;background:#0d0d15;border-left:1px solid #1e1e2a;overflow-y:auto;padding:12px}
+#panel-earth .split{display:flex;height:100%;width:100%}
+#panel-earth .split .view-3d{flex:1}
+#panel-earth .split .side{width:340px;min-width:340px;background:#0d0d15;border-left:1px solid #1e1e2a;overflow-y:auto;padding:12px}
+#panel-machine{flex-direction:column}
+.machine-top{display:flex;flex:1;overflow:hidden}
+.machine-code{flex:1;overflow:auto;background:#08080e;padding:12px;font-size:11px;border-right:1px solid #1e1e2a}
+.machine-code pre{margin:0;white-space:pre;tab-size:4}
+.machine-code .hl-op{color:#c9a0ff}
+.machine-code .hl-cmt{color:#3a6a3a}
+.machine-code .hl-kw{color:#6af}
+.machine-code .hl-num{color:#f90}
+.machine-code .hl-dir{color:#f66}
+.machine-info{width:320px;min-width:320px;overflow-y:auto;padding:12px;background:#0d0d15}
+.machine-bottom{height:140px;min-height:140px;background:#08080e;border-top:1px solid #1e1e2a;display:flex;flex-direction:column}
+.machine-bottom .log-header{padding:6px 12px;font-size:10px;color:#555;border-bottom:1px solid #1e1e2a;display:flex;justify-content:space-between}
+.machine-bottom .log-body{flex:1;overflow-y:auto;padding:6px 12px;font-size:11px}
+.log-body .entry{color:#888;margin:1px 0}
+.log-body .entry.native{color:#0f0}
+.log-body .entry.js{color:#fa0}
+.log-body .entry.err{color:#f44}
+.side h3{font-size:11px;color:#555;text-transform:uppercase;letter-spacing:1px;margin:12px 0 6px;border-bottom:1px solid #1e1e2a;padding-bottom:4px}
+.side h3:first-child{margin-top:0}
+.side .stat{display:flex;justify-content:space-between;padding:3px 0;font-size:11px}
+.side .stat .l{color:#888}
+.side .stat .v{color:#ddd}
+.side .stat .v.good{color:#0f0}
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <div class="logo">
+    <h1>HAZOOM</h1>
+    <span>x86-64 Assembly Simulation</span>
+  </div>
+  <div class="nav">
+    <div class="nav-item active" data-tab="terrain"><span class="ico">&#x1F3D4;</span> Terrain</div>
+    <div class="nav-item" data-tab="earth"><span class="ico">&#x1F30D;</span> Earth</div>
+    <div class="nav-item" data-tab="machine"><span class="ico">&#x2699;</span> Machine View</div>
+  </div>
+  <div class="status">
+    <div class="status-row"><span>Terrain Bin</span><span class="status-dot" id="st-terrain">&#8203;</span></div>
+    <div class="status-row"><span>Earth Bin</span><span class="status-dot" id="st-earth">&#8203;</span></div>
+    <div class="status-row"><span>Server</span><span class="status-dot dot-on" id="st-server">&#8203;</span></div>
+  </div>
+</div>
+
+<div id="main">
+  <div id="toolbar">
+    <span style="color:#555;font-size:11px" id="tb-title">&#x1F3D4; Terrain Generator</span>
+    <div class="spacer"></div>
+    <button class="mode-btn active" data-mode="auto" id="m-auto">Auto</button>
+    <button class="mode-btn" data-mode="native" id="m-native">Native</button>
+    <button class="mode-btn" data-mode="js" id="m-js">JS</button>
+    <button class="gen-btn" id="btn-gen">&#x25B6; Generate</button>
+  </div>
+  <div id="content">
+    <!-- TERRAIN TAB -->
+    <div class="tab-pane active" id="panel-terrain">
+      <div class="split">
+        <div class="view-3d">
+          <canvas id="terrain-canvas"></canvas>
+        </div>
+        <div class="side" id="terrain-side">
+          <h3>Terrain Stats</h3>
+          <div class="stat"><span class="l">Grid</span><span class="v" id="ts-grid">256x256</span></div>
+          <div class="stat"><span class="l">Vertices</span><span class="v" id="ts-verts">--</span></div>
+          <div class="stat"><span class="l">Triangles</span><span class="v" id="ts-tris">--</span></div>
+          <div class="stat"><span class="l">Source</span><span class="v" id="ts-src">--</span></div>
+          <div class="stat"><span class="l">Compute Time</span><span class="v" id="ts-time">--</span></div>
+          <div class="stat"><span class="l">FPS</span><span class="v" id="ts-fps">--</span></div>
+          <h3>Height Distribution</h3>
+          <div style="height:60px;background:#08080e;border-radius:4px;padding:4px;position:relative" id="height-hist"></div>
+          <h3>Controls</h3>
+          <div style="font-size:10px;color:#666;line-height:1.6">
+            WASD Move | Mouse Look | Shift Sprint<br>
+            Space Jump | E Fly | R Reset
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EARTH TAB -->
+    <div class="tab-pane" id="panel-earth">
+      <div class="split">
+        <div class="view-3d">
+          <canvas id="earth-canvas"></canvas>
+        </div>
+        <div class="side" id="earth-side">
+          <h3>Earth Stats</h3>
+          <div class="stat"><span class="l">Grid</span><span class="v" id="es-grid">512x256</span></div>
+          <div class="stat"><span class="l">Land Pixels</span><span class="v" id="es-land">--</span></div>
+          <div class="stat"><span class="l">Source</span><span class="v" id="es-src">--</span></div>
+          <div class="stat"><span class="l">Compute Time</span><span class="v" id="es-time">--</span></div>
+          <div class="stat"><span class="l">FPS</span><span class="v" id="es-fps">--</span></div>
+          <h3>Biome Distribution</h3>
+          <div style="font-size:10px;line-height:1.6" id="es-biomes"></div>
+          <h3>Legend</h3>
+          <div style="font-size:10px;line-height:1.8" id="es-legend">
+            <span style="color:#081946">&#x25A0;</span> Ocean
+            <span style="color:#e1ebf5">&#x25A0;</span> Ice
+            <span style="color:#afbec8">&#x25A0;</span> Tundra
+            <span style="color:#1c5816">&#x25A0;</span> Boreal
+            <span style="color:#328026">&#x25A0;</span> Temperate
+            <span style="color:#cdb469">&#x25A0;</span> Desert
+            <span style="color:#949b37">&#x25A0;</span> Savanna
+            <span style="color:#084808">&#x25A0;</span> Rainforest
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MACHINE VIEW TAB -->
+    <div class="tab-pane" id="panel-machine">
+      <div class="machine-top">
+        <div class="machine-code" id="asm-viewer">
+          <pre id="asm-content">Loading assembly source...</pre>
+        </div>
+        <div class="machine-info">
+          <h3>Execution Engine</h3>
+          <div class="stat"><span class="l">Mode</span><span class="v" id="mc-mode">--</span></div>
+          <div class="stat"><span class="l">Binary</span><span class="v" id="mc-binary">--</span></div>
+          <div class="stat"><span class="l">Arch</span><span class="v" id="mc-arch">x86-64</span></div>
+          <div class="stat"><span class="l">Exit Code</span><span class="v" id="mc-exit">--</span></div>
+          <div class="stat"><span class="l">Elapsed</span><span class="v" id="mc-elapsed">--</span></div>
+          <div class="stat"><span class="l">Output Size</span><span class="v" id="mc-size">--</span></div>
+          <h3>Compute Pipeline</h3>
+          <div id="pipeline" style="font-size:10px;line-height:1.8">
+            <div style="color:#555">1. Continental Plates (Voronoi)</div>
+            <div style="color:#555">2. Fractal Detail (FBM 6 octaves)</div>
+            <div style="color:#555">3. Tectonic Mountains</div>
+            <div style="color:#555">4. Thermal Erosion (3x)</div>
+            <div style="color:#555">5. Hydraulic Erosion (5x)</div>
+            <div style="color:#555">6. Temperature (latitude+altitude)</div>
+            <div style="color:#555">7. Precipitation (orographic)</div>
+            <div style="color:#555">8. Biome Classification (Whittaker)</div>
+            <div style="color:#555">9. Vegetation Density</div>
+            <div style="color:#555">10. Binary Output</div>
+          </div>
+        </div>
+      </div>
+      <div class="machine-bottom">
+        <div class="log-header">
+          <span>Machine Log</span>
+          <span id="log-count">0 entries</span>
+        </div>
+        <div class="log-body" id="log-body"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// =============================================================================
+// HAZOOM UNIFIED DASHBOARD
+// =============================================================================
+
+const WS_URL = `ws://${location.host}`;
+const API = '/api';
+let ws = null;
+let execMode = 'auto'; // auto | native | js
+let logEntries = [];
+let terrainData = null, earthData = null;
+let terrainCanvas, earthCanvas, tgl, egl;
+
+// ---- WebSocket ----
+function connectWS() {
+  try {
+    ws = new WebSocket(WS_URL);
+    ws.onmessage = (e) => {
+      const msg = JSON.parse(e.data);
+      if (msg.type === 'log') addLog(msg.msg, msg.source === 'terrain' || msg.source === 'earth' ? msg.source : 'info');
+      if (msg.type === 'progress') updateProgress(msg.source, msg.bytes);
+    };
+    ws.onclose = () => setTimeout(connectWS, 2000);
+  } catch(e) {}
+}
+
+// ---- Logging ----
+function addLog(msg, type = 'info') {
+  const el = document.getElementById('log-body');
+  const d = document.createElement('div');
+  d.className = 'entry ' + (type === 'terrain' || type === 'earth' ? 'native' : type);
+  d.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  el.appendChild(d);
+  el.scrollTop = el.scrollHeight;
+  logEntries.push(msg);
+  document.getElementById('log-count').textContent = logEntries.length + ' entries';
+}
+
+// ---- Status ----
+async function checkStatus() {
+  try {
+    const r = await fetch(API + '/status');
+    const s = await r.json();
+    document.getElementById('st-terrain').className = 'status-dot ' + (s.terrainBinary ? 'dot-on' : 'dot-off');
+    document.getElementById('st-earth').className = 'status-dot ' + (s.earthBinary ? 'dot-on' : 'dot-warn');
+    document.getElementById('mc-mode').textContent = s.terrainBinary ? 'Native (x86-64)' : 'JS Fallback';
+    document.getElementById('mc-binary').textContent = s.terrainBinary ? 'Available' : 'Not found';
+  } catch(e) {
+    document.getElementById('st-server').className = 'status-dot dot-off';
+  }
+}
+
+// ---- Tab Navigation ----
+document.querySelectorAll('.nav-item').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(x => x.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('panel-' + el.dataset.tab).classList.add('active');
+    document.getElementById('tb-title').innerHTML = el.innerHTML;
+    if (el.dataset.tab === 'terrain') setTimeout(() => initTerrainGL(), 50);
+    if (el.dataset.tab === 'earth') setTimeout(() => initEarthGL(), 50);
+    if (el.dataset.tab === 'machine') loadAsmSource();
+  });
+});
+
+// ---- Mode Toggle ----
+document.querySelectorAll('.mode-btn').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn').forEach(x => x.classList.remove('active'));
+    el.classList.add('active');
+    execMode = el.dataset.mode;
+  });
+});
+
+// ---- Generate ----
+document.getElementById('btn-gen').addEventListener('click', generate);
+
+async function generate() {
+  const btn = document.getElementById('btn-gen');
+  btn.disabled = true;
+  btn.textContent = '...';
+
+  const active = document.querySelector('.tab-pane.active');
+  if (active.id === 'panel-terrain') {
+    await generateTerrain();
+  } else if (active.id === 'panel-earth') {
+    await generateEarth();
+  }
+
+  btn.disabled = false;
+  btn.textContent = '\u25B6 Generate';
+}
+
+let terrainGenCount = 0;
+async function generateTerrain() {
+  addLog('Terrain generation requested...', 'info');
+  const startTime = performance.now();
+  const r = await fetch(API + '/terrain/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      useNative: execMode === 'native' ? true : execMode === 'js' ? false : undefined
+    })
+  });
+  const result = await r.json();
+  const elapsed = performance.now() - startTime;
+
+  document.getElementById('ts-src').textContent = result.source || 'js';
+  document.getElementById('ts-time').textContent = (result.elapsed || elapsed) + 'ms';
+  document.getElementById('ts-verts').textContent = result.vertexCount?.toLocaleString() || '--';
+  document.getElementById('ts-tris').textContent = (result.indexCount / 3)?.toLocaleString() || '--';
+
+  if (result.data) {
+    // Binary data from native — parse and render
+    terrainData = parseTerrainBinary(new Uint8Array(result.data));
+  } else if (result.vertices) {
+    terrainData = result;
+  }
+  if (terrainData) renderTerrain(terrainData);
+  checkStatus();
+}
+
+async function generateEarth() {
+  addLog('Earth simulation requested...', 'info');
+  const r = await fetch(API + '/earth/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      useNative: execMode === 'native' ? true : execMode === 'js' ? false : undefined
+    })
+  });
+  const result = await r.json();
+
+  document.getElementById('es-src').textContent = result.source || 'js';
+  document.getElementById('es-time').textContent = (result.elapsed || 0) + 'ms';
+
+  if (result.data) {
+    earthData = parseEarthBinary(new Uint8Array(result.data));
+  } else {
+    earthData = result;
+  }
+  if (earthData) {
+    renderEarth(earthData);
+    updateEarthStats(earthData);
+  }
+  checkStatus();
+}
+
+// ---- Binary Parsing ----
+function parseTerrainBinary(data) {
+  if (data.length < 24) return null;
+  const dv = new DataView(data.buffer);
+  let off = 0;
+  const magic = String.fromCharCode(...data.slice(off, off + 4)); off += 4;
+  if (magic !== 'HZTR') { addLog('Bad terrain magic: ' + magic, 'err'); return null; }
+  const gw = dv.getUint32(off, true); off += 4;
+  const gh = dv.getUint32(off, true); off += 4;
+  const stride = dv.getUint32(off, true); off += 4;
+  const idxCount = dv.getUint32(off, true); off += 4;
+  off += 4; // reserved
+
+  const vc = gw * gh;
+  const verts = new Float32Array(vc * 10);
+  let vi = 0;
+  for (let i = 0; i < vc; i++) {
+    if (off + 48 > data.length) break;
+    verts[vi++] = dv.getFloat32(off, true); off += 4;
+    verts[vi++] = dv.getFloat32(off, true); off += 4;
+    verts[vi++] = dv.getFloat32(off, true); off += 4;
+    verts[vi++] = dv.getFloat32(off, true); off += 4;
+    verts[vi++] = dv.getFloat32(off, true); off += 4;
+    verts[vi++] = dv.getFloat32(off, true); off += 4;
+    verts[vi++] = dv.getFloat32(off, true); off += 4;
+    verts[vi++] = dv.getFloat32(off, true); off += 4;
+    verts[vi++] = dv.getFloat32(off, true); off += 4;
+    verts[vi++] = dv.getFloat32(off, true); off += 4;
+  }
+  const indices = new Uint32Array(idxCount);
+  for (let i = 0; i < idxCount; i++) {
+    if (off + 4 > data.length) break;
+    indices[i] = dv.getUint32(off, true); off += 4;
+  }
+  return { gridW: gw, gridH: gh, vertexCount: vc, indexCount: idxCount, vertices: verts, indices };
+}
+
+function parseEarthBinary(d) { /* placeholder — full binary format TBD */ return null; }
+
+// ---- Terrain WebGL ----
+let tInit = false, tProg, tVAO, tIdxCount, tCam = {x:0,y:5,z:0,yaw:0,pitch:0,fly:false,vy:0};
+const tKeys = {};
+
+function initTerrainGL() {
+  if (tInit) return;
+  terrainCanvas = document.getElementById('terrain-canvas');
+  if (!terrainCanvas || terrainCanvas.offsetWidth === 0) return setTimeout(initTerrainGL, 200);
+  tgl = terrainCanvas.getContext('webgl2', { antialias: true, alpha: false });
+  if (!tgl) return;
+  tInit = true;
+  resizeT();
+  addEventListener('resize', resizeT);
+
+  const vs = `#version 300 es
+precision highp float;
+layout(location=0) in vec3 a_pos;
+layout(location=1) in vec3 a_normal;
+layout(location=2) in vec4 a_color;
+uniform mat4 u_vp;
+out vec3 v_norm, v_col, v_wpos;
+void main(){
+  v_norm = a_normal; v_col = a_color.rgb; v_wpos = a_pos;
+  gl_Position = u_vp * vec4(a_pos, 1.0);
+}`;
+  const fs = `#version 300 es
+precision highp float;
+in vec3 v_norm, v_col, v_wpos;
+uniform vec3 u_sun, u_cam;
+out vec4 fc;
+void main(){
+  float d = max(dot(normalize(v_norm), normalize(u_sun)), 0.0);
+  vec3 col = v_col * (.25 + d * .75);
+  float fog = 1.0 - exp(-length(v_wpos - u_cam) * .006);
+  col = mix(col, vec3(.6,.7,.85), fog);
+  col = col / (col + vec3(1.0));
+  col = pow(col, vec3(1.0/2.2));
+  fc = vec4(col, 1.0);
+}`;
+  tProg = mkProg(tgl, vs, fs);
+  tCam.uVP = tgl.getUniformLocation(tProg, 'u_vp');
+  tCam.uSun = tgl.getUniformLocation(tProg, 'u_sun');
+  tCam.uCam = tgl.getUniformLocation(tProg, 'u_cam');
+
+  document.addEventListener('keydown', e => { tKeys[e.code] = true; if (e.code === 'KeyE') tCam.fly = !tCam.fly; });
+  document.addEventListener('keyup', e => { tKeys[e.code] = false; });
+  terrainCanvas.addEventListener('click', () => terrainCanvas.requestPointerLock());
+  document.addEventListener('mousemove', e => {
+    if (document.pointerLockElement === terrainCanvas) {
+      tCam.yaw -= e.movementX * .002;
+      tCam.pitch -= e.movementY * .002;
+      tCam.pitch = Math.max(-1.5, Math.min(1.5, tCam.pitch));
+    }
+  });
+  requestAnimationFrame(frameT);
+}
+
+function resizeT() {
+  if (!terrainCanvas || !tgl) return;
+  const r = Math.min(devicePixelRatio, 1.5);
+  terrainCanvas.width = Math.floor(terrainCanvas.offsetWidth * r);
+  terrainCanvas.height = Math.floor(terrainCanvas.offsetHeight * r);
+  tgl.viewport(0, 0, terrainCanvas.width, terrainCanvas.height);
+}
+
+function mkS(gl, src, type) {
+  const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw gl.getShaderInfoLog(s);
+  return s;
+}
+function mkProg(gl, vs, fs) {
+  const p = gl.createProgram();
+  gl.attachShader(p, mkS(gl, vs, gl.VERTEX_SHADER));
+  gl.attachShader(p, mkS(gl, fs, gl.FRAGMENT_SHADER));
+  gl.linkProgram(p);
+  if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw gl.getProgramInfoLog(p);
+  return p;
+}
+
+function uploadTerrain(data) {
+  if (!tgl || !tInit) return;
+  const vao = tgl.createVertexArray(); tgl.bindVertexArray(vao);
+  const vbo = tgl.createBuffer(); tgl.bindBuffer(tgl.ARRAY_BUFFER, vbo);
+  tgl.bufferData(tgl.ARRAY_BUFFER, data.vertices, tgl.STATIC_DRAW);
+  tgl.enableVertexAttribArray(0);
+  tgl.vertexAttribPointer(0, 3, tgl.FLOAT, false, 40, 0);
+  tgl.enableVertexAttribArray(1);
+  tgl.vertexAttribPointer(1, 3, tgl.FLOAT, false, 40, 12);
+  tgl.enableVertexAttribArray(2);
+  tgl.vertexAttribPointer(2, 4, tgl.FLOAT, false, 40, 24);
+  const ibo = tgl.createBuffer(); tgl.bindBuffer(tgl.ELEMENT_ARRAY_BUFFER, ibo);
+  tgl.bufferData(tgl.ELEMENT_ARRAY_BUFFER, data.indices instanceof Uint32Array ? data.indices : new Uint32Array(data.indices), tgl.STATIC_DRAW);
+  tVAO = vao;
+  tIdxCount = data.indexCount || data.indices.length;
+}
+
+function renderTerrain(data) {
+  uploadTerrain(data);
+  tCam.x = 0; tCam.y = 5; tCam.z = 0;
+}
+
+function persp(f, a, n, f2) {
+  const F = 1 / Math.tan(f/2), nf = 1/(n-f2);
+  return new Float32Array([F/a,0,0,0, 0,F,0,0, 0,0,(f2+n)*nf,-1, 0,0,2*f2*n*nf,0]);
+}
+function lookAt(eye, p, y) {
+  const cp = Math.cos(p), sp = Math.sin(p), cy = Math.cos(y), sy = Math.sin(y);
+  const f = [sp*cy, cp, sp*sy], r = [sy, 0, -cy];
+  const u = [r[1]*f[2] - r[2]*f[1], r[2]*f[0] - r[0]*f[2], r[0]*f[1] - r[1]*f[0]];
+  return new Float32Array([
+    r[0], u[0], -f[0], 0,
+    r[1], u[1], -f[1], 0,
+    r[2], u[2], -f[2], 0,
+    -(r[0]*eye[0]+r[1]*eye[1]+r[2]*eye[2]),
+    -(u[0]*eye[0]+u[1]*eye[1]+u[2]*eye[2]),
+    -(-f[0]*eye[0]-f[1]*eye[1]-f[2]*eye[2]), 1
+  ]);
+}
+function mul4(a, b) {
+  const o = new Float32Array(16);
+  for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++)
+    o[j*4+i] = a[i]*b[j*4] + a[4+i]*b[j*4+1] + a[8+i]*b[j*4+2] + a[12+i]*b[j*4+3];
+  return o;
+}
+
+function frameT() {
+  requestAnimationFrame(frameT);
+  if (!tgl || !tProg || !tVAO) return;
+  const dt = .016;
+  const sp = (tKeys['ShiftLeft'] ? 15 : 5) * dt;
+  const cy = Math.cos(tCam.yaw), sy = Math.sin(tCam.yaw);
+  if (tKeys['KeyW']) { tCam.x += sy * sp; tCam.z += -cy * sp; }
+  if (tKeys['KeyS']) { tCam.x -= sy * sp; tCam.z += cy * sp; }
+  if (tKeys['KeyA']) { tCam.x -= cy * sp; tCam.z -= sy * sp; }
+  if (tKeys['KeyD']) { tCam.x += cy * sp; tCam.z += sy * sp; }
+  if (tCam.fly) {
+    if (tKeys['Space']) tCam.y += sp;
+    if (tKeys['KeyQ']) tCam.y -= sp;
+  } else {
+    if (tKeys['Space']) tCam.vy = 8;
+    tCam.vy -= 20 * dt;
+    const gh = terrainData ? getTerrainHeight(tCam.x, tCam.z) : 0;
+    tCam.y += tCam.vy * dt;
+    if (tCam.y < gh + 1.7) { tCam.y = gh + 1.7; tCam.vy = 0; }
+  }
+
+  const asp = terrainCanvas.width / terrainCanvas.height;
+  const vp = mul4(persp(1.2, asp, .05, 200), lookAt([tCam.x, tCam.y, tCam.z], tCam.pitch, tCam.yaw));
+  tgl.clearColor(.55, .7, .9, 1);
+  tgl.clear(tgl.COLOR_BUFFER_BIT | tgl.DEPTH_BUFFER_BIT);
+  tgl.enable(tgl.DEPTH_TEST);
+  tgl.enable(tgl.CULL_FACE);
+  tgl.useProgram(tProg);
+  tgl.uniformMatrix4fv(tCam.uVP, false, vp);
+  tgl.uniform3f(tCam.uSun, Math.cos(Date.now()*.001)*.5, .6, Math.sin(Date.now()*.001)*.5);
+  tgl.uniform3f(tCam.uCam, tCam.x, tCam.y, tCam.z);
+  tgl.bindVertexArray(tVAO);
+  tgl.drawElements(tgl.TRIANGLES, tIdxCount, tgl.UNSIGNED_INT, 0);
+}
+
+function getTerrainHeight(x, z) {
+  if (!terrainData || !terrainData.vertices) return 0;
+  return x * 0.01; // placeholder
+}
+
+// ---- Earth WebGL ----
+let eInit = false, eProg, eVAO, eIdxCount, eTex;
+
+function initEarthGL() {
+  if (eInit) return;
+  earthCanvas = document.getElementById('earth-canvas');
+  if (!earthCanvas || earthCanvas.offsetWidth === 0) return setTimeout(initEarthGL, 200);
+  egl = earthCanvas.getContext('webgl2', { antialias: true, alpha: false });
+  if (!egl) return;
+  eInit = true;
+  resizeE();
+  addEventListener('resize', resizeE);
+  buildSphere();
+}
+
+function resizeE() {
+  if (!earthCanvas || !egl) return;
+  const r = Math.min(devicePixelRatio, 2);
+  earthCanvas.width = Math.floor(earthCanvas.offsetWidth * r);
+  earthCanvas.height = Math.floor(earthCanvas.offsetHeight * r);
+  egl.viewport(0, 0, earthCanvas.width, earthCanvas.height);
+}
+
+let eSphere = null;
+function buildSphere() {
+  const slat = 96, slon = 192;
+  const pos = [], nrm = [], uv = [], idx = [];
+  for (let j = 0; j <= slat; j++) {
+    const th = j * Math.PI / slat, sT = Math.sin(th), cT = Math.cos(th);
+    for (let i = 0; i <= slon; i++) {
+      const ph = i * 2 * Math.PI / slon;
+      pos.push(cT * Math.cos(ph), sT, cT * Math.sin(ph));
+      nrm.push(cT * Math.cos(ph), sT, cT * Math.sin(ph));
+      uv.push(i/slon, j/slat);
+    }
+  }
+  for (let j = 0; j < slat; j++) {
+    for (let i = 0; i < slon; i++) {
+      const a = j*(slon+1)+i, b = a+slon+1;
+      idx.push(a, b, a+1, b, b+1, a+1);
+    }
+  }
+  eSphere = { pos, nrm, uv, idx, slat, slon };
+
+  if (!egl) return;
+  const vao = egl.createVertexArray(); egl.bindVertexArray(vao);
+  for (let i = 0; i < 3; i++) {
+    const buf = egl.createBuffer();
+    egl.bindBuffer(egl.ARRAY_BUFFER, buf);
+    egl.bufferData(egl.ARRAY_BUFFER,
+      i === 0 ? new Float32Array(pos) : i === 1 ? new Float32Array(nrm) : new Float32Array(uv),
+      egl.STATIC_DRAW);
+    egl.enableVertexAttribArray(i);
+    egl.vertexAttribPointer(i, i === 2 ? 2 : 3, egl.FLOAT, false, 0, 0);
+  }
+  const ibo = egl.createBuffer();
+  egl.bindBuffer(egl.ELEMENT_ARRAY_BUFFER, ibo);
+  egl.bufferData(egl.ELEMENT_ARRAY_BUFFER, new Uint32Array(idx), egl.STATIC_DRAW);
+  eVAO = vao;
+  eIdxCount = idx.length;
+
+  const vs = `#version 300 es
+precision highp float;
+layout(location=0) in vec3 a_pos;
+layout(location=1) in vec3 a_normal;
+layout(location=2) in vec2 a_uv;
+uniform mat4 u_mvp;
+uniform mat4 u_model;
+out vec3 v_norm;
+out vec2 v_uv;
+void main(){
+  v_norm = normalize(mat3(u_model) * a_normal);
+  v_uv = a_uv;
+  gl_Position = u_mvp * vec4(a_pos, 1.0);
+}`;
+  const fs = `#version 300 es
+precision highp float;
+in vec3 v_norm;
+in vec2 v_uv;
+uniform vec3 u_sunDir;
+uniform sampler2D u_biomeTex;
+out vec4 fc;
+void main(){
+  vec3 bc = texture(u_biomeTex, v_uv).rgb;
+  float diff = max(dot(normalize(v_norm), normalize(u_sunDir)), 0.0);
+  vec3 col = bc * (.25 + diff * .75);
+  float rim = pow(1.0 - max(dot(normalize(v_norm), normalize(vec3(0,0,1))), 0.0), 2.5);
+  col += vec3(.3,.5,1) * rim * .3;
+  col = col / (col + vec3(1.0));
+  col = pow(col, vec3(1.0/2.2));
+  fc = vec4(col, 1.0);
+}`;
+  eProg = mkProg(egl, vs, fs);
+  eCam = {
+    uMVP: egl.getUniformLocation(eProg, 'u_mvp'),
+    uModel: egl.getUniformLocation(eProg, 'u_model'),
+    uSunDir: egl.getUniformLocation(eProg, 'u_sunDir'),
+    th: 0.3, ph: 0.4, dist: 3.5
+  };
+
+  let md = false, lmx = 0, lmy = 0;
+  earthCanvas.addEventListener('mousedown', e => { md = true; lmx = e.clientX; lmy = e.clientY; });
+  window.addEventListener('mouseup', () => md = false);
+  window.addEventListener('mousemove', e => {
+    if (!md) return;
+    eCam.th -= (e.clientX - lmx) * .005;
+    eCam.ph += (e.clientY - lmy) * .005;
+    eCam.ph = Math.max(-1.2, Math.min(1.2, eCam.ph));
+    lmx = e.clientX; lmy = e.clientY;
+  });
+  earthCanvas.addEventListener('wheel', e => {
+    eCam.dist += e.deltaY * .002;
+    eCam.dist = Math.max(1.5, Math.min(8, eCam.dist));
+    e.preventDefault();
+  }, { passive: false });
+  requestAnimationFrame(frameE);
+}
+
+let eCam = null;
+
+function frameE() {
+  requestAnimationFrame(frameE);
+  if (!egl || !eProg || !eVAO) return;
+  const t = Date.now() * .001;
+  const at = eCam.th + Math.sin(t * .03) * .05;
+  const cx = Math.cos(at) * Math.cos(eCam.ph) * eCam.dist;
+  const cy = Math.sin(eCam.ph) * eCam.dist;
+  const cz = Math.sin(at) * Math.cos(eCam.ph) * eCam.dist;
+  const asp = earthCanvas.width / earthCanvas.height;
+
+  const proj = persp(1, asp, .1, 100);
+  const view = lookAt([cx, cy, cz], [0, 0, 0], [0, 1, 0]);
+  const model = rotY(t * .05);
+  const mvp = mul4(proj, mul4(view, model));
+
+  egl.clearColor(.005, .005, .02, 1);
+  egl.clear(egl.COLOR_BUFFER_BIT | egl.DEPTH_BUFFER_BIT);
+  egl.enable(egl.DEPTH_TEST);
+  egl.enable(egl.CULL_FACE);
+  egl.useProgram(eProg);
+  egl.uniformMatrix4fv(eCam.uMVP, false, mvp);
+  egl.uniformMatrix4fv(eCam.uModel, false, model);
+  const sd = [Math.cos(t*.02)*.5, .35+.25*Math.sin(t*.02), Math.sin(t*.02)*.5];
+  egl.uniform3f(eCam.uSunDir, sd[0], sd[1], sd[2]);
+  if (eTex) {
+    egl.activeTexture(egl.TEXTURE0);
+    egl.bindTexture(egl.TEXTURE_2D, eTex);
+    egl.uniform1i(egl.getUniformLocation(eProg, 'u_biomeTex'), 0);
+  }
+  egl.bindVertexArray(eVAO);
+  egl.drawElements(egl.TRIANGLES, eIdxCount, egl.UNSIGNED_INT, 0);
+}
+
+function rotY(a) {
+  const c = Math.cos(a), s = Math.sin(a);
+  return new Float32Array([c,0,-s,0, 0,1,0,0, s,0,c,0, 0,0,0,1]);
+}
+
+function renderEarth(data) {
+  if (!egl) return;
+  const gw = data.gridW || 512, gh = data.gridH || 256;
+  const biomeCols = {
+    0: [8,25,70], 1: [175,190,200], 2: [28,88,22], 3: [50,128,38],
+    4: [80,160,55], 5: [8,130,8], 6: [205,180,105], 7: [148,155,55],
+    8: [8,72,8], 9: [225,235,245], 10: [130,120,110]
+  };
+
+  const pixels = new Uint8Array(gw * gh * 4);
+  const elev = data.elevation || data.elev;
+  const biomes = data.biomeMap || data.biomes;
+
+  if (biomes) {
+    for (let i = 0; i < gw * gh; i++) {
+      const c = biomeCols[biomes[i]] || [80,80,80];
+      const shade = elev ? Math.min(255, Math.max(0, (1 + elev[i] * .3) * 128)) : 128;
+      pixels[i*4] = Math.min(255, c[0] * shade / 128);
+      pixels[i*4+1] = Math.min(255, c[1] * shade / 128);
+      pixels[i*4+2] = Math.min(255, c[2] * shade / 128);
+      pixels[i*4+3] = 255;
+    }
+  } else {
+    for (let i = 0; i < gw * gh; i++) {
+      const e = elev ? elev[i] : 0;
+      const r = e < 0.45 ? 8 : e < 0.5 ? 225 : 50;
+      const g = e < 0.45 ? 25 : e < 0.5 ? 235 : 128;
+      const b = e < 0.45 ? 70 : e < 0.5 ? 245 : 38;
+      pixels[i*4] = r; pixels[i*4+1] = g; pixels[i*4+2] = b; pixels[i*4+3] = 255;
+    }
+  }
+
+  if (eTex) egl.deleteTexture(eTex);
+  eTex = egl.createTexture();
+  egl.bindTexture(egl.TEXTURE_2D, eTex);
+  egl.texImage2D(egl.TEXTURE_2D, 0, egl.RGBA, gw, gh, 0, egl.RGBA, egl.UNSIGNED_BYTE, pixels);
+  egl.texParameteri(egl.TEXTURE_2D, egl.TEXTURE_MIN_FILTER, egl.LINEAR);
+  egl.texParameteri(egl.TEXTURE_2D, egl.TEXTURE_MAG_FILTER, egl.LINEAR);
+  egl.texParameteri(egl.TEXTURE_2D, egl.TEXTURE_WRAP_S, egl.REPEAT);
+  egl.texParameteri(egl.TEXTURE_2D, egl.TEXTURE_WRAP_T, egl.CLAMP_TO_EDGE);
+}
+
+function updateEarthStats(data) {
+  const elev = data.elevation || data.elev || [];
+  const land = elev.filter(e => e >= 0.45).length;
+  document.getElementById('es-land').textContent = land.toLocaleString() + ' (' + (land/(512*256)*100).toFixed(1) + '%)';
+}
+
+function updateProgress(source, bytes) {
+  // placeholder for progress bars
+}
+
+// ---- Assembly Source Viewer ----
+async function loadAsmSource() {
+  const el = document.getElementById('asm-content');
+  try {
+    const r = await fetch('earth_sim.asm');
+    const src = await r.text();
+    el.textContent = src;
+    // Simple syntax highlighting
+    let html = src;
+    html = html.replace(/;.*/g, m => `<span class="hl-cmt">${m}</span>`);
+    html = html.replace(/\b(section|global|extern|align)\b/g, '<span class="hl-dir">$1</span>');
+    html = html.replace(/\b(mov|add|sub|mul|imul|div|idiv|xor|and|or|cmp|test|jmp|je|jne|jg|jl|jge|jle|jz|jnz|call|ret|push|pop|inc|dec|shl|shr|syscall|ucomiss|minss|maxss|sqrtss|divss|mulss|addss|subss|cvtsi2ss|cvttss2si|movss|movd|movzx|pxor|xorps|andps|rep movsd|rep stosd|lea)\b/g, '<span class="hl-kw">$1</span>');
+    html = html.replace(/\b(r\d+[a-d]?|xmm\d+|eax|ecx|edx|ebx|esp|ebp|esi|edi|rax|rcx|rdx|rbx|rsp|rbp|rsi|rdi|r\d+)\b/g, '<span class="hl-op">$1</span>');
+    html = html.replace(/\b\d+\b/g, '<span class="hl-num">$1</span>');
+    el.innerHTML = html;
+  } catch(e) {
+    el.textContent = 'Could not load assembly source: ' + e.message;
+  }
+}
+
+// ---- Init ----
+connectWS();
+checkStatus();
+</script>
+</body>
+</html>

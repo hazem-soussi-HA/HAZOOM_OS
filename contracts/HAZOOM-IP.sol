@@ -1,18 +1,17 @@
-// HAZOOM OS — Intellectual Property Registration & Licensing Smart Contract
+// HAZOOM OS \u2014 Intellectual Property Registration & Licensing Smart Contract
 // Author: Hazem Soussi (CIN: 09876443, Tunisian National ID)
-// Project: HAZOOM OS v6.0 — The Operating System That Learns
+// Project: HAZOOM OS v6.0 \u2014 The Operating System That Learns
 //
-// SPDX-License-Identifier: HA-2.0 (HAZOOM Proprietary License v2.0)
+// SPDX-License-Identifier: HA-2.0
 // Chain: Ethereum Sepolia Testnet (for verification), Mainnet (for production)
 // Compiler: Solidity ^0.8.19
 // Purpose: Register all HAZOOM OS intellectual property on-chain as an NFT
 //          representing full legal copyright and ownership rights.
 
-// SPDX-License-Identifier: SEE LICENSE IN LICENSE.md
 pragma solidity ^0.8.19;
 
 /**
- * @title HAZOOM OS — IP Rights Registration Contract
+ * @title HAZOOM OS \u2014 IP Rights Registration Contract
  * @notice On-chain proof of creation and copyright for HAZOOM OS v6.0
  * @dev Registers all intellectual property components with timestamps
  *      Immutable, publicly verifiable, legally binding in Tunisia and EU
@@ -36,7 +35,7 @@ interface IERC721 {
  */
 
 contract HAZOOMIP {
-    // Owner = Hazem Soussi — sole copyright holder
+    // Owner = Hazem Soussi \u2014 sole copyright holder
     address public immutable owner;
     address public immutable originalCreator;
 
@@ -47,7 +46,8 @@ contract HAZOOMIP {
     string public constant AUTHOR_CIN = "REDACTED_FOR_PRIVACY";  // CIN stored off-chain, verified via ZK-proof
     string public constant AUTHOR_COUNTRY = "Tunisia";
     string public constant COPYRIGHT_YEAR = "2024-2026";
-    string public constant LEGAL_ENTITY = "HAZOOM — Private Digital Artefact Namespace";
+    string public constant LEGAL_YEAR = "2024-2026";
+    string public constant LEGAL_ENTITY = unicode"HAZOOM \u2014 Private Digital Artefact Namespace";
 
     /**
      * @notice Structure representing each IP-registered file/component
@@ -74,7 +74,7 @@ contract HAZOOMIP {
     uint256 public registrationDate;
     uint256 public immutable registrationTimestamp;
 
-    // License flags — strictly enforce proprietary control
+    // License flags \u2014 strictly enforce proprietary control
     bool public licensesRevocable;       // = false (permanent copyright)
     bool public transfersAllowed;        // = false (no transfer without explicit consent)
 
@@ -115,13 +115,13 @@ contract HAZOOMIP {
         licensesRevocable = false;     // Cannot revoke copyright
         transfersAllowed = false;      // Cannot transfer without signed consent
 
-        // Legal notice — immutable
+        // Legal notice \u2014 immutable
         legalNotice = string(abi.encodePacked(
-            "COPYRIGHT (C) 2024-2026 Hazem Soussi — CIN 09876443 — Tunisia. ",
+            unicode"COPYRIGHT (C) 2024-2026 Hazem Soussi \u2014 CIN 09876443 \u2014 Tunisia. ",
             "ALL RIGHTS RESERVED. HAZOOM OS v6.0 is proprietary software. ",
             "Unauthorized reproduction, distribution, modification or reverse engineering ",
             "is strictly prohibited under Tunisian Law (Loi 2004-33), ",
-            "EU Copyright Directive 2001/29/EC, and Berne Convention. ",
+            unicode"EU Copyright Directive 2001/29/EC, and Berne Convention. ",
             "Use requires a formal HAZOOM-BROKER License Agreement. ",
             "Violation constitutes civil and criminal infringement."
         ));
@@ -131,7 +131,7 @@ contract HAZOOMIP {
 
         emit OwnershipAssertion(
             msg.sender,
-            "HAZOOM OS v6.0 — all intellectual property hereby registered on-chain",
+            unicode"HAZOOM OS v6.0 \u2014 all intellectual property hereby registered on-chain",
             block.timestamp
         );
     }
@@ -199,28 +199,28 @@ contract HAZOOMIP {
     // ========================================================================
     // Internal helpers
     function regKernel(string memory f, string memory desc) internal {
-        _register(f, "sha256-kernel-placeholder", "kernel", desc);
+        _register(f, keccak256(bytes(f)), "kernel", desc);
     }
     function regAI(string memory f, string memory desc) internal {
-        _register(f, "sha256-ai-placeholder", "ai", desc);
+        _register(f, keccak256(bytes(f)), "ai", desc);
     }
     function regPascal(string memory f, string memory desc) internal {
-        _register(f, "sha256-pascal-placeholder", "pascal", desc);
+        _register(f, keccak256(bytes(f)), "pascal", desc);
     }
     function regFrontend(string memory f, string memory desc) internal {
-        _register(f, "sha256-frontend-placeholder", "frontend", desc);
+        _register(f, keccak256(bytes(f)), "frontend", desc);
     }
     function regService(string memory f, string memory desc) internal {
-        _register(f, "sha256-service-placeholder", "service", desc);
+        _register(f, keccak256(bytes(f)), "service", desc);
     }
     function regCrypto(string memory f, string memory desc) internal {
-        _register(f, "sha256-crypto-placeholder", "crypto", desc);
+        _register(f, keccak256(bytes(f)), "crypto", desc);
     }
     function regConfig(string memory f, string memory desc) internal {
-        _register(f, "sha256-config-placeholder", "config", desc);
+        _register(f, keccak256(bytes(f)), "config", desc);
     }
     function regDocs(string memory f, string memory desc) internal {
-        _register(f, "sha256-docs-placeholder", "docs", desc);
+        _register(f, keccak256(bytes(f)), "docs", desc);
     }
 
     function _register(
@@ -236,7 +236,7 @@ contract HAZOOMIP {
             componentType: cType,
             creationDate: block.timestamp,
             description: desc,
-            license: "HA-2.0 Proprietary — All Rights Reserved",
+            license: "HA-2.0 Proprietary \u2014 All Rights Reserved",
             isRegistered: true
         });
         componentList.push(filename);

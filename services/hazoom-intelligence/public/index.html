@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HAZOOM Intelligence</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#07070d;--bg2:#0d0d1a;--bg3:#14142a;--surface:#1c1c3a;--accent:#00f0ff;--gold:#ffd700;--purple:#8b5cf6;--green:#10b981;--red:#ef4444;--orange:#f59e0b;--pink:#ec4899;--text:#e0e0f0;--dim:#6b6b9a;--radius:10px}
+body{font-family:'Inter','Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--accent);border-radius:2px}
+
+/* Header */
+.header{background:linear-gradient(135deg,#0a0a16 0%,#14142a 100%);border-bottom:1px solid rgba(0,240,255,0.12);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+.header-left{display:flex;align-items:center;gap:12px}
+.header h1{font-size:18px;font-weight:700;background:linear-gradient(90deg,var(--accent),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.5px}
+.header .sub{color:var(--dim);font-size:11px;margin-top:1px}
+.status-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.status-pill{background:var(--bg3);border:1px solid rgba(255,255,255,0.06);border-radius:20px;padding:3px 10px;font-size:10px;color:var(--dim);display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace}
+.status-pill .dot{width:6px;height:6px;border-radius:50%}
+.status-pill .val{color:var(--text)}
+
+/* Layout */
+.container{max-width:1400px;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:16px}
+.section-title{font-size:13px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.section-title .count{color:var(--accent);font-weight:400;font-size:11px}
+.grid{display:grid;gap:10px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:1fr 1fr 1fr}
+.g4{grid-template-columns:1fr 1fr 1fr 1fr}
+@media(max-width:1100px){.g4{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+/* Cards */
+.card{background:var(--bg2);border:1px solid rgba(255,255,255,0.05);border-radius:var(--radius);padding:14px;transition:all .2s}
+.card:hover{border-color:rgba(0,240,255,0.15)}
+.card.glow{border-color:var(--accent);box-shadow:0 0 30px rgba(0,240,255,0.06)}
+.card.gold{border-color:var(--gold);box-shadow:0 0 30px rgba(255,215,0,0.06)}
+.card.purple{border-color:var(--purple);box-shadow:0 0 30px rgba(139,92,246,0.06)}
+.card-title{font-size:11px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.card-value{font-size:24px;font-weight:700;font-family:'JetBrains Mono',monospace}
+.card-label{font-size:10px;color:var(--dim);margin-top:1px}
+
+/* Service items */
+.service-grid{display:flex;flex-direction:column;gap:4px}
+.service-row{display:flex;align-items:center;justify-content:space-between;padding:5px 8px;background:var(--bg3);border-radius:6px;font-size:12px;transition:all .15s}
+.service-row:hover{background:var(--surface)}
+.service-row .sname{color:var(--text);font-weight:500}
+.service-row .sport{color:var(--accent);font-size:10px;font-family:'JetBrains Mono',monospace}
+.service-row .sbadge{font-size:9px;padding:1px 6px;border-radius:8px;background:rgba(16,185,129,0.12);color:var(--green);border:1px solid rgba(16,185,129,0.15)}
+.service-row .stag{font-size:8px;padding:1px 5px;border-radius:4px;text-transform:uppercase;letter-spacing:.5px}
+.stag.ai{background:rgba(139,92,246,0.15);color:var(--purple)}
+.stag.bc{background:rgba(255,215,0,0.15);color:var(--gold)}
+.stag.infra{background:rgba(0,240,255,0.12);color:var(--accent)}
+.stag.sys{background:rgba(239,68,68,0.12);color:var(--red)}
+.stag.web{background:rgba(16,185,129,0.12);color:var(--green)}
+
+/* Project cards */
+.project-card{background:var(--bg3);border-radius:8px;padding:12px;border:1px solid transparent;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;gap:6px}
+.project-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,240,255,0.06)}
+.project-card .pname{font-size:13px;font-weight:600;color:var(--text)}
+.project-card .pdesc{font-size:11px;color:var(--dim);line-height:1.5;flex:1}
+.project-card .pmeta{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.project-card .ptag{font-size:9px;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:.5px}
+.ptag.os{background:rgba(139,92,246,0.15);color:var(--purple);border:1px solid rgba(139,92,246,0.2)}
+.ptag.web{background:rgba(0,240,255,0.12);color:var(--accent);border:1px solid rgba(0,240,255,0.2)}
+.ptag.ai{background:rgba(16,185,129,0.12);color:var(--green);border:1px solid rgba(16,185,129,0.2)}
+.ptag.game{background:rgba(245,158,11,0.12);color:var(--orange);border:1px solid rgba(245,158,11,0.2)}
+.ptag.infra{background:rgba(239,68,68,0.12);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
+.project-card .pbranch{font-size:10px;color:var(--gold);font-family:'JetBrains Mono',monospace}
+.project-card .plink{font-size:10px;color:var(--accent);text-decoration:none}
+.project-card .plink:hover{text-decoration:underline}
+
+/* Contract cards */
+.contract-card{background:var(--bg3);border-radius:8px;padding:12px;border-left:3px solid var(--gold);transition:all .2s}
+.contract-card:hover{background:var(--surface)}
+.contract-card .cname{font-size:13px;font-weight:600;color:var(--gold)}
+.contract-card .cmeta{font-size:10px;color:var(--dim);margin-top:3px}
+.contract-card .cdesc{font-size:11px;color:var(--text);margin-top:3px}
+.contract-card .caddr{font-size:9px;color:var(--accent);font-family:'JetBrains Mono',monospace;margin-top:4px;word-break:break-all}
+
+/* K3S table */
+.k3s-table{width:100%;border-collapse:collapse;font-size:11px}
+.k3s-table th{text-align:left;color:var(--dim);padding:4px 6px;border-bottom:1px solid var(--bg3);font-weight:500}
+.k3s-table td{padding:4px 6px;border-bottom:1px solid rgba(255,255,255,0.02);font-family:'JetBrains Mono',monospace;font-size:10px}
+.k3s-table tr:hover td{background:rgba(0,240,255,0.03)}
+
+/* Ollama */
+.ollama-grid{display:flex;gap:6px;flex-wrap:wrap}
+.ollama-model{background:var(--bg3);border-radius:6px;padding:6px 10px;border:1px solid rgba(139,92,246,0.15);font-size:11px;transition:all .2s}
+.ollama-model:hover{border-color:var(--purple);box-shadow:0 0 15px rgba(139,92,246,0.1)}
+.ollama-model .mname{color:var(--purple);font-weight:600}
+.ollama-model .msize{color:var(--dim);font-size:9px}
+
+/* Git */
+.git-card{background:var(--bg3);border-radius:8px;padding:10px;font-size:11px}
+.git-card .gname{color:var(--accent);font-weight:600;font-family:'JetBrains Mono',monospace;font-size:11px}
+.git-card .gbranch{color:var(--gold);font-size:10px;margin-top:2px}
+.git-card .gremote{font-size:9px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px}
+.git-card .glog{font-size:10px;color:var(--text);opacity:0.6;margin-top:4px}
+
+/* Chat */
+.chat-box{position:fixed;bottom:16px;right:16px;width:360px;max-height:520px;background:var(--bg2);border:1px solid var(--accent);border-radius:var(--radius);display:none;flex-direction:column;z-index:1000;box-shadow:0 16px 60px rgba(0,0,0,0.6)}
+.chat-box.open{display:flex}
+.chat-header{background:var(--bg3);border-bottom:1px solid rgba(0,240,255,0.12);padding:10px 14px;border-radius:var(--radius) var(--radius) 0 0;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.chat-header span{font-size:11px;font-weight:600;color:var(--accent)}
+.chat-messages{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:6px;max-height:360px;scroll-behavior:smooth}
+.chat-msg{font-size:12px;padding:8px 12px;border-radius:8px;max-width:88%;line-height:1.5}
+.chat-msg.user{background:var(--bg3);align-self:flex-end;border:1px solid rgba(0,240,255,0.15)}
+.chat-msg.ai{background:rgba(139,92,246,0.08);align-self:flex-start;border:1px solid rgba(139,92,246,0.15)}
+.chat-input{display:flex;padding:8px;border-top:1px solid var(--bg3);gap:6px}
+.chat-input input{flex:1;background:var(--bg3);border:1px solid rgba(255,255,255,0.05);border-radius:6px;padding:8px 10px;color:var(--text);font-size:12px;outline:none}
+.chat-input input:focus{border-color:var(--accent)}
+.chat-input button{background:var(--accent);color:var(--bg);border:none;border-radius:6px;padding:8px 12px;font-weight:600;font-size:11px;cursor:pointer}
+.chat-toggle{position:fixed;bottom:16px;right:16px;width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));color:#fff;border:none;font-size:18px;cursor:pointer;z-index:999;box-shadow:0 4px 20px rgba(0,240,255,0.2);transition:all .2s;display:flex;align-items:center;justify-content:center}
+.chat-toggle:hover{transform:scale(1.1)}
+.chat-toggle.hidden{display:none}
+
+.loading{text-align:center;padding:20px;color:var(--dim);font-size:12px}
+.error{color:var(--red);padding:10px;background:rgba(239,68,68,0.08);border-radius:6px;font-size:11px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <svg width="32" height="32" viewBox="0 0 32 32" style="border-radius:6px"><rect width="32" height="32" rx="6" fill="url(#g)"/><text x="16" y="22" text-anchor="middle" fill="#fff" font-size="18" font-weight="bold" font-family="system-ui">H</text><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#00f0ff"/><stop offset="100%" stop-color="#8b5cf6"/></linearGradient></defs></svg>
+    <div>
+      <h1>HAZOOM INTELLIGENCE</h1>
+      <div class="sub">Unified Command Center</div>
+    </div>
+  </div>
+  <div class="status-bar">
+    <span class="status-pill"><span class="dot" style="background:var(--green)"></span> <span class="val" id="totalServices">0</span> services</span>
+    <span class="status-pill" id="diskDisplay">💾 --</span>
+    <span class="status-pill" id="memDisplay">🧠 --</span>
+    <span class="status-pill" id="uptimeDisplay">⏱ --</span>
+    <span class="status-pill" id="timeDisplay">--</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Row 1: Money + Critical Metrics -->
+  <div>
+    <div class="section-title">⚡ Revenue & Blockchain <span class="count" id="contractCount"></span></div>
+    <div class="grid g4" id="contractsSection"></div>
+  </div>
+
+  <!-- Row 2: AI Services -->
+  <div>
+    <div class="section-title">🧠 AI & Services <span class="count" id="serviceCount"></span></div>
+    <div class="grid g2" id="servicesSection"></div>
+  </div>
+
+  <!-- Row 3: Core Projects -->
+  <div>
+    <div class="section-title">📦 Projects <span class="count" id="projectCount"></span></div>
+    <div class="grid g4" id="projectsSection"></div>
+  </div>
+
+  <!-- Row 4: Infrastructure -->
+  <div>
+    <div class="section-title">🔧 Infrastructure</div>
+    <div class="grid g3">
+      <div class="card">
+        <div class="card-title">🐳 Docker</div>
+        <div id="dockerSection"><div class="loading">Loading...</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">☸ k3s Cluster</div>
+        <div id="k3sSection"><div class="loading">Loading...</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📊 Ollama</div>
+        <div id="ollamaSection"><div class="loading">Loading...</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 5: Git Activity -->
+  <div>
+    <div class="section-title">📝 Git Activity <span class="count" id="gitCount"></span></div>
+    <div class="grid g4" id="gitSection"></div>
+  </div>
+
+</div>
+
+<!-- Chat -->
+<button class="chat-toggle" id="chatToggle">💬</button>
+<div class="chat-box" id="chatBox">
+  <div class="chat-header" id="chatHeader"><span>HAZOOM AI — hermes3</span><span id="chatClose" style="cursor:pointer">✕</span></div>
+  <div class="chat-messages" id="chatMessages">
+    <div class="chat-msg ai">Connected to Ollama. Ask about your system, projects, or blockchain.</div>
+  </div>
+  <div class="chat-input">
+    <input type="text" id="chatInput" placeholder="Ask anything...">
+    <button id="chatSend">Send</button>
+  </div>
+</div>
+
+<script>
+const API = '/api';
+
+async function getJSON(url) {
+  const r = await fetch(url);
+  return r.json();
+}
+
+function h(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function serviceTag(port) {
+  if (port === 11434) return 'ai';
+  if (port === 8545) return 'bc';
+  if ([22,53,5355,6443].includes(port)) return 'sys';
+  if ([8000,8001,3001,5002].includes(port)) return 'web';
+  return 'infra';
+}
+
+function renderDashboard(data) {
+  // Services
+  const services = data.services || [];
+  document.getElementById('totalServices').textContent = services.length;
+  document.getElementById('serviceCount').textContent = `(${services.length})`;
+
+  const ai = services.filter(s => [11434,8000,8001,3001,9090,9000,9004].includes(s.port));
+  const other = services.filter(s => ![11434,8000,8001,3001,9090,9000,9004,5002,8545].includes(s.port) || s.port > 10000);
+
+  document.getElementById('servicesSection').innerHTML = `
+    <div class="card glow">
+      <div class="card-title">🤖 AI Agents & LLMs</div>
+      <div class="service-grid">${ai.map(s => `<div class="service-row"><span class="sname">${h(s.name)}</span><span style="display:flex;gap:6px;align-items:center"><span class="stag ${serviceTag(s.port)}">${serviceTag(s.port)}</span><span class="sport">:${s.port}</span></span></div>`).join('') || '<div style="font-size:11px;color:var(--dim)">No AI services</div>'}</div>
+    </div>
+    <div class="card">
+      <div class="card-title">⚙️ System & Infrastructure</div>
+      <div class="service-grid">${other.map(s => `<div class="service-row"><span class="sname">${h(s.name)}</span><span style="display:flex;gap:6px;align-items:center"><span class="stag ${serviceTag(s.port)}">${serviceTag(s.port)}</span><span class="sport">:${s.port}</span></span></div>`).join('') || '<div style="font-size:11px;color:var(--dim)">No services</div>'}</div>
+    </div>`;
+
+  // Docker
+  const docker = data.docker || [];
+  document.getElementById('dockerSection').innerHTML = docker.length
+    ? `<div class="service-grid">${docker.map(d => `<div class="service-row"><span class="sname">${h(d.name)}</span><span style="display:flex;gap:6px;align-items:center"><span class="sbadge">●</span><span class="sport">${d.ports}</span></span></div>`).join('')}</div>`
+    : '<div style="font-size:11px;color:var(--dim)">No containers</div>';
+
+  // k3s
+  const k3s = data.k3s || [];
+  const hazoom = k3s.filter(p => p.namespace === 'hazoom-os');
+  const system = k3s.filter(p => p.namespace === 'kube-system');
+  document.getElementById('k3sSection').innerHTML = k3s.length
+    ? `<div style="margin-bottom:6px;font-size:10px;color:var(--dim)">hazoom-os (${hazoom.length})</div>
+       ${hazoom.length ? `<table class="k3s-table">${hazoom.map(p => `<tr><td>${p.name.split('-').slice(0,3).join('-')}</td><td style="color:${p.status === 'Running' ? 'var(--green)' : 'var(--orange)'}">${p.status}</td><td>${p.ip||''}</td></tr>`).join('')}</table>` : '<div style="font-size:10px;color:var(--dim)">No pods</div>'}
+       <div style="margin:8px 0 4px;font-size:10px;color:var(--dim)">system (${system.length})</div>
+       <table class="k3s-table">${system.map(p => `<tr><td>${p.name.split('-').slice(0,2).join('-')}</td><td style="color:${p.status === 'Running' ? 'var(--green)' : 'var(--orange)'}">${p.status}</td><td>${p.ip||''}</td></tr>`).join('')}</table>`
+    : '<div style="font-size:11px;color:var(--dim)">No pods</div>';
+
+  // Ollama
+  const ollama = data.ollama || [];
+  document.getElementById('ollamaSection').innerHTML = ollama.length
+    ? `<div class="ollama-grid">${ollama.map(m => `<div class="ollama-model"><span class="mname">${h(m.name)}</span> <span class="msize">${h(m.size)}</span></div>`).join('')}</div>`
+    : '<div style="font-size:11px;color:var(--dim)">No models</div>';
+
+  // System stats
+  const sys = data.system || {};
+  document.getElementById('diskDisplay').textContent = `💾 ${sys.disk || '?'} (${sys.disk_total || '?'})`;
+  document.getElementById('memDisplay').textContent = `🧠 ${sys.mem_used || '?'}/${sys.mem_total || '?'}`;
+  document.getElementById('uptimeDisplay').textContent = `⏱ ${sys.uptime || '?'}`;
+  document.getElementById('nodeDisplay') && (document.getElementById('nodeDisplay').textContent = sys.hostname || '--');
+}
+
+function renderProjects(data) {
+  document.getElementById('projectCount').textContent = `(${data.length})`;
+  document.getElementById('projectsSection').innerHTML = data.map(p => `
+    <div class="project-card" onclick="window.open('${p.url||'#'}','_blank')">
+      <div class="pname">${h(p.name)}</div>
+      <div class="pdesc">${h(p.desc)}</div>
+      <div class="pmeta">
+        <span class="ptag ${p.type}">${p.type}</span>
+        ${p.git ? `<span class="ptag" style="background:rgba(16,185,129,0.1);color:var(--green);border:1px solid rgba(16,185,129,0.15)">git</span>` : ''}
+        ${p.branch ? `<span class="pbranch">${h(p.branch)}</span>` : ''}
+        ${p.url ? `<a href="${p.url}" class="plink" onclick="event.stopPropagation()">🔗</a>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderContracts(data) {
+  const contracts = data.contracts || [];
+  const dep = data.deployment;
+  document.getElementById('contractCount').textContent = `(${contracts.length})`;
+  document.getElementById('contractsSection').innerHTML = contracts.slice(0,4).map(c => `
+    <div class="contract-card">
+      <div class="cname">${h(c.name.replace('.sol',''))}</div>
+      <div class="cmeta">${c.lines || 0} lines · ${c.network}${c.license ? ' · ' + c.license : ''}${c.deployedAddress ? ' · ✅ Live' : ' · 📝 Source'}</div>
+      <div class="cdesc">${h(c.desc)}</div>
+      ${c.deployedAddress ? `<div class="caddr">${c.deployedAddress}</div>` : ''}
+    </div>
+  `).join('') + (dep ? `
+    <div class="card gold" style="display:flex;flex-direction:column;justify-content:center">
+      <div class="card-title">⛓ Anvil Testnet</div>
+      <div class="card-value" style="font-size:14px">Chain 31337</div>
+      <div class="card-label">RPC: 127.0.0.1:8545</div>
+      <div class="card-label" style="font-size:9px;color:var(--accent)">${dep.deployer ? dep.deployer.substring(0,22)+'...' : ''}</div>
+    </div>` : '');
+}
+
+function renderGit(data) {
+  document.getElementById('gitCount').textContent = `(${data.length} repos)`;
+  document.getElementById('gitSection').innerHTML = data.map(g => `
+    <div class="git-card">
+      <div class="gname">${h(g.name)}</div>
+      <div class="gbranch">${h(g.branch)}${g.total ? ` · ${g.total} commits` : ''}</div>
+      ${g.remote?.[0] ? `<div class="gremote">${h(g.remote[0].substring(0,60))}</div>` : ''}
+      ${g.log?.[0] ? `<div class="glog">${h(g.log[0].substring(0,80))}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+async function refreshAll() {
+  try {
+    const status = await getJSON(`${API}/status`);
+    renderDashboard(status);
+  } catch(e) { console.error('Status:', e); }
+  try {
+    const projects = await getJSON(`${API}/projects`);
+    renderProjects(projects);
+  } catch(e) { console.error('Projects:', e); }
+  try {
+    const contracts = await getJSON(`${API}/contracts`);
+    renderContracts(contracts);
+  } catch(e) { console.error('Contracts:', e); }
+  try {
+    const git = await getJSON(`${API}/git-stats`);
+    renderGit(git);
+  } catch(e) { console.error('Git:', e); }
+}
+
+// Chat
+const chatToggle = document.getElementById('chatToggle');
+const chatBox = document.getElementById('chatBox');
+const chatMessages = document.getElementById('chatMessages');
+const chatInput = document.getElementById('chatInput');
+const chatSend = document.getElementById('chatSend');
+const chatClose = document.getElementById('chatClose');
+
+chatToggle.addEventListener('click', () => { chatBox.classList.toggle('open'); chatToggle.classList.toggle('hidden'); });
+chatClose.addEventListener('click', () => { chatBox.classList.remove('open'); chatToggle.classList.remove('hidden'); });
+chatSend.addEventListener('click', sendMessage);
+chatInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
+
+async function sendMessage() {
+  const msg = chatInput.value.trim();
+  if (!msg) return;
+  chatInput.value = '';
+  chatMessages.innerHTML += `<div class="chat-msg user">${h(msg)}</div>`;
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+  chatMessages.innerHTML += `<div class="chat-msg ai" id="tm"><em>Thinking...</em></div>`;
+  try {
+    const r = await fetch(`${API}/ollama/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: msg, model: 'hermes3' })
+    });
+    const d = await r.json();
+    document.getElementById('tm').remove();
+    chatMessages.innerHTML += `<div class="chat-msg ai">${h(d.response || 'No response')}</div>`;
+  } catch(e) {
+    document.getElementById('tm').remove();
+    chatMessages.innerHTML += `<div class="chat-msg ai" style="border-color:var(--red)">⚠ ${h(e.message)}</div>`;
+  }
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function updateTime() {
+  document.getElementById('timeDisplay').textContent = new Date().toLocaleString();
+}
+updateTime();
+setInterval(updateTime, 1000);
+refreshAll();
+setInterval(refreshAll, 15000);
+</script>
+</body>
+</html>

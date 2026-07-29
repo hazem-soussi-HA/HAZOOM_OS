@@ -1,0 +1,27 @@
+[package]
+name = "mario_gta6_physics"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+authors = ["Hazem Soussi (HA) <https://github.com/hazem-soussi-HA>"]
+description = "Physics hot path for SUPER MARIO GTA6 — compiled to WebAssembly"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[profile.release.package."*"]
+opt-level = 3
+
+[dependencies]
+wasm-bindgen = "0.2"
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false

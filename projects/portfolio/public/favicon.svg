@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
+  <defs>
+    <linearGradient id="hGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00d4ff"/>
+      <stop offset="100%" stop-color="#0099cc"/>
+    </linearGradient>
+    <linearGradient id="sGrad" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00ff41"/>
+      <stop offset="100%" stop-color="#00cc33"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="bgGlow">
+      <feGaussianBlur stdDeviation="6"/>
+    </filter>
+  </defs>
+  <!-- Background -->
+  <rect width="96" height="96" rx="20" fill="#030712"/>
+  <rect width="96" height="96" rx="20" fill="none" stroke="#00d4ff" stroke-width="0.5" opacity="0.3"/>
+  <!-- Terminal frame corners -->
+  <g stroke="#00d4ff" stroke-width="1.5" opacity="0.4" fill="none">
+    <path d="M12 24 L12 12 L24 12"/>
+    <path d="M72 12 L84 12 L84 24"/>
+    <path d="M12 72 L12 84 L24 84"/>
+    <path d="M72 84 L84 84 L84 72"/>
+  </g>
+  <!-- Background glow dot -->
+  <circle cx="48" cy="48" r="24" fill="#00d4ff" opacity="0.08" filter="url(#bgGlow)"/>
+  <!-- H letter -->
+  <text x="30" y="62" font-family="'JetBrains Mono', 'Fira Code', monospace" font-size="44" font-weight="800" fill="url(#hGrad)" filter="url(#glow)" text-anchor="middle">H</text>
+  <!-- S letter -->
+  <text x="66" y="62" font-family="'JetBrains Mono', 'Fira Code', monospace" font-size="44" font-weight="800" fill="url(#sGrad)" filter="url(#glow)" text-anchor="middle">S</text>
+  <!-- Matrix dot under S -->
+  <circle cx="66" cy="74" r="1.5" fill="#00ff41" opacity="0.6">
+    <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <!-- Scan line subtle -->
+  <line x1="12" y1="48" x2="84" y2="48" stroke="#00d4ff" stroke-width="0.3" opacity="0.1"/>
+</svg>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#05070f" />
+  <title>Planet Earth — Real-Time Emulation</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo/planet-earth-logo.svg" />
+  <style>
+    :root {
+      --fg: #e9f1ff;
+      --muted: #8aa0c4;
+      --accent: #4ea1ff;
+      --panel: rgba(10, 16, 30, 0.55);
+      --panel-border: rgba(120, 160, 220, 0.18);
+      --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #05070f; }
+    body { font-family: var(--font); color: var(--fg); -webkit-font-smoothing: antialiased; }
+
+    #scene { position: fixed; inset: 0; display: block; touch-action: none; }
+
+    /* ---- Loading overlay ---- */
+    #loader {
+      position: fixed; inset: 0; z-index: 50;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 22px; background: radial-gradient(circle at 50% 40%, #0b1426, #05070f 70%);
+      transition: opacity .8s ease, visibility .8s ease;
+    }
+    #loader.hidden { opacity: 0; visibility: hidden; }
+    .ring {
+      width: 64px; height: 64px; border-radius: 50%;
+      border: 3px solid rgba(78,161,255,.18);
+      border-top-color: var(--accent);
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #loader .title { font-size: 15px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+    #bar { width: 220px; height: 4px; border-radius: 99px; background: rgba(255,255,255,.08); overflow: hidden; }
+    #bar > i { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, #2b6fd6, #4ea1ff); transition: width .25s ease; }
+    #pct { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+    /* ---- HUD ---- */
+    .hud {
+      position: fixed; z-index: 20;
+      backdrop-filter: blur(10px) saturate(120%);
+      -webkit-backdrop-filter: blur(10px) saturate(120%);
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      pointer-events: auto;
+      user-select: none;
+    }
+    #title { top: 18px; left: 18px; max-width: 320px; }
+    #title h1 { margin: 0; font-size: 16px; font-weight: 650; letter-spacing: .02em; }
+    #title p { margin: 4px 0 0; font-size: 11.5px; line-height: 1.5; color: var(--muted); }
+
+    #controls { top: 18px; right: 18px; width: 230px; }
+    #controls h2 {
+      margin: 0 0 10px; font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 600;
+    }
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 9px 0; font-size: 12.5px; }
+    .row label { color: var(--fg); }
+    .row .val { color: var(--accent); font-variant-numeric: tabular-nums; min-width: 42px; text-align: right; }
+    input[type="range"] { -webkit-appearance: none; appearance: none; width: 120px; height: 4px; border-radius: 99px; background: rgba(255,255,255,.14); outline: none; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); cursor: pointer; box-shadow: 0 0 8px rgba(78,161,255,.6); }
+    input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border: 0; border-radius: 50%; background: var(--accent); cursor: pointer; }
+    .switch { position: relative; width: 38px; height: 20px; flex: 0 0 auto; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; inset: 0; background: rgba(255,255,255,.16); border-radius: 99px; transition: .25s; cursor: pointer; }
+    .slider::before { content: ""; position: absolute; height: 14px; width: 14px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: .25s; }
+    .switch input:checked + .slider { background: var(--accent); }
+    .switch input:checked + .slider::before { transform: translateX(18px); }
+
+    #stats { bottom: 18px; left: 18px; padding: 10px 14px; font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; line-height: 1.7; }
+    #stats b { color: var(--fg); font-weight: 600; }
+
+    #hint { bottom: 18px; right: 18px; font-size: 11px; color: var(--muted); padding: 9px 13px; }
+    #hint kbd { background: rgba(255,255,255,.1); border-radius: 5px; padding: 1px 6px; font-family: inherit; font-size: 10.5px; color: var(--fg); }
+    .hint-inline { margin: 0; font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+    #err {
+      position: fixed; inset: 0; z-index: 60; display: none; align-items: center; justify-content: center; padding: 24px;
+      background: rgba(5,7,15,.92); color: #ffd2d2; font-size: 13px; text-align: center; line-height: 1.6;
+    }
+
+    /* ---- Truth / verification overlay ---- */
+    .truth-btn {
+      width: 100%; padding: 9px 12px; border: 1px solid var(--panel-border);
+      border-radius: 10px; background: linear-gradient(180deg, rgba(78,161,255,.22), rgba(78,161,255,.08));
+      color: var(--fg); font: inherit; font-size: 12.5px; font-weight: 600; letter-spacing: .02em;
+      cursor: pointer; transition: .2s;
+    }
+    .truth-btn:hover { background: linear-gradient(180deg, rgba(78,161,255,.34), rgba(78,161,255,.14)); border-color: var(--accent); }
+    #truth {
+      top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: min(560px, calc(100vw - 36px)); max-height: calc(100vh - 48px); overflow-y: auto;
+      padding: 22px 24px; z-index: 40;
+    }
+    #truth[hidden] { display: none; }
+    #truth h2 { margin: 0 0 6px; font-size: 16px; letter-spacing: .01em; }
+    #truth .lede { margin: 0 0 14px; font-size: 12px; color: var(--muted); line-height: 1.55; }
+    #truth .live { font-size: 12px; color: var(--accent); margin-bottom: 14px; font-variant-numeric: tabular-nums; line-height: 1.7; }
+    #truth .live b { color: var(--fg); }
+    #truth .facts { display: grid; grid-template-columns: 1fr; gap: 10px; }
+    #truth .fact {
+      border: 1px solid var(--panel-border); border-radius: 10px; padding: 10px 12px;
+      background: rgba(255,255,255,.02);
+    }
+    #truth .fact .k { font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+    #truth .fact .v { font-size: 14px; font-weight: 600; margin-top: 3px; }
+    #truth .fact .d { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+    #truth .src { font-size: 10.5px; color: var(--muted); margin: 16px 0 0; line-height: 1.55; border-top: 1px solid var(--panel-border); padding-top: 12px; }
+    .truth-close {
+      position: absolute; top: 12px; right: 14px; width: 26px; height: 26px; border-radius: 8px;
+      border: 1px solid var(--panel-border); background: rgba(255,255,255,.04); color: var(--fg);
+      font-size: 16px; line-height: 1; cursor: pointer;
+    }
+    .truth-close:hover { background: rgba(255,255,255,.1); }
+
+    @media (max-width: 640px) {
+      #controls { width: 190px; }
+      #title { max-width: 200px; }
+      #hint { display: none; }
+      input[type="range"] { width: 90px; }
+    }
+  </style>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./vendor/three.module.js",
+      "three/addons/": "./vendor/three/addons/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+
+  <div id="loader">
+    <div class="ring"></div>
+    <div class="title">Planet Earth</div>
+    <div id="bar"><i></i></div>
+    <div id="pct">loading 0%</div>
+  </div>
+
+  <div id="title" class="hud">
+    <h1>Planet Earth</h1>
+    <p>Real-time WebGL emulation — discover the reality of the Earth we live on. Real-sun day/night terminator, city lights, clouds, atmospheric scattering &amp; a procedural starfield. Fully offline.</p>
+  </div>
+
+  <div id="controls" class="hud">
+    <h2>Controls</h2>
+    <div class="row">
+      <label>Auto-rotate</label>
+      <label class="switch"><input id="t-rotate" type="checkbox" checked><span class="slider"></span></label>
+    </div>
+    <div class="row">
+      <label>Clouds</label>
+      <label class="switch"><input id="t-clouds" type="checkbox" checked><span class="slider"></span></label>
+    </div>
+    <div class="row">
+      <label>Atmosphere</label>
+      <label class="switch"><input id="t-atmo" type="checkbox" checked><span class="slider"></span></label>
+    </div>
+    <div class="row">
+      <label>City lights</label>
+      <label class="switch"><input id="t-lights" type="checkbox" checked><span class="slider"></span></label>
+    </div>
+    <div class="row">
+      <label>Time&nbsp;×</label>
+      <input id="s-sun" type="range" min="0" max="200" step="1" value="1">
+      <span class="val" id="v-sun">1×</span>
+    </div>
+    <div class="row">
+      <label>Orbit</label>
+      <input id="s-spin" type="range" min="0" max="2" step="0.05" value="0.35">
+      <span class="val" id="v-spin">0.35</span>
+    </div>
+    <div class="row" style="margin-top:14px;">
+      <button id="btn-truth" class="truth-btn" type="button">Verify the truth</button>
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <p class="hint-inline">Discover the real Earth — drive the Sun, read the measured facts.</p>
+    </div>
+  </div>
+
+  <div id="stats" class="hud">
+    <div><b id="fps">–</b> fps · <b id="draws">–</b> draw calls</div>
+    <div><b id="tris">–</b> triangles</div>
+  </div>
+
+  <div id="hint" class="hud">
+    <kbd>drag</kbd> orbit · <kbd>scroll</kbd> zoom · <kbd>right-drag</kbd> pan
+  </div>
+
+  <div id="truth" class="hud" hidden>
+    <button id="truth-close" class="truth-close" aria-label="Close">×</button>
+    <h2>The Truth — verified by measurement</h2>
+    <p class="lede">Every claim below is reproducible from public data. Nothing here is hidden, and nothing is invented.</p>
+    <div id="truth-live" class="live"></div>
+    <div id="truth-facts" class="facts"></div>
+    <p class="src">Sources: NASA Blue Marble &amp; Black Marble (public domain), NOAA NCEI, IERS. This app makes zero external calls — all data is bundled and the math runs on-device.</p>
+  </div>
+
+  <div id="err"></div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

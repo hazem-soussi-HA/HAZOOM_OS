@@ -1,0 +1,25 @@
+{
+  "version": "4.0.0",
+  "owner": "Hazem Soussi (HA)",
+  "created": "2025-06-18T00:00:00Z",
+  "description": "SHA-256 integrity manifest for all source files. Any modification will invalidate the hash.",
+  "files": {
+    "src/App.jsx": "b4fc151667584b3070c52193d7d6643f06a21b620b4be055b7a33c30f3536883",
+    "src/components/AboutSection.jsx": "3d0e1c94cf2192cc772ddb676920dde8d1f3aaee4410c7b4ca9cdb8e24c4244c",
+    "src/components/CVModal.jsx": "097ef95be222387dcd218d2aa64df6edb553d6796ee14640e9c060566f35e3e3",
+    "src/components/ContactSection.jsx": "90ed538651c483194722b6721edded507f453e071a02dbfd997e6e95309993a3",
+    "src/components/HeroSection.jsx": "63431be73d047ca653bdb9f39c13e26fba0bc12ea8c6f7e33f07b2181f603675",
+    "src/components/Navbar.jsx": "cc6794a3c0f0ae34957bdc4a16b5f0acace04a9e02253b250a6e5314bd299589",
+    "src/components/Projects.jsx": "7360e9e1493d72ef49818ac77900a606a0d7c4a8e30839c8af76e25470f8037c",
+    "src/components/SkillsSection.jsx": "a845840e1f63ef6e3c86badeecdebe0955a3dc00a755c6144a0f1fd4dd0d4788",
+    "src/data/projects.js": "c817d419da1fd0b5829667193f9226883bdf9193ba012b1641678f7767c31cd9",
+    "src/i18n.jsx": "82ee2aa618c213523780f66c6458ece1734f15c77a9621a5c154874ff3fab6fa",
+    "src/index.css": "ccaaa3964506b1516f61987e25e2c8f527569cd368e9ba3ab60eb303bec5f485",
+    "src/main.jsx": "8d094401494b5fa714d395e264fc0c3d06e84fb930fda7edb188e6ae61770504",
+    "src/utils/security.js": "eb8e919c2ff373c42c7b307300574b9d9e952c8d739154af8e57ba8d5f8b7457",
+    "src/security.js": "PLACEHOLDER"
+  },
+  "manifestHash": "PLACEHOLDER",
+  "license": "All rights reserved. Unauthorized copying, modification, or redistribution is strictly prohibited.",
+  "watermark": "c2hhZG93LWJ1aWxkZXItcHJvdGVjdGVk"
+}

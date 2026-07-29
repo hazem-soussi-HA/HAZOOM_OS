@@ -1,0 +1,48 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: deepseek-knowledge-cleanup
+  namespace: deepseek-knowledge
+  labels:
+    app: deepseek-knowledge
+    component: cleanup
+    environment: production
+spec:
+  schedule: "0 2 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: cleanup
+            image: deepseek-knowledge:latest
+            imagePullPolicy: IfNotPresent
+            command: ["python", "-m", "app.workers.cleanup_tasks"]
+            env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: deepseek-knowledge-secrets
+                  key: database-url
+            - name: REDIS_URL
+              value: "redis://deepseek-knowledge-redis:6379/0"
+            - name: ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: deepseek-knowledge-secrets
+                  key: encryption-key
+            resources:
+              requests:
+                memory: "256Mi"
+                cpu: "100m"
+              limits:
+                memory: "512Mi"
+                cpu: "500m"
+            volumeMounts:
+            - name: app-storage
+              mountPath: /app/storage
+          restartPolicy: OnFailure
+          volumes:
+          - name: app-storage
+            persistentVolumeClaim:
+              claimName: deepseek-knowledge-storage-pvc

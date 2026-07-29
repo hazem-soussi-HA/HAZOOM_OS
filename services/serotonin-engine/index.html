@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAZOOM — Serotonin Engine</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧬</text></svg>">
+    <style>
+        .api-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 10px;
+            letter-spacing: 1px;
+            z-index: 1000;
+            transition: all 0.3s;
+        }
+        .api-status.online { background: rgba(0,255,136,0.2); color: #00ff88; border: 1px solid #00ff88; }
+        .api-status.offline { background: rgba(255,100,100,0.2); color: #ff6464; border: 1px solid #ff6464; }
+        
+        .doctoral-section {
+            background: linear-gradient(180deg, rgba(0,255,136,0.03) 0%, transparent 100%);
+        }
+        .freq-detail-card {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(0,255,136,0.2);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .freq-detail-card:hover {
+            border-color: var(--green);
+            transform: translateY(-3px);
+        }
+        .freq-detail-card h4 { color: var(--green); margin-bottom: 8px; }
+        .freq-detail-card .effects { font-size: 10px; color: var(--text-dim); margin-top: 8px; }
+        .freq-detail-card .chakra { font-size: 9px; color: var(--purple); margin-top: 4px; }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(0,255,136,0.3);
+            border-radius: 50%;
+            border-top-color: #00ff88;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .api-enriched {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(0,255,136,0.03);
+            border-radius: 8px;
+            border: 1px solid rgba(0,255,136,0.1);
+        }
+        .freq-tag {
+            display: inline-block;
+            background: rgba(0,255,136,0.1);
+            border: 1px solid rgba(0,255,136,0.3);
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 10px;
+            margin: 4px;
+        }
+        .healing-btn {
+            background: rgba(0,255,136,0.1);
+            border: 1px solid rgba(0,255,136,0.3);
+            border-radius: 6px;
+            padding: 12px 24px;
+            color: var(--green);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 11px;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+        }
+        .healing-btn:hover {
+            background: rgba(0,255,136,0.2);
+            border-color: var(--green);
+        }
+        .healing-btn.active {
+            background: var(--green);
+            color: #000;
+        }
+        .healing-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+
+    <nav>
+        <div class="logo">
+            <svg width="28" height="28" viewBox="0 0 100 100">
+                <polygon points="50,5 95,27.5 95,72.5 50,95 5,72.5 5,27.5" fill="none" stroke="#00ff88" stroke-width="3"/>
+                <polygon points="50,20 80,35 80,65 50,80 20,65 20,35" fill="none" stroke="#00ff88" stroke-width="1.5" opacity="0.5"/>
+                <circle cx="50" cy="50" r="8" fill="#00ff88"/>
+            </svg>
+            <span class="logo-text">HAZOOM</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="#modules">MODULES</a></li>
+            <li><a href="#about">ABOUT</a></li>
+            <li><a href="#science">SCIENCE</a></li>
+        </ul>
+    </nav>
+
+    <section class="hero">
+        <svg width="80" height="80" viewBox="0 0 100 100" class="animate-float">
+            <polygon points="50,5 95,27.5 95,72.5 50,95 5,72.5 5,27.5" fill="none" stroke="#00ff88" stroke-width="2" opacity="0.6"/>
+            <polygon points="50,20 80,35 80,65 50,80 20,65 20,35" fill="none" stroke="#00ff88" stroke-width="1" opacity="0.3"/>
+            <circle cx="50" cy="50" r="6" fill="#00ff88" opacity="0.8"/>
+        </svg>
+        <h1 class="glow-green" style="margin-top: 24px;">SEROTONIN ENGINE</h1>
+        <p class="hero-subtitle">STIMULATE YOUR POSITIVE BODY</p>
+        <p class="hero-tagline">
+            Frequencies that heal your spirit, attract abundance, and align you with
+            opportunities. Ancient solfeggio wisdom meets modern binaural technology.
+        </p>
+        <a href="#modules" class="btn" style="margin-top: 40px;">BEGIN JOURNEY</a>
+    </section>
+
+    <section id="modules" class="section">
+        <div class="container">
+            <h2 style="text-align:center;">CHOOSE YOUR INTENTION</h2>
+            <p style="text-align:center; margin-top:12px;">Select what your body and spirit need right now</p>
+
+            <div class="card-grid">
+                <a href="modules/restore.html" class="card module-card" data-color="green">
+                    <div class="module-icon">🧬</div>
+                    <div class="module-title">RESTORE</div>
+                    <div class="module-desc">Heal from negativity, release trauma, cleanse your energy field</div>
+                    <div class="module-freq">396Hz · 417Hz · 528Hz · Theta 6Hz</div>
+                </a>
+
+                <a href="modules/abundance.html" class="card module-card" data-color="gold">
+                    <div class="module-icon">💰</div>
+                    <div class="module-title">ABUNDANCE</div>
+                    <div class="module-desc">Attract money, activate prosperity consciousness, open wealth channels</div>
+                    <div class="module-freq">888Hz · 639Hz · 528Hz · Alpha 10Hz</div>
+                </a>
+
+                <a href="modules/opportunity.html" class="card module-card" data-color="purple">
+                    <div class="module-icon">✨</div>
+                    <div class="module-title">OPPORTUNITY</div>
+                    <div class="module-desc">Attract good things, awaken intuition, align with幸运</div>
+                    <div class="module-freq">741Hz · 852Hz · 963Hz · Beta 15Hz</div>
+                </a>
+
+                <a href="modules/peace.html" class="card module-card" data-color="blue">
+                    <div class="module-icon">🕊️</div>
+                    <div class="module-title">PEACE</div>
+                    <div class="module-desc">Inner calm, stress release, live in a peaceful elevated state</div>
+                    <div class="module-freq">432Hz · 528Hz · 639Hz · Theta 5Hz</div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="section" style="background: rgba(0,255,136,0.02);">
+        <div class="container" style="max-width: 700px; text-align: center;">
+            <h2>THE SEROTONIN ENGINE</h2>
+            <p style="margin-top: 24px; line-height: 2;">
+                Your body is an orchestra of frequencies. Every cell responds to vibration.
+                Every thought creates a chemical reaction. Every emotion has a frequency signature.
+            </p>
+            <p style="margin-top: 16px; line-height: 2;">
+                The Serotonin Engine uses ancient solfeggio frequencies — the same tones used in
+                temples for thousands of years — combined with modern binaural beat technology
+                to stimulate your body's natural healing hormones.
+            </p>
+            <p style="margin-top: 16px; line-height: 2; color: var(--green);">
+                Serotonin. Dopamine. Oxytocin. Endorphins.<br>
+                Your body already knows how to heal. We just remind it.
+            </p>
+        </div>
+    </section>
+
+    <section id="science" class="section">
+        <div class="container">
+            <h2 style="text-align:center;">THE FREQUENCIES</h2>
+            <p style="text-align:center; margin-top:12px;">Ancient wisdom, validated by modern neuroscience</p>
+
+            <div class="card-grid" style="margin-top: 40px;">
+                <div class="card">
+                    <h3 style="color: var(--green);">SOLFEGGIO</h3>
+                    <p style="margin-top: 12px;">
+                        9 sacred frequencies discovered in ancient Gregorian chants.
+                        Each tone resonates with a specific energy center in your body.
+                    </p>
+                    <div class="freq-display" style="margin-top: 16px;">
+                        <span class="freq-badge">174</span>
+                        <span class="freq-badge">285</span>
+                        <span class="freq-badge">396</span>
+                        <span class="freq-badge">417</span>
+                        <span class="freq-badge">528</span>
+                        <span class="freq-badge">639</span>
+                        <span class="freq-badge">741</span>
+                        <span class="freq-badge">852</span>
+                        <span class="freq-badge">963</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 style="color: var(--blue);">BINAURAL BEATS</h3>
+                    <p style="margin-top: 12px;">
+                        Two slightly different frequencies played in each ear create a third
+                        "phantom" frequency that entrains your brainwaves to desired states.
+                    </p>
+                    <div style="margin-top: 16px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-dim);">
+                            <span>DELTA 0.5-4Hz</span><span>Deep healing</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-dim); margin-top: 4px;">
+                            <span>THETA 4-8Hz</span><span>Meditation</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-dim); margin-top: 4px;">
+                            <span>ALPHA 8-14Hz</span><span>Relaxation</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-dim); margin-top: 4px;">
+                            <span>BETA 14-30Hz</span><span>Focus</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 style="color: var(--purple);">HORMONE RESPONSE</h3>
+                    <p style="margin-top: 12px;">
+                        Specific frequencies have been shown to stimulate the production of
+                        serotonin, dopamine, oxytocin, and endorphins — your body's natural pharmacy.
+                    </p>
+                    <div style="margin-top: 16px; font-size: 10px; color: var(--text-dim); line-height: 1.8;">
+                        528Hz → Serotonin boost<br>
+                        432Hz → Cortisol reduction<br>
+                        396Hz → Endorphin release<br>
+                        639Hz → Oxytocin activation
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="doctoral" class="section doctoral-section">
+        <div class="container">
+            <h2 style="text-align:center;">DOCTORAL GUIDE</h2>
+            <p style="text-align:center; margin-top:12px; color: var(--text-dim);">Artefactual Creatif Service — Research Data</p>
+            
+            <div id="api-status" class="api-status offline">API OFFLINE</div>
+            
+            <div style="margin-top: 40px;">
+                <h3 style="text-align:center; color: var(--green); font-size: 1em; letter-spacing: 4px;">SOLFEGGIO FREQUENCIES</h3>
+                <p style="text-align:center; margin-top:8px; font-size: 10px; color: var(--text-dim);">Click to explore frequency details</p>
+                <div id="freq-grid" class="card-grid" style="margin-top: 20px;"></div>
+            </div>
+            
+            <div id="freq-detail" style="display: none; margin-top: 30px;">
+                <div class="card" style="max-width: 800px; margin: 0 auto;">
+                    <h3 id="detail-title" style="color: var(--green);"></h3>
+                    <div id="detail-content" style="margin-top: 20px;"></div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 60px;">
+                <h3 style="text-align:center; color: var(--green); font-size: 1em; letter-spacing: 4px;">HEALING MAP</h3>
+                <p style="text-align:center; margin-top:8px; font-size: 10px; color: var(--text-dim);">Select what you need healing for</p>
+                <div id="healing-options" class="healing-options"></div>
+                <div id="healing-result" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+    </section>
+
+    <footer style="padding: 40px 0; text-align: center; border-top: 1px solid var(--green-dim);">
+        <div class="logo" style="justify-content: center; margin-bottom: 16px;">
+            <svg width="20" height="20" viewBox="0 0 100 100">
+                <polygon points="50,5 95,27.5 95,72.5 50,95 5,72.5 5,27.5" fill="none" stroke="#00ff88" stroke-width="4"/>
+                <circle cx="50" cy="50" r="10" fill="#00ff88"/>
+            </svg>
+            <span class="logo-text" style="font-size: 14px;">HAZOOM</span>
+        </div>
+        <p style="font-size: 9px; letter-spacing: 3px;">© HAZEM SOUSSI · SEROTONIN ENGINE v1.0.0</p>
+        <p style="font-size: 8px; color: var(--text-muted); margin-top: 8px; letter-spacing: 2px;">
+            HEAL YOUR BODY · ATTRACT ABUNDANCE · LIVE IN PEACE
+        </p>
+    </footer>
+
+    <script src="js/api-client.js"></script>
+    <script>
+        // Initialize API integration
+        document.addEventListener('DOMContentLoaded', async () => {
+            const api = window.nanoAPI;
+            const statusEl = document.getElementById('api-status');
+            const freqGrid = document.getElementById('freq-grid');
+            const healingOptions = document.getElementById('healing-options');
+            
+            // Check API status
+            const isOnline = await api.isOnline();
+            statusEl.className = `api-status ${isOnline ? 'online' : 'offline'}`;
+            statusEl.textContent = isOnline ? 'API CONNECTED' : 'API OFFLINE';
+            
+            if (isOnline) {
+                // Load frequencies
+                const freqData = await api.getAllFrequencies();
+                if (freqData && freqData.frequencies) {
+                    renderFrequencies(freqData.frequencies);
+                }
+                
+                // Load healing map
+                const healingData = await api.getHealingMap();
+                if (healingData && healingData.healing_map) {
+                    renderHealingOptions(healingData.healing_map);
+                }
+            } else {
+                // Fallback frequencies
+                renderFallbackFrequencies();
+            }
+        });
+        
+        function renderFrequencies(freqs) {
+            const grid = document.getElementById('freq-grid');
+            grid.innerHTML = '';
+            
+            Object.entries(freqs).forEach(([hz, data]) => {
+                const card = document.createElement('div');
+                card.className = 'freq-detail-card';
+                card.innerHTML = `
+                    <h4>${hz}Hz</h4>
+                    <div style="font-size: 12px;">${data.name}</div>
+                    <div class="chakra">${data.chakra}</div>
+                    <div class="effects">${(data.claimed_effects || []).slice(0, 3).join(' · ')}</div>
+                `;
+                card.onclick = () => showFrequencyDetail(hz, data);
+                grid.appendChild(card);
+            });
+        }
+        
+        function renderFallbackFrequencies() {
+            const fallback = {
+                "174": {name: "Foundation", chakra: "Root", claimed_effects: ["Pain relief", "Grounding"]},
+                "285": {name: "Repair", chakra: "Sacral", claimed_effects: ["Tissue repair", "Energy"]},
+                "396": {name: "Liberation", chakra: "Solar Plexus", claimed_effects: ["Guilt release", "Endorphins"]},
+                "417": {name: "Change", chakra: "Heart", claimed_effects: ["Transformation", "Cortisol reduction"]},
+                "432": {name: "Harmony", chakra: "Heart", claimed_effects: ["Natural resonance", "Peace"]},
+                "528": {name: "Transformation", chakra: "Solar Plexus", claimed_effects: ["DNA repair", "Serotonin"]},
+                "639": {name: "Connection", chakra: "Heart", claimed_effects: ["Oxytocin", "Love"]},
+                "741": {name: "Intuition", chakra: "Throat", claimed_effects: ["Awakening", "Expression"]},
+                "852": {name: "Spiritual Order", chakra: "Third Eye", claimed_effects: ["Clarity", "Inner vision"]},
+                "963": {name: "Divine", chakra: "Crown", claimed_effects: ["Higher consciousness", "Pineal"]}
+            };
+            renderFrequencies(fallback);
+        }
+        
+        async function showFrequencyDetail(hz, data) {
+            const panel = document.getElementById('freq-detail');
+            const title = document.getElementById('detail-title');
+            const content = document.getElementById('detail-content');
+            
+            panel.style.display = 'block';
+            title.textContent = `${hz}Hz — ${data.name}`;
+            
+            const api = window.nanoAPI;
+            let detailData = null;
+            
+            if (await api.isOnline()) {
+                detailData = await api.getFrequency(hz);
+            }
+            
+            const effects = (data.claimed_effects || []).map(e => 
+                `<span class="freq-tag">${e}</span>`
+            ).join('');
+            
+            const scientific = detailData && detailData.data && detailData.data.scientific_effects 
+                ? detailData.data.scientific_effects.map(s => `
+                    <div style="margin: 10px 0; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 6px;">
+                        <strong style="color: var(--green);">${s.effect}</strong><br>
+                        <span style="font-size: 10px; color: var(--text-dim);">${s.mechanism}</span><br>
+                        <span class="freq-tag" style="font-size: 9px;">${s.evidence_level}</span>
+                    </div>
+                `).join('')
+                : '';
+            
+            const integrations = detailData && detailData.integrations 
+                ? detailData.integrations.map(i => `<span class="freq-tag">${i Hz} — ${i.name}</span>`).join('')
+                : '';
+            
+            content.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                    <div>
+                        <h4 style="color: var(--green); font-size: 11px; letter-spacing: 2px; margin-bottom: 10px;">TRADITIONAL USE</h4>
+                        <p style="font-size: 12px; line-height: 1.8;">${data.traditional_use ? data.traditional_use.ancient : 'Sacred healing frequency'}</p>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--green); font-size: 11px; letter-spacing: 2px; margin-bottom: 10px;">CLAIMED EFFECTS</h4>
+                        <div>${effects}</div>
+                    </div>
+                </div>
+                ${scientific ? `
+                    <div style="margin-top: 20px;">
+                        <h4 style="color: var(--green); font-size: 11px; letter-spacing: 2px; margin-bottom: 10px;">SCIENTIFIC EVIDENCE</h4>
+                        ${scientific}
+                    </div>
+                ` : ''}
+                ${integrations ? `
+                    <div style="margin-top: 20px;">
+                        <h4 style="color: var(--green); font-size: 11px; letter-spacing: 2px; margin-bottom: 10px;">INTEGRATES WITH</h4>
+                        <div>${integrations}</div>
+                    </div>
+                ` : ''}
+            `;
+            
+            panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        function renderHealingOptions(healingMap) {
+            const container = document.getElementById('healing-options');
+            container.innerHTML = '';
+            
+            const labels = {
+                physical_healing: '🧬 Physical Healing',
+                emotional_healing: '💫 Emotional Healing',
+                spiritual_healing: '🙏 Spiritual Healing',
+                relationship_healing: '❤️ Relationships',
+                prosperity_healing: '💰 Prosperity',
+                stress_healing: '🧘 Stress Relief'
+            };
+            
+            Object.entries(healingMap).forEach(([key, data]) => {
+                const btn = document.createElement('button');
+                btn.className = 'healing-btn';
+                btn.textContent = labels[key] || key;
+                btn.onclick = () => showHealingResult(key, data, btn);
+                container.appendChild(btn);
+            });
+        }
+        
+        async function showHealingResult(key, data, btn) {
+            document.querySelectorAll('.healing-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            const resultEl = document.getElementById('healing-result');
+            const freqs = data.frequencies.map(f => `<span class="freq-tag">${f}Hz</span>`).join('');
+            const effects = data.effects.map(e => `<span class="freq-tag">${e}</span>`).join('');
+            
+            resultEl.innerHTML = `
+                <div class="card" style="max-width: 600px; margin: 0 auto;">
+                    <h4 style="color: var(--green); margin-bottom: 15px;">Recommended Frequencies</h4>
+                    <div>${freqs}</div>
+                    <h4 style="color: var(--green); margin-top: 20px; margin-bottom: 15px;">Expected Effects</h4>
+                    <div>${effects}</div>
+                    <div style="margin-top: 20px; font-size: 10px; color: var(--text-dim);">
+                        Primary: <span class="freq-tag">${data.primary}Hz</span>
+                        Modules: ${data.recommended_modules.join(', ')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Add nav link for doctoral section
+        document.querySelector('.nav-links').innerHTML += '<li><a href="#doctoral">RESEARCH</a></li>';
+    </script>
+</body>
+</html>

@@ -51,7 +51,6 @@ iso: kernel
 	mkdir -p iso_root/boot/grub
 	cp kernel/c/hazoom-kernel.elf iso_root/boot/hazoom-kernel.elf
 	echo 'set timeout=0' > iso_root/boot/grub/grub.cfg
-	echo 'set debug=all' >> iso_root/boot/grub/grub.cfg
 	echo 'terminal_output serial' >> iso_root/boot/grub/grub.cfg
 	echo 'serial --unit=0 --speed=115200' >> iso_root/boot/grub/grub.cfg
 	echo 'insmod multiboot2' >> iso_root/boot/grub/grub.cfg

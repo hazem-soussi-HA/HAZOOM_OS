@@ -1,0 +1,271 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --void: #030712;
+    --void-light: #0a0f1e;
+    --void-lighter: #111827;
+    --cyan: #00d4ff;
+    --cyan-dim: #0099cc;
+    --matrix: #00ff41;
+    --matrix-dim: #00cc33;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --slate: #94a3b8;
+    --slate-light: #e2e8f0;
+    --slate-dim: #475569;
+    --border: rgba(0, 212, 255, 0.1);
+    --border-hover: rgba(0, 212, 255, 0.3);
+    --glow-cyan: rgba(0, 212, 255, 0.15);
+    --glow-matrix: rgba(0, 255, 65, 0.1);
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--void);
+    color: var(--slate-light);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: var(--cyan);
+    color: var(--void);
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--void);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--cyan-dim);
+    border-radius: 3px;
+  }
+}
+
+@layer components {
+  .font-mono {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  .glass {
+    background: rgba(10, 15, 30, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+  }
+
+  .glass-hover {
+    transition: all 0.3s ease;
+  }
+  .glass-hover:hover {
+    border-color: var(--border-hover);
+    box-shadow: 0 0 30px var(--glow-cyan);
+  }
+
+  .glow-cyan {
+    box-shadow: 0 0 40px var(--glow-cyan);
+  }
+
+  .glow-matrix {
+    box-shadow: 0 0 40px var(--glow-matrix);
+  }
+
+  .text-cyan {
+    color: var(--cyan);
+  }
+  .text-matrix {
+    color: var(--matrix);
+  }
+  .text-amber {
+    color: var(--amber);
+  }
+  .bg-void {
+    background: var(--void);
+  }
+  .bg-void-light {
+    background: var(--void-light);
+  }
+
+  .gradient-text-cyan {
+    background: linear-gradient(135deg, var(--cyan), #7dd3fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gradient-text-matrix {
+    background: linear-gradient(135deg, var(--matrix), #4ade80);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gradient-text-mixed {
+    background: linear-gradient(135deg, var(--cyan), var(--matrix));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .section-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.02em;
+    border: 1px solid;
+  }
+
+  .tag-cyan {
+    color: var(--cyan);
+    border-color: rgba(0, 212, 255, 0.3);
+    background: rgba(0, 212, 255, 0.05);
+  }
+
+  .tag-matrix {
+    color: var(--matrix);
+    border-color: rgba(0, 255, 65, 0.3);
+    background: rgba(0, 255, 65, 0.05);
+  }
+
+  .tag-amber {
+    color: var(--amber);
+    border-color: rgba(245, 158, 11, 0.3);
+    background: rgba(245, 158, 11, 0.05);
+  }
+
+  .tag-slate {
+    color: var(--slate);
+    border-color: rgba(148, 163, 184, 0.2);
+    background: rgba(148, 163, 184, 0.05);
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+    background: linear-gradient(135deg, var(--cyan), var(--cyan-dim));
+    color: var(--void);
+  }
+  .btn-primary:hover {
+    box-shadow: 0 0 40px var(--glow-cyan);
+    transform: translateY(-2px);
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 1px solid var(--border-hover);
+    background: rgba(10, 15, 30, 0.6);
+    backdrop-filter: blur(10px);
+    color: var(--cyan);
+  }
+  .btn-secondary:hover {
+    box-shadow: 0 0 30px var(--glow-cyan);
+    transform: translateY(-2px);
+    border-color: var(--cyan);
+  }
+
+  .card-project {
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: rgba(10, 15, 30, 0.5);
+    backdrop-filter: blur(10px);
+    transition: all 0.4s ease;
+    overflow: hidden;
+  }
+  .card-project:hover {
+    border-color: var(--border-hover);
+    box-shadow: 0 8px 40px rgba(0, 212, 255, 0.08), 0 0 0 1px rgba(0, 212, 255, 0.1);
+    transform: translateY(-4px);
+  }
+
+  .matrix-rain-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.04;
+  }
+}
+
+@layer utilities {
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  .animate-glow-pulse {
+    animation: glow-pulse 3s ease-in-out infinite;
+  }
+  .animate-scan-line {
+    animation: scan-line 4s linear infinite;
+  }
+  .animate-typing {
+    animation: typing 3s steps(30) infinite;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.1); }
+  50% { box-shadow: 0 0 40px rgba(0, 212, 255, 0.25); }
+}
+
+@keyframes scan-line {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes typing {
+  0% { width: 0; }
+  50% { width: 100%; }
+  100% { width: 0; }
+}

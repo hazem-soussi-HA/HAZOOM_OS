@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html><body>
+<canvas id="c" width="640" height="480"></canvas>
+<script>
+const gl = document.getElementById('c').getContext('webgl2');
+if (!gl) { document.body.innerHTML = '<h1 style="color:red">NO WebGL2</h1>'; }
+else {
+  document.body.innerHTML = '<h1 style="color:green">WebGL2 OK: ' + gl.getParameter(gl.VERSION) + '</h1>';
+  gl.clearColor(0,0.5,0,1);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+}
+</script>
+</body></html>

@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: deepseek-knowledge-storage-pvc
+  namespace: deepseek-knowledge
+  labels:
+    app: deepseek-knowledge
+    component: storage
+    environment: production
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard
+  volumeMode: Filesystem
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: deepseek-knowledge-assets-pvc
+  namespace: deepseek-knowledge
+  labels:
+    app: deepseek-knowledge
+    component: assets
+    environment: production
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: standard
+  volumeMode: Filesystem

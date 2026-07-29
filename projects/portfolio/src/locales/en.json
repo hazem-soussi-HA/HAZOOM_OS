@@ -1,0 +1,231 @@
+{
+  "nav": {
+    "about": "About",
+    "projects": "Projects",
+    "skills": "Tech Stack",
+    "contact": "Contact",
+    "cv": "Resume"
+  },
+  "hero": {
+    "status": "SYSTEM ONLINE // BUILDER IN THE SHADOW",
+    "title1": "Building",
+    "title2": "Operating Systems",
+    "title3": "& Digital Worlds",
+    "subtitle": "Hazem Soussi — OS Architect, Game Developer & Full-Stack Engineer. From kernel to cloud, from pixel to protocol.",
+    "subtitle2": "Tunisia → Remote Anywhere",
+    "identity": "// shadow-builder — anonymous by choice, known by the work",
+    "cta": {
+      "projects": "Explore Projects",
+      "contact": "Get in Touch"
+    },
+    "stats": {
+      "os": "Operating System",
+      "game": "Game Engine",
+      "languages": "Languages",
+      "apps": "Apps Built"
+    }
+  },
+  "about": {
+    "title": "About",
+    "subtitle": "// about.enc — clearance: public",
+    "whoami": "I'm Hazem Soussi — a Tunisian OS Architect and Full-Stack Engineer who builds systems from the metal up. I don't use frameworks. I build them. I don't deploy on cloud. I own the infrastructure. From Pascal kernels to Rust WASM physics engines, from game engines with healing mechanics to operating systems that learn — every line of code is intentional.",
+    "mission": "My mission: build technology that refuses to be ordinary. Zero defects. Full ownership. Every artefact speaks for itself.",
+    "build": "Build",
+    "buildDesc": "OS, games, AI, full-stack — from kernel to pixel",
+    "heal": "Heal",
+    "healDesc": "Technology as therapy, games as medicine",
+    "share": "Share",
+    "shareDesc": "Open source because knowledge belongs to everyone",
+    "expertise": "Expertise",
+    "expertiseTags": [
+      "Operating Systems",
+      "Game Development",
+      "Full-Stack Web",
+      "Artificial Intelligence",
+      "DevOps & Security",
+      "Kernel Programming"
+    ],
+    "name": "Hazem Soussi",
+    "role": "OS Architect & Game Developer",
+    "location": "Tunisia → Remote Anywhere",
+    "who": {
+      "title": "Who",
+      "text": "I'm Hazem Soussi — a Tunisian OS Architect and Full-Stack Engineer who builds systems from the metal up. I don't use frameworks. I build them. I don't deploy on cloud. I own the infrastructure. From Pascal kernels to Rust WASM physics engines, from game engines with healing mechanics to operating systems that learn — every line of code is intentional. 38 repositories. 1.6M+ lines of code. Zero rented dependencies."
+    },
+    "philosophy": {
+      "title": "Philosophy",
+      "text": "Zero defects. Full ownership. Every artefact speaks for itself. I'm against AI-as-a-service that devalues engineering. I build machines that pay you, not machines that replace you. Complexity until it's simple — never the reverse."
+    },
+    "terminal": {
+      "mission": "Build technology that refuses to be ordinary. Every commit is a statement.",
+      "uptime": "up 47 days, 3:42 — zero crashes, zero vulnerabilities, zero excuses"
+    }
+  },
+  "projects": {
+    "title": "Projects",
+    "subtitle": "// artefacts.log — clearance: public",
+    "description": "Each project is an artefact — built from scratch, owned completely, no dependencies on rented infrastructure.",
+    "status": {
+      "active": "Active",
+      "completed": "Completed",
+      "wip": "In Progress"
+    },
+    "moreDetails": "More details",
+    "lessDetails": "Less",
+    "private": "Private",
+    "code": "Code",
+    "demo": "Demo",
+    "highlights": "Highlights",
+    "challenges": "Challenges & Learnings",
+    "otherProjects": "Other Projects",
+    "upcoming": "In Progress & Coming Soon",
+    "hazoom-os": {
+      "title": "HAZOOM OS",
+      "desc": "A complete Unix-like operating system built from scratch. Pascal monolithic kernel with process manager, memory manager, file system, device drivers, and security layer. 70+ integrated applications including AI copilot, browser, and neural interface. Deployed on K3s with zero-downtime rolling updates.",
+      "tags": [
+        "Pascal",
+        "Kernel",
+        "K3s",
+        "ECS",
+        "AI"
+      ],
+      "github": "https://github.com/hazem-soussi-HA/hazoom-os-unified",
+      "visibility": "public",
+      "status": "active"
+    },
+    "mario-gta6": {
+      "title": "Super Mario GTA6",
+      "desc": "Original 3D open-world game engine fusing platformer mechanics with GTA freedom. Rust physics compiled to WebAssembly (60 FPS in browser), Three.js WebGL rendering with dynamic lighting, ECS architecture with AI behavior trees, spatial audio, and procedural world generation. 27,000+ source files.",
+      "tags": [
+        "Rust",
+        "WASM",
+        "Three.js",
+        "ECS",
+        "AI"
+      ],
+      "github": "https://github.com/hazem-soussi-HA/mario_gta6",
+      "visibility": "public",
+      "status": "active"
+    },
+    "neon-drift": {
+      "title": "Neon Drift",
+      "desc": "Retro-futuristic hover-racer with synthwave aesthetics. Custom physics engine, drift mechanics, AI opponents with pathfinding, and a procedural track generator. Built with zero dependencies — pure WebGL rendering pipeline.",
+      "tags": [
+        "WebGL",
+        "Physics",
+        "AI",
+        "Procedural"
+      ],
+      "github": "https://github.com/hazem-soussi-HA/mario_gta6",
+      "visibility": "public",
+      "status": "active"
+    },
+    "maps": {
+      "title": "HAZEM Maps",
+      "desc": "Real-time mapping and geospatial visualization platform. Interactive maps with POI data, route optimization, and location intelligence. Built for privacy-first navigation without cloud dependency.",
+      "tags": [
+        "Maps",
+        "Geospatial",
+        "Privacy",
+        "React"
+      ],
+      "github": "https://github.com/hazem-soussi-HA/maps",
+      "visibility": "public",
+      "status": "active"
+    },
+    "hazoom-kernel": {
+      "title": "HAZOOM Kernel",
+      "desc": "Custom C kernel with memory management, interrupt handling, and syscall interface. Designed for the HAZOOM OS ecosystem. Implements quantum-resistant cryptography primitives and Q-learning in kernel space.",
+      "tags": [
+        "C",
+        "Kernel",
+        "Security",
+        "Quantum"
+      ],
+      "github": "https://github.com/hazem-soussi-HA/hazoom-os",
+      "visibility": "private",
+      "status": "active"
+    },
+    "alphapony-engine": {
+      "title": "AlphaPony AI Engine",
+      "desc": "Autonomous AI agent trained on personal creative patterns for code generation and game design assistance. 275 Linux syscalls mapped as capabilities. Syscall atlas visualization with galaxy metaphor. Self-learning architecture with episodic memory.",
+      "tags": [
+        "AI",
+        "Python",
+        "Pascal",
+        "Autonomous"
+      ],
+      "github": "https://github.com/hazem-soussi-HA/Alpha_pony_hazoom",
+      "visibility": "private",
+      "status": "active"
+    }
+  },
+  "skills": {
+    "title": "Tech Stack",
+    "subtitle": "// arsenal.log — clearance: public"
+  },
+  "contact": {
+    "title": "Let's Build",
+    "title2": "Something Real",
+    "subtitle": "A project in mind? A collaboration? I respond to builders, not recruiters.",
+    "description": "A project in mind? A collaboration? A question? I respond to builders, not recruiters.",
+    "directChannels": "Direct Channels",
+    "email": "Email",
+    "github": "GitHub",
+    "linkedin": "LinkedIn",
+    "cv": "Resume",
+    "cvDesc": "View full resume",
+    "sendMessage": "Send a Message",
+    "name": "Name",
+    "namePlaceholder": "Your name",
+    "emailPlaceholder": "your@email.com",
+    "message": "Message",
+    "messagePlaceholder": "Describe your project or message...",
+    "send": "Send",
+    "sent": "Message ready to send",
+    "hint": "Your email client will open",
+    "title1": "Let's Build",
+    "button": "Start a Conversation"
+  },
+  "footer": {
+    "built": "Built with React + Vite + Tailwind · Deployed via GitHub Actions · 0 vulns · Self-hosted K3s",
+    "motto": "\"The builder remains in the shadow. The artefacts speak for themselves.\" — Hazem Soussi (HA)",
+    "copyright": "© 2024-2026 Hazem Soussi (HA). All rights reserved."
+  },
+  "cv": {
+    "title": "Resume — Hazem Soussi",
+    "download": "Download PDF"
+  },
+  "stack": {
+    "title": "Tech Stack",
+    "subtitle": "// arsenal.log — clearance: public",
+    "os": {
+      "title": "OS & Systems",
+      "pascal": "Monolithic kernel, process scheduler, memory manager",
+      "rust": "WASM physics, DNS server, systems programming",
+      "python": "AI/ML pipelines, backend services, tooling",
+      "fortran": "Scientific computing, physics simulations"
+    },
+    "frontend": {
+      "title": "Frontend",
+      "react": "Consciousness UI, portfolio, interactive systems",
+      "ts": "Type-safe full-stack applications",
+      "glsl": "Shader programming, GPU pipelines",
+      "tailwind": "Zero-config utility-first design system"
+    },
+    "infra": {
+      "title": "Infrastructure",
+      "docker": "Container orchestration, multi-stage builds",
+      "k8s": "Self-hosted K3s, 47 pods, zero-downtime deploys",
+      "terraform": "Infrastructure as code, bare metal provisioning",
+      "cicd": "GitHub Actions, automated testing, security scanning"
+    },
+    "security": {
+      "title": "Security",
+      "csp": "Content Security Policy, XSS prevention",
+      "ssl": "TLS 1.3, certificate management",
+      "audit": "Automated vulnerability scanning, penetration testing",
+      "vault": "Encrypted credential storage, zero-knowledge architecture"
+    }
+  }
+}

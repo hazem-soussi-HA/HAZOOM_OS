@@ -1,0 +1,578 @@
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Cloud, Server, Shield, GitBranch, Terminal, Mail, Linkedin, Github, ExternalLink } from 'lucide-react'
+
+function HeroSection() {
+  return (
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-6">
+      {/* Animated background */}
+      <div className="absolute inset-0">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cloud-blue/10 rounded-full blur-[120px] animate-pulse-slow" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-cloud-cyan/10 rounded-full blur-[100px] animate-pulse-slow" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cloud-blue/5 rounded-full blur-[150px]" />
+      </div>
+
+      {/* Grid pattern */}
+      <div className="absolute inset-0 opacity-[0.03]" style={{
+        backgroundImage: 'linear-gradient(rgba(0,112,243,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(0,112,243,0.3) 1px, transparent 1px)',
+        backgroundSize: '60px 60px'
+      }} />
+
+      <div className="relative z-10 max-w-7xl mx-auto flex flex-col md:flex-row items-center">
+        {/* Text content - left side */}
+        <div className="md:w-1/2 flex-1 text-center md:text-left space-y-6">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-8 text-sm text-cloud-cyan">
+              <span className="w-2 h-2 bg-cloud-cyan rounded-full animate-pulse" />
+              Open to opportunities
+            </div>
+          </motion.div>
+
+          <motion.h1
+            className="text-4xl md:text-5xl lg:text-6xl font-black leading-tight mb-4 tracking-tight"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+            <span className="gradient-text">Orchestrating</span>
+            <br />
+            <span className="text-white">Scalable Realities</span>
+          </motion.h1>
+
+          <motion.p
+            className="text-base md:text-lg text-slate-400 max-w-md mx-auto md:mx-0 leading-relaxed"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+          >
+            Cloud Architect & DevOps Engineer transforming infrastructure complexity into performance.
+          </motion.p>
+
+          <motion.div
+            className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+          >
+            <a
+              href="#projects"
+              className="px-6 py-3 bg-gradient-to-r from-cloud-blue to-cloud-cyan rounded-xl font-semibold text-white hover:shadow-[0_0_40px_rgba(0,112,243,0.4)] transition-all duration-300 hover:-translate-y-0.5"
+            >
+              View My Work
+            </a>
+            <a
+              href="#contact"
+              className="px-6 py-3 glass rounded-xl font-semibold text-cloud-cyan hover:border-cloud-cyan/40 transition-all duration-300 hover:-translate-y-0.5"
+            >
+              Get in Touch
+            </a>
+          </motion.div>
+        </div>
+
+        {/* Photo - right side */}
+        <div className="md:w-1/2 flex-1 flex items-center justify-center">
+          <motion.div
+            className="relative w-[300px] md:w-[400px] h-[300px] md:h-[400px]"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.8 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            {/* Parallax container */}
+            <motion.div
+              className="relative w-full h-full"
+              while={{ 
+                x: (e) => (e.clientX - window.innerWidth/2) * 0.03, 
+                y: (e) => (e.clientY - window.innerHeight/2) * 0.03 
+              }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            >
+              {/* Octagon mask with neon border */}
+              <div className="relative w-full h-full">
+                <div 
+                  className="absolute inset-0"
+                  style={{
+                    clipPath: 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)',
+                    WebkitClipPath: 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)'
+                  }}
+                >
+                  <img
+                    src="/photo CV 2.jpg"
+                    alt="Hazem Soussi Graduation"
+                    className="w-full h-full object-cover transition-all duration-500 ease-in-out"
+                    style={{
+                      filter: 'grayscale(100%) contrast(110%)',
+                      transition: 'filter 0.5s ease-in-out'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.filter = 'grayscale(0%) contrast(100%)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.filter = 'grayscale(100%) contrast(110%)';
+                    }}
+                  />
+                  
+                  {/* Neon border effect */}
+                  <div 
+                    className="absolute inset-0"
+                    style={{
+                      pointerEvents: 'none',
+                      border: '2px solid #0070f3',
+                      borderRadius: 'inherit',
+                      maskImage: 'linear-gradient(black 0 0) content-box, linear-gradient(black 0 0)',
+                      WebkitMaskClip: 'text, border-box'
+                    }}
+                  />
+                </div>
+                
+                {/* Electric blue halo effect */}
+                <div className="absolute inset-0" style={{
+                  pointerEvents: 'none',
+                  filter: 'blur(20px)',
+                  background: 'radial-gradient(circle at center, #0070f3 0%, transparent 70%)',
+                  opacity: '0.3'
+                }}></div>
+              </div>
+              
+              {/* Glassmorphism badge */}
+              <div className="absolute bottom-4 right-4">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 shadow-[0_0_15px_rgba(0,112,243,0.2)]">
+                  <span className="text-xs font-medium text-cloud-cyan">Status:</span>
+                  <span className="text-xs font-medium text-white">Ready to Deploy</span>
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        </div>
+      </div>
+        </motion.div>
+
+        <motion.h1
+          className="text-5xl md:text-7xl lg:text-8xl font-black leading-tight mb-6 tracking-tight"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+        >
+          <span className="gradient-text">Orchestrating</span>
+          <br />
+          <span className="text-white">Scalable Realities</span>
+        </motion.h1>
+
+        <motion.p
+          className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+        >
+          Cloud Architect & DevOps Engineer transforming infrastructure complexity into performance.
+        </motion.p>
+
+        <motion.div
+          className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+        >
+          <a
+            href="#projects"
+            className="px-8 py-4 bg-gradient-to-r from-cloud-blue to-cloud-cyan rounded-xl font-semibold text-white hover:shadow-[0_0_40px_rgba(0,112,243,0.4)] transition-all duration-300 hover:-translate-y-0.5"
+          >
+            View My Work
+          </a>
+          <a
+            href="#contact"
+            className="px-8 py-4 glass rounded-xl font-semibold text-cloud-cyan hover:border-cloud-cyan/40 transition-all duration-300 hover:-translate-y-0.5"
+          >
+            Get in Touch
+          </a>
+        </motion.div>
+
+        {/* Photo with Premium Tech Effects */}
+        <motion.div
+          className="relative mt-16 flex justify-center"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, delay: 0.8 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          {/* Parallax container */}
+          <motion.div
+            className="relative w-[300px] md:w-[400px] h-[300px] md:h-[400px]"
+            while={{ 
+              x: (e) => (e.clientX - window.innerWidth/2) * 0.03, 
+              y: (e) => (e.clientY - window.innerHeight/2) * 0.03 
+            }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          >
+            {/* Octagon mask with neon border */}
+            <div className="relative w-full h-full">
+              <div 
+                className="absolute inset-0"
+                style={{
+                  clipPath: 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)',
+                  WebkitClipPath: 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)'
+                }}
+              >
+                <img
+                  src="/photo CV 2.jpg"
+                  alt="Hazem Soussi Graduation"
+                  className="w-full h-full object-cover transition-all duration-500 ease-in-out"
+                  style={{
+                    filter: 'grayscale(100%) contrast(110%)',
+                    transition: 'filter 0.5s ease-in-out'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.filter = 'grayscale(0%) contrast(100%)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.filter = 'grayscale(100%) contrast(110%)';
+                  }}
+                />
+                
+                {/* Neon border effect */}
+                <div 
+                  className="absolute inset-0"
+                  style={{
+                    pointerEvents: 'none',
+                    border: '2px solid #0070f3',
+                    borderRadius: 'inherit',
+                    maskImage: 'linear-gradient(black 0 0) content-box, linear-gradient(black 0 0)',
+                    WebkitMaskClip: 'text, border-box'
+                  }}
+                />
+              </div>
+              
+              {/* Electric blue halo effect */}
+              <div className="absolute inset-0" style={{
+                pointerEvents: 'none',
+                filter: 'blur(20px)',
+                background: 'radial-gradient(circle at center, #0070f3 0%, transparent 70%)',
+                opacity: '0.3'
+              }}></div>
+            </div>
+            
+            {/* Glassmorphism badge */}
+            <div className="absolute bottom-4 right-4">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 shadow-[0_0_15px_rgba(0,112,243,0.2)]">
+                <span className="text-xs font-medium text-cloud-cyan">Status:</span>
+                <span className="text-xs font-medium text-white">Ready to Deploy</span>
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      </div>
+
+      {/* Scroll indicator */}
+      <motion.div
+        className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        animate={{ y: [0, 10, 0] }}
+        transition={{ duration: 2, repeat: Infinity }}
+      >
+        <div className="w-6 h-10 rounded-full border-2 border-slate-600 flex items-start justify-center p-1.5">
+          <motion.div
+            className="w-1.5 h-1.5 bg-cloud-blue rounded-full"
+            animate={{ y: [0, 12, 0] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+        </div>
+      </motion.div>
+    </section>
+  )
+}
+
+const techStack = [
+  { name: 'Kubernetes', icon: Cloud, color: '#326ce5', desc: 'Container Orchestration' },
+  { name: 'Docker', icon: Server, color: '#2496ed', desc: 'Containerization' },
+  { name: 'AWS', icon: Shield, color: '#ff9900', desc: 'Cloud Platform' },
+  { name: 'Ansible', icon: GitBranch, color: '#EE0000', desc: 'Configuration Mgmt' },
+]
+
+function TechStack() {
+  return (
+    <section className="py-24 px-6 relative">
+      <div className="max-w-6xl mx-auto">
+        <motion.div
+          className="text-center mb-16"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+        >
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            <span className="gradient-text">Tech Stack</span>
+          </h2>
+          <p className="text-slate-500">Tools that power my infrastructure</p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {techStack.map((tech, i) => (
+            <motion.div
+              key={tech.name}
+              className="glass glass-hover rounded-2xl p-8 text-center cursor-pointer transition-all duration-300 group"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              whileHover={{ y: -8, scale: 1.02 }}
+            >
+              <div
+                className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 transition-transform duration-300 group-hover:scale-110"
+                style={{ background: `${tech.color}20` }}
+              >
+                <tech.icon size={32} style={{ color: tech.color }} />
+              </div>
+              <h3 className="text-xl font-bold mb-1">{tech.name}</h3>
+              <p className="text-sm text-slate-500">{tech.desc}</p>
+              <div className="mt-4 h-1 w-0 group-hover:w-full bg-gradient-to-r rounded-full transition-all duration-500" style={{ background: `linear-gradient(to right, ${tech.color}, ${tech.color}80)` }} />
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+const projects = [
+  {
+    title: 'High Availability K8s Cluster',
+    company: 'Next Step IT',
+    desc: 'Designed and deployed a production-grade Kubernetes cluster with auto-scaling, ingress routing, and persistent storage for enterprise workloads.',
+    tags: ['Kubernetes', 'Helm', 'MetalLB', 'Prometheus'],
+  },
+  {
+    title: 'Automated CI/CD Pipeline',
+    company: 'INOBI',
+    desc: 'Built an end-to-end CI/CD pipeline with Jenkins, Docker, and GitLab CI enabling zero-downtime deployments across multiple environments.',
+    tags: ['Jenkins', 'Docker', 'GitLab CI', 'Terraform'],
+  },
+  {
+    title: 'Private Cloud Infrastructure',
+    company: 'OpenStack / ESPRIT',
+    desc: 'Architected a private cloud using OpenStack for academic computing, managing compute, storage, and network virtualization at scale.',
+    tags: ['OpenStack', 'Nova', 'Cinder', 'Neutron'],
+  },
+]
+
+function Projects() {
+  return (
+    <section id="projects" className="py-24 px-6 relative">
+      <div className="absolute inset-0">
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-cloud-blue/20 to-transparent" />
+        <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-cloud-blue/20 to-transparent" />
+      </div>
+
+      <div className="max-w-6xl mx-auto">
+        <motion.div
+          className="text-center mb-16"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+        >
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            <span className="gradient-text">Case Studies</span>
+          </h2>
+          <p className="text-slate-500">Projects that define my expertise</p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {projects.map((project, i) => (
+            <motion.div
+              key={project.title}
+              className="glass glass-hover rounded-2xl p-8 flex flex-col justify-between group"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.15 }}
+              whileHover={{ y: -4 }}
+            >
+              <div>
+                <span className="text-xs font-medium text-cloud-cyan uppercase tracking-wider">{project.company}</span>
+                <h3 className="text-xl font-bold mt-2 mb-3">{project.title}</h3>
+                <p className="text-sm text-slate-400 leading-relaxed">{project.desc}</p>
+              </div>
+              <div className="flex flex-wrap gap-2 mt-6">
+                {project.tags.map(tag => (
+                  <span key={tag} className="px-3 py-1 text-xs rounded-full bg-cloud-blue/10 text-cloud-cyan border border-cloud-blue/20">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function TerminalSection() {
+  const [lines, setLines] = useState([])
+
+  useEffect(() => {
+    const cmds = [
+      '$ kubectl config use-context production-cluster',
+      'Switched to context "production-cluster".',
+      '$ kubectl apply -f deployment.yaml',
+      'deployment.apps/api-gateway created',
+      'service/api-gateway created',
+      '$ terraform plan -out=infra.tfplan',
+      'Terraform used the selected providers to generate execution plan.',
+      'Plan: 12 to add, 0 to change, 3 to destroy.',
+      '$ ansible-playbook -i inventory/ site.yml --diff',
+      'TASK [deploy app] *** changed: [web-01] => (delta)',
+      'TASK [configure monitoring] => ok: [monitor-01]',
+      '',
+      'Infrastructure ready. All systems operational.',
+    ]
+
+    let i = 0
+    const interval = setInterval(() => {
+      if (i < cmds.length) {
+        setLines(prev => [...prev, cmds[i]])
+        i++
+      } else {
+        clearInterval(interval)
+      }
+    }, 600)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  return (
+    <section className="py-24 px-6">
+      <div className="max-w-4xl mx-auto">
+        <motion.div
+          className="text-center mb-12"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+        >
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            <span className="gradient-text">Expertise Terminal</span>
+          </h2>
+          <p className="text-slate-500">Watch infrastructure come alive</p>
+        </motion.div>
+
+        <motion.div
+          className="glass rounded-2xl overflow-hidden"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <div className="flex items-center gap-2 px-4 py-3 bg-[#0c1021] border-b border-white/5">
+            <div className="w-3 h-3 rounded-full bg-red-500/80" />
+            <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+            <div className="w-3 h-3 rounded-full bg-green-500/80" />
+            <span className="ml-2 text-xs text-slate-500 font-mono">terminal — hazem@cloud-infrastructure</span>
+          </div>
+          <div className="p-6 font-mono text-sm leading-relaxed min-h-[280px]">
+            <AnimatePresence>
+              {lines.map((line, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className={line.startsWith('$') ? 'text-cloud-cyan' : 'text-slate-400'}
+                >
+                  {line}
+                </motion.div>
+              ))}
+            </AnimatePresence>
+            <span className="inline-block w-2 h-4 bg-cloud-cyan animate-pulse ml-1" />
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  )
+}
+
+function ContactSection() {
+  return (
+    <section id="contact" className="py-24 px-6 relative">
+      <div className="absolute inset-0">
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-cloud-blue/10 rounded-full blur-[120px]" />
+      </div>
+
+      <div className="max-w-3xl mx-auto text-center relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <h2 className="text-4xl md:text-6xl font-bold mb-6">
+            Let's Build<br /><span className="gradient-text">Together</span>
+          </h2>
+          <p className="text-slate-400 text-lg mb-10 max-w-xl mx-auto">
+            Ready to transform your infrastructure? Let's connect and create something remarkable.
+          </p>
+
+          <a
+            href="mailto:hazem.soussi@example.com"
+            className="inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-cloud-blue to-cloud-cyan rounded-2xl font-bold text-lg text-white hover:shadow-[0_0_60px_rgba(0,112,243,0.4)] transition-all duration-300 hover:-translate-y-1 glow"
+          >
+            <Mail size={22} />
+            Get in Touch
+          </a>
+
+          <div className="flex justify-center gap-4 mt-10">
+            {[
+              { icon: Github, href: '#' },
+              { icon: Linkedin, href: '#' },
+              { icon: ExternalLink, href: '#' },
+            ].map((social, i) => (
+              <motion.a
+                key={i}
+                href={social.href}
+                className="w-12 h-12 glass rounded-xl flex items-center justify-center text-slate-400 hover:text-cloud-cyan hover:border-cloud-cyan/40 transition-all duration-300"
+                whileHover={{ y: -4 }}
+              >
+                <social.icon size={20} />
+              </motion.a>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  )
+}
+
+function Navbar() {
+  return (
+    <motion.nav
+      className="fixed top-0 left-0 right-0 z-50 px-6 py-4"
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+    >
+      <div className="max-w-6xl mx-auto glass rounded-2xl px-6 py-3 flex items-center justify-between">
+        <span className="font-bold text-lg gradient-text">HS</span>
+        <div className="flex gap-6 text-sm text-slate-400">
+          <a href="#projects" className="hover:text-cloud-cyan transition-colors">Projects</a>
+          <a href="#contact" className="hover:text-cloud-cyan transition-colors">Contact</a>
+        </div>
+      </div>
+    </motion.nav>
+  )
+}
+
+export default function App() {
+  return (
+    <div className="relative">
+      <Navbar />
+      <HeroSection />
+      <TechStack />
+      <Projects />
+      <TerminalSection />
+      <ContactSection />
+
+      <footer className="py-8 text-center text-xs text-slate-600 border-t border-white/5">
+        <p>Designed by Hazem Soussi — Cloud Architect & DevOps Engineer</p>
+      </footer>
+    </div>
+  )
+}

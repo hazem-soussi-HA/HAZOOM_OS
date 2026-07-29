@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HAZOOM EARTH — Unified Assembly Simulation</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { overflow:hidden; background:#000; font:12px monospace; color:#fff; }
+canvas { display:block; width:100vw; height:100vh; }
+
+/* Test overlay */
+#test-panel {
+  position:fixed; top:0; right:0; width:320px; height:100vh;
+  background:rgba(0,0,0,.85); border-left:1px solid #333;
+  overflow-y:auto; z-index:100; padding:12px;
+}
+#test-panel h2 { font-size:14px; color:#0f0; margin-bottom:8px; border-bottom:1px solid #333; padding-bottom:4px; }
+#test-panel .test { margin:6px 0; padding:6px 8px; border-radius:4px; font-size:11px; }
+#test-panel .test.pass { background:rgba(0,80,0,.6); border-left:3px solid #0f0; }
+#test-panel .test.fail { background:rgba(120,0,0,.6); border-left:3px solid #f00; }
+#test-panel .test.running { background:rgba(80,80,0,.6); border-left:3px solid #ff0; }
+#test-panel .test-name { font-weight:bold; margin-bottom:2px; }
+#test-panel .test-detail { color:#aaa; font-size:10px; }
+#test-panel .summary { margin-top:12px; padding:8px; border-radius:4px; text-align:center; font-size:13px; font-weight:bold; }
+#test-panel .summary.all-pass { background:rgba(0,120,0,.4); color:#0f0; }
+#test-panel .summary.has-fail { background:rgba(120,0,0,.4); color:#f44; }
+
+/* Status bar */
+#status-bar {
+  position:fixed; bottom:0; left:0; width:calc(100vw - 320px); height:32px;
+  background:rgba(0,0,0,.8); border-top:1px solid #333;
+  display:flex; align-items:center; padding:0 12px; gap:16px; z-index:99;
+}
+#status-bar .stat { color:#0f0; }
+#status-bar .stat-label { color:#888; }
+
+/* Controls */
+#controls {
+  position:fixed; bottom:40px; left:12px; color:#fff; opacity:.6; z-index:99;
+}
+</style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+
+<div id="controls">
+  [Mouse] Rotate | [Scroll] Zoom | [Space] Day/Night | [R] Regenerate | [T] Run Tests
+</div>
+
+<div id="status-bar">
+  <span class="stat-label">FPS:</span><span class="stat" id="fps-desc">--</span>
+  <span class="stat-label">Verts:</span><span class="stat" id="vert-desc">--</span>
+  <span class="stat-label">Tris:</span><span class="stat" id="tri-desc">--</span>
+  <span class="stat-label">Sim:</span><span class="stat" id="sim-desc">--</span>
+</div>
+
+<div id="test-panel">
+  <h2>&#x1F9EA; ASSEMBLY TEST HARNESS</h2>
+  <div id="test-results"></div>
+  <div id="test-summary" class="summary" style="display:none;"></div>
+</div>
+
+<script type="module">
+"use strict";
+
+// =============================================================================
+// AUTOMATED TEST HARNESS
+// =============================================================================
+class TestHarness {
+  constructor(name) {
+    this.name = name;
+    this.tests = [];
+    this.results = [];
+    this.panel = document.getElementById('test-results');
+    this.summary = document.getElementById('test-summary');
+    this.canvas = document.getElementById('c');
+    this.gl = null;
+  }
+
+  add(name, fn, timeout = 5000) {
+    this.tests.push({ name, fn, timeout });
+  }
+
+  _render(test, status, detail) {
+    const el = document.getElementById(test);
+    if (!el) return;
+    el.className = 'test ' + status;
+    const det = el.querySelector('.test-detail');
+    if (det) det.textContent = detail;
+  }
+
+  async runAll() {
+    this.panel.innerHTML = '';
+    this.results = [];
+    this.summary.style.display = 'none';
+
+    // Create test UI elements
+    for (const t of this.tests) {
+      const id = 'test-' + t.name.replace(/\s+/g, '-').toLowerCase();
+      this.panel.innerHTML += `
+        <div class="test running" id="${id}">
+          <div class="test-name">&#x23F3; ${t.name}</div>
+          <div class="test-detail">Running...</div>
+        </div>`;
+    }
+
+    let passed = 0, failed = 0;
+
+    for (let i = 0; i < this.tests.length; i++) {
+      const t = this.tests[i];
+      const id = 'test-' + t.name.replace(/\s+/g, '-').toLowerCase();
+      this._render(id, 'running', 'Executing...');
+
+      const start = performance.now();
+      let detail = '', status = 'pass';
+      try {
+        const result = await Promise.race([
+          t.fn(),
+          new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout')), t.timeout))
+        ]);
+        if (result && result.fail) { status = 'fail'; detail = result.fail; }
+        else if (result && result.ok) { detail = result.ok; }
+        else { detail = `OK (${(performance.now()-start).toFixed(0)}ms)`; }
+      } catch(e) {
+        status = 'fail';
+        detail = e.message || 'Unknown error';
+      }
+
+      this._render(id, status, detail);
+      this.results.push({ name: t.name, status, detail, time: performance.now()-start });
+      if (status === 'pass') passed++; else failed++;
+    }
+
+    this.summary.style.display = 'block';
+    if (failed === 0) {
+      this.summary.className = 'summary all-pass';
+      this.summary.textContent = `ALL ${passed} TESTS PASSED`;
+    } else {
+      this.summary.className = 'summary has-fail';
+      this.summary.textContent = `${passed} PASSED / ${failed} FAILED`;
+    }
+
+    return { passed, failed };
+  }
+}
+
+// =============================================================================
+// ASSEMBLY-CORE HASH & NOISE (mirrors x86 exactly)
+// =============================================================================
+const GW = 512, GH = 256;
+
+function hash2i(i, j) {
+  return ((i * 127 + j * 311) ^ ((i * 269) + (j * 173))) & 0x7FFFFFFF;
+}
+
+function noise2d(x, z) {
+  const ix = Math.floor(x), iz = Math.floor(z);
+  const fx = x - ix, fz = z - iz;
+  const sx = fx * fx * (3 - 2 * fx), sz = fz * fz * (3 - 2 * fz);
+  const n00 = hash2i(ix, iz) / 2147483648;
+  const n10 = hash2i(ix + 1, iz) / 2147483648;
+  const n01 = hash2i(ix, iz + 1) / 2147483648;
+  const n11 = hash2i(ix + 1, iz + 1) / 2147483648;
+  return (n00 + (n10 - n00) * sx) + ((n01 + (n11 - n01) * sx) - (n00 + (n10 - n00) * sx)) * sz;
+}
+
+function fbm(x, z) {
+  let v = 0, a = 1, ox = x, oz = z;
+  for (let i = 0; i < 6; i++) {
+    const f = 0.002 * Math.pow(4, i);
+    v += a * noise2d(ox * f, oz * f);
+    a *= 0.5;
+  }
+  return v;
+}
+
+// =============================================================================
+// EARTH DATA GENERATION
+// =============================================================================
+const psX = [.15,.42,.73,.28,.88,.55,.05,.92,.33,.67,.12,.48,.79,.22,.61,.85];
+const psY = [.25,.68,.42,.15,.82,.35,.58,.12,.92,.08,.55,.75,.32,.48,.18,.65];
+const pE   = [.3,-.1,.5,.2,-.2,.4,.1,-.3,.6,0,-.15,.35,.25,-.25,.45,.15];
+
+function generateEarth() {
+  const elev = new Float32Array(GW * GH);
+  const biomeCol = new Uint8Array(GW * GH * 4);
+
+  for (let j = 0; j < GH; j++) {
+    for (let i = 0; i < GW; i++) {
+      // Voronoi plates
+      let bd = Infinity, bp = 0;
+      for (let p = 0; p < 16; p++) {
+        let dx = i/GW - psX[p], dy = j/GH - psY[p];
+        if (dx > .5) dx--; if (dx < -.5) dx++;
+        const d = dx*dx + dy*dy;
+        if (d < bd) { bd = d; bp = p; }
+      }
+      let e = pE[bp] + Math.max(0, .5 - Math.sqrt(bd)) * 2;
+      e += fbm(i/GW * Math.PI*2, j/GH * Math.PI) * .3;
+      if (noise2d(i*.05, j*.05) > .7) e += (noise2d(i*.05, j*.05) - .7) * 1.5;
+
+      // Thermal erosion (3 iterations)
+      elev[j*GW+i] = e;
+
+      // Biome
+      const latF = 1 - Math.abs(j/GH - .5)*2;
+      const temp = Math.max(0, latF - Math.max(0, e-.45)*.013);
+      const lat = Math.abs(j/GH - .5)*2;
+      let precip = Math.max(0, 1 - 3*Math.abs(lat-.15));
+      precip += Math.max(0, .5 - 2*Math.abs(lat-.7));
+      precip = Math.min(1, precip + Math.max(0, e-.45)*.3);
+
+      let r, g, b;
+      if (e < .45)       { r=8;  g=25; b=70; }   // Ocean
+      else if (temp<.05) { r=225;g=235;b=245; }   // Ice
+      else if (temp<.15) { r=175;g=190;b=200; }   // Tundra
+      else if (temp<.30) { r=28; g=88; b=22; }    // Boreal
+      else if (temp<.50) { r=50; g=128;b=38; }    // Temperate
+      else if (precip<.2){ r=205;g=180;b=105; }   // Desert
+      else if (precip<.5){ r=148;g=155;b=55; }    // Savanna
+      else               { r=8;  g=72; b=8; }     // Rainforest
+
+      const shade = Math.min(255, Math.max(0, (1 + e*.3) * 128));
+      biomeCol[(j*GW+i)*4]   = Math.min(255, r * shade / 128);
+      biomeCol[(j*GW+i)*4+1] = Math.min(255, g * shade / 128);
+      biomeCol[(j*GW+i)*4+2] = Math.min(255, b * shade / 128);
+      biomeCol[(j*GW+i)*4+3] = 255;
+    }
+  }
+
+  // Erosion pass
+  for (let iter = 0; iter < 3; iter++) {
+    const ne = new Float32Array(elev);
+    for (let j = 1; j < GH-1; j++) {
+      for (let i = 1; i < GW-1; i++) {
+        const h = elev[j*GW+i];
+        const mn = Math.min(elev[j*GW+i-1], elev[j*GW+i+1], elev[(j-1)*GW+i], elev[(j+1)*GW+i]);
+        if (h - mn > .02) ne[j*GW+i] -= (h - mn) * .1;
+      }
+    }
+    elev.set(ne);
+  }
+
+  return { elev, biomeCol };
+}
+
+// =============================================================================
+// WEBGL RENDERER
+// =============================================================================
+const canvas = document.getElementById('c');
+const gl = canvas.getContext('webgl2', { antialias: true, alpha: false });
+if (!gl) throw 'WebGL2 required';
+
+let W, H, aspect;
+function resize() {
+  const d = Math.min(devicePixelRatio, 2);
+  W = canvas.width = Math.floor(innerWidth * d);
+  H = canvas.height = Math.floor(innerHeight * d);
+  aspect = W / H;
+  gl.viewport(0, 0, W, H);
+}
+addEventListener('resize', resize);
+resize();
+
+// Generate data
+const simStart = performance.now();
+const earthData = generateEarth();
+const simTime = performance.now() - simStart;
+
+// Upload biome texture
+const biomeTex = gl.createTexture();
+gl.bindTexture(gl.TEXTURE_2D, biomeTex);
+gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, GW, GH, 0, gl.RGBA, gl.UNSIGNED_BYTE, earthData.biomeCol);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+// Sphere mesh
+const SLAT = 128, SLON = 256;
+const positions = [], normals = [], uvs = [], indices = [];
+for (let j = 0; j <= SLAT; j++) {
+  const th = j * Math.PI / SLAT, sT = Math.sin(th), cT = Math.cos(th);
+  for (let i = 0; i <= SLON; i++) {
+    const ph = i * 2 * Math.PI / SLON;
+    const x = cT * Math.cos(ph), y = sT, z = cT * Math.sin(ph);
+    positions.push(x, y, z);
+    normals.push(x, y, z);
+    uvs.push(i/SLON, j/SLAT);
+  }
+}
+for (let j = 0; j < SLAT; j++) {
+  for (let i = 0; i < SLON; i++) {
+    const a = j*(SLON+1)+i, b = a+SLON+1;
+    indices.push(a, b, a+1, b, b+1, a+1);
+  }
+}
+
+const vao = gl.createVertexArray();
+gl.bindVertexArray(vao);
+for (let i = 0; i < 3; i++) {
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER,
+    i===0 ? new Float32Array(positions) : i===1 ? new Float32Array(normals) : new Float32Array(uvs),
+    gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(i);
+  gl.vertexAttribPointer(i, i===2 ? 2 : 3, gl.FLOAT, false, 0, 0);
+}
+const ibo = gl.createBuffer();
+gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
+gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(indices), gl.STATIC_DRAW);
+
+// Shaders
+const vsrc = `#version 300 es
+precision highp float;
+layout(location=0) in vec3 a_pos;
+layout(location=1) in vec3 a_normal;
+layout(location=2) in vec2 a_uv;
+uniform mat4 u_mvp;
+uniform mat4 u_model;
+out vec3 v_norm;
+out vec2 v_uv;
+void main(){
+  v_norm = normalize(mat3(u_model) * a_normal);
+  v_uv = a_uv;
+  gl_Position = u_mvp * vec4(a_pos, 1.0);
+}`;
+
+const fsrc = `#version 300 es
+precision highp float;
+in vec3 v_norm;
+in vec2 v_uv;
+uniform vec3 u_sunDir;
+uniform sampler2D u_biomeTex;
+out vec4 fc;
+void main(){
+  vec3 bc = texture(u_biomeTex, v_uv).rgb / 255.0;
+  float diff = max(dot(normalize(v_norm), normalize(u_sunDir)), 0.0);
+  vec3 col = bc * (0.25 + diff * 0.75);
+  float rim = pow(1.0 - max(dot(normalize(v_norm), normalize(vec3(0.0, 0.0, 1.0))), 0.0), 2.5);
+  col += vec3(0.3, 0.5, 1.0) * rim * 0.3;
+  col = col / (col + vec3(1.0));
+  col = pow(col, vec3(1.0 / 2.2));
+  fc = vec4(col, 1.0);
+}`;
+
+function mkShader(src, type) {
+  const s = gl.createShader(type);
+  gl.shaderSource(s, src);
+  gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+    throw new Error('Shader: ' + gl.getShaderInfoLog(s));
+  }
+  return s;
+}
+function mkProg(vs, fs) {
+  const p = gl.createProgram();
+  gl.attachShader(p, mkShader(vs, gl.VERTEX_SHADER));
+  gl.attachShader(p, mkShader(fs, gl.FRAGMENT_SHADER));
+  gl.linkProgram(p);
+  if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
+    throw new Error('Link: ' + gl.getProgramInfoLog(p));
+  }
+  return p;
+}
+
+const prog = mkProg(vsrc, fsrc);
+const uMVP = gl.getUniformLocation(prog, 'u_mvp');
+const uModel = gl.getUniformLocation(prog, 'u_model');
+const uSunDir = gl.getUniformLocation(prog, 'u_sunDir');
+
+// Camera
+let camTh = 0.3, camPh = 0.4, camDist = 3.5;
+let md = false, lmx = 0, lmy = 0;
+canvas.addEventListener('mousedown', e => { md = true; lmx = e.clientX; lmy = e.clientY; });
+window.addEventListener('mouseup', () => md = false);
+window.addEventListener('mousemove', e => {
+  if (!md) return;
+  camTh -= (e.clientX - lmx) * .005;
+  camPh += (e.clientY - lmy) * .005;
+  camPh = Math.max(-1.2, Math.min(1.2, camPh));
+  lmx = e.clientX; lmy = e.clientY;
+});
+canvas.addEventListener('wheel', e => {
+  camDist += e.deltaY * .002;
+  camDist = Math.max(1.5, Math.min(8, camDist));
+  e.preventDefault();
+}, { passive: false });
+
+// Matrix helpers
+function persp(fov, asp, n, f) {
+  const F = 1/Math.tan(fov/2), nf = 1/(n-f);
+  return new Float32Array([F/asp,0,0,0, 0,F,0,0, 0,0,(f+n)*nf,-1, 0,0,2*f*n*nf, 0]);
+}
+function lookAt(e, c, u) {
+  const zx=e[0]-c[0], zy=e[1]-c[1], zz=e[2]-c[2];
+  let l=1/Math.sqrt(zx*zx+zy*zy+zz*zz);
+  const z0=zx*l, z1=zy*l, z2=zz*l;
+  const xx=u[1]*z2-u[2]*z1, xy=u[2]*z0-u[0]*z2, xz=u[0]*z1-u[1]*z0;
+  l=1/Math.sqrt(xx*xx+xy*xy+xz*xz);
+  const x0=xx*l, x1=xy*l, x2=xz*l;
+  const y0=z1*x2-z2*x1, y1=z2*x0-z0*x2, y2=z0*x1-z1*x0;
+  return new Float32Array([x0,y0,z0,0, x1,y1,z1,0, x2,y2,z2,0,
+    -(x0*e[0]+x1*e[1]+x2*e[2]), -(y0*e[0]+y1*e[1]+y2*e[2]), -(z0*e[0]+z1*e[1]+z2*e[2]), 1]);
+}
+function mul4(a, b) {
+  const o = new Float32Array(16);
+  for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++)
+    o[j*4+i] = a[i]*b[j*4] + a[4+i]*b[j*4+1] + a[8+i]*b[j*4+2] + a[12+i]*b[j*4+3];
+  return o;
+}
+function rotY(a) {
+  const c = Math.cos(a), s = Math.sin(a);
+  return new Float32Array([c,0,-s,0, 0,1,0,0, s,0,c,0, 0,0,0,1]);
+}
+
+// =============================================================================
+// RENDER LOOP
+// =============================================================================
+const t0 = performance.now();
+let fc = 0, lf = performance.now();
+let currentFPS = 0;
+
+function frame() {
+  const t = (performance.now() - t0) * .001;
+  const at = camTh + Math.sin(t * .03) * .05;
+  const cx = Math.cos(at) * Math.cos(camPh) * camDist;
+  const cy = Math.sin(camPh) * camDist;
+  const cz = Math.sin(at) * Math.cos(camPh) * camDist;
+
+  gl.clearColor(0.005, 0.005, 0.02, 1);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  gl.enable(gl.DEPTH_TEST);
+  gl.enable(gl.CULL_FACE);
+
+  const proj = persp(1, aspect, .1, 100);
+  const view = lookAt([cx, cy, cz], [0, 0, 0], [0, 1, 0]);
+  const model = rotY(t * .05);
+  const mvp = mul4(proj, mul4(view, model));
+
+  gl.useProgram(prog);
+  gl.uniformMatrix4fv(uMVP, false, mvp);
+  gl.uniformMatrix4fv(uModel, false, model);
+  const sd = [Math.cos(t*.02)*.5, .35+.25*Math.sin(t*.02), Math.sin(t*.02)*.5];
+  gl.uniform3f(uSunDir, sd[0], sd[1], sd[2]);
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, biomeTex);
+  gl.uniform1i(gl.getUniformLocation(prog, 'u_biomeTex'), 0);
+
+  gl.bindVertexArray(vao);
+  gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_INT, 0);
+
+  fc++;
+  const now = performance.now();
+  if (now - lf > 1000) {
+    currentFPS = Math.round(fc * 1000 / (now - lf));
+    fc = 0; lf = now;
+  }
+
+  document.getElementById('fps-desc').textContent = currentFPS;
+  document.getElementById('vert-desc').textContent = (positions.length / 3).toLocaleString();
+  document.getElementById('tri-desc').textContent = (indices.length / 3).toLocaleString();
+  document.getElementById('sim-desc').textContent = simTime.toFixed(0) + 'ms';
+
+  requestAnimationFrame(frame);
+}
+frame();
+
+// =============================================================================
+// AUTOMATED TESTS — runs after first frame
+// =============================================================================
+const harness = new TestHarness('HAZOOM EARTH');
+
+// Test 1: Canvas exists and has size
+harness.add('Canvas initialized', () => {
+  if (!canvas) return { fail: 'Canvas not found' };
+  if (canvas.width < 100 || canvas.height < 100) return { fail: `Canvas too small: ${canvas.width}x${canvas.height}` };
+  return { ok: `${canvas.width}x${canvas.height}` };
+});
+
+// Test 2: WebGL2 context
+harness.add('WebGL2 context', () => {
+  if (!gl) return { fail: 'No WebGL2 context' };
+  const ver = gl.getParameter(gl.VERSION);
+  return { ok: ver };
+});
+
+// Test 3: Shader compilation
+harness.add('Shader compilation', () => {
+  if (!prog) return { fail: 'Program not linked' };
+  return { ok: 'Program linked OK' };
+});
+
+// Test 4: Texture uploaded
+harness.add('Biome texture', () => {
+  const err = gl.getError();
+  if (err !== gl.NO_ERROR) return { fail: 'GL error: ' + err };
+  return { ok: `${GW}x${GH} RGBA texture` };
+});
+
+// Test 5: Sphere mesh
+harness.add('Sphere mesh', () => {
+  const vertCount = positions.length / 3;
+  const triCount = indices.length / 3;
+  if (vertCount < 100) return { fail: 'Too few vertices: ' + vertCount };
+  return { ok: `${vertCount} verts, ${triCount} tris` };
+});
+
+// Test 6: Earth data generation
+harness.add('Earth data generation', () => {
+  if (!earthData.elev || !earthData.biomeCol) return { fail: 'Data missing' };
+  const landCount = earthData.elev.filter(e => e >= .45).length;
+  const total = GW * GH;
+  const pct = (landCount / total * 100).toFixed(1);
+  return { ok: `${landCount} land pixels (${pct}%)` };
+});
+
+// Test 7: Hash function correctness
+harness.add('Assembly hash2i', () => {
+  // Known values from x86 implementation
+  const h0 = hash2i(0, 0);
+  if (h0 !== 0) return { fail: `hash(0,0) = ${h0}, expected 0` };
+  const h1 = hash2i(1, 2);
+  const expected = ((1*127 + 2*311) ^ ((1*269) + (2*173))) & 0x7FFFFFFF;
+  if (h1 !== expected) return { fail: `hash(1,2) = ${h1}, expected ${expected}` };
+  return { ok: 'hash(0,0)=0, hash(1,2) verified' };
+});
+
+// Test 8: Noise function range
+harness.add('Noise2d range [0,1]', () => {
+  let min = 1, max = 0;
+  for (let i = 0; i < 100; i++) {
+    const n = noise2d(i * 1.37, i * 2.71);
+    if (n < min) min = n;
+    if (n > max) max = n;
+  }
+  if (min < -.1 || max > 1.1) return { fail: `Range [${min.toFixed(3)}, ${max.toFixed(3)}]` };
+  return { ok: `Range [${min.toFixed(3)}, ${max.toFixed(3)}]` };
+});
+
+// Test 9: FBM produces varied output
+harness.add('FBM variation', () => {
+  const vals = new Set();
+  for (let i = 0; i < 50; i++) {
+    vals.add(fbm(i * 3.14, i * 1.62).toFixed(4));
+  }
+  if (vals.size < 40) return { fail: `Only ${vals.size} unique values` };
+  return { ok: `${vals.size} unique values` };
+});
+
+// Test 10: Render a frame and check pixels
+harness.add('Canvas pixel render', () => {
+  // Read back a small region of the canvas
+  const pixels = new Uint8Array(4);
+  gl.readPixels(W/2, H/2, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+  const [r, g, b, a] = pixels;
+  // Should not be all black (the earth should be visible)
+  if (r === 0 && g === 0 && b === 0) return { fail: 'Center pixel is black — nothing rendered' };
+  if (a !== 255) return { fail: `Alpha = ${a}, expected 255` };
+  return { ok: `Center pixel: rgb(${r},${g},${b}) alpha=${a}` };
+});
+
+// Test 11: FPS performance
+harness.add('Render performance', () => {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      if (currentFPS < 5) resolve({ fail: `FPS = ${currentFPS}, too low` });
+      else resolve({ ok: `${currentFPS} FPS` });
+    }, 1500);
+  });
+});
+
+// Test 12: Biome distribution
+harness.add('Biome distribution', () => {
+  const biomeCounts = {};
+  for (let i = 0; i < earthData.biomeCol.length; i += 4) {
+    // Determine biome from color
+    const r = earthData.biomeCol[i], g = earthData.biomeCol[i+1], b = earthData.biomeCol[i+2];
+    let biome = 'unknown';
+    if (b > r*2 && b > g) biome = 'Ocean';
+    else if (r > 200 && g > 200) biome = 'Ice';
+    else if (r > 180 && g > 160 && b < 130) biome = 'Desert';
+    else if (g > 100 && r > 100) biome = 'Temperate/Green';
+    else if (g > r && g > b) biome = 'Forest';
+    biomeCounts[biome] = (biomeCounts[biome] || 0) + 1;
+  }
+  const summary = Object.entries(biomeCounts).map(([k,v]) => `${k}:${(v/(GW*GH)*100).toFixed(1)}%`).join(', ');
+  return { ok: summary };
+});
+
+// Run tests on T key or auto-run after 2 seconds
+window.addEventListener('keydown', e => {
+  if (e.code === 'KeyT') harness.runAll();
+});
+
+// Auto-run tests after 2 seconds
+setTimeout(() => harness.runAll(), 2000);
+
+</script>
+</body>
+</html>

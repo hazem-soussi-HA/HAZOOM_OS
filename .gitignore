@@ -1,4 +1,4 @@
-# Hazoom OS Unified .gitignore
+# HAZOOM OS Unified .gitignore
 
 # Node dependencies
 node_modules/
@@ -7,7 +7,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # Python virtual environment
-.venv/
+.venv*/
 voice_env/
 __pycache__/
 *.pyc
@@ -20,6 +20,7 @@ build/
 .env
 .env.local
 .env.*.local
+*.env
 
 # OS generated files
 .DS_Store
@@ -35,10 +36,23 @@ config/ssl/
 config/security/
 core/server.crt
 core/server.key
+**/certs/
 
-# Rust build artifacts (games)
-apps/games/super-mario-gta6/rust/mario_gta6_physics/target/
-apps/games/neon-drift/wasm/target/
+# Rust build artifacts
+**/wasm/target/
+**/wasm/pkg/
+
+# Build artifacts
+*.o
+*.elf
+*.bin
+*.so
+*.iso
+*.img
+boot/*.o
+kernel/c/*.o
+kernel/*.o
+**/*.gch
 
 # Logs
 logs/
@@ -53,38 +67,27 @@ logs/
 
 # Storage and temp
 storage/
-data/
 temp/
 tmp/
 
-# Rust build artifacts (games)
-**/wasm/target/
-**/wasm/pkg/
-
-# Build artifacts
-*.o
-*.elf
-*.bin
-*.so
-*.iso
-*.img
-boot/*.o
-kernel/c/*.o
-kernel/*.o
-
-# Environment
-.env
-.hermes/
-
-# Node build outputs
-dist/
-build/
-.next/
-
-# v5.0 Security
-ssl/*.key
-core/*.key
+# Security & secrets
 config/credentials.json
+config/hazoom-auth/
 data/qlearner/state.json
-*.log
-__pycache__/
+memory/
+**/*.key
+**/wallet*.json
+*.gpg
+
+# Godot
+.godot/
+*.import
+*.uid
+
+# DB
+*.db
+*.db-shm
+*.db-wal
+
+# Generated
+iso_root/

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HAZOOM BASIC — Super HAZOOM: Liberty City</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a25;
+  --red:#e63946;--gold:#ffd60a;--cyan:#00f5d4;--green:#06d6a0;
+  --text:#e8e8f0;--text-dim:#8888aa;--text-muted:#555577;
+  --font:'JetBrains Mono','Courier New',monospace;
+  --font-ui:'Inter',system-ui,sans-serif;
+}
+html{background:var(--bg);color:var(--text);font-family:var(--font-ui);scroll-behavior:smooth}
+body{min-height:100vh;overflow-x:hidden}
+::selection{background:var(--red);color:#fff}
+
+/* Nav */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:rgba(10,10,15,0.9);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.06)}
+nav .logo{font-family:var(--font);font-size:16px;font-weight:700;color:var(--red);letter-spacing:3px}
+nav .logo span{color:var(--gold)}
+nav .nav-links{display:flex;gap:20px;align-items:center}
+nav a{color:var(--text-dim);text-decoration:none;font-size:13px;transition:color 0.2s}
+nav a:hover{color:var(--text)}
+
+/* Hero */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px 40px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse at center,rgba(230,57,70,0.08) 0%,transparent 60%);pointer-events:none}
+.hero h1{font-family:var(--font);font-size:clamp(28px,5vw,52px);font-weight:700;line-height:1.2;margin-bottom:16px;position:relative}
+.hero h1 .red{color:var(--red);text-shadow:0 0 30px rgba(230,57,70,0.3)}
+.hero h1 .gold{color:var(--gold)}
+.hero p{color:var(--text-dim);font-size:clamp(14px,2vw,18px);max-width:600px;line-height:1.7;margin-bottom:32px;position:relative}
+.cta-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;position:relative}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;transition:all 0.2s;cursor:pointer;border:none;font-family:var(--font-ui)}
+.btn-primary{background:var(--red);color:#fff}
+.btn-primary:hover{background:#c53030;transform:translateY(-2px);box-shadow:0 4px 20px rgba(230,57,70,0.4)}
+.btn-secondary{background:var(--bg3);color:var(--text);border:1px solid rgba(255,255,255,0.1)}
+.btn-secondary:hover{background:var(--bg2);border-color:rgba(255,255,255,0.2)}
+
+/* Specs */
+.specs{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px;max-width:800px;margin:40px auto;padding:0 24px}
+.spec{background:var(--bg2);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:16px;text-align:center}
+.spec .val{font-family:var(--font);font-size:20px;font-weight:700;color:var(--gold);margin-bottom:4px}
+.spec .label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px}
+
+/* Features */
+.features{max-width:900px;margin:60px auto;padding:0 24px}
+.features h2{font-family:var(--font);font-size:24px;text-align:center;margin-bottom:32px;color:var(--cyan)}
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+.feature{background:var(--bg2);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:20px}
+.feature h3{font-size:14px;font-weight:600;margin-bottom:8px;color:var(--text)}
+.feature p{font-size:13px;color:var(--text-dim);line-height:1.6}
+
+/* Console preview */
+.console-preview{max-width:800px;margin:60px auto;padding:0 24px;text-align:center}
+.console-frame{background:var(--bg2);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:24px;overflow:hidden}
+.console-frame canvas{width:320px;height:384px;image-rendering:pixelated;background:#000;border-radius:4px}
+
+/* Footer */
+footer{text-align:center;padding:40px 24px;color:var(--text-muted);font-size:12px;border-top:1px solid rgba(255,255,255,0.04);margin-top:60px}
+footer a{color:var(--text-dim);text-decoration:none}
+footer a:hover{color:var(--text)}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">HAZOOM<span>BASIC</span></div>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#specs">Specs</a>
+    <a href="games/hazoom-basic.html" class="btn btn-primary" style="padding:8px 16px;font-size:13px">▶ PLAY NOW</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <h1><span class="red">SUPER HAZOOM</span><br><span class="gold">LIBERTY CITY</span></h1>
+  <p>A retro 8-bit adventure written entirely in HAZOOM BASIC. Collect coins, dodge shadow agents, grab power-ups, and explore the city — all running on a virtual console in your browser.</p>
+  <div class="cta-row">
+    <a href="games/hazoom-basic.html" class="btn btn-primary">▶ LAUNCH CONSOLE</a>
+    <a href="#features" class="btn-secondary btn">Learn More</a>
+  </div>
+</section>
+
+<div class="specs" id="specs">
+  <div class="spec"><div class="val">160×192</div><div class="label">Resolution</div></div>
+  <div class="spec"><div class="val">16</div><div class="label">Colors</div></div>
+  <div class="spec"><div class="val">8</div><div class="label">Sprites</div></div>
+  <div class="spec"><div class="val">32KB</div><div class="label">RAM</div></div>
+  <div class="spec"><div class="val">464</div><div class="label">Lines of BASIC</div></div>
+  <div class="spec"><div class="val">60</div><div class="label">FPS</div></div>
+</div>
+
+<section class="features" id="features">
+  <h2>▸ FEATURES</h2>
+  <div class="feature-grid">
+    <div class="feature">
+      <h3>🎮 Full BASIC Interpreter</h3>
+      <p>Tokenize, parse, and execute BASIC programs in the browser. Supports GOTO, GOSUB, IF/THEN, FOR/NEXT, DIM, DATA/READ, and more.</p>
+    </div>
+    <div class="feature">
+      <h3>🖥️ Virtual Hardware</h3>
+      <p>Simulated 8-bit console with 160×192 resolution, 16-color palette, 8 hardware sprites, tile layers, and sound.</p>
+    </div>
+    <div class="feature">
+      <h3>🔊 Sound Engine</h3>
+      <p>Square wave audio via Web Audio API. SOUND and MUSIC commands for effects and melodies.</p>
+    </div>
+    <div class="feature">
+      <h3>💾 Cartridge Save/Load</h3>
+      <p>Save and load game state to localStorage. Your progress persists across sessions.</p>
+    </div>
+    <div class="feature">
+      <h3>⌨️ Keyboard Input</h3>
+      <p>Arrow keys or WASD for movement. Space/Z to jump. Full gamepad-style controls.</p>
+    </div>
+    <div class="feature">
+      <h3>🎨 Built-in Editor</h3>
+      <p>Write and edit BASIC code directly in the browser. RUN, STEP, STOP, and RESET controls.</p>
+    </div>
+  </div>
+</section>
+
+<div class="console-preview">
+  <h2 style="font-family:var(--font);font-size:20px;margin-bottom:16px;color:var(--cyan)">▸ LIVE CONSOLE</h2>
+  <div class="console-frame">
+    <canvas id="preview-canvas" width="160" height="192"></canvas>
+    <p style="margin-top:12px;font-size:12px;color:var(--text-muted)">160×192 pixels — 16 colors — 60fps</p>
+  </div>
+</div>
+
+<footer>
+  <p>HAZOOM BASIC v2.0 — Super HAZOOM: Liberty City</p>
+  <p style="margin-top:8px">Building = Healing — <a href="games/hazoom-basic.html">Launch Console</a></p>
+  <p style="margin-top:16px;font-size:11px;color:var(--text-muted)">An original game concept. No affiliation with any existing IP. This is the HAZOOM universe.</p>
+</footer>
+
+<script>
+// Simple animated preview on the landing page
+const canvas = document.getElementById('preview-canvas');
+const ctx = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+
+const PALETTE = ['#0a0a0f','#ffffff','#e63946','#06d6a0','#118ab2','#ffd60a','#f77f00','#9b5de5','#00f5d4','#f15bb5','#8b4513','#6b8e23','#4a4a4a','#808080','#2d6a4f','#e76f51'];
+
+let frame = 0;
+function render() {
+  frame++;
+  // Sky
+  ctx.fillStyle = PALETTE[8];
+  ctx.fillRect(0, 0, 160, 192);
+
+  // Buildings
+  ctx.fillStyle = PALETTE[12];
+  for (let i = 0; i < 8; i++) {
+    const h = 40 + Math.sin(i * 1.5) * 30;
+    ctx.fillRect(i * 22, 192 - h, 18, h);
+    // Windows
+    ctx.fillStyle = PALETTE[5];
+    for (let wy = 0; wy < h - 10; wy += 12) {
+      for (let wx = 0; wx < 12; wx += 8) {
+        if (Math.random() > 0.3) ctx.fillRect(i * 22 + 3 + wx, 192 - h + 5 + wy, 4, 6);
+      }
+    }
+    ctx.fillStyle = PALETTE[12];
+  }
+
+  // Ground
+  ctx.fillStyle = PALETTE[10];
+  ctx.fillRect(0, 170, 160, 22);
+
+  // Road
+  ctx.fillStyle = PALETTE[12];
+  ctx.fillRect(0, 175, 160, 17);
+  ctx.fillStyle = PALETTE[5];
+  for (let i = 0; i < 160; i += 20) {
+    ctx.fillRect(i + ((frame * 2) % 20), 182, 8, 2);
+  }
+
+  // HAZOOM character (simple 8x8)
+  const hx = 20 + Math.sin(frame * 0.05) * 30;
+  const hy = 155 + (frame % 60 < 30 ? 0 : -3);
+  ctx.fillStyle = PALETTE[2]; // Red body
+  ctx.fillRect(hx, hy, 8, 8);
+  ctx.fillStyle = PALETTE[5]; // Gold hat
+  ctx.fillRect(hx - 1, hy - 2, 10, 3);
+  ctx.fillStyle = PALETTE[1]; // White eyes
+  ctx.fillRect(hx + 2, hy + 2, 2, 2);
+  ctx.fillRect(hx + 5, hy + 2, 2, 2);
+
+  // Coins
+  ctx.fillStyle = PALETTE[5];
+  for (let i = 0; i < 5; i++) {
+    const cx = 40 + i * 25;
+    const cy = 140 + Math.sin(frame * 0.1 + i) * 5;
+    ctx.fillRect(cx, cy, 6, 6);
+  }
+
+  // Stars
+  ctx.fillStyle = PALETTE[5];
+  const sx = 80 + Math.sin(frame * 0.03) * 20;
+  const sy = 60 + Math.cos(frame * 0.04) * 10;
+  ctx.fillRect(sx + 3, sy, 2, 8);
+  ctx.fillRect(sx, sy + 3, 8, 2);
+
+  // Title text area
+  ctx.fillStyle = PALETTE[0];
+  ctx.fillRect(0, 0, 160, 14);
+  ctx.fillStyle = PALETTE[2];
+  ctx.fillRect(4, 3, 4, 8);
+  ctx.fillStyle = PALETTE[5];
+  ctx.fillRect(10, 4, 30, 6);
+
+  requestAnimationFrame(render);
+}
+render();
+</script>
+</body>
+</html>

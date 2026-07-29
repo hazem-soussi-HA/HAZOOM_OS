@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Temperature Meteorology — Worldwide Countries</title>
+<meta name="description" content="Offline worldwide temperature platform: per-country climatology on a real-scale 3D globe, searchable ranking, and a transparent methodology panel." />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌡️</text></svg>" />
+<style>
+  :root{
+    --bg:#05070d; --bg2:#0a0f1c; --panel:rgba(13,19,33,.72);
+    --panel-border:rgba(120,160,255,.16); --ink:#e8eefc; --muted:#8da0c4;
+    --accent:#5ec8ff; --accent2:#7df9c9; --warn:#ffd166; --danger:#ff6b6b;
+    --font:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+    --mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:var(--font);overflow:hidden}
+  #app{position:fixed;inset:0}
+  canvas{display:block}
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    position:fixed;top:0;left:0;right:0;height:58px;z-index:30;
+    display:flex;align-items:center;gap:14px;padding:0 18px;
+    background:linear-gradient(180deg,rgba(5,7,13,.92),rgba(5,7,13,.45));
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--panel-border);
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.3px}
+  .brand .logo{font-size:22px;filter:drop-shadow(0 0 8px var(--accent))}
+  .brand .sub{font-weight:400;color:var(--muted);font-size:12px;margin-left:2px}
+  .spacer{flex:1}
+  .clock{font-family:var(--mono);font-size:13px;color:var(--accent2);text-align:right;line-height:1.2}
+  .clock .lbl{color:var(--muted);font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+
+  .search{position:relative;width:min(340px,40vw)}
+  .search input{
+    width:100%;padding:9px 12px 9px 36px;border-radius:10px;border:1px solid var(--panel-border);
+    background:rgba(10,15,28,.85);color:var(--ink);font-size:14px;outline:none;transition:.2s;
+  }
+  .search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(94,200,255,.15)}
+  .search .ico{position:absolute;left:11px;top:50%;transform:translateY(-50%);opacity:.6}
+  .suggest{
+    position:absolute;top:46px;left:0;right:0;max-height:320px;overflow:auto;border-radius:10px;
+    background:var(--bg2);border:1px solid var(--panel-border);box-shadow:0 12px 40px rgba(0,0,0,.5);display:none;z-index:40;
+  }
+  .suggest.show{display:block}
+  .suggest div{padding:9px 12px;cursor:pointer;display:flex;justify-content:space-between;gap:10px;font-size:13px}
+  .suggest div:hover,.suggest div.active{background:rgba(94,200,255,.14)}
+  .suggest .t{font-family:var(--mono);color:var(--accent2)}
+
+  /* ---------- Side panel ---------- */
+  .panel{
+    position:fixed;top:70px;left:14px;width:300px;max-height:calc(100vh - 180px);z-index:25;
+    background:var(--panel);border:1px solid var(--panel-border);border-radius:16px;
+    backdrop-filter:blur(14px);padding:16px;overflow:auto;box-shadow:0 18px 50px rgba(0,0,0,.45);
+  }
+  .panel h2{margin:0 0 4px;font-size:15px;letter-spacing:.3px}
+  .panel .hint{color:var(--muted);font-size:11px;margin-bottom:12px}
+  .legend{margin:10px 0 4px}
+  .legend .bar{height:12px;border-radius:6px;background:linear-gradient(90deg,#3b4cc0,#7a3cc0,#c0392b,#e67e22,#f1c40f,#7cfc00,#ffffff,#ff5e3a);}
+  .legend .scale{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:3px}
+  .controls{display:flex;flex-direction:column;gap:9px;margin-top:12px}
+  .ctl{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--muted)}
+  .ctl input[type=range]{width:140px}
+  .toggle{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+  .toggle input{accent-color:var(--accent)}
+  select{background:rgba(10,15,28,.85);color:var(--ink);border:1px solid var(--panel-border);border-radius:8px;padding:5px 8px;font-size:12px;outline:none}
+
+  .btn{appearance:none;border:1px solid var(--panel-border);background:rgba(94,200,255,.12);color:var(--accent);
+       padding:8px 12px;border-radius:10px;font-size:12.5px;cursor:pointer;transition:.18s;font-weight:600}
+  .btn:hover{background:rgba(94,200,255,.22)}
+  .btn.ghost{background:transparent;color:var(--muted)}
+
+  /* ---------- Detail card ---------- */
+  .detail{
+    position:fixed;top:70px;right:14px;width:300px;z-index:26;background:var(--panel);
+    border:1px solid var(--panel-border);border-radius:16px;padding:16px;backdrop-filter:blur(14px);
+    box-shadow:0 18px 50px rgba(0,0,0,.45);display:none;
+  }
+  .detail.show{display:block;animation:pop .18s ease}
+  @keyframes pop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+  .detail .name{font-size:18px;font-weight:700}
+  .detail .flag{font-size:30px;vertical-align:middle;margin-right:8px}
+  .detail .bigtemp{font-family:var(--mono);font-size:40px;font-weight:700;margin:6px 0 2px}
+  .detail .row{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);padding:4px 0;border-top:1px solid rgba(255,255,255,.05)}
+  .detail .row b{color:var(--ink);font-weight:600;font-family:var(--mono)}
+  .detail .close{position:absolute;top:12px;right:14px;cursor:pointer;color:var(--muted);font-size:18px}
+  .badge{display:inline-block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:99px;margin-top:6px}
+  .badge.hot{background:rgba(255,94,58,.16);color:#ff9b7a}
+  .badge.cold{background:rgba(94,160,255,.16);color:#9bc4ff}
+  .badge.mild{background:rgba(125,249,201,.14);color:var(--accent2)}
+
+  /* ---------- Ranking table ---------- */
+  .rank{
+    position:fixed;bottom:14px;left:14px;width:430px;max-height:42vh;z-index:24;background:var(--panel);
+    border:1px solid var(--panel-border);border-radius:16px;backdrop-filter:blur(14px);box-shadow:0 18px 50px rgba(0,0,0,.45);
+    display:flex;flex-direction:column;overflow:hidden;
+  }
+  .rank .rhead{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid var(--panel-border)}
+  .rank .rhead h3{margin:0;font-size:13px;letter-spacing:.3px}
+  .rank .rhead .mini{font-size:11px;color:var(--muted)}
+  .rank .body{overflow:auto}
+  .rank table{width:100%;border-collapse:collapse;font-size:12px}
+  .rank th,.rank td{padding:7px 10px;text-align:left;white-space:nowrap}
+  .rank th{position:sticky;top:0;background:var(--bg2);color:var(--muted);font-weight:600;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+  .rank th.sorted::after{content:' ▾';color:var(--accent)}
+  .rank th.sorted.asc::after{content:' ▴'}
+  .rank tr{border-top:1px solid rgba(255,255,255,.04);cursor:pointer}
+  .rank tr:hover{background:rgba(94,200,255,.10)}
+  .rank tr.active{background:rgba(94,200,255,.18);outline:1px solid var(--accent)}
+  .rank td.t{font-family:var(--mono);font-weight:700;text-align:right;width:64px}
+  .rank .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:middle}
+
+  /* ---------- Methodology modal ---------- */
+  .modal{position:fixed;inset:0;z-index:50;background:rgba(2,4,9,.74);display:none;align-items:center;justify-content:center;padding:20px}
+  .modal.show{display:flex}
+  .modal .sheet{width:min(680px,94vw);max-height:86vh;overflow:auto;background:var(--bg2);border:1px solid var(--panel-border);border-radius:18px;padding:24px 26px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+  .modal h2{margin-top:0;font-size:19px}
+  .modal h3{color:var(--accent);font-size:14px;margin:18px 0 6px}
+  .modal p,.modal li{color:#cdd8ef;font-size:13.5px;line-height:1.6}
+  .modal code{font-family:var(--mono);background:rgba(94,200,255,.12);padding:2px 6px;border-radius:6px;color:var(--accent2)}
+  .modal .formula{font-family:var(--mono);background:#070b14;border:1px solid var(--panel-border);padding:12px 14px;border-radius:10px;color:var(--accent2);font-size:13px;overflow-x:auto}
+  .modal .close{float:right;cursor:pointer;color:var(--muted);font-size:22px;margin-top:-6px}
+  .modal .note{font-size:12px;color:var(--warn);border-left:3px solid var(--warn);padding:8px 12px;background:rgba(255,209,102,.08);border-radius:0 8px 8px 0;margin:14px 0}
+
+  /* ---------- loading + toast ---------- */
+  #loading{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;background:var(--bg);transition:opacity .5s}
+  #loading.hide{opacity:0;pointer-events:none}
+  .spinner{width:46px;height:46px;border-radius:50%;border:3px solid rgba(94,200,255,.2);border-top-color:var(--accent);animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  #loading .t{color:var(--muted);font-size:13px;letter-spacing:.1em}
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:55;background:rgba(10,15,28,.95);border:1px solid var(--panel-border);padding:10px 16px;border-radius:12px;font-size:13px;opacity:0;transition:.3s;pointer-events:none}
+  .toast.show{opacity:1}
+
+  .hud{position:fixed;bottom:14px;right:14px;z-index:23;font-family:var(--mono);font-size:11px;color:var(--muted);text-align:right;background:rgba(5,7,13,.5);padding:6px 10px;border-radius:8px;border:1px solid var(--panel-border)}
+  .hud b{color:var(--accent2)}
+
+  @media (max-width:820px){
+    .panel{width:240px;top:64px}
+    .rank{width:calc(100vw - 28px);max-height:34vh}
+    .detail{width:calc(100vw - 28px)}
+    .search{width:42vw}
+    .clock{display:none}
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<div class="topbar">
+  <div class="brand"><span class="logo">🌡️</span> Temperature Meteorology <span class="sub">· worldwide</span></div>
+  <div class="spacer"></div>
+  <div class="search">
+    <span class="ico">🔎</span>
+    <input id="search" type="text" placeholder="Search a country…" autocomplete="off" spellcheck="false" />
+    <div class="suggest" id="suggest"></div>
+  </div>
+  <div class="clock"><div class="lbl">Local now</div><span id="clock">--:--:--</span></div>
+</div>
+
+<div class="panel" id="panel">
+  <h2>Global heat map</h2>
+  <div class="hint">Per-country annual-mean temperature on a real-scale 3D globe. Drag to rotate · scroll to zoom.</div>
+  <div class="legend">
+    <div class="bar"></div>
+    <div class="scale"><span>-25°</span><span>0°</span><span>15°</span><span>28°+</span></div>
+  </div>
+  <div class="controls">
+    <div class="ctl"><span>Globe spin</span>
+      <label class="toggle"><input type="checkbox" id="spin" checked> on</label>
+    </div>
+    <div class="ctl"><span>Auto-zoom selected</span>
+      <label class="toggle"><input type="checkbox" id="focusZoom" checked> on</label>
+    </div>
+    <div class="ctl"><span>Node size</span>
+      <input type="range" id="sizeScale" min="0.5" max="2.2" step="0.1" value="1.2">
+    </div>
+    <div class="ctl"><span>Sort ranking by</span>
+      <select id="sortBy"><option value="temp">Temperature</option><option value="name">Name</option><option value="region">Region</option></select>
+    </div>
+    <div class="ctl"><span>Filter region</span>
+      <select id="regionFilter"><option value="all">All regions</option></select>
+    </div>
+    <button class="btn ghost" id="openMethod">📐 Methodology &amp; honesty</button>
+  </div>
+</div>
+
+<div class="detail" id="detail">
+  <span class="close" id="detailClose">✕</span>
+  <div class="name"><span class="flag" id="dFlag">🌍</span><span id="dName">—</span></div>
+  <div class="bigtemp" id="dTemp">—</div>
+  <span class="badge" id="dBadge">—</span>
+  <div style="margin-top:10px">
+    <div class="row"><span>Region</span><b id="dRegion">—</b></div>
+    <div class="row"><span>Latitude</span><b id="dLat">—</b></div>
+    <div class="row"><span>Longitude</span><b id="dLon">—</b></div>
+    <div class="row"><span>Mean elevation</span><b id="dElev">—</b></div>
+    <div class="row"><span>Modeled (annual mean)</span><b id="dModeled">—</b></div>
+  </div>
+  <div class="hint" style="margin-top:12px">Source: transparent climatology model (see Methodology).</div>
+</div>
+
+<div class="rank" id="rank">
+  <div class="rhead"><h3 id="rankTitle">World ranking</h3><span class="mini" id="rankCount"></span></div>
+  <div class="body"><table id="rankTable">
+    <thead><tr>
+      <th data-k="rank" style="width:42px">#</th>
+      <th data-k="name">Country</th>
+      <th data-k="region">Region</th>
+      <th data-k="temp" class="sorted" style="text-align:right">Temp °C</th>
+    </tr></thead>
+    <tbody id="rankBody"></tbody>
+  </table></div>
+</div>
+
+<div class="hud" id="hud">init…</div>
+
+<div id="loading"><div class="spinner"></div><div class="t">Building the globe…</div></div>
+<div class="toast" id="toast"></div>
+
+<div class="modal" id="methodModal">
+  <div class="sheet">
+    <span class="close" id="methodClose">✕</span>
+    <h2>📐 Methodology &amp; honesty</h2>
+    <p>This platform is built <b>fully offline</b> (no network, no runtime CDN) in the same air-gapped spirit as the Planet Earth globe it lives beside.</p>
+    <div class="note"><b>These are modeled climatologies, not live observations.</b> The number shown for each country is a transparent reconstruction of its annual-mean temperature, not a real-time thermometer reading.</div>
+    <h3>Why modeled?</h3>
+    <p>You opted to keep this app offline (network egress denied). Live station or model data (e.g. Open-Meteo, NOAA) would require a network call. Rather than fake "live" numbers, we show an honest, reproducible estimate and label it clearly.</p>
+    <h3>The formula</h3>
+    <div class="formula">T(°C) = 27.0 − 0.0145·|lat|^1.8 − 0.0065·elevation_m + continentality_tweak</div>
+    <p>Each term is documented and checkable:</p>
+    <ul>
+      <li><code>27.0</code> — warm-equator baseline (°C).</li>
+      <li><code>−0.0145·|lat|^1.8</code> — diminishing temperature drop as you move from the equator toward the poles (isolation/latitude effect).</li>
+      <li><code>−0.0065·elevation_m</code> — standard environmental lapse rate (≈ −6.5 °C per 1000 m of altitude).</li>
+      <li><code>continentality_tweak</code> — a climate correction, NOT a blanket cold penalty. Hot arid/desert lands (Sahara, Arabia, Mesopotamia, Thar, interior Australia) get a <b>+1.5 °C</b> warmth nudge; only genuinely cold high-latitude interiors (Greenland, Russia, Canada −3 °C; Mongolia, Kazakhstan −2 °C) keep a negative nudge; high mountains (≥1500 m) are pulled cold. Everything else trusts the latitude/elevation formula.</li>
+    </ul>
+    <h3>Inputs</h3>
+    <p>Country reference coordinates and mean elevations are public reference values (World Bank / CIA World Factbook approximations). The dataset is generated by <code>scripts/build_temps.py</code> and written to <code>data/temperatures.json</code> — re-run it to audit or extend the list.</p>
+    <h3>Real-time data (live mode)</h3>
+    <p><code>src/app.js</code> ships a <code>fetchLiveTemperature()</code> hook onto the public <b>Open-Meteo</b> API (<code>LIVE_API_ENABLED = true</code>). When network egress is available it shows the <b>actual current temperature</b> for a selected country and marks the detail card <b>LIVE</b>. When offline, the call fails fast (4 s timeout) and the value cleanly falls back to the MODELED climatology above — clearly labeled. No key, no account.</p>
+    <h3>Reproducibility</h3>
+    <p>Every value is deterministic from the inputs above. Nothing is hidden and nothing is invented — matching the project's "Verify the truth" standard.</p>
+  </div>
+</div>
+
+<!-- Offline-first: importmap points to vendored Three.js (r160) at repo root, no CDN -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "/vendor/three.module.js",
+    "three/addons/": "/vendor/three/addons/"
+  }
+}
+</script>
+<script type="module" src="/temperature/src/app.js"></script>
+</body>
+</html>

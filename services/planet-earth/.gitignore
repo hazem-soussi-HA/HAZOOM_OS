@@ -1,0 +1,40 @@
+# ---- Build-time / dev dependencies (NEVER shipped) ----
+node_modules/
+package-lock.json
+package.json
+
+# ---- Verify / screenshot artifacts ----
+_verify_shot.png
+*.log
+
+# ---- OS / editor ----
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# ---- Secrets (defense in depth; scanner also blocks these) ----
+*.pem
+*.key
+.env
+.env.*
+
+# ---- Encrypted confidential contract: keep PLAINTEXT out of git ----
+# CONTRACT.md.gpg (ciphertext) IS committed; CONTRACT.md (plaintext) is NOT.
+CONTRACT.md
+CONTRACT.md.plain
+
+# ---- Local OS runtime + generated (NEVER shipped) ----
+.venv_omni/
+.hazoom-os/
+*.pdf
+
+# ---- Sister projects: each is its OWN git repo (do NOT absorb / break as gitlink) ----
+# They live on disk (launcher references them by path) and are versioned separately.
+HAZOOM/
+deepseek/
+birds-encyclopedia/
+planet_earth_news/
+planet_earth_history/
+

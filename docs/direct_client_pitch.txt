@@ -1,0 +1,46 @@
+
+=== PITCH TEMPLATE — Customize per company ===
+
+Subject: Full-Stack + AI + Systems Engineer | Remote
+
+Hi [Hiring Manager/Team],
+
+I'm Hazem Soussi — OS Architect and Full-Stack Engineer based in Tunisia.
+I build systems from the metal up: kernels in Pascal, DNS servers in Rust,
+AI agents with RAG, and game engines with physics simulation.
+
+[PERSONALIZED HOOK ABOUT THEIR COMPANY]
+
+Why I'm reaching out:
+- I've shipped 38 production projects across OS development, AI/ML,
+  infrastructure (K3s/Docker), and game engines
+- My GitHub: https://github.com/hazem-soussi-HA — includes a Pascal OS kernel,
+  Rust DNS server (RFC 1035), AI copilot with RAG, and a game engine
+- I specialize in the exact stack you're using: [RUST/PYTHON/DevOps/etc]
+- I work remote, async-friendly, and I'm available immediately
+
+[WHY THEIR COMPANY SPECIFICALLY — reference their product/tech]
+
+I'd love to discuss how I can contribute. Even a 15-minute call works.
+
+GitHub: https://github.com/hazem-soussi-HA
+Portfolio: https://hazem-soussi-ha.github.io/portfolio_final/
+Available for: [Contract/Freelance/Full-time]
+
+Hazem Soussi | hazem.soussi@gmail.com
+
+=== END TEMPLATE ===
+
+=== SHORT PITCH (Twitter/LinkedIn DM) ===
+
+OS Architect from Tunisia 🇹🇳 — I build:
+• Pascal OS kernels
+• Rust DNS servers (RFC 1035)  
+• AI agents with RAG + multi-model
+• Game engines with WASM physics
+• Full-stack (Node.js + React)
+
+38 repos. 1.6M+ LOC. Zero defects.
+
+Looking for freelance/contract work. Can start immediately.
+My work: https://github.com/hazem-soussi-HA

@@ -1,0 +1,27 @@
+# NANO Protocol - Frequency Research Scraper
+# Dependencies
+
+# Web scraping
+aiohttp>=3.9.0
+beautifulsoup4>=4.12.0
+lxml>=5.0.0
+
+# PDF/EPUB parsing
+PyPDF2>=3.0.0
+ebooklib>=0.18
+
+# API
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.5.0
+
+# Data processing
+pandas>=2.1.0
+
+# Optional: For advanced NLP
+# spacy>=3.7.0
+# nltk>=3.8.0
+
+# Optional: For database
+# sqlalchemy>=2.0.0
+# aioredis>=2.0.0

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galaxy Map - Star Wars View</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #000; overflow: hidden; }
+        #galaxy-map { height: 100vh; width: 100%; position: relative; }
+        .star-wars-header {
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            color: #ff0000; font-size: 24px; text-shadow: 0 0 10px #ff0000; z-index: 1000; text-align: center;
+        }
+        .galaxy-info {
+            position: absolute; bottom: 20px; right: 20px;
+            color: #0ff; font-size: 12px; z-index: 1000;
+            background: rgba(0,0,0,0.8); padding: 10px; border-radius: 5px;
+        }
+        .system-marker { background: radial-gradient(circle, #ff0 0%, #f80 50%, #f00 100%); width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 10px #ff0, 0 0 20px #f80; }
+    </style>
+</head>
+<body>
+    <div id="galaxy-map">
+        <div class="star-wars-header">⚔ STAR WARS GALACTIC MAP ⚔</div>
+        <div class="galaxy-info">
+            <div>Galaxies: <span id="galaxy-count">0</span></div>
+            <div>Systems: <span id="system-count">0</span></div>
+        </div>
+    </div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const galaxyMap = L.map('galaxy-map', { center: [0, 0], zoom: 2 });
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'Galaxy Map'
+        }).addTo(galaxyMap);
+
+        const systems = [
+            {name: "Core1", coords: [10, 20], threat: 80},
+            {name: "Core2", coords: [-10, -20], threat: 70},
+            {name: "Edge1", coords: [50, -50], threat: 30},
+            {name: "Edge2", coords: [-50, 50], threat: 40}
+        ];
+
+        systems.forEach(s => {
+            L.marker(s.coords).addTo(galaxyMap)
+                .bindPopup(`<b>${s.name}</b><br>Threat: ${s.threat}%`);
+        });
+
+        document.getElementById('galaxy-count').textContent = '4';
+        document.getElementById('system-count').textContent = systems.length;
+    </script>
+</body>
+</html>

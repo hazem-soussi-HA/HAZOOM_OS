@@ -1,0 +1,56 @@
+Subject: SUPER HAZOOM GAME — Custom Engine (Rust→WASM + Three.js) | Seeking Engineering Collaboration
+
+Dear [Nintendo/Rockstar/Recruitment] Team,
+
+I'm Hazem Soussi (HA) — an OS Architect and Systems Engineer from Tunisia who builds game engines from scratch.
+
+I'm reaching out because your team needs engineers who can build custom systems — not just use existing tools.
+
+WHAT I BUILT:
+
+I created SUPER HAZOOM GAME — a complete 3D open-world game engine with:
+• Rust physics compiled to WebAssembly (60 FPS in browser)
+• Three.js WebGL rendering with dynamic lighting + toon shading
+• ECS architecture with AI behavior trees
+• Spatial audio, particle FX, save/load system
+• Zero engine dependencies. Pure Rust + JavaScript + GLSL.
+
+27,000+ source files. 1.6M+ lines of code. Built entirely from scratch.
+
+WHY THIS MATTERS TO YOU:
+
+Nintendo — You value craftsmanship and innovation. An engine that runs at 60 FPS in browser with no downloads opens new possibilities for Nintendo Web Player and browser-based experiences.
+
+Rockstar — Your open-world games demand custom physics, AI behavior systems, and streaming. My engine architecture mirrors these patterns — built for scale, not demos.
+
+Recruiters — I'm looking for senior engineering roles where systems-level thinking matters. OS kernels, game engines, infrastructure — I build things that last.
+
+WHAT I'M SEEKING:
+
+• Contract/Freelance: Game engine development, systems programming, AI integration
+• Full-time: Senior Engineer / Principal Engineer roles
+• Rate: $50-100/hr (flexible for the right opportunity)
+• Remote: Yes (based in Tunisia, available immediately)
+
+PROOF OF WORK:
+
+🎮 Playable Demo: https://hazem-soussi-ha.github.io/mario_gta6/demo
+📊 Pitch Deck: https://hazem-soussi-ha.github.io/mario_gta6/pitch
+💻 All Code: https://github.com/hazem-soussi-HA
+
+I also built:
+• HAZOOM OS — a complete operating system (Pascal kernel + Python engine)
+• HAZOOM DNS — RFC 1035 DNS server in Rust
+• AI Copilot — RAG + multi-model streaming
+• Infrastructure — K3s clusters, zero-downtime deployment
+
+I don't use AI to write my code. I use AI to think faster. The code is mine — every line, every architecture decision, every optimization.
+
+If this resonates with your team, I'd love a 15-minute conversation.
+
+— Hazem Soussi (HA)
+hazem.soussi@gmail.com
+https://github.com/hazem-soussi-HA
+Tunisia → Remote
+
+P.S. — I'm not looking for a quick gig. I'm looking for a team where I can build something legendary. If that's you, let's talk.

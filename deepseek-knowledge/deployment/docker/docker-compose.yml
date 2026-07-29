@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  app:
+    build: ./docker
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/deepseek_knowledge
+      - REDIS_URL=redis://redis:6379/0
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-your-secret-encryption-key-change-this}
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-change-this}
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+    volumes:
+      - ./app:/app
+      - ./storage/videos:/app/storage/videos
+      - ./storage/temp:/app/storage/temp
+      - ./assets:/app/assets
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=deepseek_knowledge
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  celery-worker:
+    build: ./docker
+    command: celery -A app.workers.video_tasks.celery_app worker --loglevel=info
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/deepseek_knowledge
+      - REDIS_URL=redis://redis:6379/0
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-your-secret-encryption-key-change-this}
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-change-this}
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+    volumes:
+      - ./app:/app
+      - ./storage/videos:/app/storage/videos
+      - ./storage/temp:/app/storage/temp
+      - ./assets:/app/assets
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deployment/nginx/conf.d:/etc/nginx/conf.d
+      - ./deployment/nginx/ssl:/etc/nginx/ssl
+      - ./frontend/build:/usr/share/nginx/html
+    depends_on:
+      - app
+    restart: unless-stopped
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  app-network:
+    driver: bridge

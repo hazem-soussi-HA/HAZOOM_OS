@@ -1,0 +1,13 @@
+# NANO Protocol - Main Dependencies
+# For the web app, no Python dependencies are needed
+# Just open index.html in a browser
+
+# For local development server
+http-server>=14.0.0
+
+# Optional: For running the research scraper
+# These are also in microservices/frequency-research-scraper/requirements.txt
+# aiohttp>=3.9.0
+# beautifulsoup4>=4.12.0
+# fastapi>=0.109.0
+# uvicorn[standard]>=0.27.0

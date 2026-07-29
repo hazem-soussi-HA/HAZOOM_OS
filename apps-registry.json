@@ -1,32 +1,49 @@
 {
   "_meta": {
-    "generated": "2026-07-20",
+    "generated": "2026-07-29",
     "by": "DevSecOps MOE agent",
-    "note": "Single source of truth for HAZOOM OS desktop app surface. Consumed by core/os-desktop.js loadAppRegistry() via GET /apps-registry.json. Apps with 'path' are rendered as loopback-iframe apps (OS-enforced 127.0.0.1 only).",
-    "security": "Every 'path' MUST be 127.0.0.1/localhost. No LAN/external egress. The OS refuses non-loopback binds."
+    "note": "Unified HAZOOM ECOSYSTEM — Single source of truth for all services, apps, games, AI, and tools. Every 'path' MUST be 127.0.0.1/localhost. No LAN/external egress.",
+    "security": "loopback-only"
   },
   "categories": [
     {
       "id": "services",
       "name": "Fullstack Services",
       "apps": [
-        { "id": "svc-planet-earth", "name": "Planet Earth", "icon": "🌍", "path": "http://127.0.0.1:8080/" },
-        { "id": "svc-planet-news",  "name": "Planet Earth News", "icon": "📰", "path": "https://127.0.0.1:8000/" },
-        { "id": "svc-birds",        "name": "Birds Encyclopedia", "icon": "🐦", "path": "http://127.0.0.1:4100/" },
-        { "id": "svc-hazoom-pod",   "name": "Hazoom POD", "icon": "🛒", "path": "http://127.0.0.1:4000/" },
-        { "id": "svc-os-desktop",   "name": "HAZOOM OS Desktop", "icon": "🖥️", "path": "http://127.0.0.1:3000/" },
-        { "id": "svc-collab-beat",  "name": "CollaborativeBeat", "icon": "🧠", "path": "http://127.0.0.1:5000/" },
-        { "id": "svc-chatdev",      "name": "Ornith Chat", "icon": "💬", "path": "http://127.0.0.1:5055/" }
+        { "id": "svc-planet-earth", "name": "Planet Earth", "icon": "🌍", "path": "http://127.0.0.1:8080/", "source": "services/planet-earth/" },
+        { "id": "svc-planet-news", "name": "Planet Earth News", "icon": "📰", "path": "http://127.0.0.1:8001/", "source": "services/planet-earth-news/" },
+        { "id": "svc-planet-history", "name": "Planet Earth History", "icon": "📜", "path": "http://127.0.0.1:8002/", "source": "services/planet-earth-history/" },
+        { "id": "svc-birds", "name": "Birds Encyclopedia", "icon": "🐦", "path": "http://127.0.0.1:4100/", "source": "services/birds-encyclopedia/" },
+        { "id": "svc-hazoom-pod", "name": "Hazoom POD", "icon": "🛒", "path": "http://127.0.0.1:4000/", "source": "services/hazoom-pod/" },
+        { "id": "svc-os-desktop", "name": "HAZOOM OS Desktop", "icon": "🖥️", "path": "http://127.0.0.1:3000/", "source": "core/" },
+        { "id": "svc-collab-beat", "name": "CollaborativeBeat", "icon": "🧠", "path": "http://127.0.0.1:5000/", "source": "services/collaborative-beat/" },
+        { "id": "svc-chatdev", "name": "Ornith Chat", "icon": "💬", "path": "http://127.0.0.1:5055/", "source": "services/chatdev-ornith/" },
+        { "id": "svc-descer", "name": "DESCER Drum Machine", "icon": "🥁", "path": "http://127.0.0.1:6000/", "source": "services/descer/" },
+        { "id": "svc-sovereign", "name": "Sovereign State", "icon": "🏛️", "path": "http://127.0.0.1:4747/", "source": "services/sovereign-state/" },
+        { "id": "svc-bouzelfa", "name": "Bouzelfa Ndhifa", "icon": "🧹", "path": "http://127.0.0.1:7000/", "source": "services/bouzelfa-ndhifa/" }
       ]
     },
     {
       "id": "ai",
       "name": "AI & Reasoning",
       "apps": [
-        { "id": "ai-intelligence", "name": "Intelligence Core", "icon": "🧠", "path": "http://127.0.0.1:3000/api/intelligence/status" },
+        { "id": "ai-intelligence", "name": "Intelligence Core", "icon": "🧠", "path": "http://127.0.0.1:3000/api/intelligence/status", "source": "core/" },
+        { "id": "ai-hazoom-intel", "name": "Hazoom Intelligence", "icon": "📊", "path": "http://127.0.0.1:8003/", "source": "services/hazoom-intelligence/" },
+        { "id": "ai-general-intel", "name": "General Intelligence", "icon": "♾️", "path": "http://127.0.0.1:8004/", "source": "services/general-intelligence/" },
+        { "id": "ai-serotonin", "name": "Serotonin Engine", "icon": "✨", "path": "http://127.0.0.1:8005/", "source": "services/serotonin-engine/" },
+        { "id": "ai-mirror", "name": "Mirror Transcendance", "icon": "🪞", "path": "http://127.0.0.1:8006/", "source": "services/mirror-transcendance/" },
         { "id": "ai-quantum", "name": "Quantum AI Assistant", "icon": "⚛️", "path": "apps/ai-apps/quantum_ai_assistant.html" },
         { "id": "ai-super", "name": "Super Intelligent Agent", "icon": "🤖", "path": "apps/ai-apps/super_intelligent_agent.html" },
         { "id": "ai-deepthink", "name": "Deep Think Explorer", "icon": "🔭", "path": "apps/ai-apps/deep_think_explorer.html" }
+      ]
+    },
+    {
+      "id": "games",
+      "name": "Games & Creative",
+      "apps": [
+        { "id": "game-open-world", "name": "Open World 3D", "icon": "🌄", "path": "projects/open-world/", "source": "projects/open-world/" },
+        { "id": "game-mario-gta6", "name": "Mario GTA6", "icon": "🎮", "path": "http://127.0.0.1:9001/", "source": "services/mario-gta6/" },
+        { "id": "game-arcade", "name": "Arcade", "icon": "🕹️", "path": "apps/games/arcade.html" }
       ]
     },
     {
@@ -35,7 +52,9 @@
       "apps": [
         { "id": "tool-terminal", "name": "Terminal", "icon": "⌨️", "path": "apps/core-apps/terminal.html" },
         { "id": "tool-files", "name": "File Manager", "icon": "📁", "path": "apps/core-apps/filemanager.html" },
-        { "id": "tool-settings", "name": "Settings", "icon": "⚙️", "path": "apps/core-apps/settings.html" }
+        { "id": "tool-settings", "name": "Settings", "icon": "⚙️", "path": "apps/core-apps/settings.html" },
+        { "id": "tool-assembly", "name": "Assembly Terrain", "icon": "🏔️", "path": "projects/assembly/", "source": "projects/assembly/" },
+        { "id": "tool-maps", "name": "Map Visualizations", "icon": "🗺️", "path": "projects/maps/", "source": "projects/maps/" }
       ]
     }
   ]

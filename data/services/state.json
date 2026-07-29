@@ -1,0 +1,33 @@
+{
+  "lastStarted": 1784546469445,
+  "services": [
+    {
+      "name": "planet_earth",
+      "enabled": true
+    },
+    {
+      "name": "planet_earth_news",
+      "enabled": true
+    },
+    {
+      "name": "birds_encyclopedia",
+      "enabled": true
+    },
+    {
+      "name": "hazoom_pod",
+      "enabled": true
+    },
+    {
+      "name": "hazoom_os",
+      "enabled": true
+    },
+    {
+      "name": "collaborative_beat",
+      "enabled": true
+    },
+    {
+      "name": "chatdev",
+      "enabled": true
+    }
+  ]
+}

@@ -78,30 +78,29 @@ bits 32
 extern kernel_main
 global _start
 _start:
-    ; Use a temporary stack in low identity-mapped memory.
+    ; Temporary stack in low memory (identity-mapped by any bootloader).
     mov esp, 0x9F000
     and esp, ~0xF
 
-    ; Are we already in long mode? If CR0.PG is set we assume the loader
-    ; (multiboot2) already switched; skip the transition and go straight to
-    ; the 64-bit entry.
-    mov eax, cr0
-    test eax, 0x80000000       ; CR0.PG
-    jnz .already_long
+    ; --- Build our OWN identity page tables in LOW memory (0x7000..0x9FFF). ---
+    ; We cannot use the .bootbss tables at 0x101000 because a long-mode
+    ; bootloader (multiboot2/GRUB) may not have mapped that region. Low
+    ; memory below 1 MiB is always identity-mapped by the bootloader's own
+    ; paging, so writing our tables here is always safe. PML4=0x7000,
+    ; PDPT=0x8000, PD=0x9000. After we load CR3, the whole 1 GiB is mapped
+    ; and the kernel (at 0x100000) becomes reachable.
+    ;
+    ; Zero PML4 and PDPT (only entry 0 needed), then fill PD with 512x2MiB.
+    mov dword [0x7000], 0x8003        ; PML4[0] -> PDPT (present|writable)
+    mov dword [0x7004], 0
+    mov dword [0x8000], 0x9003        ; PDPT[0] -> PD (present|writable)
+    mov dword [0x8004], 0
 
-    ; Build identity page tables.
-    ; PML4[0] -> PDPT
-    mov dword [pml4], pdpt
-    mov dword [pml4 + 4], 0
-    ; PDPT[0] -> PD
-    mov dword [pdpt], pd
-    mov dword [pdpt + 4], 0
-    ; PD: 512 x 2 MiB pages, present + writable + huge
-    mov ecx, 0
-    mov eax, 0x00000083        ; present|writable|2MB
+    xor ecx, ecx
+    mov eax, 0x00000083                ; present|writable|2MB, phys 0
 .build_pd:
-    mov [pd + ecx*8], eax
-    mov dword [pd + ecx*8 + 4], 0
+    mov [0x9000 + ecx*8], eax
+    mov dword [0x9000 + ecx*8 + 4], 0
     add eax, 0x200000
     inc ecx
     cmp ecx, 512
@@ -112,27 +111,22 @@ _start:
     or eax, 1 << 5
     mov cr4, eax
 
-    ; Point CR3 at PML4.
-    mov eax, pml4
+    ; Load OUR page tables.
+    mov eax, 0x7000
     mov cr3, eax
 
-    ; Enable long mode (EFER.LME = bit 8).
+    ; Enable long mode (EFER.LME = bit 8). Harmless if already set.
     mov ecx, 0xC0000080
     rdmsr
     or eax, 1 << 8
     wrmsr
 
-    ; Enable paging (CR0.PG = bit 31).
+    ; Enable paging (CR0.PG = bit 31). Harmless if already set.
     mov eax, cr0
     or eax, 1 << 31
     mov cr0, eax
 
     ; Load the 64-bit GDT and far-jump into long mode.
-    lgdt [gdt64_ptr]
-    jmp 0x08:.long_mode
-
-.already_long:
-    ; Loader already in long mode; just reload our GDT and continue.
     lgdt [gdt64_ptr]
     jmp 0x08:.long_mode
 

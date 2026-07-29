@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#05070f" />
+  <title>Planet Earth — Project Hub</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo/planet-earth-logo.svg" />
+  <style>
+    :root {
+      --fg:#e9f1ff; --muted:#8aa0c4; --accent:#4ea1ff; --accent2:#7df9c9;
+      --panel:rgba(10,16,30,.55); --border:rgba(120,160,220,.18);
+      --font:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    }
+    * { box-sizing:border-box; }
+    html,body { margin:0; min-height:100%; background:radial-gradient(circle at 50% 18%, #0b1426, #05070f 72%); color:var(--fg); font-family:var(--font); -webkit-font-smoothing:antialiased; }
+    .wrap { max-width:1080px; margin:0 auto; padding:40px 22px 64px; }
+
+    header { display:flex; align-items:center; gap:16px; margin-bottom:10px; }
+    header img { width:46px; height:46px; border-radius:50%; border:1px solid var(--border); box-shadow:0 0 18px rgba(78,161,255,.25); }
+    header h1 { margin:0; font-size:22px; font-weight:680; letter-spacing:.01em; }
+    header p { margin:3px 0 0; font-size:12.5px; color:var(--muted); }
+    .lead { margin:18px 0 30px; max-width:760px; font-size:14px; line-height:1.65; color:var(--muted); }
+    .lead b { color:var(--fg); font-weight:600; }
+
+    .group { margin:34px 0 8px; display:flex; align-items:baseline; gap:12px; }
+    .group h2 { margin:0; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent); font-weight:650; }
+    .group .line { flex:1; height:1px; background:linear-gradient(90deg, var(--border), transparent); }
+    .group .count { font-size:11px; color:var(--muted); }
+
+    .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(248px,1fr)); gap:14px; }
+    .card {
+      display:flex; flex-direction:column; gap:8px; position:relative;
+      background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:18px;
+      text-decoration:none; color:inherit; transition:.2s; overflow:hidden;
+    }
+    .card::before { content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(78,161,255,.10), transparent 60%); opacity:0; transition:.2s; }
+    .card:hover, .card:focus { border-color:var(--accent); transform:translateY(-3px); box-shadow:0 16px 36px rgba(0,0,0,.4); outline:none; }
+    .card:hover::before { opacity:1; }
+    .card .ico { font-size:26px; filter:drop-shadow(0 0 8px rgba(78,161,255,.4)); }
+    .card .t { font-size:16px; font-weight:650; }
+    .card .d { font-size:12.5px; color:var(--muted); line-height:1.55; flex:1; }
+    .card .tag { align-self:flex-start; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--accent2); border:1px solid rgba(125,249,201,.3); border-radius:99px; padding:2px 9px; background:rgba(125,249,201,.08); }
+    .card .go { font-size:12px; color:var(--accent); margin-top:4px; }
+    .card:hover .go { text-decoration:underline; }
+
+    footer { margin-top:46px; font-size:11px; color:var(--muted); line-height:1.7; border-top:1px solid var(--border); padding-top:18px; }
+    footer a { color:var(--accent); text-decoration:none; }
+    .pill { display:inline-block; font-size:10.5px; color:var(--muted); border:1px solid var(--border); border-radius:99px; padding:2px 9px; margin-right:6px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <img src="assets/logo/planet-earth-logo.svg" alt="logo" />
+      <div>
+        <h1>Planet Earth — Project Hub</h1>
+        <p>A Hazem Soussi collection · fully offline · no tracking</p>
+      </div>
+    </header>
+
+    <p class="lead">One workspace, many experiments around <b>discovering the real Earth</b> — its
+    climate, its life, its history, and the tools to explore them. Everything below runs locally on
+    your machine with <b>zero external network calls</b>. Pick a component:</p>
+
+    <!-- ============ EARTH & CLIMATE ============ -->
+    <div class="group"><h2>Earth &amp; Climate</h2><span class="line"></span><span class="count">3</span></div>
+    <div class="grid">
+      <a class="card" href="index.html">
+        <span class="ico">🌍</span>
+        <span class="tag">3D · WebGL</span>
+        <div class="t">Planet Earth Emulation</div>
+        <div class="d">Real-time globe with a real-sun day/night terminator, city lights, clouds, atmospheric scattering and a procedural starfield.</div>
+        <span class="go">Open emulation →</span>
+      </a>
+      <a class="card" href="temperature/">
+        <span class="ico">🌡️</span>
+        <span class="tag">Data · 197 countries</span>
+        <div class="t">Temperature Meteorology</div>
+        <div class="d">Per-country annual-mean temperature on a real-scale 3D globe, with a searchable worldwide ranking and a transparent methodology panel.</div>
+        <span class="go">Open temperature map →</span>
+      </a>
+      <a class="card" href="planet_earth_history/index.html">
+        <span class="ico">📜</span>
+        <span class="tag">Archive</span>
+        <div class="t">Planet Earth History</div>
+        <div class="d">La Généralité de Vérité — the historical record and provenance of the Planet Earth project.</div>
+        <span class="go">Open history →</span>
+      </a>
+    </div>
+
+    <!-- ============ LIFE & KNOWLEDGE ============ -->
+    <div class="group"><h2>Life &amp; Knowledge</h2><span class="line"></span><span class="count">3</span></div>
+    <div class="grid">
+      <a class="card" href="birds-encyclopedia/the_new_age/index.html">
+        <span class="ico">🦅</span>
+        <span class="tag">3D · Atlas</span>
+        <div class="t">Birds of Africa</div>
+        <div class="d">The New Age 3D ornithology atlas — interactive bird species, sounds, and family groupings.</div>
+        <span class="go">Open atlas →</span>
+      </a>
+      <a class="card" href="birds-encyclopedia/public/index.html">
+        <span class="ico">🐦</span>
+        <span class="tag">Encyclopedia</span>
+        <div class="t">Birds Encyclopedia</div>
+        <div class="d">A browsable encyclopedia of bird species and their details.</div>
+        <span class="go">Open encyclopedia →</span>
+      </a>
+      <a class="card" href="planet_earth_news/">
+        <span class="ico">📰</span>
+        <span class="tag">News feed</span>
+        <div class="t">Planet Earth News</div>
+        <div class="d">A local-first news reader surfacing Earth &amp; science stories.</div>
+        <span class="go">Open news →</span>
+      </a>
+    </div>
+
+    <!-- ============ THE HAZOOM ECOSYSTEM ============ -->
+    <div class="group"><h2>The Hazoom Ecosystem</h2><span class="line"></span><span class="count">3</span></div>
+    <div class="grid">
+      <a class="card" href="HAZOOM/_artefacts/HazemNavigator/index.html">
+        <span class="ico">🧭</span>
+        <span class="tag">App suite</span>
+        <div class="t">Hazem Navigator</div>
+        <div class="d">A privacy-first browser with built-in apps, offline mode, secure notes, download manager and extensions.</div>
+        <span class="go">Open navigator →</span>
+      </a>
+      <a class="card" href="deepseek/index.html">
+        <span class="ico">🤖</span>
+        <span class="tag">Experiments</span>
+        <div class="t">DeepSeek Lab</div>
+        <div class="d">Hermes LLM emoji animations and small AI experiments.</div>
+        <span class="go">Open lab →</span>
+      </a>
+      <a class="card" href="deepseek/landing.html">
+        <span class="ico">🚀</span>
+        <span class="tag">Concept</span>
+        <div class="t">MiMo Browser</div>
+        <div class="d">Concept landing page for the privacy-first, paying AI browser.</div>
+        <span class="go">Open concept →</span>
+      </a>
+    </div>
+
+    <footer>
+      <span class="pill">offline</span><span class="pill">127.0.0.1</span><span class="pill">MIT</span>
+      Planet Earth — a Hazem Soussi project. Fully offline. No tracking. The contract is encrypted; access is for people of good intent.
+      <br />Served by the local-only Python server. Each component is a self-contained app — links open at their own route.
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,18 @@
+# Firewall Rules for Map Proxy Security
+- port: 8443
+  protocol: TCP
+  action: ALLOW
+  source: internal-network
+  description: "HTTPS traffic for secure map access"
+
+- port: 8443  
+  protocol: TCP
+  action: DENY
+  source: 0.0.0.0/0
+  description: "Block all external HTTPS access"
+
+- port: 22
+  protocol: TCP
+  action: ALLOW
+  source: admin-ip-range
+  description: "SSH access from admin network only"

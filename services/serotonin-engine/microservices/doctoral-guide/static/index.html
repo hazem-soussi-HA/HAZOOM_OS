@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NANO Protocol — Solfeggio Doctoral Guide</title>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --green: #00ff88;
+            --gold: #FFD700;
+            --purple: #9400D3;
+            --blue: #00BFFF;
+            --text: #e0e0e0;
+            --dim: #666;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        
+        header {
+            text-align: center;
+            padding: 60px 20px;
+            border-bottom: 1px solid rgba(0,255,136,0.2);
+        }
+        header h1 {
+            font-size: 2.5em;
+            color: var(--green);
+            letter-spacing: 8px;
+            text-shadow: 0 0 30px rgba(0,255,136,0.5);
+        }
+        header .subtitle {
+            color: var(--dim);
+            margin-top: 10px;
+            letter-spacing: 4px;
+            font-size: 0.9em;
+        }
+        header .researcher {
+            color: var(--gold);
+            margin-top: 20px;
+            font-size: 0.8em;
+        }
+        
+        .section {
+            padding: 60px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .section h2 {
+            text-align: center;
+            color: var(--green);
+            font-size: 1.5em;
+            letter-spacing: 6px;
+            margin-bottom: 40px;
+        }
+        
+        .freq-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+        .freq-card {
+            background: rgba(0,255,136,0.03);
+            border: 1px solid rgba(0,255,136,0.2);
+            border-radius: 8px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .freq-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--green);
+            box-shadow: 0 10px 40px rgba(0,255,136,0.2);
+        }
+        .freq-card.active {
+            border-color: var(--gold);
+            background: rgba(255,215,0,0.05);
+        }
+        .freq-hz {
+            font-size: 2em;
+            color: var(--green);
+            font-weight: bold;
+        }
+        .freq-name {
+            font-size: 0.8em;
+            color: var(--dim);
+            margin-top: 10px;
+            letter-spacing: 2px;
+        }
+        .freq-chakra {
+            font-size: 0.7em;
+            color: var(--purple);
+            margin-top: 8px;
+        }
+        
+        .detail-panel {
+            display: none;
+            background: rgba(0,255,136,0.02);
+            border: 1px solid rgba(0,255,136,0.3);
+            border-radius: 12px;
+            padding: 40px;
+            margin-top: 40px;
+        }
+        .detail-panel.active { display: block; }
+        .detail-panel h3 {
+            color: var(--gold);
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        .detail-section h4 {
+            color: var(--green);
+            font-size: 0.9em;
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(0,255,136,0.2);
+            padding-bottom: 8px;
+        }
+        .detail-section ul {
+            list-style: none;
+            font-size: 0.85em;
+        }
+        .detail-section li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .effect-tag {
+            display: inline-block;
+            background: rgba(0,255,136,0.1);
+            border: 1px solid rgba(0,255,136,0.3);
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 0.75em;
+            margin: 4px;
+        }
+        .evidence-strong { border-color: #00ff88; color: #00ff88; }
+        .evidence-moderate { border-color: #FFD700; color: #FFD700; }
+        .evidence-emerging { border-color: #9400D3; color: #9400D3; }
+        
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+        .module-card {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .module-card h3 {
+            font-size: 1.2em;
+            letter-spacing: 4px;
+            margin-bottom: 15px;
+        }
+        .module-card .intention {
+            font-size: 0.8em;
+            color: var(--dim);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .module-freqs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .module-freq {
+            background: rgba(0,255,136,0.1);
+            border-radius: 6px;
+            padding: 8px 15px;
+            font-size: 0.8em;
+        }
+        
+        .references {
+            font-size: 0.8em;
+            line-height: 1.8;
+        }
+        .reference-item {
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .reference-item .authors {
+            color: var(--gold);
+        }
+        .reference-item .title {
+            color: var(--green);
+        }
+        .reference-item .findings {
+            color: var(--dim);
+            font-style: italic;
+        }
+        
+        .search-box {
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 15px 20px;
+            background: rgba(0,255,136,0.05);
+            border: 1px solid rgba(0,255,136,0.3);
+            border-radius: 8px;
+            color: var(--green);
+            font-family: inherit;
+            font-size: 1em;
+        }
+        .search-box input::placeholder {
+            color: var(--dim);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--dim);
+            font-size: 0.8em;
+        }
+        footer .logo {
+            color: var(--green);
+            font-size: 1.2em;
+            letter-spacing: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>SOLFEGGIO FREQUENCIES</h1>
+        <div class="subtitle">COMPREHENSIVE DOCTORAL GUIDE</div>
+        <div class="researcher">PhD Research — Hazem Soussi — NANO Protocol</div>
+    </header>
+    
+    <div class="container">
+        <section class="section">
+            <h2>THE NINE SACRED FREQUENCIES</h2>
+            <div class="freq-grid" id="freqGrid"></div>
+            <div class="detail-panel" id="detailPanel"></div>
+        </section>
+        
+        <section class="section">
+            <h2>THERAPEUTIC MODULES</h2>
+            <div class="modules-grid" id="modulesGrid"></div>
+        </section>
+        
+        <section class="section">
+            <h2>SCIENTIFIC REFERENCES</h2>
+            <div class="references" id="references"></div>
+        </section>
+    </div>
+    
+    <footer>
+        <div class="logo">NANO PROTOCOL</div>
+        <div>Artefactual Creatif Service — Doctoral Guide</div>
+        <div style="margin-top: 10px;">© 2026 Hazem Soussi — All Rights Reserved</div>
+    </footer>
+
+    <script>
+        const API_URL = 'http://localhost:8098';
+        
+        async function fetchData(endpoint) {
+            try {
+                const res = await fetch(`${API_URL}${endpoint}`);
+                return await res.json();
+            } catch (e) {
+                console.error('API not available, using embedded data');
+                return null;
+            }
+        }
+        
+        async function init() {
+            const data = await fetchData('/api/frequencies');
+            if (data && data.frequencies) {
+                renderFrequencies(data.frequencies);
+            } else {
+                renderFallbackFrequencies();
+            }
+            
+            const modules = await fetchData('/api/modules');
+            if (modules && modules.modules) {
+                renderModules(modules.modules);
+            }
+            
+            const refs = await fetchData('/api/references');
+            if (refs && refs.references) {
+                renderReferences(refs.references);
+            }
+        }
+        
+        function renderFrequencies(freqs) {
+            const grid = document.getElementById('freqGrid');
+            grid.innerHTML = '';
+            
+            Object.entries(freqs).forEach(([hz, data]) => {
+                const card = document.createElement('div');
+                card.className = 'freq-card';
+                card.innerHTML = `
+                    <div class="freq-hz">${hz}</div>
+                    <div class="freq-name">${data.name}</div>
+                    <div class="freq-chakra">${data.chakra}</div>
+                `;
+                card.onclick = () => showDetail(hz, data, freqs);
+                grid.appendChild(card);
+            });
+        }
+        
+        function renderFallbackFrequencies() {
+            const fallback = {
+                "174": {name: "Foundation", chakra: "Root"},
+                "285": {name: "Repair", chakra: "Sacral"},
+                "396": {name: "Liberation", chakra: "Solar Plexus"},
+                "417": {name: "Change", chakra: "Heart"},
+                "432": {name: "Harmony", chakra: "Heart"},
+                "528": {name: "Transformation", chakra: "Solar Plexus"},
+                "639": {name: "Connection", chakra: "Heart"},
+                "741": {name: "Intuition", chakra: "Throat"},
+                "852": {name: "Spiritual Order", chakra: "Third Eye"},
+                "963": {name: "Divine Consciousness", chakra: "Crown"}
+            };
+            renderFrequencies(fallback);
+        }
+        
+        function showDetail(hz, data, allFreqs) {
+            document.querySelectorAll('.freq-card').forEach(c => c.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            const panel = document.getElementById('detailPanel');
+            panel.classList.add('active');
+            
+            const integrations = data.integration_with || [];
+            const integrationsList = integrations.map(i => {
+                const name = allFreqs[i]?.name || 'Unknown';
+                return `<li><span class="effect-tag">${i}Hz — ${name}</span></li>`;
+            }).join('');
+            
+            const effects = (data.claimed_effects || []).map(e => 
+                `<span class="effect-tag">${e}</span>`
+            ).join('');
+            
+            const scientific = (data.scientific_effects || []).map(s => `
+                <li>
+                    <strong>${s.effect}</strong><br>
+                    <span style="color: var(--dim)">${s.mechanism}</span><br>
+                    <span class="evidence-${s.evidence_level.toLowerCase()}">${s.evidence_level}</span>
+                </li>
+            `).join('');
+            
+            panel.innerHTML = `
+                <h3>${hz}Hz — ${data.name}</h3>
+                <div class="detail-grid">
+                    <div class="detail-section">
+                        <h4>TRADITIONAL USE</h4>
+                        <p style="font-size: 0.85em; line-height: 1.8">
+                            ${data.traditional_use?.ancient || 'Ancient healing frequency'}
+                        </p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>CLAIMED EFFECTS</h4>
+                        <div>${effects}</div>
+                    </div>
+                    <div class="detail-section">
+                        <h4>SCIENTIFIC EVIDENCE</h4>
+                        <ul>${scientific || '<li>Data pending</li>'}</ul>
+                    </div>
+                    <div class="detail-section">
+                        <h4>INTEGRATES WITH</h4>
+                        <ul>${integrationsList || '<li>Standalone frequency</li>'}</ul>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderModules(modules) {
+            const grid = document.getElementById('modulesGrid');
+            grid.innerHTML = '';
+            
+            const colors = {
+                restore: '#00ff88',
+                abundance: '#FFD700',
+                opportunity: '#9400D3',
+                peace: '#00BFFF'
+            };
+            
+            Object.entries(modules).forEach(([key, mod]) => {
+                const card = document.createElement('div');
+                card.className = 'module-card';
+                card.style.borderColor = colors[key] || '#00ff88';
+                
+                const freqs = mod.frequencies.map(f => 
+                    `<span class="module-freq" style="border-color: ${colors[key]}">${f}Hz</span>`
+                ).join('');
+                
+                card.innerHTML = `
+                    <h3 style="color: ${colors[key]}">${mod.name}</h3>
+                    <div class="intention">${mod.intention}</div>
+                    <div class="module-freqs">${freqs}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+        
+        function renderReferences(refs) {
+            const container = document.getElementById('references');
+            container.innerHTML = refs.map(ref => `
+                <div class="reference-item">
+                    <span class="authors">${ref.authors}</span> (${ref.year})<br>
+                    <span class="title">${ref.title}</span><br>
+                    <em>${ref.journal}</em><br>
+                    <span class="findings">"${ref.findings}"</span>
+                </div>
+            `).join('');
+        }
+        
+        init();
+    </script>
+</body>
+</html>

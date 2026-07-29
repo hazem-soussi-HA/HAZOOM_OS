@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HAZOOM NATURE — Physical Landscape</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{overflow:hidden;background:#000;font:12px monospace;color:#fff}
+canvas{display:block;width:100vw;height:100vh}
+#hud{position:fixed;top:10px;left:10px;background:rgba(0,0,0,.7);padding:10px;border-radius:6px;z-index:10;border:1px solid #333}
+#hud h1{font-size:14px;color:#0f0;letter-spacing:2px;margin-bottom:4px}
+#hud .s{font-size:11px;color:#aaa;margin:1px 0}
+#hud .s span{color:#0f0}
+#ctrl{position:fixed;bottom:10px;left:10px;background:rgba(0,0,0,.7);padding:6px 10px;border-radius:6px;font-size:10px;color:#666;z-index:10}
+#load{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:100}
+#load h2{color:#0f0;font-size:20px;letter-spacing:3px;margin-bottom:12px}
+#load .bar{width:250px;height:3px;background:#222;border-radius:2px;overflow:hidden}
+#load .fill{height:100%;background:#0f0;width:0%}
+#load .st{color:#555;font-size:10px;margin-top:6px}
+</style>
+</head>
+<body>
+<div id="load"><h2>HAZOOM NATURE</h2><div class="bar"><div class="fill" id="lb"></div></div><div class="st" id="ls">Loading...</div></div>
+<canvas id="c"></canvas>
+<div id="hud"><h1>HAZOOM NATURE</h1><div class="s">FPS: <span id="fps">--</span></div><div class="s">Pos: <span id="pos">--</span></div><div class="s">Trees: <span id="tr">--</span> | Rocks: <span id="rk">--</span></div><div class="s">Elev: <span id="el">--</span>m</div></div>
+<div id="ctrl">[WASD] Move | [Mouse] Look | [Shift] Sprint | [Space] Jump | [E] Fly</div>
+<script type="module">
+"use strict";
+const lb=document.getElementById('lb'),ls=document.getElementById('ls');
+function pg(p,m){lb.style.width=p+'%';if(m)ls.textContent=m}
+
+// === ASSEMBLY CORE ===
+const GW=512,SC=80,HF=40;
+function hash2i(i,j){return((i*127+j*311)^((i*269)+(j*173)))&0x7FFFFFFF;}
+function noise2d(x,z){
+  const ix=Math.floor(x),iz=Math.floor(z),fx=x-ix,fz=z-iz;
+  const sx=fx*fx*(3-2*fx),sz=fz*fz*(3-2*fz);
+  return(hash2i(ix,iz)/2147483648+(hash2i(ix+1,iz)/2147483648-hash2i(ix,iz)/2147483648)*sx)+
+    ((hash2i(ix,iz+1)/2147483648+(hash2i(ix+1,iz+1)/2147483648-hash2i(ix,iz+1)/2147483648)*sx)-
+     (hash2i(ix,iz)/2147483648+(hash2i(ix+1,iz)/2147483648-hash2i(ix,iz)/2147483648)*sx))*sz;
+}
+function fbm(x,z){let v=0,a=1,ox=x,oz=z;for(let i=0;i<6;i++){v+=a*noise2d(ox,oz);ox*=2;oz*=2;a*=.5;}return v;}
+function ridge(x,z){let v=0,a=1,ox=x,oz=z;for(let i=0;i<5;i++){let n=1-Math.abs(noise2d(ox,oz)*2-1);n=n*n;v+=n*a;ox*=2.2;oz*=2.2;a*=.5;}return v;}
+
+function getH(wx,wz){
+  let h=fbm(wx*.012,wz*.012)*8;
+  const m=ridge(wx*.008,wz*.008);
+  h+=m*m*12;
+  const v=fbm(wx*.006+50,wz*.006+50),vs=Math.max(0,Math.min(1,(v-.35)/.3));
+  h*=.2+.8*vs;
+  const rn=fbm(wx*.015+100,wz*.015+100);
+  const r=Math.abs(Math.sin(wx*.02+rn*2.5)*.4+wz*.008);
+  h*=1-Math.max(0,Math.min(1,r/.12))*.9;
+  h+=noise2d(wx*.1,wz*.1)*.3;
+  return h;
+}
+
+// === WEBGL ===
+pg(5,'WebGL2...');
+const canvas=document.getElementById('c');
+const gl=canvas.getContext('webgl2',{antialias:true,alpha:false});
+if(!gl)throw 'No WebGL2';
+let W,H,asp;
+function resize(){const d=Math.min(devicePixelRatio,1.5);W=canvas.width=Math.floor(innerWidth*d);H=canvas.height=Math.floor(innerHeight*d);asp=W/H;gl.viewport(0,0,W,H);}
+addEventListener('resize',resize);resize();
+
+// === TERRAIN + TREES + ROCKS merged mesh ===
+pg(10,'Terrain mesh...');
+const verts=[],norms=[],colors=[],idx=[];
+const hmap=new Float32Array(GW*GW);
+
+for(let j=0;j<GW;j++)for(let i=0;i<GW;i++){
+  const wx=(i/GW)*SC-HF,wz=(j/GW)*SC-HF,h=getH(wx,wz);
+  hmap[j*GW+i]=h;
+  verts.push(wx,h,wz);
+  let r,g,b;
+  if(h<-2){r=.12;g=.22;b=.10}
+  else if(h<1){r=.20;g=.45;b=.10}
+  else if(h<4){r=.38;g=.30;b=.18}
+  else if(h<8){r=.52;g=.50;b=.46}
+  else{r=.88;g=.90;b=.94}
+  const nv=noise2d(i*.3,j*.3)*.06;
+  colors.push(Math.max(0,Math.min(1,r+nv)),Math.max(0,Math.min(1,g+nv)),Math.max(0,Math.min(1,b+nv)),1);
+}
+
+for(let j=0;j<GW;j++)for(let i=0;i<GW;i++){
+  const il=Math.max(0,i-1),ir=Math.min(GW-1,i+1),jt=Math.max(0,j-1),jb=Math.min(GW-1,j+1);
+  const dx=(hmap[j*GW+ir]-hmap[j*GW+il])*.5,dz=(hmap[jb*GW+i]-hmap[jt*GW+i])*.5;
+  const l=Math.sqrt(dx*dx+1+dz*dz);
+  norms.push(-dx/l,1/l,-dz/l);
+}
+
+for(let j=0;j<GW-1;j++)for(let i=0;i<GW-1;i++){
+  const a=j*GW+i,b=a+1,c=a+GW,d=c+1;
+  idx.push(a,c,b,b,c,d);
+}
+
+// Add trees as merged geometry
+pg(40,'Trees...');
+let tc=0;
+const treeIdxStart=verts.length/3;
+for(let attempt=0;attempt<20000&&tc<5000;attempt++){
+  const tx=(Math.random()-.5)*SC,tz=(Math.random()-.5)*SC,th=getH(tx,tz);
+  if(th<-1.5||th>6)continue;
+  const ep=.5;
+  const s=Math.sqrt(Math.pow(getH(tx-ep,tz)-getH(tx+ep,tz),2)+Math.pow(getH(tx,tz-ep)-getH(tx,tz+ep),2));
+  if(s>1.5)continue;
+  const sc=.5+Math.random()*.7;
+  const isPine=Math.random()<.6;
+  const base=verts.length/3;
+  if(isPine){
+    // Pine: 4 trunk verts + 4 canopy ring + 1 tip
+    const trunkR=.06*sc,trunkH=.5*sc,canopyR=.4*sc,canopyH=1.0*sc;
+    // Trunk (simple quad)
+    for(let k=0;k<4;k++){const a=k*.5*Math.PI;verts.push(tx+Math.cos(a)*trunkR,th, tz+Math.sin(a)*trunkR);norms.push(Math.cos(a),0,Math.sin(a));colors.push(.3,.2,.08,1)}
+    // Canopy ring
+    for(let k=0;k<4;k++){const a=k*.5*Math.PI;verts.push(tx+Math.cos(a)*canopyR,th+trunkH,tz+Math.sin(a)*canopyR);norms.push(Math.cos(a),.4,Math.sin(a));colors.push(.06,.22,.04,1)}
+    // Tip
+    verts.push(tx,th+trunkH+canopyH,tz);norms.push(0,1,0);colors.push(.04,.18,.03,1);
+    // Trunk faces
+    for(let k=0;k<4;k++){const a=base+k,b=base+(k+1)%4;idx.push(a,b,a+4);idx.push(b,b+4,a+4)}
+    // Canopy faces
+    const tip=base+8;
+    for(let k=0;k<4;k++){idx.push(base+4+k,base+4+(k+1)%4,tip)}
+  }else{
+    // Oak: trunk + sphere canopy (simplified as cross)
+    const trunkR=.07*sc,trunkH=.7*sc,canopyR=.6*sc;
+    for(let k=0;k<4;k++){const a=k*.5*Math.PI;verts.push(tx+Math.cos(a)*trunkR,th,tz+Math.sin(a)*trunkR);norms.push(Math.cos(a),0,Math.sin(a));colors.push(.3,.2,.08,1)}
+    for(let k=0;k<4;k++){const a=k*.5*Math.PI;verts.push(tx+Math.cos(a)*trunkR,th+trunkH,tz+Math.sin(a)*trunkR);norms.push(Math.cos(a),0,Math.sin(a));colors.push(.3,.2,.08,1)}
+    // Canopy center + 4 rim
+    verts.push(tx,th+canopyH,tz);norms.push(0,1,0);colors.push(.1,.35,.06,1);
+    for(let k=0;k<4;k++){const a=k*.5*Math.PI;verts.push(tx+Math.cos(a)*canopyR,th+trunkH+canopyR*.5,tz+Math.sin(a)*canopyR);norms.push(Math.cos(a),.5,Math.sin(a));colors.push(.12,.38,.08,1)}
+    for(let k=0;k<4;k++){const a=base+k,b=base+4+(k+1)%4;idx.push(a,base+4+k,b)}
+    const ct=base+9;
+    for(let k=0;k<4;k++){idx.push(base+10+k,base+10+(k+1)%4,ct)}
+  }
+  tc++;
+}
+
+// Add rocks
+pg(60,'Rocks...');
+let rc=0;
+for(let attempt=0;attempt<10000&&rc<2000;attempt++){
+  const rx=(Math.random()-.5)*SC,rz=(Math.random()-.5)*SC,rh=getH(rx,rz);
+  if(rh<-2||rh>10)continue;
+  const sc=.15+Math.random()*.35;
+  const base=verts.length/3;
+  // Simple rock: 5 verts (pyramid)
+  verts.push(rx,rh,rz);norms.push(0,-1,0);colors.push(.4,.38,.35,1);
+  for(let k=0;k<4;k++){const a=k*.5*Math.PI;verts.push(rx+Math.cos(a)*sc,rh+sc*.2,rz+Math.sin(a)*sc);norms.push(Math.cos(a),.5,Math.sin(a));colors.push(.45,.42,.38,1);}
+  verts.push(rx,rh+sc*.6,rz);norms.push(0,1,0);colors.push(.5,.48,.44,1);
+  for(let k=0;k<4;k++){idx.push(base,base+1+k,base+1+(k+1)%4)}
+  const tp=base+5;
+  for(let k=0;k<4;k++){idx.push(base+1+k,base+1+(k+1)%4,tp)}
+  rc++;
+}
+
+pg(80,'Upload GPU...');
+
+// Upload
+const vao=gl.createVertexArray();gl.bindVertexArray(vao);
+const vdata=new Float32Array(verts.length/3*10);
+let o=0;
+for(let i=0;i<verts.length/3;i++){
+  vdata.set(verts.slice(i*3,i*3+3),o);o+=3;
+  vdata.set(norms.slice(i*3,i*3+3),o);o+=3;
+  vdata.set(colors.slice(i*4,i*4+4),o);o+=4;
+}
+const vbo=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,vbo);
+gl.bufferData(gl.ARRAY_BUFFER,vdata,gl.STATIC_DRAW);
+gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,3,gl.FLOAT,false,40,0);
+gl.enableVertexAttribArray(1);gl.vertexAttribPointer(1,3,gl.FLOAT,false,40,12);
+gl.enableVertexAttribArray(2);gl.vertexAttribPointer(2,4,gl.FLOAT,false,40,24);
+const ibo=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ibo);
+gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint32Array(idx),gl.STATIC_DRAW);
+
+// === SHADERS ===
+pg(90,'Shaders...');
+const vs=`#version 300 es
+precision highp float;
+layout(location=0) in vec3 a_pos;
+layout(location=1) in vec3 a_normal;
+layout(location=2) in vec4 a_color;
+uniform mat4 u_vp;
+out vec3 v_norm,v_col,v_wpos;
+void main(){
+  v_norm=a_normal;v_col=a_color.rgb;v_wpos=a_pos;
+  gl_Position=u_vp*vec4(a_pos,1.0);
+}`;
+const fs=`#version 300 es
+precision highp float;
+in vec3 v_norm,v_col,v_wpos;
+uniform vec3 u_sun,u_cam;
+out vec4 fc;
+void main(){
+  float d=max(dot(normalize(v_norm),normalize(u_sun)),0.0);
+  vec3 col=v_col*(.25+d*.75);
+  float fog=1.0-exp(-length(v_wpos-u_cam)*.006);
+  col=mix(col,vec3(0.6,0.7,0.85),fog);
+  col=col/(col+vec3(1.0));
+  col=pow(col,vec3(1.0/2.2));
+  fc=vec4(col,1.0);
+}`;
+
+function mkS(src,type){
+  const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);
+  if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){const e=gl.getShaderInfoLog(s);ls.textContent='SHADER ERROR: '+e;throw e;}
+  return s;
+}
+function mkP(vs,fs){
+  const p=gl.createProgram();gl.attachShader(p,mkS(vs,gl.VERTEX_SHADER));gl.attachShader(p,mkS(fs,gl.FRAGMENT_SHADER));gl.linkProgram(p);
+  if(!gl.getProgramParameter(p,gl.LINK_STATUS)){const e=gl.getProgramInfoLog(p);ls.textContent='LINK ERROR: '+e;throw e;}
+  return p;
+}
+const prog=mkP(vs,fs);
+const uVP=gl.getUniformLocation(prog,'u_vp'),uSun=gl.getUniformLocation(prog,'u_sun'),uCam=gl.getUniformLocation(prog,'u_cam');
+
+// === CAMERA ===
+pg(95,'Camera...');
+const keys={};
+window.addEventListener('keydown',e=>{keys[e.code]=true;});
+window.addEventListener('keyup',e=>{keys[e.code]=false;});
+let camX=0,camY=5,camZ=0,yaw=0,pitch=0,fly=false,vy=0;
+canvas.addEventListener('click',()=>canvas.requestPointerLock());
+document.addEventListener('mousemove',e=>{
+  if(document.pointerLockElement===canvas){yaw-=e.movementX*.002;pitch-=e.movementY*.002;pitch=Math.max(-1.5,Math.min(1.5,pitch));}
+});
+window.addEventListener('keydown',e=>{if(e.code==='KeyE')fly=!fly;if(e.code==='KeyR')location.reload();});
+
+function persp(f,a,n,f2){const F=1/Math.tan(f/2),nf=1/(n-f2);return new Float32Array([F/a,0,0,0,0,F,0,0,0,0,(f2+n)*nf,-1,0,0,2*f2*n*nf,0]);}
+function lookAt(eye,p,y){
+  const cp=Math.cos(p),sp=Math.sin(p),cy=Math.cos(y),sy=Math.sin(y);
+  const f=[sp*cy,cp,sp*sy],r=[sy,0,-cy];
+  const u=[r[1]*f[2]-r[2]*f[1],r[2]*f[0]-r[0]*f[2],r[0]*f[1]-r[1]*f[0]];
+  return new Float32Array([r[0],u[0],-f[0],0,r[1],u[1],-f[1],0,r[2],u[2],-f[2],0,
+    -(r[0]*eye[0]+r[1]*eye[1]+r[2]*eye[2]),-(u[0]*eye[0]+u[1]*eye[1]+u[2]*eye[2]),-(-f[0]*eye[0]-f[1]*eye[1]-f[2]*eye[2]),1]);
+}
+function mul4(a,b){const o=new Float32Array(16);for(let i=0;i<4;i++)for(let j=0;j<4;j++)o[j*4+i]=a[i]*b[j*4]+a[4+i]*b[j*4+1]+a[8+i]*b[j*4+2]+a[12+i]*b[j*4+3];return o;}
+
+// === RENDER ===
+pg(100,'Ready!');
+setTimeout(()=>document.getElementById('load').style.display='none',300);
+
+const t0=performance.now();let fc=0,lf=performance.now(),cfps=0;
+let sa=0.3;
+
+function frame(dt){
+  dt=Math.min(dt,.05);
+  const sp=(keys['ShiftLeft']?15:5)*dt;
+  const cy=Math.cos(yaw),sy=Math.sin(yaw);
+  if(keys['KeyW']){camX+=sy*sp;camZ+=-cy*sp}
+  if(keys['KeyS']){camX-=sy*sp;camZ+=cy*sp}
+  if(keys['KeyA']){camX-=cy*sp;camZ-=sy*sp}
+  if(keys['KeyD']){camX+=cy*sp;camZ+=sy*sp}
+  const gh=getH(camX,camZ);
+  if(fly){if(keys['Space'])camY+=sp;if(keys['KeyQ'])camY-=sp}
+  else{camY=gh+1.7;if(keys['Space'])vy=8;vy-=20*dt;camY+=vy*dt;if(camY<gh+1.7){camY=gh+1.7;vy=0}}
+  sa+=dt*.02;
+  const sun=[Math.cos(sa)*.5,.6,Math.sin(sa)*.5];
+  const vp=mul4(persp(1.2,asp,.05,200),lookAt([camX,camY,camZ],pitch,yaw));
+  gl.clearColor(.55,.7,.9,1);
+  gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+  gl.enable(gl.DEPTH_TEST);gl.enable(gl.CULL_FACE);
+  gl.useProgram(prog);
+  gl.uniformMatrix4fv(uVP,false,vp);
+  gl.uniform3f(uSun,sun[0],sun[1],sun[2]);
+  gl.uniform3f(uCam,camX,camY,camZ);
+  gl.bindVertexArray(vao);
+  gl.drawElements(gl.TRIANGLES,idx.length,gl.UNSIGNED_INT,0);
+  fc++;const now=performance.now();
+  if(now-lf>500){cfps=Math.round(fc*1000/(now-lf));fc=0;lf=now;
+    document.getElementById('fps').textContent=cfps;
+    document.getElementById('pos').textContent=camX.toFixed(1)+', '+camY.toFixed(1)+', '+camZ.toFixed(1);
+    document.getElementById('tr').textContent=tc;
+    document.getElementById('rk').textContent=rc;
+    document.getElementById('el').textContent=camY.toFixed(1);
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

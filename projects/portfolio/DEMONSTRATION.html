@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hazem Soussi - Hero Section Demonstration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the hero section effects */
+        .hero-bg-blue {
+            background-color: rgba(0, 112, 243, 0.1);
+        }
+        
+        .hero-bg-cyan {
+            background-color: rgba(0, 212, 255, 0.1);
+        }
+        
+        .grid-pattern {
+            background-image: linear-gradient(rgba(0,112,243,0.3) 1px, transparent 1px), 
+                            linear-gradient(90deg, rgba(0,112,243,0.3) 1px, transparent 1px);
+            background-size: 60px 60px;
+            opacity: 0.03;
+        }
+        
+        .glass {
+            background-color: rgba(10, 18, 42, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 112, 243, 0.15);
+        }
+        
+        .glass-hover:hover {
+            border-color: rgba(0, 112, 243, 0.4);
+            box-shadow: 0 0 30px rgba(0, 112, 243, 0.1);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #0070f3, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .glow {
+            box-shadow: 0 0 40px rgba(0, 112, 243, 0.3);
+        }
+        
+        /* Octagon clip path */
+        .octagon {
+            clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+            -webkit-clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+        }
+        
+        /* Image filters */
+        .image-filter {
+            filter: grayscale(100%) contrast(110%);
+            transition: filter 0.5s ease-in-out;
+        }
+        
+        .image-filter:hover {
+            filter: grayscale(0%) contrast(100%);
+        }
+        
+        /* Halo effect */
+        .halo {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            filter: blur(20px);
+            background: radial-gradient(circle at center, #0070f3 0%, transparent 70%);
+            opacity: 0.3;
+        }
+        
+        /* Neon border */
+        .neon-border {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            border: 2px solid #0070f3;
+            border-radius: inherit;
+        }
+        
+        /* Glassmorphism badge */
+        .glass-badge {
+            background-color: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+            border-radius: 0.75rem; /* rounded-xl */
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 15px rgba(0, 112, 243, 0.2);
+        }
+        
+        /* Status text */
+        .status-text {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem; /* gap-2 */
+            padding: 0.75rem 1rem; /* px-3 py-1.5 */
+        }
+        
+        .status-label {
+            font-size: 0.75rem; /* text-xs */
+            font-weight: 500; /* font-medium */
+            color: #0070f3; /* text-cloud-cyan */
+        }
+        
+        .status-value {
+            font-size: 0.75rem; /* text-xs */
+            font-weight: 500; /* font-medium */
+            color: white; /* text-white */
+        }
+        
+        .status-dot {
+            width: 0.5rem; /* w-2 */
+            height: 0.5rem; /* h-2 */
+            background-color: #10b981; /* bg-green-500 */
+            border-radius: 9999px; /* rounded-full */
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        /* Animations */
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 0.1; }
+            50% { opacity: 0.3; }
+        }
+        
+        .animate-pulse-slow {
+            animation: pulse-slow 3s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Parallax container */
+        .parallax-container {
+            position: relative;
+            width: 16rem; /* w-64 */
+            height: 16rem; /* h-64 */
+            background-color: #1f2937; /* bg-slate-800 */
+        }
+        
+        @media (min-width: 768px) {
+            .parallax-container {
+                width: 20rem; /* w-80 */
+                height: 20rem; /* h-80 */
+            }
+        }
+        
+        /* Simple hover effect for demonstration */
+        .hover-effect:hover {
+            transform: translate(-10px, -10px);
+            transition: transform 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-[#060912] text-[#e2e8f0] font-inter overflow-x-hidden">
+    <!-- Hero Section -->
+    <section class="relative min-h-screen flex items-center justify-center overflow-hidden px-6">
+        <!-- Animated background -->
+        <div class="absolute inset-0">
+            <div class="absolute top-1/4 left-1/4 w-96 h-96 hero-bg-blue rounded-full blur-[120px] animate-pulse-slow" />
+            <div class="absolute bottom-1/4 right-1/4 w-80 h-80 hero-bg-cyan rounded-full blur-[100px] animate-pulse-slow" style="animation-delay: 2s;" />
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] hero-bg-blue/5 rounded-full blur-[150px]" />
+        </div>
+
+        <!-- Grid pattern -->
+        <div class="absolute inset-0 grid-pattern" />
+
+        <div class="relative z-10 max-w-5xl mx-auto flex flex-col md:flex-row items-center">
+            <!-- Text content - left side -->
+            <div class="md:w-1/2 flex-1 text-center md:text-left space-y-6">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-8 text-sm text-cyan-400">
+                    <div class="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
+                    Open to opportunities
+                </div>
+
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-black leading-tight mb-4 tracking-tight">
+                    <span class="gradient-text">Orchestrating</span>
+                    <br />
+                    <span class="text-white">Scalable Realities</span>
+                </h1>
+
+                <p class="text-base md:text-lg text-slate-400 max-w-md mx-auto md:mx-0 leading-relaxed">
+                    Cloud Architect & DevOps Engineer transforming infrastructure complexity into performance.
+                </p>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                    <a href="#projects" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-xl font-semibold text-white hover:shadow-[0_0_40px_rgba(0,112,243,0.4)] transition-all duration-300 hover:-translate-y-0.5">
+                        View My Work
+                    </a>
+                    <a href="#contact" class="px-6 py-3 glass rounded-xl font-semibold text-cyan-400 hover:border-cyan-400/40 transition-all duration-300 hover:-translate-y-0.5">
+                        Get in Touch
+                    </a>
+                </div>
+            </div>
+
+            <!-- Photo - right side -->
+            <div class="md:w-1/2 flex-1 flex items-center justify-center">
+                <div class="relative hover-effect">
+                    <!-- Parallax container -->
+                    <div class="parallax-container">
+                        <!-- Octagon image with mask -->
+                        <img src="public/hazem-hero.jpg" 
+                             alt="Hazem Soussi Graduation" 
+                             class="absolute inset-0 w-full h-full object-cover octagon image-filter"
+                             onmouseenter="this.style.filter='grayscale(0%) contrast(100%)'"
+                             onmouseleave="this.style.filter='grayscale(100%) contrast(110%)'"
+                             onerror="this.style.border='2px solid red'; this.style.backgroundColor='#ffe6e6'">
+                        
+                        <!-- Neon border effect -->
+                        <div class="neon-border"></div>
+                        
+                        <!-- Electric blue halo effect -->
+                        <div class="halo"></div>
+                    </div>
+                    
+                    <!-- Glassmorphism badge -->
+                    <div class="absolute bottom-4 right-4">
+                        <div class="glass-badge status-text">
+                            <span class="status-label">Status:</span>
+                            <span class="status-value">Ready to Deploy</span>
+                            <div class="status-dot"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll indicator -->
+        <div class="absolute bottom-8 left-1/2 -translate-x-1/2">
+            <div class="w-6 h-10 rounded-full border-2 border-slate-600 flex items-start justify-center p-1.5">
+                <div class="w-1.5 h-1.5 bg-blue-600 rounded-full" style="animation: bounce 2s infinite;"></div>
+            </div>
+        </div>
+    </section>
+
+    <style>
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</body>
+</html>

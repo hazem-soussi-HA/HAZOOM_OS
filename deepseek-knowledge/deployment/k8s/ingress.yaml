@@ -1,0 +1,55 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: deepseek-knowledge-ingress
+  namespace: deepseek-knowledge
+  labels:
+    app: deepseek-knowledge
+    component: ingress
+    environment: production
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    nginx.ingress.kubernetes.io/rate-limit-burst: "200"
+    nginx.ingress.kubernetes.io/limit-concurrent-connections: "100"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10M"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - history-of-internet.com
+    - app.history-of-internet.com
+    secretName: deepseek-knowledge-tls
+  rules:
+  - host: history-of-internet.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: deepseek-knowledge-api
+            port:
+              number: 8000
+      - path: /api/v1/
+        pathType: Prefix
+        backend:
+          service:
+            name: deepseek-knowledge-api
+            port:
+              number: 8000
+  - host: app.history-of-internet.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: deepseek-knowledge-api
+            port:
+              number: 8000

@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deepseek-knowledge-app
+  namespace: deepseek-knowledge
+  labels:
+    app: deepseek-knowledge
+    component: api
+    environment: production
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: deepseek-knowledge
+      component: api
+  template:
+    metadata:
+      labels:
+        app: deepseek-knowledge
+        component: api
+        environment: production
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+      - name: app
+        image: deepseek-knowledge:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+          protocol: TCP
+          name: http
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: deepseek-knowledge-secrets
+              key: database-url
+        - name: REDIS_URL
+          value: "redis://deepseek-knowledge-redis:6379/0"
+        - name: ENCRYPTION_KEY
+          valueFrom:
+            secretKeyRef:
+              name: deepseek-knowledge-secrets
+              key: encryption-key
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: deepseek-knowledge-secrets
+              key: secret-key
+        - name: CELERY_BROKER_URL
+          value: "redis://deepseek-knowledge-redis:6379/1"
+        - name: CELERY_RESULT_BACKEND
+          value: "redis://deepseek-knowledge-redis:6379/2"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        volumeMounts:
+        - name: app-storage
+          mountPath: /app/storage
+        - name: app-assets
+          mountPath: /app/assets
+      volumes:
+      - name: app-storage
+        persistentVolumeClaim:
+          claimName: deepseek-knowledge-storage-pvc
+      - name: app-assets
+        persistentVolumeClaim:
+          claimName: deepseek-knowledge-assets-pvc

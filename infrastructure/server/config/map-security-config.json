@@ -1,0 +1,45 @@
+{
+  "security": {
+    "https": {
+      "enabled": true,
+      "port": 8443,
+      "protocol": "TLSv1.3",
+      "ciphers": [
+        "TLS_AES_256_GCM_SHA384",
+        "TLS_CHACHA20_POLY1305_SHA256",
+        "TLS_AES_128_GCM_SHA256"
+      ]
+    },
+    "headers": {
+      "X-Frame-Options": "DENY",
+      "X-Content-Type-Options": "nosniff",
+      "X-XSS-Protection": "1; mode=block",
+      "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+      "Content-Security-Policy": "default-src 'self'; connect-src 'self' https:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:"
+    },
+    "cors": {
+      "enabled": true,
+      "origin": ["https://localhost:8443"],
+      "methods": ["GET", "OPTIONS"],
+      "credentials": true
+    }
+  },
+  "map": {
+    "center": {"lat": 20, "lng": 0},
+    "zoom": 2,
+    "markers": [
+      {"name": "New York", "coords": [40.7128, -74.006]},
+      {"name": "London", "coords": [51.5074, -0.1278]},
+      {"name": "Tokyo", "coords": [35.6762, 139.6503]},
+      {"name": "Paris", "coords": [48.8566, 2.3522]},
+      {"name": "Beijing", "coords": [39.9042, 116.4074]},
+      {"name": "Sydney", "coords": [-33.8688, 151.2093]},
+      {"name": "Rio de Janeiro", "coords": [-22.9068, -43.1729]},
+      {"name": "Cairo", "coords": [30.0444, 31.2357]}
+    ]
+  },
+  "routes": {
+    "public": ["/map/*", "/health"],
+    "secure": ["/api/*", "/admin/*"]
+  }
+}

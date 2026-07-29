@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="800" height="400">
+  <defs>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00ff88;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00aa55;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#00ff88;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#00ff88;stop-opacity:0.1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="400" fill="#0a0a0f"/>
+
+  <!-- Grid lines -->
+  <g opacity="0.06" stroke="#00ff88" stroke-width="0.5">
+    <line x1="0" y1="50" x2="800" y2="50"/>
+    <line x1="0" y1="100" x2="800" y2="100"/>
+    <line x1="0" y1="150" x2="800" y2="150"/>
+    <line x1="0" y1="200" x2="800" y2="200"/>
+    <line x1="0" y1="250" x2="800" y2="250"/>
+    <line x1="0" y1="300" x2="800" y2="300"/>
+    <line x1="0" y1="350" x2="800" y2="350"/>
+    <line x1="100" y1="0" x2="100" y2="400"/>
+    <line x1="200" y1="0" x2="200" y2="400"/>
+    <line x1="300" y1="0" x2="300" y2="400"/>
+    <line x1="400" y1="0" x2="400" y2="400"/>
+    <line x1="500" y1="0" x2="500" y2="400"/>
+    <line x1="600" y1="0" x2="600" y2="400"/>
+    <line x1="700" y1="0" x2="700" y2="400"/>
+  </g>
+
+  <!-- Hexagonal logo mark -->
+  <g transform="translate(200, 200)" filter="url(#glow)">
+    <!-- Outer hexagon -->
+    <polygon points="0,-80 69.3,-40 69.3,40 0,80 -69.3,40 -69.3,-40" 
+             fill="none" stroke="url(#g1)" stroke-width="2" opacity="0.8"/>
+    
+    <!-- Inner hexagon -->
+    <polygon points="0,-50 43.3,-25 43.3,25 0,50 -43.3,25 -43.3,-25" 
+             fill="none" stroke="#00ff88" stroke-width="1.5" opacity="0.5"/>
+    
+    <!-- Center hexagon -->
+    <polygon points="0,-25 21.7,-12.5 21.7,12.5 0,25 -21.7,12.5 -21.7,-12.5" 
+             fill="#00ff88" fill-opacity="0.15" stroke="#00ff88" stroke-width="1" opacity="0.9"/>
+    
+    <!-- Connection nodes -->
+    <circle cx="0" cy="-80" r="4" fill="#00ff88" opacity="0.9"/>
+    <circle cx="69.3" cy="-40" r="4" fill="#00ff88" opacity="0.9"/>
+    <circle cx="69.3" cy="40" r="4" fill="#00ff88" opacity="0.9"/>
+    <circle cx="0" cy="80" r="4" fill="#00ff88" opacity="0.9"/>
+    <circle cx="-69.3" cy="40" r="4" fill="#00ff88" opacity="0.9"/>
+    <circle cx="-69.3" cy="-40" r="4" fill="#00ff88" opacity="0.9"/>
+    
+    <!-- Inner nodes -->
+    <circle cx="0" cy="-50" r="2.5" fill="#00ff88" opacity="0.7"/>
+    <circle cx="43.3" cy="-25" r="2.5" fill="#00ff88" opacity="0.7"/>
+    <circle cx="43.3" cy="25" r="2.5" fill="#00ff88" opacity="0.7"/>
+    <circle cx="0" cy="50" r="2.5" fill="#00ff88" opacity="0.7"/>
+    <circle cx="-43.3" cy="25" r="2.5" fill="#00ff88" opacity="0.7"/>
+    <circle cx="-43.3" cy="-25" r="2.5" fill="#00ff88" opacity="0.7"/>
+    
+    <!-- Center dot -->
+    <circle cx="0" cy="0" r="6" fill="#00ff88" opacity="0.9"/>
+    
+    <!-- Radiating lines from center -->
+    <line x1="0" y1="0" x2="0" y2="-25" stroke="#00ff88" stroke-width="0.8" opacity="0.4"/>
+    <line x1="0" y1="0" x2="21.7" y2="-12.5" stroke="#00ff88" stroke-width="0.8" opacity="0.4"/>
+    <line x1="0" y1="0" x2="21.7" y2="12.5" stroke="#00ff88" stroke-width="0.8" opacity="0.4"/>
+    <line x1="0" y1="0" x2="0" y2="25" stroke="#00ff88" stroke-width="0.8" opacity="0.4"/>
+    <line x1="0" y1="0" x2="-21.7" y2="12.5" stroke="#00ff88" stroke-width="0.8" opacity="0.4"/>
+    <line x1="0" y1="0" x2="-21.7" y2="-12.5" stroke="#00ff88" stroke-width="0.8" opacity="0.4"/>
+    
+    <!-- Orbiting dots -->
+    <circle cx="35" cy="-60" r="2" fill="#00ff88" opacity="0.5"/>
+    <circle cx="60" cy="0" r="2" fill="#00ff88" opacity="0.5"/>
+    <circle cx="35" cy="60" r="2" fill="#00ff88" opacity="0.5"/>
+    <circle cx="-35" cy="60" r="2" fill="#00ff88" opacity="0.5"/>
+    <circle cx="-60" cy="0" r="2" fill="#00ff88" opacity="0.5"/>
+    <circle cx="-35" cy="-60" r="2" fill="#00ff88" opacity="0.5"/>
+  </g>
+
+  <!-- Brand name HAZOOM -->
+  <text x="380" y="180" font-family="monospace" font-size="52" font-weight="bold" 
+        fill="url(#g1)" letter-spacing="8" filter="url(#glow)">HAZOOM</text>
+
+  <!-- Project name -->
+  <text x="380" y="220" font-family="monospace" font-size="16" 
+        fill="#00ff88" opacity="0.6" letter-spacing="6">NANO PROTOCOL</text>
+
+  <!-- Tagline -->
+  <text x="380" y="250" font-family="monospace" font-size="10" 
+        fill="#00ff88" opacity="0.35" letter-spacing="3">FUNK ORIENTAL SEROTONIN ENGINE</text>
+
+  <!-- Decorative line -->
+  <line x1="380" y1="265" x2="620" y2="265" stroke="url(#g2)" stroke-width="1" opacity="0.4"/>
+
+  <!-- Copyright -->
+  <text x="380" y="340" font-family="monospace" font-size="9" 
+        fill="#00ff88" opacity="0.3" letter-spacing="2">© HAZEM SOUSSI</text>
+
+  <!-- Version -->
+  <text x="380" y="358" font-family="monospace" font-size="8" 
+        fill="#00ff88" opacity="0.2" letter-spacing="1">v1.0.0 · 2026</text>
+
+  <!-- Corner accents -->
+  <g opacity="0.3" stroke="#00ff88" stroke-width="1" fill="none">
+    <polyline points="20,20 20,40 40,40"/>
+    <polyline points="780,20 780,40 760,40"/>
+    <polyline points="20,380 20,360 40,360"/>
+    <polyline points="780,380 780,360 760,360"/>
+  </g>
+
+  <!-- Small nano dots pattern -->
+  <g opacity="0.15" fill="#00ff88">
+    <circle cx="50" cy="200" r="1"/>
+    <circle cx="70" cy="180" r="0.8"/>
+    <circle cx="90" cy="220" r="1.2"/>
+    <circle cx="110" cy="190" r="0.6"/>
+    <circle cx="130" cy="210" r="1"/>
+    <circle cx="650" cy="150" r="1"/>
+    <circle cx="670" cy="170" r="0.8"/>
+    <circle cx="690" cy="130" r="1.2"/>
+    <circle cx="710" cy="160" r="0.6"/>
+    <circle cx="730" cy="140" r="1"/>
+  </g>
+</svg>

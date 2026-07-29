@@ -1,155 +1,116 @@
-# HAZOOM OS — v6.0 REAL OPERATING SYSTEM
+# HAZOOM OS — Unified Ecosystem Platform
 
-> **STATUS: Real kernel built. Ready for testing and deployment.**
+> **Creator:** Hazem Soussi (HA) © 2024-2026
+> **Status:** v6.0 — CONVERGENCE — Real OS + Full-Stack Cloud Ecosystem
 
 ## Overview
 
-HAZOOM OS is transforming from a browser simulation (v4.0) into a **real operating system** that boots on bare metal. The JavaScript simulation becomes the userspace, while the new C kernel provides true OS capabilities.
+HAZOOM OS is a unified platform that integrates all projects under one roof:
+
+- **Real OS** — Bare-metal kernel (C, x86-64) with Q-Learning scheduler
+- **Web Desktop** — Browser-based simulation with app launcher
+- **AI Engine** — Multi-model AI (Ollama, OpenRouter, local LLMs)
+- **Microservices** — 20+ integrated services
+- **Deployment** — Docker Compose, Kubernetes, LXC, bare metal
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                   HAZOOM OS v6.0                       │
-├─────────────────────────────────────────────────────────┤
-│  Userspace (Browser-based simulation)                   │
-│  - AI Assistant                                       │
-│  - Consciousness Engine                                 │
-│  - Desktop Environment                                  │
-├─────────────────────────────────────────────────────────┤
-│  Real Kernel (C, bare metal)                            │
-│  - Process Management                                   │
-│  - Memory Management (Buddy Allocator)                  │
-│  - Q-Learning Scheduler                                 │
-│  - File System                                          │
-│  - Device Drivers                                       │
-└─────────────────────────────────────────────────────────┘
+HAZOOM_OS/
+├── kernel/          # C kernel (x86-64, long-mode, paging, buddy allocator)
+├── boot/            # UEFI bootloader
+├── core/            # OS core modules (JS — web simulation)
+├── server.js        # Main Express entry point
+├── apps/            # Desktop web apps (AI, tools, games, docs)
+├── services/        # 20+ microservices
+│   ├── ai/          # AI reasoning engine
+│   ├── api-gateway/ # API gateway & auth
+│   ├── orchestrator/# Service orchestrator
+│   ├── planet-earth/         # 3D Earth visualization
+│   ├── planet-earth-news/    # RSS news aggregator
+│   ├── planet-earth-history/ # Historical timeline
+│   ├── birds-encyclopedia/   # Interactive bird DB
+│   ├── hazoom-pod/           # Print-on-demand e-commerce
+│   ├── chatdev-ornith/       # AI chat (Ollama)
+│   ├── collaborative-beat/   # AI music collab
+│   ├── descer/               # Drum machine
+│   ├── sovereign-state/      # AI ledger state
+│   ├── bouzelfa-ndhifa/      # Web community app
+│   ├── hazoom-intelligence/  # Analytics dashboard
+│   ├── serotonin-engine/     # Creative AI engine
+│   ├── general-intelligence/ # Infinity reasoning engine
+│   ├── mirror-transcendance/ # AI mirror framework
+│   └── mario-gta6/           # Game demo
+├── projects/        # Standalone projects
+│   ├── open-world/  # Godot 3D game
+│   ├── portfolio/   # Portfolio website (Vite)
+│   ├── assembly/    # x86 assembly terrain sim
+│   ├── maps/        # Map visualizations
+│   └── map-data/    # Map config & templates
+├── infrastructure/  # DevOps & security
+│   ├── scripts/     # Setup & deployment
+│   └── server/      # Server security configs
+└── contracts/       # Smart contracts (Solidity)
 ```
 
 ## Quick Start
 
-### Option 1: Browser Simulation (v4.0)
+### Browser Simulation
 ```bash
 ./start.sh simulation
-# Open http://localhost:3000/os.html
+# Open http://localhost:3000
 ```
 
-### Option 2: Real Kernel in QEMU
+### Full Docker Stack
 ```bash
-./start.sh kernel
-# Or build manually:
-make kernel
-make run-qemu
+./start.sh docker
+# All 20+ services start automatically
 ```
 
-### Option 3: Build ISO
+### Real Kernel in QEMU
 ```bash
-./start.sh iso
+make kernel && ./start.sh kernel
 ```
 
-## Kernel Structure
+## Service Map
 
-```
-kernel/
-├── entry.asm           # Assembly entry point
-├── main.c              # Kernel main
-├── kernel.h            # Kernel headers
-├── io.h                # I/O primitives
-├── linker.ld           # Linker script
-├── Makefile
-├── mm/                 # Memory management
-│   └── pmm.c           # Physical memory manager
-├── proc/               # Process management
-│   └── process.c       # Process scheduler
-├── fs/                 # File system
-│   └── vfs.c           # Virtual file system
-├── dev/                # Device drivers
-├── ai/                 # Q-learning in kernel
-│   └── qtable.c        # Tabular Q-learning
-```
+| Port | Service | Description |
+|------|---------|-------------|
+| 3000 | HAZOOM OS | Web desktop + kernel API |
+| 8080 | Planet Earth | 3D globe visualization |
+| 8001 | Planet News | RSS news feed aggregator |
+| 8002 | Planet History | Historical events timeline |
+| 4100 | Birds | Bird species encyclopedia |
+| 4000 | Hazoom POD | Print-on-demand store |
+| 5055 | Ornith Chat | Ollama-powered AI chat |
+| 5000 | Collab Beat | AI collaborative music |
+| 6000 | DESCER | Drum machine composer |
+| 4747 | Sovereign State | AI ledger system |
+| 7000 | Bouzelfa | Web community platform |
+| 8003 | Hazoom Intel | Business intelligence |
+| 8005 | Serotonin | Creative AI engine |
+| 9001 | Mario GTA6 | Game demo |
+| 9002 | Portfolio | Personal website |
 
-## Features
+## AI Models
 
-| Feature | Simulation | Real Kernel |
-|---------|------------|-------------|
-| Process Management | ✅ | ✅ |
-| Memory Management | ✅ | ✅ |
-| File System | ✅ | ✅ |
-| Q-Learning | ✅ | ✅ |
-| Consciousness | ✅ | Planned |
-| Bare Metal Boot | ❌ | ✅ |
+- **Ollama** (local): `qwen2.5-coder:3b`, `deepseek-r1`, `llama3`
+- **OpenRouter** (cloud): GPT-4, Claude, Gemini
+- **Q-Learning**: Hybrid tabular/DQN reinforcement learning
 
-## Requirements
-
-- **Simulation Mode**: Node.js 18+
-- **Kernel Mode**: GCC, NASM, QEMU
-
-## Installation
+## Deployment
 
 ```bash
-# Install build tools
-sudo apt-get install gcc nasm qemu-system-x86
+# Docker (production)
+docker compose up --build -d
 
-# Or use the Makefile
-make dev-install
+# Kubernetes
+kubectl apply -f deployment/k8s/hazoom-fullstack.yaml
 
-# Build and run
-make kernel
-make run-qemu
+# LXC
+lxc launch ubuntu:24.04 hazoom -c < deployment/lxc/hazoom-os-lxc.yaml
 ```
-
-## API Endpoints (Simulation)
-
-| Endpoint | Description |
-|----------|-------------|
-| `/api/status` | System state |
-| `/api/processes` | Process list |
-| `/api/memory` | Memory stats |
-| `/api/qlearner` | Q-learning status |
-| `/api/consciousness` | Consciousness status |
-
-## Fullstack Services (the OS as the brain for everything)
-
-HAZOOM OS orchestrates Hazem Soussi's fullstack projects as first-class,
-loopback-only, offline-first **services**. Single source of truth for launch:
-`planet_earth/hazoom-os-launch.sh`. Every service binds `127.0.0.1` ONLY
-(no LAN exposure, no runtime egress — blackout-proof).
-
-| Service            | Port  | URL                          | What it is                                  |
-|--------------------|-------|------------------------------|---------------------------------------------|
-| planet_earth      | 8080  | http://127.0.0.1:8080/       | Offline WebGL globe + Temperature Meteorology |
-| planet_earth_news | 8000  | https://127.0.0.1:8000/      | Sovereign local news / climate feeds        |
-| birds_encyclopedia | 4100  | http://127.0.0.1:4100/       | Birds + natural-voice 3D atlas              |
-| hazoom_pod         | 4000  | http://127.0.0.1:4000/       | Print-on-demand platform                    |
-| hazoom_os          | 3000  | http://127.0.0.1:3000/       | This OS desktop                             |
-| collaborative_beat | 5000  | http://127.0.0.1:5000/       | Local-first neural core / reasoning         |
-| **chatdev (Ornith)** | **5055** | **http://127.0.0.1:5055/** | **Loopback-only offline chatbox → local Ollama** |
-
-**ChatDev / Ornith** — a sovereign, offline-first web chatbox for talking to a
-local Ollama model. Integrated 2026-07-20. Launched via its own `run_ornith.sh`
-(loopback bind + `keep_alive`). Honest caveat: it defaults to `ornith:35b`,
-which is **dead on CPU-only hardware** (0 tokens in 120s). On this box set
-`ORNITH_MODEL` to a small responsive model, e.g.
-`ORNITH_MODEL=tinyllama:1.1b bash hazoom-os-launch.sh start`.
-
-## Intelligence Core (real local-LLM reasoning)
-
-The OS ships a genuine reasoning layer (`core/intelligence-core.js`) that
-auto-selects the fastest *responsive* local Ollama model at boot and fails
-soft when none is available. Endpoints:
-
-| Endpoint | Description |
-|----------|-------------|
-| `/api/intelligence/status` | Active model, offline flag |
-| `/api/intelligence/health` | Probe Ollama + model availability |
-| `/api/intelligence/think`   | One-shot reasoned reply |
-| `/api/intelligence/stream`  | Token-streamed reply |
-| `/api/intelligence/reset`   | Clear conversation memory |
 
 ## License
 
-HA License — Hazem Soussi (HA) © 2024-2026
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
+Proprietary — All Rights Reserved © Hazem Soussi

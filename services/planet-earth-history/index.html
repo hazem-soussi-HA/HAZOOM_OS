@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Planet Earth History — La Généralité de Vérité</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- GPU-rendered "first nature / aether" background -->
+  <canvas id="gpu-bg"></canvas>
+
+  <!-- WebGL availability note (fail-soft) -->
+  <div id="gpu-note" class="gpu-note"></div>
+
+  <!-- OOP Canvas time-map -->
+  <canvas id="map"></canvas>
+
+  <!-- Title / thesis -->
+  <header id="hud-top">
+    <h1>PLANET&nbsp;EARTH&nbsp;HISTORY</h1>
+    <p class="thesis">Earth was first <b>NATURE</b> (100% logical). On it we built houses &amp; factories.
+       There was a <b>FLOOD</b> — so things lie <b>UNDER US</b>. Different <b>EPOCHS</b> for different
+       peoples. A god/creature that always <b>CHANGES us</b>. <b>BIRDS</b> are our guides.
+       <span class="fr">La généralité de vérité.</span></p>
+  </header>
+
+  <!-- Layer toggles -->
+  <aside id="layers" class="panel">
+    <h2>LAYERS</h2>
+    <div id="layer-list"></div>
+    <div class="hint">scroll = zoom · drag = pan · dbl-click = reset · click a node = read</div>
+  </aside>
+
+  <!-- Deep-analysis panel (L2 insight) -->
+  <aside id="deep" class="panel">
+    <h2>DEEP ANALYSIS</h2>
+    <div id="deep-body"></div>
+  </aside>
+
+  <!-- Detail / era card -->
+  <aside id="detail" class="panel hidden">
+    <button id="detail-close">✕</button>
+    <div id="detail-body"></div>
+  </aside>
+
+  <!-- Provenance / truth panel -->
+  <aside id="truth" class="panel">
+    <h2>TRUTH &amp; PROVENANCE</h2>
+    <div id="truth-body"></div>
+    <button id="truth-toggle">hide sources ▾</button>
+  </aside>
+
+  <!-- Inspiration rotor (bottom strip) -->
+  <div id="inspiration-strip" class="hidden"></div>
+
+  <!-- Inline bootstrap: inject the CSP nonce + local token. The nonce makes
+       the inline script CSP-legal; the token lets the SPA authenticate its
+       /api/dataset fetch. On a static host these placeholders stay inert. -->
+  <script nonce="__NONCE__">
+    window.__PEH_TOKEN__ = "__TOKEN__";
+  </script>
+  <script src="data.js" integrity="__SRI_DATA__" crossorigin="anonymous"></script>
+  <script src="engine.js" integrity="__SRI_ENGINE__" crossorigin="anonymous"></script>
+  <script src="app.js" integrity="__SRI_APP__" crossorigin="anonymous"></script>
+</body>
+</html>

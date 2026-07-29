@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Futuristic World Map - Secure Command Center</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: 
+                radial-gradient(ellipse at 20% 50%, rgba(100,0,255,0.3) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(0,255,255,0.2) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(255,0,255,0.15) 0%, transparent 50%),
+                linear-gradient(135deg, #0a0a2e 0%, #1a1a3e 30%, #0d0d1a 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            color: #0ff;
+        }
+        #futuristic-map { height: 100vh; width: 100%; position: relative; }
+        .futuristic-header {
+            position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
+            color: #ff0; font-size: 22px; text-shadow: 0 0 20px #ff0, 0 0 40px #ff0;
+            z-index: 1000; text-align: center; letter-spacing: 3px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #ff0, 0 0 20px #ff0; }
+            to { text-shadow: 0 0 30px #ff0, 0 0 60px #ff0, 0 0 90px #ff0; }
+        }
+        .laser-line {
+            position: absolute; height: 2px;
+            background: linear-gradient(90deg, transparent, #ff0, transparent);
+            animation: laserMove 3s linear infinite; z-index: 1; pointer-events: none;
+        }
+        @keyframes laserMove { 0% { left: -100%; top: 20%; } 100% { left: 100%; top: 80%; } }
+        .system-futuristic {
+            background: radial-gradient(circle, #ff0 0%, #f80 50%, #f00 100%);
+            width: 14px; height: 14px; border-radius: 50%;
+            box-shadow: 0 0 15px #ff0, 0 0 30px #f80; animation: pulse 1.5s ease-in-out infinite;
+            cursor: pointer; transition: all 0.3s;
+        }
+        .system-futuristic:hover { transform: scale(1.8); filter: brightness(1.5); }
+        .system-futuristic.selected { background: radial-gradient(circle, #0ff 0%, #08f 100%); box-shadow: 0 0 20px #0ff, 0 0 40px #08f; }
+        .system-futuristic.alert { background: radial-gradient(circle, #f00 0%, #f00 100%); box-shadow: 0 0 20px #f00, 0 0 40px #f00; animation: alertPulse 0.3s infinite; }
+        @keyframes alertPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.5); } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.8; } }
+        .quantum-link { stroke-dasharray: 8, 4; animation: quantumFlow 1s linear infinite; }
+        @keyframes quantumFlow { to { stroke-dashoffset: -12; } }
+
+        /* Auth Screen */
+        #auth-screen {
+            position: fixed; inset: 0; z-index: 10000;
+            background: linear-gradient(135deg, #0a0a2e 0%, #1a1a3e 50%, #0d0d1a 100%);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .auth-container {
+            background: rgba(0,0,0,0.8); border: 2px solid #0ff; border-radius: 15px;
+            padding: 40px; width: 400px; text-align: center;
+            box-shadow: 0 0 50px rgba(0,255,255,0.3);
+        }
+        .auth-container h1 { color: #ff0; margin-bottom: 10px; text-shadow: 0 0 20px #ff0; }
+        .auth-container p { color: #0ff; margin-bottom: 20px; font-size: 12px; }
+        .auth-input {
+            width: 100%; padding: 12px; margin: 8px 0; background: rgba(0,255,255,0.1);
+            border: 1px solid #0ff; border-radius: 5px; color: #0ff; font-family: inherit;
+            font-size: 14px; outline: none;
+        }
+        .auth-input:focus { box-shadow: 0 0 20px rgba(0,255,255,0.5); }
+        .auth-btn {
+            width: 100%; padding: 12px; margin-top: 15px; background: rgba(255,255,0,0.2);
+            border: 1px solid #ff0; border-radius: 5px; color: #ff0; font-family: inherit;
+            font-size: 16px; cursor: pointer; transition: all 0.3s; letter-spacing: 2px;
+        }
+        .auth-btn:hover { background: rgba(255,255,0,0.4); box-shadow: 0 0 30px rgba(255,255,0,0.5); }
+        .auth-error { color: #f00; font-size: 12px; min-height: 20px; margin-top: 10px; }
+        .security-badge {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            color: #0f0; font-size: 10px; opacity: 0.7;
+        }
+
+        /* Control Panel */
+        #control-panel {
+            position: absolute; top: 80px; right: 20px; width: 320px;
+            background: rgba(0,0,0,0.85); border: 1px solid #0ff; border-radius: 10px;
+            z-index: 1000; backdrop-filter: blur(10px); box-shadow: 0 0 30px rgba(0,255,255,0.3);
+            display: none; max-height: calc(100vh - 100px); overflow-y: auto;
+        }
+        .panel-header {
+            padding: 15px; border-bottom: 1px solid rgba(0,255,255,0.3);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .panel-header h3 { color: #ff0; text-shadow: 0 0 10px #ff0; }
+        .panel-close {
+            background: none; border: none; color: #f00; font-size: 20px;
+            cursor: pointer; padding: 5px;
+        }
+        .panel-close:hover { text-shadow: 0 0 10px #f00; }
+        .panel-body { padding: 15px; }
+        .panel-section { margin-bottom: 15px; }
+        .panel-section h4 { color: #0ff; font-size: 12px; margin-bottom: 8px; border-bottom: 1px solid rgba(0,255,255,0.2); padding-bottom: 5px; }
+        .stat-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; }
+        .stat-label { color: #888; }
+        .stat-value { color: #0ff; font-weight: bold; }
+        .stat-value.critical { color: #f00; }
+        .stat-value.warning { color: #f80; }
+        .stat-value.good { color: #0f0; }
+        .power-bar { height: 8px; background: rgba(0,255,255,0.1); border-radius: 4px; margin: 5px 0; overflow: hidden; }
+        .power-fill { height: 100%; border-radius: 4px; transition: width 0.5s, background 0.5s; }
+        .panel-actions { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+        .action-btn {
+            flex: 1; min-width: 60px; padding: 8px; background: rgba(0,255,255,0.1);
+            border: 1px solid #0ff; border-radius: 5px; color: #0ff; font-family: inherit;
+            font-size: 10px; cursor: pointer; transition: all 0.3s; text-align: center;
+        }
+        .action-btn:hover { background: rgba(0,255,255,0.3); box-shadow: 0 0 15px rgba(0,255,255,0.5); }
+        .action-btn.danger { border-color: #f00; color: #f00; }
+        .action-btn.danger:hover { background: rgba(255,0,0,0.3); box-shadow: 0 0 15px rgba(255,0,0,0.5); }
+        .action-btn.success { border-color: #0f0; color: #0f0; }
+        .action-btn.success:hover { background: rgba(0,255,0,0.3); box-shadow: 0 0 15px rgba(0,255,0,0.5); }
+
+        /* Command Console */
+        #command-console {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 600px; background: rgba(0,0,0,0.9); border: 1px solid #0ff;
+            border-radius: 10px; z-index: 1000; backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(0,255,255,0.3); display: none;
+        }
+        .console-header {
+            padding: 10px 15px; border-bottom: 1px solid rgba(0,255,255,0.3);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .console-header h3 { color: #ff0; font-size: 14px; }
+        .console-body { padding: 10px; max-height: 200px; overflow-y: auto; }
+        .console-output { font-size: 11px; line-height: 1.6; }
+        .console-line { margin: 2px 0; }
+        .console-line.system { color: #888; }
+        .console-line.success { color: #0f0; }
+        .console-line.error { color: #f00; }
+        .console-line.warning { color: #f80; }
+        .console-line.info { color: #0ff; }
+        .console-line.encrypted { color: #f0f; }
+        .console-input-row { display: flex; gap: 5px; padding: 10px; border-top: 1px solid rgba(0,255,255,0.2); }
+        .console-input {
+            flex: 1; padding: 8px; background: rgba(0,255,255,0.1); border: 1px solid #0ff;
+            border-radius: 5px; color: #0ff; font-family: inherit; font-size: 12px; outline: none;
+        }
+        .console-input:focus { box-shadow: 0 0 15px rgba(0,255,255,0.5); }
+        .console-send {
+            padding: 8px 20px; background: rgba(255,255,0,0.2); border: 1px solid #ff0;
+            border-radius: 5px; color: #ff0; cursor: pointer; font-family: inherit;
+        }
+
+        /* Status Panel */
+        .futuristic-panel {
+            position: absolute; bottom: 20px; left: 20px;
+            background: rgba(0,0,0,0.7); border: 1px solid #0ff; border-radius: 10px;
+            padding: 15px; color: #0ff; z-index: 1000; backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(0,255,255,0.3); font-size: 12px;
+        }
+        .futuristic-panel h3 { color: #ff0; margin-bottom: 8px; font-size: 14px; }
+        .futuristic-panel p { margin: 3px 0; }
+
+        /* Controls */
+        .futuristic-controls { position: absolute; top: 80px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 5px; }
+        .futuristic-btn {
+            background: rgba(0,255,255,0.1); border: 1px solid #0ff; color: #0ff;
+            padding: 8px 15px; cursor: pointer; border-radius: 5px; font-family: inherit;
+            font-size: 11px; transition: all 0.3s;
+        }
+        .futuristic-btn:hover { background: rgba(0,255,255,0.3); box-shadow: 0 0 20px rgba(0,255,255,0.5); }
+
+        /* Alerts */
+        #alert-feed {
+            position: absolute; top: 80px; left: 20px; width: 280px;
+            background: rgba(0,0,0,0.8); border: 1px solid #f00; border-radius: 10px;
+            z-index: 1000; backdrop-filter: blur(10px); box-shadow: 0 0 30px rgba(255,0,0,0.2);
+            display: none; max-height: 300px; overflow-y: auto;
+        }
+        .alert-item { padding: 8px 12px; border-bottom: 1px solid rgba(255,0,0,0.2); font-size: 11px; }
+        .alert-item.critical { border-left: 3px solid #f00; }
+        .alert-item.warning { border-left: 3px solid #f80; }
+        .alert-item.info { border-left: 3px solid #0ff; }
+        .alert-time { color: #888; font-size: 10px; }
+
+        /* Message Center */
+        #message-center {
+            position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
+            width: 400px; background: rgba(0,0,0,0.85); border: 1px solid #f0f;
+            border-radius: 10px; z-index: 1000; backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(255,0,255,0.2); display: none; max-height: 400px;
+        }
+        .msg-list { padding: 10px; max-height: 250px; overflow-y: auto; }
+        .msg-item { padding: 8px; margin: 5px 0; background: rgba(255,0,255,0.1); border-radius: 5px; font-size: 11px; }
+        .msg-header { display: flex; justify-content: space-between; color: #f0f; margin-bottom: 4px; }
+        .msg-body { color: #ccc; }
+        .msg-input-row { display: flex; gap: 5px; padding: 10px; border-top: 1px solid rgba(255,0,255,0.2); }
+        .msg-select { flex: 1; padding: 8px; background: rgba(255,0,255,0.1); border: 1px solid #f0f; border-radius: 5px; color: #f0f; font-family: inherit; font-size: 11px; }
+        .msg-input { flex: 2; padding: 8px; background: rgba(255,0,255,0.1); border: 1px solid #f0f; border-radius: 5px; color: #f0f; font-family: inherit; font-size: 11px; }
+        .msg-send { padding: 8px 15px; background: rgba(255,0,255,0.2); border: 1px solid #f0f; border-radius: 5px; color: #f0f; cursor: pointer; font-family: inherit; }
+
+        /* Link Mode Indicator */
+        #link-mode-indicator {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9); border: 2px solid #0ff; border-radius: 10px;
+            padding: 20px; z-index: 2000; display: none; text-align: center;
+            box-shadow: 0 0 50px rgba(0,255,255,0.5);
+        }
+        #link-mode-indicator h3 { color: #0ff; margin-bottom: 10px; }
+        #link-mode-indicator p { color: #888; font-size: 12px; }
+
+        /* Session Info */
+        #session-info {
+            position: absolute; top: 15px; right: 20px; z-index: 1000;
+            background: rgba(0,0,0,0.7); border: 1px solid #0f0; border-radius: 8px;
+            padding: 8px 15px; font-size: 10px; color: #0f0;
+        }
+        #session-info .session-id { color: #888; }
+
+        /* Leaflet overrides */
+        .leaflet-popup-content-wrapper { background: rgba(0,0,0,0.9); border: 1px solid #0ff; border-radius: 8px; color: #0ff; }
+        .leaflet-popup-tip { background: rgba(0,0,0,0.9); border: 1px solid #0ff; }
+        .leaflet-popup-content { font-family: 'Courier New', monospace; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <!-- Auth Screen -->
+    <div id="auth-screen">
+        <div class="auth-container">
+            <h1>🔐 SECURE ACCESS</h1>
+            <p>Quantum-Encrypted Command Center v2.0</p>
+            <input type="text" id="auth-user" class="auth-input" placeholder="Operator ID" autocomplete="off">
+            <input type="password" id="auth-pass" class="auth-input" placeholder="Access Key" autocomplete="off">
+            <button class="auth-btn" onclick="authenticate()">AUTHENTICATE</button>
+            <div class="auth-error" id="auth-error"></div>
+            <div style="margin-top: 15px; font-size: 10px; color: #888;">
+                Demo: admin / quantum123
+            </div>
+        </div>
+        <div class="security-badge">🔒 AES-256 Encrypted | Session Token Auth | Zero-Knowledge Protocol</div>
+    </div>
+
+    <!-- Session Info -->
+    <div id="session-info" style="display:none;">
+        <span>👤 <span id="session-user"></span></span> |
+        <span class="session-id" id="session-id"></span> |
+        <span>🔒 <span id="session-enc">AES-256</span></span>
+    </div>
+
+    <div id="futuristic-map">
+        <div class="futuristic-header">⚡ QUANTUM COMMAND CENTER ⚡</div>
+        <div class="laser-line"></div>
+
+        <!-- Status Panel -->
+        <div class="futuristic-panel">
+            <h3>🌌 SYSTEM STATUS</h3>
+            <p>🌍 Active Systems: <span id="active-systems">0</span></p>
+            <p>⚡ Power Grid: <span id="power-level">0</span>%</p>
+            <p>🛰️ Satellites: <span id="satellites">0</span></p>
+            <p>🔮 Quantum Links: <span id="quantum-links">0</span></p>
+            <p>🚨 Alerts: <span id="alert-count">0</span></p>
+        </div>
+
+        <!-- Controls -->
+        <div class="futuristic-controls" id="main-controls" style="display:none;">
+            <button class="futuristic-btn" onclick="toggleScan()">📡 SCAN</button>
+            <button class="futuristic-btn" onclick="boostAllPower()">⚡ BOOST ALL</button>
+            <button class="futuristic-btn" onclick="toggleLinkMode()">🔗 LINK MODE</button>
+            <button class="futuristic-btn" onclick="toggleConsole()">💻 CONSOLE</button>
+            <button class="futuristic-btn" onclick="toggleAlerts()">🚨 ALERTS</button>
+            <button class="futuristic-btn" onclick="toggleMessages()">📨 MESSAGES</button>
+            <button class="futuristic-btn" onclick="showAll()">🌍 FIT ALL</button>
+        </div>
+
+        <!-- Control Panel -->
+        <div id="control-panel">
+            <div class="panel-header">
+                <h3 id="panel-title">SYSTEM</h3>
+                <button class="panel-close" onclick="closePanel()">×</button>
+            </div>
+            <div class="panel-body" id="panel-body"></div>
+        </div>
+
+        <!-- Command Console -->
+        <div id="command-console">
+            <div class="console-header">
+                <h3>💻 COMMAND CONSOLE</h3>
+                <button class="panel-close" onclick="toggleConsole()">×</button>
+            </div>
+            <div class="console-body">
+                <div class="console-output" id="console-output"></div>
+            </div>
+            <div class="console-input-row">
+                <input type="text" id="console-input" class="console-input" placeholder="Enter command... (help for commands)" onkeydown="if(event.key==='Enter')sendCommand()">
+                <button class="console-send" onclick="sendCommand()">EXECUTE</button>
+            </div>
+        </div>
+
+        <!-- Alert Feed -->
+        <div id="alert-feed">
+            <div class="panel-header">
+                <h3>🚨 ALERT FEED</h3>
+                <button class="panel-close" onclick="toggleAlerts()">×</button>
+            </div>
+            <div id="alert-list"></div>
+        </div>
+
+        <!-- Message Center -->
+        <div id="message-center">
+            <div class="panel-header">
+                <h3>📨 MESSAGE CENTER</h3>
+                <button class="panel-close" onclick="toggleMessages()">×</button>
+            </div>
+            <div class="msg-list" id="msg-list"></div>
+            <div class="msg-input-row">
+                <select id="msg-target" class="msg-select"></select>
+                <input type="text" id="msg-input" class="msg-input" placeholder="Encrypted message..." onkeydown="if(event.key==='Enter')sendMessage()">
+                <button class="msg-send" onclick="sendMessage()">SEND</button>
+            </div>
+        </div>
+
+        <!-- Link Mode Indicator -->
+        <div id="link-mode-indicator">
+            <h3>🔗 QUANTUM LINK MODE</h3>
+            <p>Click two systems to establish a quantum link</p>
+            <p style="color: #f00; margin-top: 10px;">Press ESC to cancel</p>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // ===== IDENTITY & SECURITY =====
+        const Security = {
+            session: null,
+            operators: {
+                'admin': { pass: 'quantum123', role: 'commander', level: 5 },
+                'operator': { pass: 'secure456', role: 'operator', level: 3 },
+                'viewer': { pass: 'view789', role: 'viewer', level: 1 }
+            },
+            encrypt(str) {
+                let result = '';
+                for (let i = 0; i < str.length; i++) {
+                    result += String.fromCharCode(str.charCodeAt(i) ^ 0x5A);
+                }
+                return btoa(result);
+            },
+            decrypt(str) {
+                try {
+                    let decoded = atob(str);
+                    let result = '';
+                    for (let i = 0; i < decoded.length; i++) {
+                        result += String.fromCharCode(decoded.charCodeAt(i) ^ 0x5A);
+                    }
+                    return result;
+                } catch { return '[DECRYPTION FAILED]'; }
+            },
+            generateToken() {
+                return 'tok_' + Array.from(crypto.getRandomValues(new Uint8Array(16)))
+                    .map(b => b.toString(16).padStart(2, '0')).join('');
+            },
+            authenticate(userId, password) {
+                const op = this.operators[userId];
+                if (!op || op.pass !== password) return null;
+                this.session = {
+                    userId, role: op.role, level: op.level,
+                    token: this.generateToken(),
+                    created: Date.now(),
+                    expires: Date.now() + 3600000
+                };
+                return this.session;
+            },
+            checkSession() {
+                if (!this.session) return false;
+                if (Date.now() > this.session.expires) {
+                    this.session = null;
+                    return false;
+                }
+                return true;
+            },
+            requireLevel(level) {
+                return this.session && this.session.level >= level;
+            }
+        };
+
+        // ===== SYSTEM DATA =====
+        const futuristicSystems = [
+            {name: "Neo-Tokyo", coords: [35.7, 139.7], power: 95, type: "mega-city", status: "online", population: "42M", defense: "Class-A", comms: "Quantum-7", uptime: "99.97%", lastScan: "2m ago"},
+            {name: "New Berlin", coords: [52.5, 13.4], power: 88, type: "arcology", status: "online", population: "18M", defense: "Class-B", comms: "Quantum-5", uptime: "99.85%", lastScan: "5m ago"},
+            {name: "Cyber-Paris", coords: [48.9, 2.3], power: 82, type: "technopolis", status: "online", population: "25M", defense: "Class-B", comms: "Quantum-4", uptime: "99.72%", lastScan: "1m ago"},
+            {name: "Silicon Valley", coords: [37.4, -122.1], power: 91, type: "data-hub", status: "online", population: "12M", defense: "Class-A", comms: "Quantum-8", uptime: "99.99%", lastScan: "30s ago"},
+            {name: "Mega-London", coords: [51.5, -0.1], power: 85, type: "corpo-city", status: "online", population: "35M", defense: "Class-A", comms: "Quantum-6", uptime: "99.91%", lastScan: "3m ago"},
+            {name: "Neo-Moscow", coords: [55.8, 37.6], power: 78, type: "federal-district", status: "warning", population: "22M", defense: "Class-C", comms: "Quantum-3", uptime: "98.45%", lastScan: "8m ago"},
+            {name: "Solaris-9", coords: [15.3, -45.7], power: 72, type: "orbital-station", status: "online", population: "5M", defense: "Class-B", comms: "Quantum-9", uptime: "99.50%", lastScan: "4m ago"},
+            {name: "Quantum-Haven", coords: [-33.9, 18.4], power: 65, type: "research-facility", status: "online", population: "2M", defense: "Class-D", comms: "Quantum-10", uptime: "99.20%", lastScan: "6m ago"},
+            {name: "Void-Station", coords: [0, 0], power: 55, type: "deep-space", status: "warning", population: "500K", defense: "Class-E", comms: "Quantum-12", uptime: "95.30%", lastScan: "15m ago"},
+            {name: "Eclipse-City", coords: [-12.0, -77.0], power: 48, type: "shadow-zone", status: "critical", population: "8M", defense: "Class-C", comms: "Quantum-2", uptime: "87.60%", lastScan: "22m ago"},
+            {name: "Nova-Prime", coords: [34.1, -118.2], power: 89, type: "alpha-colony", status: "online", population: "15M", defense: "Class-A", comms: "Quantum-7", uptime: "99.95%", lastScan: "1m ago"},
+            {name: "Zenith-7", coords: [41.9, 12.5], power: 76, type: "zenith-tower", status: "online", population: "10M", defense: "Class-B", comms: "Quantum-5", uptime: "99.80%", lastScan: "7m ago"}
+        ];
+
+        let quantumLinks = [];
+        let messages = [];
+        let alerts = [];
+        let selectedSystem = null;
+        let linkMode = false;
+        let linkFirst = null;
+        let scanMode = false;
+        let systemMarkers = [];
+        let linkLayers = [];
+        let simInterval = null;
+
+        // ===== MAP INIT =====
+        const futuristicMap = L.map('futuristic-map', {
+            center: [0, 0], zoom: 2, minZoom: 1, maxZoom: 10, fadeAnimation: true
+        });
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '', opacity: 0.6
+        }).addTo(futuristicMap);
+
+        // ===== AUTH =====
+        function authenticate() {
+            const userId = document.getElementById('auth-user').value.trim();
+            const password = document.getElementById('auth-pass').value;
+            const session = Security.authenticate(userId, password);
+            if (!session) {
+                document.getElementById('auth-error').textContent = '❌ ACCESS DENIED - Invalid credentials';
+                return;
+            }
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('session-info').style.display = 'block';
+            document.getElementById('main-controls').style.display = 'flex';
+            document.getElementById('session-user').textContent = session.userId.toUpperCase();
+            document.getElementById('session-id').textContent = session.token.slice(0, 16) + '...';
+            initSystems();
+            startSimulation();
+            consoleLog('success', `✅ Operator ${session.userId} authenticated`);
+            consoleLog('info', `🔐 Session: ${session.token}`);
+            consoleLog('info', `📊 Role: ${session.role} | Level: ${session.level}`);
+            consoleLog('system', '🌌 Quantum Command Center initialized');
+        }
+
+        // ===== SYSTEMS =====
+        function initSystems() {
+            futuristicSystems.forEach((system, index) => {
+                const statusClass = system.status === 'critical' ? 'alert' : '';
+                const icon = L.divIcon({
+                    className: `system-futuristic ${statusClass}`,
+                    iconSize: [14, 14], iconAnchor: [7, 7]
+                });
+                const marker = L.marker(system.coords, { icon, zIndexOffset: 1000 })
+                    .addTo(futuristicMap)
+                    .bindPopup(`<b style="color:#ff0">${system.name}</b><br>Status: ${system.status.toUpperCase()}<br>Power: ${system.power}%`);
+                marker.on('click', () => onSystemClick(index));
+                marker.on('mouseover', function() { this.openPopup(); this._icon.style.filter = 'brightness(1.5)'; });
+                marker.on('mouseout', function() { this._icon.style.filter = 'brightness(1)'; });
+                systemMarkers.push(marker);
+            });
+            updateStatusPanel();
+            populateMsgTargets();
+        }
+
+        function onSystemClick(index) {
+            if (linkMode) {
+                handleLinkClick(index);
+                return;
+            }
+            selectedSystem = index;
+            const system = futuristicSystems[index];
+            systemMarkers.forEach((m, i) => {
+                m._icon.classList.toggle('selected', i === index);
+            });
+            openControlPanel(system, index);
+        }
+
+        function openControlPanel(system, index) {
+            const panel = document.getElementById('control-panel');
+            const body = document.getElementById('panel-body');
+            document.getElementById('panel-title').textContent = system.name;
+            const powerColor = system.power > 80 ? '#0f0' : system.power > 50 ? '#f80' : '#f00';
+            const statusColor = system.status === 'online' ? '#0f0' : system.status === 'warning' ? '#f80' : '#f00';
+            body.innerHTML = `
+                <div class="panel-section">
+                    <h4>📊 SYSTEM OVERVIEW</h4>
+                    <div class="stat-row"><span class="stat-label">Status</span><span class="stat-value" style="color:${statusColor}">${system.status.toUpperCase()}</span></div>
+                    <div class="stat-row"><span class="stat-label">Type</span><span class="stat-value">${system.type}</span></div>
+                    <div class="stat-row"><span class="stat-label">Coordinates</span><span class="stat-value">${system.coords[0].toFixed(1)}, ${system.coords[1].toFixed(1)}</span></div>
+                </div>
+                <div class="panel-section">
+                    <h4>⚡ POWER SYSTEMS</h4>
+                    <div class="stat-row"><span class="stat-label">Power Level</span><span class="stat-value">${system.power}%</span></div>
+                    <div class="power-bar"><div class="power-fill" style="width:${system.power}%; background:${powerColor}"></div></div>
+                    <div class="stat-row"><span class="stat-label">Grid Load</span><span class="stat-value">${Math.floor(Math.random() * 30 + 50)}%</span></div>
+                </div>
+                <div class="panel-section">
+                    <h4>🛡️ DEFENSE & COMMS</h4>
+                    <div class="stat-row"><span class="stat-label">Defense Class</span><span class="stat-value">${system.defense}</span></div>
+                    <div class="stat-row"><span class="stat-label">Comms Channel</span><span class="stat-value">${system.comms}</span></div>
+                    <div class="stat-row"><span class="stat-label">Uptime</span><span class="stat-value">${system.uptime}</span></div>
+                    <div class="stat-row"><span class="stat-label">Population</span><span class="stat-value">${system.population}</span></div>
+                    <div class="stat-row"><span class="stat-label">Last Scan</span><span class="stat-value">${system.lastScan}</span></div>
+                </div>
+                <div class="panel-section">
+                    <h4>🔗 QUANTUM LINKS</h4>
+                    <div class="stat-row"><span class="stat-label">Active Links</span><span class="stat-value">${quantumLinks.filter(l => l.from === index || l.to === index).length}</span></div>
+                </div>
+                <div class="panel-actions">
+                    <button class="action-btn success" onclick="cmdPing(${index})">PING</button>
+                    <button class="action-btn" onclick="cmdScan(${index})">SCAN</button>
+                    <button class="action-btn success" onclick="cmdBoost(${index})">BOOST</button>
+                    <button class="action-btn" onclick="cmdStatus(${index})">STATUS</button>
+                    ${Security.requireLevel(3) ? `<button class="action-btn danger" onclick="cmdOverride(${index})">OVERRIDE</button>` : ''}
+                    ${Security.requireLevel(4) ? `<button class="action-btn danger" onclick="cmdShutdown(${index})">SHUTDOWN</button>` : ''}
+                </div>
+            `;
+            panel.style.display = 'block';
+        }
+
+        function closePanel() {
+            document.getElementById('control-panel').style.display = 'none';
+            selectedSystem = null;
+            systemMarkers.forEach(m => m._icon.classList.remove('selected'));
+        }
+
+        // ===== QUANTUM LINKS =====
+        function toggleLinkMode() {
+            linkMode = !linkMode;
+            linkFirst = null;
+            document.getElementById('link-mode-indicator').style.display = linkMode ? 'block' : 'none';
+            if (!linkMode) {
+                systemMarkers.forEach(m => m._icon.classList.remove('selected'));
+            }
+        }
+
+        function handleLinkClick(index) {
+            if (linkFirst === null) {
+                linkFirst = index;
+                systemMarkers[index]._icon.classList.add('selected');
+            } else if (linkFirst !== index) {
+                const exists = quantumLinks.find(l => (l.from === linkFirst && l.to === index) || (l.from === index && l.to === linkFirst));
+                if (exists) {
+                    consoleLog('warning', `⚠️ Link already exists between ${futuristicSystems[linkFirst].name} and ${futuristicSystems[index].name}`);
+                } else {
+                    quantumLinks.push({ from: linkFirst, to: index, established: Date.now() });
+                    drawQuantumLink(linkFirst, index);
+                    consoleLog('success', `🔗 Quantum link established: ${futuristicSystems[linkFirst].name} ↔ ${futuristicSystems[index].name}`);
+                    addAlert('info', `Quantum link: ${futuristicSystems[linkFirst].name} ↔ ${futuristicSystems[index].name}`);
+                }
+                systemMarkers[linkFirst]._icon.classList.remove('selected');
+                linkFirst = null;
+                updateStatusPanel();
+            }
+        }
+
+        function drawQuantumLink(from, to) {
+            const s1 = futuristicSystems[from].coords;
+            const s2 = futuristicSystems[to].coords;
+            const line = L.polyline([s1, s2], {
+                color: '#0ff', weight: 2, opacity: 0.8, className: 'quantum-link'
+            }).addTo(futuristicMap);
+            linkLayers.push(line);
+        }
+
+        // ===== COMMAND CONSOLE =====
+        function toggleConsole() {
+            const c = document.getElementById('command-console');
+            c.style.display = c.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function consoleLog(type, msg) {
+            const output = document.getElementById('console-output');
+            const time = new Date().toLocaleTimeString();
+            output.innerHTML += `<div class="console-line ${type}">[${time}] ${msg}</div>`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function sendCommand() {
+            const input = document.getElementById('console-input');
+            const cmd = input.value.trim().toLowerCase();
+            input.value = '';
+            if (!cmd) return;
+            consoleLog('info', `> ${cmd}`);
+            const parts = cmd.split(' ');
+            const action = parts[0];
+            const target = parts[1];
+            switch (action) {
+                case 'help': showHelp(); break;
+                case 'ping': cmdPingByName(target); break;
+                case 'scan': cmdScanByName(target); break;
+                case 'boost': cmdBoostByName(target); break;
+                case 'status': cmdStatusByName(target); break;
+                case 'override': Security.requireLevel(3) ? cmdOverrideByName(target) : consoleLog('error', '❌ Insufficient clearance (level 3+)'); break;
+                case 'shutdown': Security.requireLevel(4) ? cmdShutdownByName(target) : consoleLog('error', '❌ Insufficient clearance (level 4+)'); break;
+                case 'link': createLinkByName(parts[1], parts[2]); break;
+                case 'links': listLinks(); break;
+                case 'systems': listSystems(); break;
+                case 'clear': document.getElementById('console-output').innerHTML = ''; break;
+                case 'encrypt': consoleLog('encrypted', `🔐 Encrypted: ${Security.encrypt(parts.slice(1).join(' '))}`); break;
+                case 'decrypt': consoleLog('info', `🔓 Decrypted: ${Security.decrypt(parts.slice(1).join(' '))}`); break;
+                case 'whoami': consoleLog('info', `👤 ${Security.session.userId} | ${Security.session.role} | Level ${Security.session.level}`); break;
+                case 'session': consoleLog('info', `🔐 Token: ${Security.session.token} | Expires: ${new Date(Security.session.expires).toLocaleTimeString()}`); break;
+                default: consoleLog('error', `❌ Unknown command: ${action}. Type 'help' for commands.`);
+            }
+        }
+
+        function showHelp() {
+            consoleLog('system', '=== COMMANDS ===');
+            consoleLog('info', 'ping <system>    - Ping a system');
+            consoleLog('info', 'scan <system>    - Deep scan a system');
+            consoleLog('info', 'boost <system>   - Boost power +10%');
+            consoleLog('info', 'status <system>  - Full status report');
+            consoleLog('info', 'override <sys>   - Override protocols (L3+)');
+            consoleLog('info', 'shutdown <sys>   - Emergency shutdown (L4+)');
+            consoleLog('info', 'link <s1> <s2>   - Create quantum link');
+            consoleLog('info', 'links            - List all links');
+            consoleLog('info', 'systems          - List all systems');
+            consoleLog('info', 'encrypt <msg>    - Encrypt message');
+            consoleLog('info', 'decrypt <msg>    - Decrypt message');
+            consoleLog('info', 'whoami           - Show identity');
+            consoleLog('info', 'session          - Show session info');
+            consoleLog('info', 'clear            - Clear console');
+        }
+
+        function getSystemIndex(name) {
+            if (!name) return selectedSystem;
+            const idx = futuristicSystems.findIndex(s => s.name.toLowerCase().includes(name.toLowerCase()));
+            return idx >= 0 ? idx : null;
+        }
+
+        function cmdPing(idx) {
+            if (idx === null || idx === undefined) idx = selectedSystem;
+            if (idx === null) { consoleLog('error', '❌ No system selected'); return; }
+            const s = futuristicSystems[idx];
+            const latency = Math.floor(Math.random() * 200 + 20);
+            consoleLog('success', `📡 PING ${s.name}: ${latency}ms | Status: ${s.status.toUpperCase()}`);
+        }
+
+        function cmdPingByName(name) {
+            const idx = getSystemIndex(name);
+            if (idx === null) { consoleLog('error', `❌ System not found: ${name}`); return; }
+            cmdPing(idx);
+        }
+
+        function cmdScan(idx) {
+            if (idx === null || idx === undefined) idx = selectedSystem;
+            if (idx === null) { consoleLog('error', '❌ No system selected'); return; }
+            const s = futuristicSystems[idx];
+            consoleLog('system', `🔍 Scanning ${s.name}...`);
+            setTimeout(() => {
+                s.lastScan = 'just now';
+                consoleLog('success', `✅ Scan complete: ${s.name} | Power: ${s.power}% | Defense: ${s.defense} | Threats: ${Math.random() > 0.8 ? 'DETECTED' : 'None'}`);
+            }, 1000);
+        }
+
+        function cmdScanByName(name) {
+            const idx = getSystemIndex(name);
+            if (idx === null) { consoleLog('error', `❌ System not found: ${name}`); return; }
+            cmdScan(idx);
+        }
+
+        function cmdBoost(idx) {
+            if (idx === null || idx === undefined) idx = selectedSystem;
+            if (idx === null) { consoleLog('error', '❌ No system selected'); return; }
+            const s = futuristicSystems[idx];
+            s.power = Math.min(100, s.power + 10);
+            consoleLog('success', `⚡ ${s.name} power boosted to ${s.power}%`);
+            updateStatusPanel();
+            if (selectedSystem === idx) openControlPanel(s, idx);
+        }
+
+        function cmdBoostByName(name) {
+            const idx = getSystemIndex(name);
+            if (idx === null) { consoleLog('error', `❌ System not found: ${name}`); return; }
+            cmdBoost(idx);
+        }
+
+        function cmdStatus(idx) {
+            if (idx === null || idx === undefined) idx = selectedSystem;
+            if (idx === null) { consoleLog('error', '❌ No system selected'); return; }
+            const s = futuristicSystems[idx];
+            consoleLog('system', `=== ${s.name} STATUS ===`);
+            consoleLog('info', `Type: ${s.type} | Pop: ${s.population}`);
+            consoleLog('info', `Power: ${s.power}% | Defense: ${s.defense}`);
+            consoleLog('info', `Comms: ${s.comms} | Uptime: ${s.uptime}`);
+            consoleLog('info', `Status: ${s.status.toUpperCase()} | Last Scan: ${s.lastScan}`);
+        }
+
+        function cmdStatusByName(name) {
+            const idx = getSystemIndex(name);
+            if (idx === null) { consoleLog('error', `❌ System not found: ${name}`); return; }
+            cmdStatus(idx);
+        }
+
+        function cmdOverride(idx) {
+            if (idx === null || idx === undefined) idx = selectedSystem;
+            if (idx === null) { consoleLog('error', '❌ No system selected'); return; }
+            if (!Security.requireLevel(3)) { consoleLog('error', '❌ Insufficient clearance'); return; }
+            const s = futuristicSystems[idx];
+            s.power = 100; s.status = 'online';
+            consoleLog('warning', `⚠️ OVERRIDE executed on ${s.name}`);
+            consoleLog('success', `✅ ${s.name} fully restored`);
+            addAlert('warning', `Override executed on ${s.name}`);
+            updateStatusPanel();
+            if (selectedSystem === idx) openControlPanel(s, idx);
+        }
+
+        function cmdOverrideByName(name) {
+            const idx = getSystemIndex(name);
+            if (idx === null) { consoleLog('error', `❌ System not found: ${name}`); return; }
+            cmdOverride(idx);
+        }
+
+        function cmdShutdown(idx) {
+            if (idx === null || idx === undefined) idx = selectedSystem;
+            if (idx === null) { consoleLog('error', '❌ No system selected'); return; }
+            if (!Security.requireLevel(4)) { consoleLog('error', '❌ Insufficient clearance'); return; }
+            const s = futuristicSystems[idx];
+            s.power = 0; s.status = 'critical';
+            consoleLog('error', `🚨 ${s.name} SHUTDOWN EXECUTED`);
+            addAlert('critical', `${s.name} emergency shutdown`);
+            updateStatusPanel();
+            if (selectedSystem === idx) openControlPanel(s, idx);
+        }
+
+        function cmdShutdownByName(name) {
+            const idx = getSystemIndex(name);
+            if (idx === null) { consoleLog('error', `❌ System not found: ${name}`); return; }
+            cmdShutdown(idx);
+        }
+
+        function boostAllPower() {
+            futuristicSystems.forEach(s => s.power = Math.min(100, s.power + 5));
+            consoleLog('success', '⚡ All systems boosted +5%');
+            updateStatusPanel();
+            if (selectedSystem !== null) openControlPanel(futuristicSystems[selectedSystem], selectedSystem);
+        }
+
+        function createLinkByName(n1, n2) {
+            const i1 = getSystemIndex(n1);
+            const i2 = getSystemIndex(n2);
+            if (i1 === null || i2 === null) { consoleLog('error', '❌ Invalid system names'); return; }
+            if (i1 === i2) { consoleLog('error', '❌ Cannot link system to itself'); return; }
+            const exists = quantumLinks.find(l => (l.from === i1 && l.to === i2) || (l.from === i2 && l.to === i1));
+            if (exists) { consoleLog('warning', '⚠️ Link already exists'); return; }
+            quantumLinks.push({ from: i1, to: i2, established: Date.now() });
+            drawQuantumLink(i1, i2);
+            consoleLog('success', `🔗 Link: ${futuristicSystems[i1].name} ↔ ${futuristicSystems[i2].name}`);
+            updateStatusPanel();
+        }
+
+        function listLinks() {
+            consoleLog('system', '=== QUANTUM LINKS ===');
+            if (quantumLinks.length === 0) { consoleLog('info', 'No active links'); return; }
+            quantumLinks.forEach(l => {
+                consoleLog('info', `${futuristicSystems[l.from].name} ↔ ${futuristicSystems[l.to].name}`);
+            });
+        }
+
+        function listSystems() {
+            consoleLog('system', '=== ACTIVE SYSTEMS ===');
+            futuristicSystems.forEach((s, i) => {
+                consoleLog('info', `${i + 1}. ${s.name} | ${s.type} | Power: ${s.power}% | ${s.status.toUpperCase()}`);
+            });
+        }
+
+        // ===== MESSAGES =====
+        function toggleMessages() {
+            const m = document.getElementById('message-center');
+            m.style.display = m.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function populateMsgTargets() {
+            const sel = document.getElementById('msg-target');
+            sel.innerHTML = futuristicSystems.map((s, i) => `<option value="${i}">${s.name}</option>`).join('');
+        }
+
+        function sendMessage() {
+            const targetIdx = parseInt(document.getElementById('msg-target').value);
+            const msg = document.getElementById('msg-input').value.trim();
+            if (!msg) return;
+            const encrypted = Security.encrypt(msg);
+            const message = {
+                from: Security.session.userId,
+                to: futuristicSystems[targetIdx].name,
+                targetIdx, msg, encrypted,
+                time: Date.now()
+            };
+            messages.push(message);
+            document.getElementById('msg-input').value = '';
+            consoleLog('encrypted', `📨 Encrypted msg to ${message.to}: ${encrypted}`);
+            addAlert('info', `Message sent to ${message.to}`);
+            renderMessages();
+            // Simulate response
+            setTimeout(() => {
+                const responses = ['Acknowledged', 'Processing request', 'Data received', 'Standing by', 'Quantum link stable'];
+                const response = {
+                    from: futuristicSystems[targetIdx].name,
+                    to: Security.session.userId,
+                    targetIdx: -1,
+                    msg: responses[Math.floor(Math.random() * responses.length)],
+                    encrypted: Security.encrypt(responses[Math.floor(Math.random() * responses.length)]),
+                    time: Date.now()
+                };
+                messages.push(response);
+                consoleLog('success', `📨 Response from ${response.from}: ${response.msg}`);
+                renderMessages();
+            }, 2000 + Math.random() * 3000);
+        }
+
+        function renderMessages() {
+            const list = document.getElementById('msg-list');
+            list.innerHTML = messages.slice(-20).map(m => `
+                <div class="msg-item">
+                    <div class="msg-header"><span>${m.from} → ${m.to}</span><span>${new Date(m.time).toLocaleTimeString()}</span></div>
+                    <div class="msg-body">${m.msg}</div>
+                    <div style="color:#888; font-size:10px; margin-top:4px;">🔐 ${m.encrypted.slice(0, 30)}...</div>
+                </div>
+            `).join('');
+            list.scrollTop = list.scrollHeight;
+        }
+
+        // ===== ALERTS =====
+        function toggleAlerts() {
+            const a = document.getElementById('alert-feed');
+            a.style.display = a.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function addAlert(type, msg) {
+            alerts.unshift({ type, msg, time: Date.now() });
+            if (alerts.length > 50) alerts.pop();
+            renderAlerts();
+            updateStatusPanel();
+        }
+
+        function renderAlerts() {
+            const list = document.getElementById('alert-list');
+            list.innerHTML = alerts.slice(0, 20).map(a => `
+                <div class="alert-item ${a.type}">
+                    <div class="alert-time">${new Date(a.time).toLocaleTimeString()}</div>
+                    <div>${a.msg}</div>
+                </div>
+            `).join('');
+        }
+
+        // ===== SIMULATION =====
+        function startSimulation() {
+            simInterval = setInterval(() => {
+                futuristicSystems.forEach((s, i) => {
+                    const delta = Math.floor(Math.random() * 7 - 3);
+                    s.power = Math.max(0, Math.min(100, s.power + delta));
+                    if (s.power < 30 && s.status !== 'critical') {
+                        s.status = 'critical';
+                        addAlert('critical', `${s.name} power critical: ${s.power}%`);
+                        systemMarkers[i]._icon.classList.add('alert');
+                    } else if (s.power < 60 && s.status === 'online') {
+                        s.status = 'warning';
+                        addAlert('warning', `${s.name} power low: ${s.power}%`);
+                    } else if (s.power >= 60 && s.status !== 'online') {
+                        s.status = 'online';
+                        systemMarkers[i]._icon.classList.remove('alert');
+                    }
+                    s.lastScan = `${Math.floor(Math.random() * 30)}s ago`;
+                });
+                updateStatusPanel();
+                if (selectedSystem !== null) openControlPanel(futuristicSystems[selectedSystem], selectedSystem);
+            }, 5000);
+        }
+
+        function updateStatusPanel() {
+            document.getElementById('active-systems').textContent = futuristicSystems.length;
+            document.getElementById('power-level').textContent = Math.round(futuristicSystems.reduce((sum, s) => sum + s.power, 0) / futuristicSystems.length);
+            document.getElementById('satellites').textContent = futuristicSystems.length * 3;
+            document.getElementById('quantum-links').textContent = quantumLinks.length;
+            document.getElementById('alert-count').textContent = alerts.length;
+        }
+
+        // ===== GLOBAL CONTROLS =====
+        function toggleScan() {
+            scanMode = !scanMode;
+            consoleLog('info', scanMode ? '📡 Scan mode activated' : '📡 Scan mode deactivated');
+        }
+
+        function showAll() {
+            futuristicMap.fitBounds(futuristicSystems.map(s => s.coords));
+        }
+
+        // ESC to cancel link mode
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && linkMode) {
+                toggleLinkMode();
+                consoleLog('info', '🔗 Link mode cancelled');
+            }
+        });
+    </script>
+</body>
+</html>

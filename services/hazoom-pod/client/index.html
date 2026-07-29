@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Hazoom — a futuristic print-on-demand studio. Design premium custom apparel & merch in seconds. Built by Hazem Soussi." />
+  <meta name="author" content="Hazem Soussi" />
+  <meta name="generator" content="Hazoom POD by Hazem Soussi" />
+  <meta name="theme-color" content="#070914" />
+  <title>Hazoom — Create. Customize. Drop-ship.</title>
+
+  <!-- Tailwind (CDN for zero-config deploy) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class', theme: { extend: {} } };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="icon" href="/assets/logo-mark.svg" type="image/svg+xml" />
+
+  <!-- Three.js (3D design preview) via import-map + ES modules -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Aurora backdrop -->
+  <div class="aurora"></div>
+
+  <!-- ============ HEADER ============ -->
+  <header class="glass sticky top-0 z-40">
+    <div class="container-x h-16 flex items-center gap-4">
+      <a href="/" data-link class="brand-mark flex items-center gap-2">
+        <img src="/assets/logo.svg" alt="Hazoom" height="30" />
+      </a>
+
+      <nav class="hidden md:flex items-center gap-1 text-sm ml-2">
+        <a href="/" data-link class="navlink px-3 py-2 rounded-lg hover:bg-white/5">Home</a>
+        <a href="/shop" data-link class="navlink px-3 py-2 rounded-lg hover:bg-white/5">Shop</a>
+        <a href="/designer" data-link class="navlink px-3 py-2 rounded-lg hover:bg-white/5">Studio</a>
+        <a href="/orders" data-link class="navlink px-3 py-2 rounded-lg hover:bg-white/5">Orders</a>
+        <a href="/admin" data-link id="adminLink" class="navlink px-3 py-2 rounded-lg hover:bg-white/5 hidden">Admin</a>
+      </nav>
+
+      <div class="ml-auto flex items-center gap-2">
+        <button id="themeToggle" class="p-2 rounded-lg hover:bg-white/5" title="Toggle theme" aria-label="Toggle theme">
+          <span id="themeIcon">🌙</span>
+        </button>
+        <a href="/cart" data-link class="relative p-2 rounded-lg hover:bg-white/5" title="Cart">
+          🛒<span id="cartCount" class="absolute -top-1 -right-1 bg-brand text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+        </a>
+        <div id="authArea" class="flex items-center gap-2 text-sm">
+          <a href="/login" data-link class="px-3 py-2 rounded-lg hover:bg-white/5">Login</a>
+          <a href="/register" data-link class="btn-primary px-3 py-2 rounded-lg">Sign up</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ MAIN ============ -->
+  <main id="app" class="flex-1">
+    <div class="flex items-center justify-center h-64"><div class="spinner"></div></div>
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="glass border-t border-[var(--border)]">
+    <div class="container-x py-8 grid md:grid-cols-4 gap-6 text-sm">
+      <div>
+        <a href="/" data-link class="brand-mark flex items-center gap-2">
+          <img src="/assets/logo.svg" alt="Hazoom" height="28" />
+        </a>
+        <p class="text-[var(--text-dim)]">A futuristic studio for custom merch. Create, customize, and we drop-ship it worldwide.</p>
+      </div>
+      <div>
+        <p class="section-title-sm mb-2">Shop</p>
+        <div class="flex flex-col gap-1 text-[var(--text-dim)]">
+          <a href="/shop" data-link class="hover:text-[var(--brand)]">All products</a>
+          <a href="/designer" data-link class="hover:text-[var(--brand)]">Design Studio</a>
+          <a href="/orders" data-link class="hover:text-[var(--brand)]">My Orders</a>
+        </div>
+      </div>
+      <div>
+        <p class="section-title-sm mb-2">Company</p>
+        <div class="flex flex-col gap-1 text-[var(--text-dim)]">
+          <span>About Hazem Soussi</span>
+          <span>Contact: hazem.soussi@gmail.com</span>
+          <a href="https://github.com/hazem-soussi-HA/hazoom" class="hover:text-[var(--brand)]" target="_blank" rel="noopener">GitHub</a>
+        </div>
+      </div>
+      <div>
+        <p class="section-title-sm mb-2">On-chain proof</p>
+        <p class="text-[var(--text-dim)]">Verifiable work, notarized on-chain. © <span id="year"></span> Hazoom (v<span id="appVersion">—</span>). Created by <strong>Hazem Soussi</strong>.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============ TOAST ============ -->
+  <div id="toast" class="hidden"><div id="toastMsg"></div></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/cart.js"></script>
+  <script src="/js/products.js"></script>
+  <script src="/js/home.js"></script>
+  <script src="/js/designer.js"></script>
+  <script type="module" src="/js/designer3d.js"></script>
+  <script src="/js/checkout.js"></script>
+  <script src="/js/admin.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

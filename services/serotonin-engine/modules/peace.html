@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAZOOM — Peace</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <style>
+        :root { --module-color: #00aaff; --module-glow: #00aaff22; }
+        .band-container { display: flex; gap: 4px; align-items: flex-end; height: 60px; justify-content: center; margin-top: 20px; }
+        .band-bar { width: 8px; background: var(--module-color); border-radius: 2px 2px 0 0; transition: height 0.1s; opacity: 0.6; }
+        .mode-selector { display: flex; gap: 8px; justify-content: center; margin-top: 16px; }
+        .mode-btn { padding: 6px 14px; border: 1px solid var(--text-muted); border-radius: 16px; background: transparent; color: var(--text-dim); font-family: inherit; font-size: 9px; letter-spacing: 2px; cursor: pointer; transition: var(--transition); }
+        .mode-btn:hover, .mode-btn.active { border-color: var(--module-color); color: var(--module-color); }
+        .progress-bar { width: 200px; height: 2px; background: var(--text-muted); border-radius: 1px; margin: 16px auto 0; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--module-color); width: 0%; transition: width 1s linear; }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+    <canvas id="visualizer-canvas" class="visualizer"></canvas>
+
+    <div class="module-overlay">
+        <div style="text-align: center;">
+            <a href="../index.html" style="font-size: 10px; letter-spacing: 3px; color: var(--text-dim);">← BACK</a>
+            <h2 style="color: var(--module-color); margin-top: 12px;">PEACE</h2>
+            <p style="font-size: 11px; margin-top: 4px;">INNER CALM · STRESS RELEASE · SERENE STATE</p>
+        </div>
+
+        <div class="freq-display" style="margin-top: 24px;">
+            <span class="freq-badge active" style="border-color: var(--module-color); color: var(--module-color);">432 Hz</span>
+            <span class="freq-badge active" style="border-color: var(--module-color); color: var(--module-color);">528 Hz</span>
+            <span class="freq-badge active" style="border-color: var(--module-color); color: var(--module-color);">639 Hz</span>
+        </div>
+
+        <div class="timer-display" id="timer" style="margin-top: 32px; color: var(--module-color);">10:00</div>
+        <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+
+        <div class="band-container">
+            <div class="band-bar" id="bar-sub" style="height: 0%"></div>
+            <div class="band-bar" id="bar-bass" style="height: 0%"></div>
+            <div class="band-bar" id="bar-mid" style="height: 0%"></div>
+            <div class="band-bar" id="bar-high" style="height: 0%"></div>
+            <div class="band-bar" id="bar-presence" style="height: 0%"></div>
+        </div>
+
+        <div class="duration-selector">
+            <button class="duration-btn" data-minutes="5">5</button>
+            <button class="duration-btn active" data-minutes="10">10</button>
+            <button class="duration-btn" data-minutes="15">15</button>
+            <button class="duration-btn" data-minutes="20">20</button>
+            <button class="duration-btn" data-minutes="30">30</button>
+        </div>
+
+        <div class="mode-selector">
+            <button class="mode-btn active" data-mode="mandala">MANDALA</button>
+            <button class="mode-btn" data-mode="aura">AURA</button>
+            <button class="mode-btn" data-mode="particles">PARTICLES</button>
+            <button class="mode-btn" data-mode="sacred">SACRED</button>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-blue" id="btn-play">▶ BEGIN</button>
+            <button class="btn btn-blue" id="btn-pause" style="display:none;">⏸ PAUSE</button>
+            <button class="btn btn-blue" id="btn-stop" style="display:none;">⏹ END</button>
+        </div>
+
+        <p id="status" style="margin-top: 16px; font-size: 10px; letter-spacing: 3px; color: var(--text-dim);">READY TO BEGIN</p>
+    </div>
+
+    <div id="session-complete" class="session-complete">
+        <h2 style="color: var(--module-color);">NAMASTE</h2>
+        <p>Your peace session is complete. Carry this stillness within you.</p>
+        <button class="btn btn-blue" onclick="document.getElementById('session-complete').classList.remove('active')">CLOSE</button>
+    </div>
+
+    <script src="../js/audio-engine.js"></script>
+    <script src="../js/visualizer.js"></script>
+    <script src="../js/app.js"></script>
+    <script>
+        const app = new SerotoninApp();
+        document.getElementById('btn-play').addEventListener('click', () => app.startSession('peace'));
+        document.getElementById('btn-pause').addEventListener('click', () => app.pauseSession());
+        document.getElementById('btn-stop').addEventListener('click', () => app.stopSession());
+        document.querySelectorAll('.duration-btn').forEach(btn => {
+            btn.addEventListener('click', () => app.setDuration(parseInt(btn.dataset.minutes)));
+        });
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => app.setMode(btn.dataset.mode));
+        });
+        app.init();
+    </script>
+</body>
+</html>

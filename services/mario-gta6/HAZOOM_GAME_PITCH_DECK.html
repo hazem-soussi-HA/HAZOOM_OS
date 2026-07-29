@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SUPER HAZOOM GAME — Pitch Deck | Hazem Soussi (HA)</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#050508;--bg2:#0a0a12;--red:#e63946;--gold:#ffd60a;--cyan:#00f5d4;--green:#06d6a0;--blue:#3a86ff;
+  --text:#e8e8f0;--text-dim:#8888aa;--font:'JetBrains Mono',monospace;--font-ui:'Inter',system-ui,sans-serif;
+}
+html,body{background:var(--bg);color:var(--text);font-family:var(--font-ui);width:1280px;margin:0 auto}
+.slide{width:1280px;height:720px;padding:60px 80px;position:relative;overflow:hidden;border-bottom:2px solid #1a1a2e}
+.slide::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 30% 50%,rgba(230,57,70,0.05) 0%,transparent 60%);pointer-events:none}
+.slide-number{position:absolute;bottom:20px;right:40px;font-family:var(--font);font-size:11px;color:var(--text-dim)}
+h1{font-family:var(--font);font-size:48px;font-weight:700;margin-bottom:20px;line-height:1.1}
+h2{font-family:var(--font);font-size:32px;font-weight:700;margin-bottom:24px;color:var(--cyan)}
+h3{font-family:var(--font);font-size:18px;font-weight:600;color:var(--gold);margin-bottom:8px}
+p{font-size:16px;color:var(--text-dim);line-height:1.7;max-width:700px}
+.red{color:var(--red)}.gold{color:var(--gold)}.cyan{color:var(--cyan)}.green{color:var(--green)}.blue{color:var(--blue)}
+.tag{display:inline-block;padding:4px 12px;border-radius:4px;font-family:var(--font);font-size:11px;border:1px solid rgba(255,255,255,0.1);color:var(--text-dim);margin-right:8px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:30px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;margin-top:30px}
+.card{background:var(--bg2);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:24px}
+.metric{font-family:var(--font);font-size:42px;font-weight:700;margin-bottom:4px}
+.label{font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px}
+pre{font-family:var(--font);font-size:11px;color:var(--text-dim);background:var(--bg2);padding:16px;border-radius:6px;border:1px solid rgba(255,255,255,0.05);line-height:1.5;overflow-x:auto}
+.stat-row{display:flex;gap:40px;margin-top:20px}
+.stat{text-align:center}
+.stat .val{font-family:var(--font);font-size:28px;font-weight:700}
+ul{list-style:none;margin-top:16px}
+li{padding:8px 0;color:var(--text-dim);font-size:15px;border-bottom:1px solid rgba(255,255,255,0.03)}
+li::before{content:'→ ';color:var(--red)}
+.contact-box{background:var(--bg2);border:1px solid rgba(230,57,70,0.2);border-radius:8px;padding:30px;margin-top:30px;text-align:center}
+.contact-box h1{font-size:36px;margin-bottom:12px}
+.contact-box p{font-size:16px;margin-bottom:20px}
+.cta-row{display:flex;gap:12px;justify-content:center}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;cursor:pointer;border:none;font-family:var(--font-ui)}
+.btn-primary{background:var(--red);color:#fff}
+.btn-secondary{background:var(--bg3);color:var(--text);border:1px solid rgba(255,255,255,0.1)}
+</style>
+</head>
+<body>
+
+<!-- SLIDE 1: TITLE -->
+<div class="slide">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:30px">
+    <span class="tag">HAZOOM</span>
+    <span class="tag">GAME ENGINE</span>
+    <span class="tag">V1.8.0</span>
+  </div>
+  <h1>SUPER<br><span class="red">HAZOOM</span><br><span class="gold">GAME</span></h1>
+  <p style="font-size:20px;margin-top:20px">A 3D open-world game engine built from scratch.<br>No Unity. No Unreal. Pure code. Full ownership.</p>
+  <div style="margin-top:40px">
+    <p style="font-size:14px;color:var(--text-muted)">By Hazem Soussi (HA) — OS Architect & Systems Engineer</p>
+    <p style="font-size:14px;color:var(--text-muted)">Tunisia → Remote</p>
+  </div>
+  <div class="slide-number">01 / 08</div>
+</div>
+
+<!-- SLIDE 2: THE PROBLEM -->
+<div class="slide">
+  <h2>◈ THE PROBLEM</h2>
+  <div class="grid">
+    <div>
+      <h3>Engine Monopoly</h3>
+      <p>Unity & Unreal control 90% of the game industry. They take 5-15% royalties, control your roadmap, and can change terms overnight.</p>
+      <br>
+      <h3>AI Devaluation</h3>
+      <p>While AI generates marketing hype, real engineers who build actual systems are undervalued. The industry rewards performance over substance.</p>
+    </div>
+    <div>
+      <h3>The Opportunity</h3>
+      <p>Indie studios and AAA teams need:</p>
+      <ul>
+        <li>Custom engines for unique gameplay</li>
+        <li>WASM-based web games (no downloads)</li>
+        <li>AI-driven NPC systems</li>
+        <li>Physics-heavy simulations</li>
+        <li>Full IP ownership — no royalties</li>
+      </ul>
+    </div>
+  </div>
+  <div class="slide-number">02 / 08</div>
+</div>
+
+<!-- SLIDE 3: THE ENGINE -->
+<div class="slide">
+  <h2>◈ THE ENGINE</h2>
+  <div class="grid3">
+    <div class="card">
+      <div class="metric red">Rust→WASM</div>
+      <p>Physics hot path compiled to WebAssembly. Branch-free tile lookup. Near-native speed in any browser.</p>
+    </div>
+    <div class="card">
+      <div class="metric gold">Three.js</div>
+      <p>WebGL rendering with dynamic lighting, toon shading, particle FX, and spatial audio.</p>
+    </div>
+    <div class="card">
+      <div class="metric cyan">ECS</div>
+      <p>Entity-Component-System architecture. Cache-friendly. O(1) lookup. Decoupled systems.</p>
+    </div>
+  </div>
+  <div class="grid3" style="margin-top:20px">
+    <div class="card">
+      <div class="metric green">AI Trees</div>
+      <p>Behavior trees + state machines. Enemy awareness, patrol, chase, player prediction.</p>
+    </div>
+    <div class="card">
+      <div class="metric blue">Open World</div>
+      <p>Chunk streaming, LOD, procedural roads, save/load with compression.</p>
+    </div>
+    <div class="card">
+      <div class="metric" style="color:#a855f7">Zero Deps</div>
+      <p>No game engine. No framework. Pure Rust + JavaScript + GLSL. Full control.</p>
+    </div>
+  </div>
+  <div class="slide-number">03 / 08</div>
+</div>
+
+<!-- SLIDE 4: ARCHITECTURE -->
+<div class="slide">
+  <h2>◈ ARCHITECTURE</h2>
+  <pre>
+  ┌─────────────────────────────────────────────────────────────┐
+  │                   SUPER HAZOOM GAME ENGINE                  │
+  │                        V1.8.0 — WASM                        │
+  ├─────────────────────────────────────────────────────────────┤
+  │                                                             │
+  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
+  │  │ INPUT    │→ │ PHYSICS  │→ │ GAME     │→ │ RENDER   │   │
+  │  │ keys/    │  │ (Rust→   │  │ LOGIC    │  │ (Three.js│   │
+  │  │ gamepad  │  │  WASM)   │  │ ECS AI   │  │  WebGL)  │   │
+  │  └──────────┘  └──────────┘  └──────────┘  └──────────┘   │
+  │       ↕              ↕             ↕             ↕         │
+  │  ┌──────────────────────────────────────────────────────┐  │
+  │  │              LINEAR MEMORY (WASM HEAP)               │  │
+  │  │  CONFIG | INPUT | PHYSICS_OUT | PLAYER | ENTITIES    │  │
+  │  └──────────────────────────────────────────────────────┘  │
+  │       ↕                                                  │
+  │  ┌──────────┐  ┌──────────┐  ┌──────────┐                │
+  │  │ AUDIO    │  │ PARTICLE │  │ SAVE/    │                │
+  │  │ (spatial)│  │ FX 500   │  │ LOAD     │                │
+  │  └──────────┘  └──────────┘  └──────────┘                │
+  │                                                             │
+  └─────────────────────────────────────────────────────────────┘
+  </pre>
+  <div class="slide-number">04 / 08</div>
+</div>
+
+<!-- SLIDE 5: METRICS -->
+<div class="slide">
+  <h2>◈ BY THE NUMBERS</h2>
+  <div class="stat-row">
+    <div class="stat"><div class="val red">27K+</div><div class="label">Source Files</div></div>
+    <div class="stat"><div class="val gold">1.6M+</div><div class="label">Lines of Code</div></div>
+    <div class="stat"><div class="val cyan">60</div><div class="label">FPS (WASM)</div></div>
+    <div class="stat"><div class="val green">47</div><div class="label">Entity Types</div></div>
+    <div class="stat"><div class="val blue">0</div><div class="label">Engine Dependencies</div></div>
+  </div>
+  <div class="grid" style="margin-top:40px">
+    <div class="card">
+      <h3>Tech Stack</h3>
+      <p>• Rust (WASM compiler target)<br>
+      • JavaScript (Game Logic, ECS)<br>
+      • GLSL (Vertex + Fragment Shaders)<br>
+      • Three.js (WebGL Rendering)<br>
+      • Web Audio API (Spatial Sound)<br>
+      • No frameworks. Pure code.</p>
+    </div>
+    <div class="card">
+      <h3>What It Can Do</h3>
+      <p>• Platformer + Open-world hybrid<br>
+      • AI enemies with chase/patrol<br>
+      • Vehicle physics (cars, riding)<br>
+      • Wanted system (GTA-style)<br>
+      • Dynamic lighting + particles<br>
+      • Save/load, level editor</p>
+    </div>
+  </div>
+  <div class="slide-number">05 / 08</div>
+</div>
+
+<!-- SLIDE 6: DEMO -->
+<div class="slide">
+  <h2>◈ LIVE DEMO</h2>
+  <div style="text-align:center;padding:40px 0">
+    <div style="font-family:var(--font);font-size:18px;color:var(--cyan);margin-bottom:20px">
+      ▶ PLAYABLE IN BROWSER — NO DOWNLOAD
+    </div>
+    <div style="background:var(--bg2);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:30px;display:inline-block">
+      <div style="font-size:14px;color:var(--text-dim);margin-bottom:16px">Engine Features Demonstrated:</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+        <span class="tag">WASM Physics</span>
+        <span class="tag">AI Enemies</span>
+        <span class="tag">Particle FX</span>
+        <span class="tag">Dynamic Camera</span>
+        <span class="tag">HUD System</span>
+        <span class="tag">Collision</span>
+        <span class="tag">Parallax BG</span>
+      </div>
+    </div>
+    <p style="margin-top:30px;font-size:16px;color:var(--text-muted)">
+      Demo URL: github.com/hazem-soussi-HA/mario_gta6<br>
+      Engine: Rust→WASM + Three.js + ECS
+    </p>
+  </div>
+  <div class="slide-number">06 / 08</div>
+</div>
+
+<!-- SLIDE 7: WHY ME -->
+<div class="slide">
+  <h2>◈ WHY <span class="red">HAZEM SOUSSI</span></h2>
+  <div class="grid">
+    <div>
+      <h3>OS-Level Thinking</h3>
+      <p>I don't just write code — I build systems. From Pascal kernels to Rust WASM to K3s clusters, I understand every layer of the stack.</p>
+      <br>
+      <h3>Full Ownership</h3>
+      <p>38 repos. 1.6M+ LOC. Every line mine. No copied code. No framework dependency. I build things that last.</p>
+    </div>
+    <div>
+      <h3>Zero-Defect Delivery</h3>
+      <p>I audit before I ship. Security, performance, architecture — checked before delivery. I don't do "fix it later."</p>
+      <br>
+      <h3>Remote-Ready</h3>
+      <p>Async communication. Self-directed. I've been working remote from Tunisia for years. No hand-holding needed.</p>
+    </div>
+  </div>
+  <div style="margin-top:30px">
+    <div class="card">
+      <h3>Also Built:</h3>
+      <p>HAZOOM OS (Pascal kernel + Python engine) • HazemNavigator (private browser) • HAZOOM DNS (Rust, RFC 1035) • AI Copilot (RAG + multi-model) • MCP Server Suite • Infrastructure monitoring (Grafana) • Zero-downtime deployment platform</p>
+    </div>
+  </div>
+  <div class="slide-number">07 / 08</div>
+</div>
+
+<!-- SLIDE 8: CONTACT -->
+<div class="slide">
+  <div class="contact-box">
+    <h1>LET'S <span class="red">BUILD</span> <span class="gold">TOGETHER</span></h1>
+    <p style="font-size:18px">Available for: Contract • Freelance • Full-time • Consulting</p>
+    <p style="font-size:16px;color:var(--text-muted);margin-top:16px">Rate: $50-100/hr | Remote | Immediate start</p>
+    <div class="cta-row" style="margin-top:30px">
+      <a href="https://github.com/hazem-soussi-HA" class="btn btn-primary">▶ GITHUB</a>
+      <a href="mailto:hazem.soussi@gmail.com" class="btn btn-secondary">✉ hazem.soussi@gmail.com</a>
+    </div>
+    <p style="margin-top:30px;font-family:var(--font);font-size:12px;color:var(--text-muted)">
+      "Nothing is lost and everything is connected." — Hazem Soussi (HA)
+    </p>
+  </div>
+  <div class="slide-number">08 / 08</div>
+</div>
+
+</body>
+</html>

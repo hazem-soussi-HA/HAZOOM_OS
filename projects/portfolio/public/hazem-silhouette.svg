@@ -1,0 +1,203 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 650" fill="none">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="cloakGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#060d1a"/>
+      <stop offset="30%" stop-color="#0a1628"/>
+      <stop offset="70%" stop-color="#0d1f3c"/>
+      <stop offset="100%" stop-color="#060d1a"/>
+    </linearGradient>
+    <linearGradient id="skinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a2a4a"/>
+      <stop offset="100%" stop-color="#0d1a30"/>
+    </linearGradient>
+    <radialGradient id="eyeGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00ffff" stop-opacity="1"/>
+      <stop offset="40%" stop-color="#00d4ff" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#0070f3" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="chestCore" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00ffff" stop-opacity="0.6"/>
+      <stop offset="50%" stop-color="#0070f3" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#00d4ff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="ambientGlow" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#00d4ff" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#00d4ff" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Filters -->
+    <filter id="strongGlow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feFlood flood-color="#00d4ff" flood-opacity="0.4"/>
+      <feComposite in2="blur" operator="in"/>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feFlood flood-color="#00d4ff" flood-opacity="0.2"/>
+      <feComposite in2="blur" operator="in"/>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="pulseGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feFlood flood-color="#00ffff" flood-opacity="0.3"/>
+      <feComposite in2="blur" operator="in"/>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Ambient background -->
+  <ellipse cx="250" cy="350" rx="200" ry="280" fill="url(#ambientGlow)"/>
+
+  <!-- Outer halo rings -->
+  <g opacity="0.12">
+    <ellipse cx="250" cy="320" rx="195" ry="260" stroke="#00d4ff" stroke-width="0.5" fill="none" stroke-dasharray="8 12">
+      <animateTransform attributeName="transform" type="rotate" from="0 250 320" to="360 250 320" dur="120s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="250" cy="320" rx="185" ry="245" stroke="#0070f3" stroke-width="0.3" fill="none" stroke-dasharray="4 16">
+      <animateTransform attributeName="transform" type="rotate" from="360 250 320" to="0 250 320" dur="90s" repeatCount="indefinite"/>
+    </ellipse>
+  </g>
+
+  <!-- THE CLOAK / BODY -->
+  <g filter="url(#softGlow)">
+    <path d="M250 100 C180 100, 130 150, 120 200 C110 260, 95 340, 90 400 C85 460, 100 520, 140 560 C180 600, 220 620, 250 625 C280 620, 320 600, 360 560 C400 520, 415 460, 410 400 C405 340, 390 260, 380 200 C370 150, 320 100, 250 100Z" fill="url(#cloakGrad)" stroke="#00d4ff" stroke-width="0.6" opacity="0.95"/>
+    <!-- Cloak folds -->
+    <g stroke="#00d4ff" fill="none" opacity="0.08">
+      <path d="M180 160 C190 220, 185 320, 175 450" stroke-width="0.5"/>
+      <path d="M320 160 C310 220, 315 320, 325 450" stroke-width="0.5"/>
+      <path d="M250 120 C250 250, 250 400, 250 600" stroke-width="0.3"/>
+      <path d="M200 140 C210 200, 208 300, 200 430" stroke-width="0.3"/>
+      <path d="M300 140 C290 200, 292 300, 300 430" stroke-width="0.3"/>
+    </g>
+    <!-- Shoulders -->
+    <path d="M150 170 C175 155, 210 148, 250 145 C290 148, 325 155, 350 170" stroke="#00d4ff" stroke-width="0.4" fill="none" opacity="0.15"/>
+  </g>
+
+  <!-- HEAD -->
+  <g>
+    <ellipse cx="250" cy="120" rx="50" ry="58" fill="url(#skinGrad)" stroke="#00d4ff" stroke-width="0.5" opacity="0.9"/>
+    <!-- Hood shadow -->
+    <path d="M200 100 C205 75, 225 60, 250 55 C275 60, 295 75, 300 100" stroke="#00d4ff" stroke-width="0.3" fill="none" opacity="0.2"/>
+
+    <!-- EYES — Cyber Security Gaze -->
+    <g filter="url(#strongGlow)">
+      <!-- Left eye -->
+      <ellipse cx="230" cy="115" rx="14" ry="9" fill="#030712"/>
+      <path d="M218 115 C223 107, 237 107, 242 115 C237 118, 223 118, 218 115Z" fill="url(#eyeGlow)"/>
+      <ellipse cx="230" cy="115" rx="3" ry="4" fill="#001830"/>
+      <line x1="220" y1="115" x2="240" y2="115" stroke="#ffffff" stroke-width="0.5" opacity="0.6">
+        <animate attributeName="y1" values="110;120;110" dur="3s" repeatCount="indefinite"/>
+        <animate attributeName="y2" values="110;120;110" dur="3s" repeatCount="indefinite"/>
+      </line>
+      <!-- Right eye -->
+      <ellipse cx="270" cy="115" rx="14" ry="9" fill="#030712"/>
+      <path d="M258 115 C263 107, 277 107, 282 115 C277 118, 263 118, 258 115Z" fill="url(#eyeGlow)"/>
+      <ellipse cx="270" cy="115" rx="3" ry="4" fill="#001830"/>
+      <line x1="260" y1="115" x2="280" y2="115" stroke="#ffffff" stroke-width="0.5" opacity="0.6">
+        <animate attributeName="y1" values="110;120;110" dur="3s" repeatCount="indefinite" begin="0.5s"/>
+        <animate attributeName="y2" values="110;120;110" dur="3s" repeatCount="indefinite" begin="0.5s"/>
+      </line>
+    </g>
+    <!-- Eye halos -->
+    <ellipse cx="230" cy="115" rx="18" ry="12" fill="#00d4ff" opacity="0.04"/>
+    <ellipse cx="270" cy="115" rx="18" ry="12" fill="#00d4ff" opacity="0.04"/>
+    <!-- Nose -->
+    <path d="M247 125 L250 138 L253 125" stroke="#00d4ff" stroke-width="0.3" opacity="0.15" fill="none"/>
+    <!-- Mouth -->
+    <path d="M238 148 C243 152, 257 152, 262 148" stroke="#00d4ff" stroke-width="0.4" fill="none" opacity="0.12"/>
+  </g>
+
+  <!-- CHEST CORE -->
+  <g filter="url(#pulseGlow)">
+    <rect x="230" y="200" width="40" height="50" rx="8" fill="#0a1628" stroke="#00d4ff" stroke-width="0.5" opacity="0.6"/>
+    <ellipse cx="250" cy="225" rx="12" ry="16" fill="url(#chestCore)">
+      <animate attributeName="rx" values="10;14;10" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.4;0.7;0.4" dur="2s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="250" cy="225" rx="4" ry="5" fill="#00d4ff" opacity="0.5">
+      <animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.5s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="250" cy="225" rx="18" ry="22" stroke="#00d4ff" stroke-width="0.3" fill="none" opacity="0.2">
+      <animate attributeName="rx" values="16;20;16" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="ry" values="20;24;20" dur="3s" repeatCount="indefinite"/>
+    </ellipse>
+  </g>
+
+  <!-- CIRCUIT PATTERNS -->
+  <g stroke="#00d4ff" fill="none" opacity="0.06">
+    <line x1="250" y1="250" x2="250" y2="400" stroke-width="0.6"/>
+    <line x1="250" y1="280" x2="200" y2="300" stroke-width="0.4"/>
+    <line x1="250" y1="280" x2="300" y2="300" stroke-width="0.4"/>
+    <line x1="250" y1="320" x2="180" y2="350" stroke-width="0.4"/>
+    <line x1="250" y1="320" x2="320" y2="350" stroke-width="0.4"/>
+    <circle cx="250" cy="280" r="2" fill="#00d4ff" opacity="0.1"/>
+    <circle cx="250" cy="320" r="2" fill="#00d4ff" opacity="0.1"/>
+    <circle cx="200" cy="300" r="1.5" fill="#00d4ff" opacity="0.08"/>
+    <circle cx="300" cy="300" r="1.5" fill="#00d4ff" opacity="0.08"/>
+    <rect x="235" y="260" width="30" height="15" rx="2" stroke-width="0.3"/>
+  </g>
+
+  <!-- BINARY CODE -->
+  <g fill="#00d4ff" opacity="0.04" font-family="monospace" font-size="7">
+    <text x="140" y="220">01001000</text><text x="310" y="240">01000001</text>
+    <text x="150" y="280">01011010</text><text x="320" y="300">01001111</text>
+    <text x="145" y="340">01001111</text><text x="315" y="360">01001101</text>
+    <text x="155" y="400">01001111</text><text x="310" y="420">01010011</text>
+    <text x="160" y="460">01010011</text><text x="305" y="480">01001000</text>
+    <text x="170" y="520">01000001</text><text x="300" y="540">01000100</text>
+  </g>
+
+  <!-- HANDS -->
+  <g>
+    <!-- Left hand -->
+    <path d="M120 220 C105 205, 90 185, 82 170 C78 162, 75 155, 78 150 C82 145, 88 147, 92 152 C96 158, 102 175, 108 188 C112 198, 116 210, 120 218" fill="#0d1f3c" stroke="#00d4ff" stroke-width="0.4" opacity="0.7"/>
+    <path d="M78 150 C72 142, 68 130, 72 125 C76 120, 82 125, 80 132" stroke="#00d4ff" stroke-width="0.3" fill="none" opacity="0.15">
+      <animate attributeName="opacity" values="0.1;0.3;0.1" dur="2s" repeatCount="indefinite"/>
+    </path>
+    <!-- Right hand + sphere -->
+    <ellipse cx="385" cy="280" rx="28" ry="28" fill="none" stroke="#00d4ff" stroke-width="0.4" opacity="0.12"/>
+    <ellipse cx="385" cy="280" rx="18" ry="18" fill="none" stroke="#00d4ff" stroke-width="0.3" opacity="0.08"/>
+    <ellipse cx="385" cy="280" rx="8" ry="8" fill="#00d4ff" opacity="0.06">
+      <animate attributeName="rx" values="6;10;6" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="ry" values="6;10;6" dur="3s" repeatCount="indefinite"/>
+    </ellipse>
+    <g stroke="#00d4ff" stroke-width="0.2" opacity="0.1">
+      <line x1="385" y1="252" x2="385" y2="245"><animate attributeName="y2" values="245;240;245" dur="2s" repeatCount="indefinite"/></line>
+      <line x1="385" y1="308" x2="385" y2="315"><animate attributeName="y2" values="315;320;315" dur="2s" repeatCount="indefinite"/></line>
+      <line x1="357" y1="280" x2="350" y2="280"><animate attributeName="x2" values="350;345;350" dur="2s" repeatCount="indefinite"/></line>
+      <line x1="413" y1="280" x2="420" y2="280"><animate attributeName="x2" values="420;425;420" dur="2s" repeatCount="indefinite"/></line>
+    </g>
+  </g>
+
+  <!-- HEADSET / CROWN -->
+  <g stroke="#00d4ff" fill="none" opacity="0.15">
+    <path d="M200 85 C210 70, 230 62, 250 60 C270 62, 290 70, 300 85" stroke-width="0.6"/>
+    <rect x="192" y="82" width="12" height="18" rx="3" stroke-width="0.4"/>
+    <rect x="296" y="82" width="12" height="18" rx="3" stroke-width="0.4"/>
+    <line x1="250" y1="60" x2="250" y2="48" stroke-width="0.4"/>
+    <circle cx="250" cy="46" r="2" fill="#00d4ff" opacity="0.2">
+      <animate attributeName="opacity" values="0.1;0.4;0.1" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <path d="M210 100 C220 95, 240 93, 250 92 C260 93, 280 95, 290 100" stroke-width="0.3" stroke-dasharray="3 3"/>
+  </g>
+
+  <!-- FLOATING PARTICLES -->
+  <g fill="#00d4ff">
+    <circle cx="100" cy="150" r="1" opacity="0.1"><animate attributeName="cy" values="150;140;150" dur="4s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.05;0.15;0.05" dur="4s" repeatCount="indefinite"/></circle>
+    <circle cx="400" cy="180" r="0.8" opacity="0.08"><animate attributeName="cy" values="180;170;180" dur="5s" repeatCount="indefinite"/></circle>
+    <circle cx="85" cy="350" r="1.2" opacity="0.06"><animate attributeName="cy" values="350;340;350" dur="6s" repeatCount="indefinite"/></circle>
+    <circle cx="415" cy="380" r="0.9" opacity="0.1"><animate attributeName="cy" values="380;370;380" dur="4.5s" repeatCount="indefinite"/></circle>
+    <circle cx="130" cy="500" r="0.7" opacity="0.08"><animate attributeName="cy" values="500;490;500" dur="5.5s" repeatCount="indefinite"/></circle>
+    <circle cx="370" cy="520" r="1" opacity="0.07"><animate attributeName="cy" values="520;510;520" dur="3.5s" repeatCount="indefinite"/></circle>
+    <circle cx="200" cy="80" r="0.6" opacity="0.12"><animate attributeName="cy" values="80;70;80" dur="7s" repeatCount="indefinite"/></circle>
+    <circle cx="300" cy="70" r="0.8" opacity="0.09"><animate attributeName="cy" values="70;60;70" dur="6s" repeatCount="indefinite"/></circle>
+  </g>
+
+  <!-- BOTTOM SIGNATURE -->
+  <g opacity="0.3">
+    <line x1="130" y1="620" x2="370" y2="620" stroke="#00d4ff" stroke-width="0.2"/>
+    <text x="250" y="638" text-anchor="middle" fill="#00d4ff" font-family="monospace" font-size="6.5" opacity="0.4" letter-spacing="3">SHADOW BUILDER</text>
+  </g>
+</svg>

@@ -1,0 +1,102 @@
+{
+  "nav": {
+    "about": "À propos",
+    "projects": "Projets",
+    "skills": "Compétences",
+    "contact": "Contact",
+    "cv": "CV"
+  },
+  "hero": {
+    "status": "SYSTÈME EN LIGNE // LE BÂTISSEUR RESTE DANS L'OMBRE",
+    "title1": "Création de",
+    "title2": "Systèmes d'Exploitation",
+    "title3": "& Mondes Numériques",
+    "subtitle": "Hazem Soussi — Architecte OS, Développeur de Jeux & Ingénieur Full-Stack.",
+    "subtitle2": "Tunisie → Le Monde",
+    "cta": {
+      "projects": "Explorer les projets",
+      "contact": "Me contacter"
+    },
+    "stats": {
+      "os": "Système d'Exploitation",
+      "game": "Moteur de Jeu",
+      "languages": "Langages",
+      "apps": "Apps Créées"
+    }
+  },
+  "about": {
+    "title": "À propos",
+    "subtitle": "// about.enc — level: public",
+    "whoami": "Je suis Hazem Soussi, développeur full-stack et créateur de systèmes d'exploitation. Basé en Tunisie, je conçois et construis des systèmes complets — du noyau OS au moteur de jeu, de l'interface web à l'intelligence artificielle.",
+    "mission": "Ma mission : construire une technologie qui soigne, qui connecte, qui élève. Chaque ligne de code est intentionnelle. Chaque projet est un acte de création qui refuse d'être ordinaire.",
+    "build": "Build",
+    "buildDesc": "OS, jeux, IA, full-stack — du kernel au pixel",
+    "heal": "Heal",
+    "healDesc": "La technologie comme thérapie, le jeu comme médecine",
+    "share": "Share",
+    "shareDesc": "Open source parce que le savoir appartient à tous",
+    "expertise": "Expertise",
+    "expertiseTags": [
+      "Systèmes d'Exploitation",
+      "Game Development",
+      "Full-Stack Web",
+      "Intelligence Artificielle",
+      "DevOps & Sécurité",
+      "Kernel Programming"
+    ],
+    "name": "Hazem Soussi",
+    "role": "Architecte OS & Développeur de Jeux",
+    "location": "Tunisie → Le Monde"
+  },
+  "projects": {
+    "title": "Projets",
+    "subtitle": "// artefacts.log — level: public",
+    "description": "Chaque projet est un artefact — une pièce d'un système plus large qui refuse d'être ordinaire.",
+    "status": {
+      "active": "Actif",
+      "completed": "Terminé",
+      "wip": "En cours"
+    },
+    "moreDetails": "Plus de détails",
+    "lessDetails": "Moins",
+    "private": "Privé",
+    "code": "Code",
+    "demo": "Démo",
+    "highlights": "Points clés",
+    "challenges": "Défis & apprentissages",
+    "otherProjects": "Autres projets",
+    "upcoming": "En cours & à venir"
+  },
+  "skills": {
+    "title": "Compétences",
+    "subtitle": "// arsenal.log — level: public"
+  },
+  "contact": {
+    "title": "Contact",
+    "subtitle": "// transmission — level: open",
+    "description": "Un projet en tête ? Une collaboration ? Une question ? N'hésitez pas à me contacter.",
+    "directChannels": "Canaux directs",
+    "email": "Email",
+    "github": "GitHub",
+    "linkedin": "LinkedIn",
+    "cv": "CV",
+    "cvDesc": "Voir le CV complet",
+    "sendMessage": "Envoyer un message",
+    "name": "Nom",
+    "namePlaceholder": "Votre nom",
+    "emailPlaceholder": "votre@email.com",
+    "message": "Message",
+    "messagePlaceholder": "Décrivez votre projet ou votre message...",
+    "send": "Envoyer",
+    "sent": "Message prêt à envoyer",
+    "hint": "Votre client email s'ouvrira"
+  },
+  "footer": {
+    "built": "Construit avec React + Vite + Tailwind · Déployé via GitHub Actions · 0 vulns",
+    "motto": "\"Le bâtisseur reste dans l'ombre. Les artefacts parlent.\""
+  },
+  "cv": {
+    "title": "CV — Hazem Soussi",
+    "download": "Télécharger PDF"
+  }
+}

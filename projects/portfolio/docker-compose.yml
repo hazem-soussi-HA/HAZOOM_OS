@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  # HAZOOM DNS Server
+  dns:
+    build:
+      context: ../hazoom-dns
+      dockerfile: Dockerfile
+    container_name: hazoom-dns
+    ports:
+      - "53:53/udp"
+    volumes:
+      - ../hazoom-dns/zones:/app/zones:ro
+    restart: unless-stopped
+    networks:
+      - hazoom-net
+
+  # HTTPS Portfolio
+  portfolio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hazoom-portfolio
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./certs:/etc/nginx/certs:ro
+      - ./nginx.conf:/etc/nginx/conf.d/portfolio.conf:ro
+    depends_on:
+      - dns
+    restart: unless-stopped
+    networks:
+      - hazoom-net
+
+networks:
+  hazoom-net:
+    driver: bridge

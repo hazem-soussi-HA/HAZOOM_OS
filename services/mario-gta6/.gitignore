@@ -1,0 +1,82 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+env/
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp files
+*.tmp
+*.bak
+*.log
+sdlaudio.raw
+
+# Render tests
+render_test_*.png
+render_test*.jpg
+*_render_test.py
+*_speed_test.py
+*_pygame_test.py
+_debug_game.py
+_stay_open.py
+
+# Aider
+.aider.conf.yml
+.aiderignore
+
+# Security — NEVER commit these
+*.key
+*.pem
+*.cert
+.ssh/
+id_rsa*
+id_ed25519*
+*_key*
+*_secret*
+*_token*
+*credentials*
+*secrets*
+*.env
+.env.*
+!.env.example
+
+# Old versions (keep in repo but don't track new ones)
+old_versions/*.tmp
+
+# Keep these important files
+!assets/
+!docs/
+!tests/
+!.secure/
+
+# ═══════════════════════════════════════════════════════════════
+# NEON DRIFT — 3D Racing Engine (sub-project)
+# ═══════════════════════════════════════════════════════════════
+# Neon Drift has its own build system and structure.
+# It is integrated into Mario GTA6's website as the racing mode.
+# The neon-drift/index.html is a standalone build artifact.
+neon-drift/index.html
+neon-drift/index.html.legacy
+# Keep: neon-drift/js/, neon-drift/css/, neon-drift/build.py, neon-drift/assets/
+# Keep: neon-drift/.github/ (CI/CD for Neon Drift releases)
+rust/target/

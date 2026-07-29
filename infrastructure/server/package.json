@@ -1,0 +1,14 @@
+{
+  "name": "secure-world-map",
+  "version": "1.0.0",
+  "description": "Secure worldwide map structure with proxy",
+  "main": "secure-proxy.js",
+  "scripts": {
+    "start": "node secure-proxy.js",
+    "dev": "node secure-proxy.js"
+  },
+  "dependencies": {
+    "express": "^4.22.1",
+    "ws": "^8.20.1"
+  }
+}

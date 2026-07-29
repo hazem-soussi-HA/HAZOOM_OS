@@ -1,0 +1,12 @@
+# local secrets + runtime state (never commit)
+.env
+*.pem
+*.key
+certs/
+cache/
+logs/
+__pycache__/
+*.pyc
+.venv/
+.pen.pid
+*.tmp

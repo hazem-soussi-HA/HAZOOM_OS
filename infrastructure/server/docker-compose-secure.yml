@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  map-proxy:
+    build: .
+    container_name: map-secure-proxy
+    ports:
+      - "8443:8443"
+    volumes:
+      - ./ssl:/etc/ssl:ro
+      - ./map-data:/app
+    environment:
+      - NODE_ENV=production
+      - HTTPS_PORT=8443
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - map-network
+    command: node secure-proxy.js
+
+  map-app:
+    build: .
+    container_name: map-app-server  
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./map-data:/app
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - map-network
+
+networks:
+  map-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

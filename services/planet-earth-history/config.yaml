@@ -1,0 +1,14 @@
+# Planet Earth History — local-first server config
+# The ONLY supported bind is loopback. Do NOT set bind to a LAN address;
+# the server refuses to start on a non-loopback address (L4 LAN guard).
+server:
+  bind: 127.0.0.1
+  port: 8770
+  tls: true          # TLS on loopback (local confidentiality). certs in certs/
+  threads: 8
+  debug: false
+
+# Output directory for the signed dataset cache and logs.
+paths:
+  cache: cache
+  logs: logs

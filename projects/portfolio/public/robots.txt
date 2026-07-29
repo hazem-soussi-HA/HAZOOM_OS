@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://hazem-soussi-ha.github.io/portfolio_final/sitemap.xml
