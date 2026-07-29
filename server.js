@@ -212,74 +212,10 @@ app.use((req, res, next) => {
     next();
 });
 
-// ── 5. COMPRESSION (zlib, zero external deps) ────────────────────
-
-app.use((req, res, next) => {
-    const accept = req.headers['accept-encoding'];
-    if (!accept || req.method === 'HEAD') return next();
-
-    const useGzip = accept.includes('gzip');
-    const useBr = !useGzip && accept.includes('br') && typeof zlib.brotliCompressSync === 'function';
-    const useDeflate = !useGzip && !useBr && accept.includes('deflate');
-
-    if (!useGzip && !useBr && !useDeflate) return next();
-
-    const encoding = useBr ? 'br' : useGzip ? 'gzip' : 'deflate';
-    res.setHeader('Vary', 'Accept-Encoding');
-
-    const origWrite = res.write.bind(res);
-    const origEnd = res.end.bind(res);
-    let encoder = null;
-
-    const cleanup = () => {
-        if (encoder) {
-            encoder.removeAllListeners();
-            encoder = null;
-        }
-    };
-
-    const setupEncoder = () => {
-        if (encoder) return;
-        if (useBr) encoder = zlib.createBrotliCompress();
-        else if (useGzip) encoder = zlib.createGzip();
-        else encoder = zlib.createDeflate();
-
-        res.setHeader('Content-Encoding', encoding);
-        res.removeHeader('Content-Length');
-
-        encoder.on('data', (chunk) => {
-            try { origWrite(chunk); } catch (e) { cleanup(); }
-        });
-        encoder.on('end', () => {
-            try { origEnd(); } catch (e) { /* ignore */ }
-        });
-        encoder.on('error', () => {
-            res.removeHeader('Content-Encoding');
-            res.write = origWrite;
-            res.end = origEnd;
-            cleanup();
-        });
-    };
-
-    res.write = function (chunk, enc, cb) {
-        setupEncoder();
-        return encoder ? encoder.write(chunk, enc, cb) : origWrite(chunk, enc, cb);
-    };
-    res.end = function (chunk, enc, cb) {
-        if (chunk) {
-            setupEncoder();
-            if (encoder) {
-                encoder.write(chunk, enc);
-                encoder.end();
-                if (typeof cb === 'function') encoder.on('end', cb);
-                return this;
-            }
-        }
-        return origEnd(chunk, enc, cb);
-    };
-
-    next();
-});
+// ── 5. COMPRESSION (disabled — custom middleware broke express.static) ──
+// The stream-based compression intercepted res.write/end but express.static
+// uses res.sendFile which bypasses those. Body arrived empty in browsers.
+// TODO: use compression() npm package if compression is needed.
 
 // ── 6. SECURITY HEADERS (helmet) ─────────────────────────────────
 

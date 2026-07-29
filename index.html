@@ -1283,7 +1283,6 @@
 
     <script src="core/app_registry.js"></script>
     <script src="core/privacy_browser.js"></script>
-    <script src="core/consciousness.js"></script>
     <script src="core/app_launcher.js"></script>
     <script src="core/os-filesystem.js"></script>
     <script src="core/ai_orchestrator.js"></script>
@@ -1323,10 +1322,6 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             HAZOOM.boot();
-            if (typeof HAZOOMConsciousness !== 'undefined') {
-                HAZOOMConsciousness.start();
-                HAZOOM.consciousness = HAZOOMConsciousness;
-            }
         });
 
         document.addEventListener('click', (e) => {
