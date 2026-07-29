@@ -456,13 +456,13 @@ app.use(apiRouter.getMiddleware());
 // ── STATIC FILES ─────────────────────────────────────────────────
 
 app.use(express.static(HAZOOM_DIR, {
-    maxAge: config.isProduction ? '1d' : 0,
+    maxAge: 0,
+    etag: true,
+    lastModified: true,
     setHeaders: (res, filePath) => {
+        res.setHeader('Cache-Control', 'no-cache, must-revalidate');
         if (filePath.endsWith('.html')) {
-            res.setHeader('Cache-Control', 'no-cache');
             res.setHeader('X-Frame-Options', 'SAMEORIGIN');
-        } else if (filePath.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff2?|ttf|eot)$/)) {
-            res.setHeader('Cache-Control', 'public, max-age=86400, immutable');
         }
     }
 }));
