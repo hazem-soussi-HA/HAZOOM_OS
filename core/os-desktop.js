@@ -596,22 +596,28 @@
 
             async boot() {
                 const steps = [
-                    { msg: 'Initializing kernel...', pct: 15 },
-                    { msg: 'Loading AI services...', pct: 35 },
-                    { msg: 'Connecting neural pathways...', pct: 55 },
-                    { msg: 'Starting workspace...', pct: 75 },
+                    { msg: 'Initializing kernel...', pct: 12 },
+                    { msg: 'Loading quantum memory...', pct: 28 },
+                    { msg: 'Connecting neural pathways...', pct: 48 },
+                    { msg: 'Activating consciousness core...', pct: 68 },
+                    { msg: 'Rendering workspace...', pct: 85 },
                     { msg: 'Systems online.', pct: 100 },
                 ];
 
                 for (const step of steps) {
-                    document.getElementById('boot-message').textContent = step.msg;
-                    document.getElementById('boot-bar-fill').style.width = step.pct + '%';
-                    await this.delay(400);
+                    const msgEl = document.getElementById('boot-message');
+                    const barEl = document.getElementById('boot-bar-fill');
+                    if (msgEl) msgEl.textContent = step.msg;
+                    if (barEl) barEl.style.width = step.pct + '%';
+                    await this.delay(350 + Math.random() * 200);
                 }
 
-                await this.delay(500);
-                document.getElementById('boot-screen').classList.add('fade-out');
-                setTimeout(() => document.getElementById('boot-screen').remove(), 800);
+                await this.delay(600);
+                const bootScreen = document.getElementById('boot-screen');
+                if (bootScreen) {
+                    bootScreen.classList.add('fade-out');
+                    setTimeout(() => { try { bootScreen.remove(); } catch(e) {} }, 1200);
+                }
 
                 this.defineApps();
                 this.buildDesktopIcons();
@@ -624,11 +630,8 @@
                 this.checkServiceHealth();
                 setInterval(() => this.checkServiceHealth(), 30000);
                 this.loadAppRegistry();
-
-                // Initialize full OS intelligence system
                 this.initOS();
 
-                // Emit consciousness events
                 if (this.consciousness) {
                     this.consciousness.emit('system.boot', { version: this.version });
                 }
@@ -1672,19 +1675,30 @@
 
             initCanvas() {
                 const canvas = document.getElementById('desktop-canvas');
+                if (!canvas) return;
                 const ctx = canvas.getContext('2d');
                 canvas.width = window.innerWidth;
                 canvas.height = window.innerHeight;
 
                 const particles = [];
-                for (let i = 0; i < 60; i++) {
+                const colors = [
+                    [0, 232, 255],
+                    [139, 92, 246],
+                    [255, 201, 64],
+                    [0, 230, 118]
+                ];
+                for (let i = 0; i < 50; i++) {
+                    const color = colors[Math.floor(Math.random() * colors.length)];
                     particles.push({
                         x: Math.random() * canvas.width,
                         y: Math.random() * canvas.height,
-                        size: Math.random() * 1.5 + 0.5,
-                        speedX: (Math.random() - 0.5) * 0.2,
-                        speedY: (Math.random() - 0.5) * 0.2,
-                        opacity: Math.random() * 0.3 + 0.1,
+                        size: Math.random() * 1.8 + 0.4,
+                        speedX: (Math.random() - 0.5) * 0.15,
+                        speedY: (Math.random() - 0.5) * 0.15,
+                        opacity: Math.random() * 0.25 + 0.05,
+                        color,
+                        pulse: Math.random() * Math.PI * 2,
+                        pulseSpeed: 0.005 + Math.random() * 0.01,
                     });
                 }
 
@@ -1693,14 +1707,19 @@
                     particles.forEach(p => {
                         p.x += p.speedX;
                         p.y += p.speedY;
-                        if (p.x < 0) p.x = canvas.width;
-                        if (p.x > canvas.width) p.x = 0;
-                        if (p.y < 0) p.y = canvas.height;
-                        if (p.y > canvas.height) p.y = 0;
+                        p.pulse += p.pulseSpeed;
+                        const pulseFactor = 0.5 + 0.5 * Math.sin(p.pulse);
+                        if (p.x < -10) p.x = canvas.width + 10;
+                        if (p.x > canvas.width + 10) p.x = -10;
+                        if (p.y < -10) p.y = canvas.height + 10;
+                        if (p.y > canvas.height + 10) p.y = -10;
+
+                        const r = p.color[0], g = p.color[1], b = p.color[2];
+                        const alpha = p.opacity * (0.6 + 0.4 * pulseFactor);
 
                         ctx.beginPath();
-                        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                        ctx.fillStyle = `rgba(0, 240, 255, ${p.opacity})`;
+                        ctx.arc(p.x, p.y, p.size * (0.8 + 0.4 * pulseFactor), 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
                         ctx.fill();
                     });
 
@@ -1709,12 +1728,13 @@
                             const dx = particles[i].x - particles[j].x;
                             const dy = particles[i].y - particles[j].y;
                             const dist = Math.sqrt(dx * dx + dy * dy);
-                            if (dist < 120) {
+                            if (dist < 140) {
+                                const alpha = (1 - dist / 140) * 0.05;
                                 ctx.beginPath();
                                 ctx.moveTo(particles[i].x, particles[i].y);
                                 ctx.lineTo(particles[j].x, particles[j].y);
-                                ctx.strokeStyle = `rgba(0, 240, 255, ${(1 - dist / 120) * 0.08})`;
-                                ctx.lineWidth = 0.5;
+                                ctx.strokeStyle = `rgba(${particles[i].color[0]},${particles[i].color[1]},${particles[i].color[2]},${alpha})`;
+                                ctx.lineWidth = 0.4;
                                 ctx.stroke();
                             }
                         }
