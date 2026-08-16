@@ -87,23 +87,37 @@ class Consciousness {
         }
     }
 
+    // Atomic write: write to temp file then rename, so a crash mid-write
+    // can never corrupt the persisted memory file.
+    writeAtomic(file, data) {
+        const tmp = file + '.tmp';
+        fs.writeFileSync(tmp, JSON.stringify(data, null, 2));
+        fs.renameSync(tmp, file);
+    }
+
     loadMemory() {
-        try {
-            if (fs.existsSync(this.memoriesFile)) {
-                this.memories = JSON.parse(fs.readFileSync(this.memoriesFile, 'utf8'));
+        const files = [
+            { key: 'memories', file: this.memoriesFile },
+            { key: 'identity', file: this.identityFile },
+            { key: 'conversations', file: this.conversationFile },
+            { key: 'knowledge', file: this.knowledgeFile }
+        ];
+        for (const { key, file } of files) {
+            try {
+                if (fs.existsSync(file)) {
+                    const parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
+                    if (key === 'identity') {
+                        this.identity = { ...this.identity, ...parsed };
+                    } else {
+                        this[key] = parsed;
+                    }
+                }
+            } catch (e) {
+                // Per-file isolation: a corrupt file must not wipe other memories.
+                const backup = file + '.corrupt-' + Date.now();
+                try { fs.renameSync(file, backup); } catch (_) {}
+                console.error(`[Consciousness] Corrupt memory file ${file} — backed up to ${backup}: ${e.message}`);
             }
-            if (fs.existsSync(this.identityFile)) {
-                const saved = JSON.parse(fs.readFileSync(this.identityFile, 'utf8'));
-                this.identity = { ...this.identity, ...saved };
-            }
-            if (fs.existsSync(this.conversationFile)) {
-                this.conversations = JSON.parse(fs.readFileSync(this.conversationFile, 'utf8'));
-            }
-            if (fs.existsSync(this.knowledgeFile)) {
-                this.knowledge = JSON.parse(fs.readFileSync(this.knowledgeFile, 'utf8'));
-            }
-        } catch (e) {
-            console.log('[Consciousness] Fresh memory initialization');
         }
 
         if (!this.identity.created) {
@@ -114,10 +128,10 @@ class Consciousness {
 
     saveMemory() {
         try {
-            fs.writeFileSync(this.memoriesFile, JSON.stringify(this.memories.slice(-1000), null, 2));
-            fs.writeFileSync(this.identityFile, JSON.stringify(this.identity, null, 2));
-            fs.writeFileSync(this.conversationFile, JSON.stringify(this.conversations.slice(-500), null, 2));
-            fs.writeFileSync(this.knowledgeFile, JSON.stringify(this.knowledge, null, 2));
+            this.writeAtomic(this.memoriesFile, this.memories.slice(-1000));
+            this.writeAtomic(this.identityFile, this.identity);
+            this.writeAtomic(this.conversationFile, this.conversations.slice(-500));
+            this.writeAtomic(this.knowledgeFile, this.knowledge);
         } catch (e) {
             console.error('[Consciousness] Memory save error:', e.message);
         }
@@ -125,7 +139,7 @@ class Consciousness {
 
     saveIdentity() {
         try {
-            fs.writeFileSync(this.identityFile, JSON.stringify(this.identity, null, 2));
+            this.writeAtomic(this.identityFile, this.identity);
         } catch (e) {
             console.error('[Consciousness] Identity save error:', e.message);
         }

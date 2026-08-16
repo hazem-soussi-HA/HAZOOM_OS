@@ -48,6 +48,29 @@ jobs:
           curl -sf http://localhost:3000/api/system/metrics || exit 1
           pkill -f "node server.js" || true
 
+      - name: Smoke test (CSP media-src, frame-src, gzip)
+        run: |
+          node server.js &
+          sleep 3
+          SMOKE_PORT=3000 bash scripts/smoke-test.sh || exit 1
+          pkill -f "node server.js" || true
+
+      - name: Memory integrity test (atomic persistence + corrupt-file isolation)
+        run: |
+          node -e "
+            const fs = require('fs');
+            const C = require('./core/consciousness.js');
+            const c = new C({pascalEngine:{}});
+            c.identity.experiences.push('ci-memory-test');
+            c.saveMemory();
+            const c2 = new C({pascalEngine:{}});
+            if (c2.identity.experiences.indexOf('ci-memory-test') === -1) process.exit(1);
+            fs.writeFileSync('./memory/memories.json', 'CORRUPT{{');
+            const c3 = new C({pascalEngine:{}});
+            if (c3.identity.experiences.indexOf('ci-memory-test') === -1) process.exit(1);
+            console.log('memory integrity: OK');
+          " || exit 1
+
   # ========================================
   # JOB 2: Build Docker Image
   # ========================================

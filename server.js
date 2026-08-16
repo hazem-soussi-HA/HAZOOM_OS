@@ -219,6 +219,12 @@ app.use((req, res, next) => {
 
 // ── 6. SECURITY HEADERS (helmet) ─────────────────────────────────
 
+// ── 5b. COMPRESSION (npm `compression` — sendFile-safe, unlike the
+// custom stream middleware previously removed) ────────────────────
+
+const compression = require('compression');
+app.use(compression({ threshold: 1024 }));
+
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
@@ -228,8 +234,9 @@ app.use(helmet({
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"],
             fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdn.jsdelivr.net"],
             imgSrc: ["'self'", "data:", "https:", "blob:"],
+            mediaSrc: ["'self'", "https:", "https://www.soundhelix.com"],
             connectSrc: ["'self'", "http://localhost:*", "https:", "wss:", "ws:"],
-            frameSrc: ["'self'"],
+            frameSrc: ["'self'", "http://localhost:*", "http://127.0.0.1:*"],
             frameAncestors: ["'self'"],
             baseUri: ["'self'"],
             formAction: ["'self'", "https:"],
