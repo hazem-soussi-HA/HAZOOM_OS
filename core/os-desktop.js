@@ -1494,7 +1494,7 @@
                 chat.appendChild(typing);
                 chat.scrollTop = chat.scrollHeight;
 
-                fetch('http://localhost:9004/chat', {
+                fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_id: 'hazoom-os', message: text }),
@@ -1511,7 +1511,7 @@
                         "I'd love to help with that! Connect me to Ollama for full AI capabilities.",
                         "The AI service is currently offline. Run './hazoom-os.sh start' to enable it.",
                         "I'm in offline mode. Try asking me something I can answer locally!",
-                        "HAZOOM AI is ready — just needs the Ollama backend running on port 9004.",
+                        "HAZOOM AI is ready — just needs the Ollama backend online.",
                     ];
                     const reply = responses[Math.floor(Math.random() * responses.length)];
                     chat.innerHTML += `<div class="chat-msg ai">${reply}</div>`;
@@ -1761,7 +1761,7 @@
 
             checkServiceHealth() {
                 // Check Ollama/AI backend
-                fetch('http://localhost:9004/health', { signal: AbortSignal.timeout(3000) })
+                fetch('/api/chat/health', { signal: AbortSignal.timeout(3000) })
                     .then(r => r.json())
                     .then(data => {
                         this.state.services.ollama = data.ollama === 'online';

@@ -264,7 +264,10 @@ const limiter = rateLimit({
             timestamp: new Date().toISOString()
         }
     },
-    keyGenerator: (req) => req.ip || req.connection?.remoteAddress || req.socket?.remoteAddress || 'unknown'
+    // rate-limit v8 requires the ipKeyGenerator helper for correct IPv6
+    // handling; a raw req.ip keyGenerator logs a ValidationError and
+    // lets IPv6 clients bypass the limit.
+    keyGenerator: require('express-rate-limit').ipKeyGenerator
 });
 app.use(limiter);
 app.disable('x-powered-by');
@@ -395,6 +398,38 @@ logger.info(`Boot ${bootResult.success ? 'complete' : 'failed'}`, { duration: bo
 
 const apiRouter = new APIRouter(kernel, { logger: logger.child('API'), authManager });
 app.use(apiRouter.getMiddleware());
+
+// ── AI CHAT GATEWAY ──────────────────────────────────────────────
+// Single same-origin gateway to the Ollama chat backend. The desktop
+// must never hardcode a backend port (v3 used localhost:9004 and broke
+// on CORS + port drift). Point CHAT_BACKEND at whatever serves /chat.
+
+const CHAT_BACKEND = process.env.CHAT_BACKEND || 'http://127.0.0.1:9004';
+
+app.post('/api/chat', async (req, res) => {
+    try {
+        const r = await fetch(`${CHAT_BACKEND}/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(req.body),
+            signal: AbortSignal.timeout(30000)
+        });
+        const data = await r.json().catch(() => ({}));
+        res.status(r.status).json(data);
+    } catch (e) {
+        logger.warn('AI chat backend unreachable', { error: e.message });
+        res.status(503).json({ error: 'AI backend offline' });
+    }
+});
+
+app.get('/api/chat/health', async (req, res) => {
+    try {
+        const r = await fetch(`${CHAT_BACKEND}/health`, { signal: AbortSignal.timeout(3000) });
+        res.status(r.status).json(await r.json().catch(() => ({})));
+    } catch (e) {
+        res.json({ status: 'ok', ollama: 'offline', model: null });
+    }
+});
 
 // ── STATIC FILES ─────────────────────────────────────────────────
 
