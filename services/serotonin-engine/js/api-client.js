@@ -189,7 +189,7 @@ class SerotoninAppAPI {
             const infoEl = document.getElementById('module-info');
             if (infoEl) {
                 const freqList = apiData.frequencyDetails.map(f => 
-                    `<span class="freq-tag">${f Hz} — ${f.name}</span>`
+                    `<span class="freq-tag">${f.hz} Hz — ${f.name}</span>`
                 ).join('');
                 
                 infoEl.innerHTML = `

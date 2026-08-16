@@ -543,8 +543,9 @@ class APIRouter {
         });
 
         // ── SYSTEM METRICS ────────────────────────────────
+        // Public: the desktop's system monitor polls this without auth.
 
-        r.get('/api/system/metrics', protect, (req, res) => {
+        r.get('/api/system/metrics', (req, res) => {
             const state = this.getKernelState();
             res.json({
                 timestamp: Date.now(),

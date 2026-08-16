@@ -1298,6 +1298,7 @@ class HazoomKernel {
         this.bootTime = null;
         this.uptime = 0;
         this.tickCount = 0;
+        this._tickTimer = null;
         this.running = false;
         this.logBuffer = [];
         this.maxLogLines = 500;
@@ -1493,6 +1494,15 @@ class HazoomKernel {
         this.log('INFO', `[BOOT] Uptime counter started`);
         this.log('INFO', '═══════════════════════════════════════════');
 
+        // Heartbeat: the kernel drives its own clock, independent of
+        // WebSocket clients (previously uptime/tickCount stayed at 0
+        // unless a client connected).
+        if (this._tickTimer) clearInterval(this._tickTimer);
+        this._tickTimer = setInterval(() => {
+            if (this.running) this.tick();
+        }, 1000);
+        if (this._tickTimer.unref) this._tickTimer.unref();
+
         return { status: 'online', bootTime: this.bootTime };
     }
 
@@ -1531,6 +1541,7 @@ class HazoomKernel {
         this.log('INFO', '[SHUTDOWN] Flushing journal...');
         this.log('INFO', '[SHUTDOWN] Power off');
         this.running = false;
+        if (this._tickTimer) { clearInterval(this._tickTimer); this._tickTimer = null; }
         this.bootStage = 'OFF';
         return { status: 'shutdown', uptime: this.uptime, totalTicks: this.tickCount };
     }
