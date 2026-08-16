@@ -64,6 +64,9 @@
     ];
     apApps.forEach(a => Registry.registerApp(a.id, { name: a.name, icon: a.icon }));
 
+    // === REGISTER DEEP BROWSER (inner-internet explorer) ===
+    Registry.registerApp('tool-deep-browser', { name: 'Deep Browser', icon: '🜂' });
+
     // === REGISTER GAMES ===
     var gameApps = [
         { id: 'game-smg6', name: 'Super Mario GTA6', icon: '🍄' },

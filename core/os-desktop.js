@@ -148,6 +148,21 @@
                             </div>
                         `
                     },
+                    deepBrowser: {
+                        id: 'deepBrowser',
+                        name: 'Deep Browser',
+                        icon: '🜂',
+                        color: '#0a3d62',
+                        width: 900,
+                        height: 580,
+                        desktop: true,
+                        category: 'core',
+                        content: () => `
+                            <div style="width:100%;height:100%;background:#06061a;">
+                                <iframe src="apps/core-apps/deep-browser.html" style="width:100%;height:100%;border:none;"></iframe>
+                            </div>
+                        `
+                    },
                     music: {
                         id: 'music',
                         name: 'Neural FM',
@@ -659,7 +674,7 @@
             buildDock() {
                 const dock = document.getElementById('dock');
                 dock.innerHTML = '';
-                const appOrder = ['dashboard', 'terminal', 'ai', 'consciousness-core', 'user-guide', 'files', 'browser', 'music', 'focus-timer', 'hazoom-ai', 'quantum-monitor', 'settings', 'system-monitor', 'security-center', 'hazoom-net'];
+                const appOrder = ['dashboard', 'terminal', 'ai', 'consciousness-core', 'user-guide', 'files', 'browser', 'deepBrowser', 'music', 'focus-timer', 'hazoom-ai', 'quantum-monitor', 'settings', 'system-monitor', 'security-center', 'hazoom-net'];
 
                 appOrder.forEach(id => {
                     const app = this.apps[id];

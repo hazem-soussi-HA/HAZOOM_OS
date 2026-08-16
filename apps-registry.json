@@ -53,6 +53,7 @@
         { "id": "tool-terminal", "name": "Terminal", "icon": "⌨️", "path": "apps/core-apps/terminal.html" },
         { "id": "tool-files", "name": "File Manager", "icon": "📁", "path": "apps/core-apps/filemanager.html" },
         { "id": "tool-settings", "name": "Settings", "icon": "⚙️", "path": "apps/core-apps/settings.html" },
+        { "id": "tool-deep-browser", "name": "Deep Browser", "icon": "🜂", "path": "apps/core-apps/deep-browser.html" },
         { "id": "tool-assembly", "name": "Assembly Terrain", "icon": "🏔️", "path": "projects/assembly/", "source": "projects/assembly/" },
         { "id": "tool-maps", "name": "Map Visualizations", "icon": "🗺️", "path": "projects/maps/", "source": "projects/maps/" }
       ]

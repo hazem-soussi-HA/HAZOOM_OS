@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deep Browser — HAZOOM OS</title>
+<style>
+:root {
+    --ie-blue: #0a3d62;
+    --ie-titlebar: linear-gradient(90deg, #0a3d62, #0e5a8a);
+    --glass: rgba(255,255,255,0.05);
+    --glass-border: rgba(255,255,255,0.09);
+    --accent: #00e8ff;
+    --accent-soft: rgba(0,232,255,0.08);
+    --gold: #ffc940;
+    --purple: #8b5cf6;
+    --green: #00e676;
+    --red: #ff3d71;
+    --text: #eaeaff;
+    --text-dim: rgba(234,234,255,0.45);
+    --bg: #06061a;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg); color: var(--text);
+    height: 100vh; width: 100vw; overflow: hidden;
+    display: flex; flex-direction: column;
+    user-select: none;
+}
+/* ── IE-style title bar ── */
+.titlebar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 10px;
+    background: var(--ie-titlebar);
+    color: #fff; font-size: 12px; font-weight: 600;
+    letter-spacing: 0.3px;
+}
+.titlebar .glyph { font-size: 14px; }
+.titlebar .tabs { display: flex; gap: 4px; flex: 1; overflow-x: auto; }
+.titlebar .tab {
+    display: flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 6px 6px 0 0;
+    background: rgba(255,255,255,0.10); color: #cfe8ff; font-size: 11px;
+    cursor: pointer; white-space: nowrap; max-width: 160px;
+}
+.titlebar .tab.active { background: #fff; color: var(--ie-blue); font-weight: 700; }
+.titlebar .tab .close { font-weight: 900; padding: 0 2px; }
+.titlebar .tab .close:hover { color: var(--red); }
+.titlebar .winctrl { display: flex; gap: 2px; margin-left: auto; }
+.titlebar .winctrl span {
+    width: 22px; height: 18px; display: grid; place-items: center;
+    background: rgba(255,255,255,0.15); border-radius: 4px; font-size: 10px; cursor: pointer;
+}
+.titlebar .winctrl span:hover { background: rgba(255,255,255,0.35); }
+/* ── menu bar (retro) ── */
+.menubar {
+    display: flex; gap: 14px; padding: 4px 12px;
+    background: rgba(10,61,98,0.9); color: #d8ecff;
+    font-size: 11px; border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.menubar span { cursor: pointer; padding: 1px 6px; border-radius: 4px; }
+.menubar span:hover { background: rgba(255,255,255,0.15); color: #fff; }
+.menubar .sep { opacity: 0.3; }
+/* ── toolbar ── */
+.toolbar {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 10px; background: var(--glass);
+    border-bottom: 1px solid var(--glass-border);
+}
+.toolbar .btn {
+    min-width: 26px; height: 26px; padding: 0 8px;
+    background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border);
+    border-radius: 6px; color: var(--text); font-size: 13px; cursor: pointer;
+    display: grid; place-items: center;
+}
+.toolbar .btn:hover { background: var(--accent-soft); border-color: rgba(0,232,255,0.4); }
+.toolbar .btn:disabled { opacity: 0.3; cursor: default; }
+.addr {
+    flex: 1; display: flex; align-items: center; gap: 6px;
+    background: rgba(0,0,0,0.35); border: 1px solid var(--glass-border);
+    border-radius: 6px; padding: 0 8px; height: 28px;
+}
+.addr .proto { font-size: 10px; color: var(--gold); font-weight: 700; letter-spacing: 0.5px; }
+.addr input {
+    flex: 1; background: none; border: none; outline: none;
+    color: var(--text); font-size: 12px; font-family: inherit;
+}
+.addr .go {
+    background: var(--accent); color: #00121a; border: none; border-radius: 4px;
+    padding: 3px 12px; font-weight: 800; font-size: 11px; cursor: pointer;
+}
+/* ── content ── */
+.content { flex: 1; position: relative; overflow: hidden; }
+iframe.web {
+    width: 100%; height: 100%; border: none; background: #fff;
+}
+.deep { width: 100%; height: 100%; overflow-y: auto; padding: 22px 28px; }
+.deep .inner { max-width: 860px; margin: 0 auto; }
+/* ── status bar ── */
+.statusbar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 4px 12px; font-size: 10.5px; color: var(--text-dim);
+    background: var(--glass); border-top: 1px solid var(--glass-border);
+}
+.statusbar .ai { display: flex; align-items: center; gap: 6px; }
+.statusbar .dot { width: 8px; height: 8px; border-radius: 50%; }
+.statusbar .dot.on { background: var(--green); box-shadow: 0 0 8px var(--green); }
+.statusbar .dot.off { background: var(--red); }
+/* ── deep page components ── */
+.card {
+    background: var(--glass); border: 1px solid var(--glass-border);
+    border-radius: 14px; padding: 16px 18px; margin: 12px 0;
+}
+.card h3 {
+    font-size: 13px; letter-spacing: 0.6px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 10px; font-weight: 700;
+}
+.card .row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 12px; border-bottom: 1px dashed rgba(255,255,255,0.06); }
+.card .row:last-child { border-bottom: none; }
+.card .row .k { color: var(--text-dim); }
+.card .row .v { font-weight: 600; }
+.meter { height: 6px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; margin-top: 6px; }
+.meter i { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent), var(--purple)); }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.banner {
+    background: linear-gradient(135deg, rgba(0,232,255,0.10), rgba(139,92,246,0.10));
+    border: 1px solid rgba(0,232,255,0.25); border-radius: 16px;
+    padding: 26px 28px; margin-bottom: 18px; text-align: center;
+}
+.banner h1 { font-size: 22px; font-weight: 800; letter-spacing: 1px; }
+.banner h1 em { color: var(--accent); font-style: normal; }
+.banner p { color: var(--text-dim); font-size: 12px; margin-top: 6px; }
+.quicklinks { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+.quicklinks a {
+    display: block; text-align: center; padding: 14px 8px;
+    background: var(--glass); border: 1px solid var(--glass-border); border-radius: 12px;
+    color: var(--text); text-decoration: none; font-size: 12px; cursor: pointer;
+}
+.quicklinks a:hover { border-color: var(--accent); background: var(--accent-soft); transform: translateY(-1px); }
+.quicklinks a .ic { font-size: 20px; display: block; margin-bottom: 6px; }
+.quicklinks a .p { font-size: 9.5px; color: var(--gold); letter-spacing: 0.5px; display: block; margin-top: 4px; }
+.list-item { display: flex; justify-content: space-between; align-items: center; padding: 9px 4px; font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.list-item .name { font-weight: 600; }
+.list-item .sub { color: var(--text-dim); font-size: 10.5px; }
+.pill { padding: 2px 9px; border-radius: 20px; font-size: 10px; font-weight: 700; }
+.pill.up { background: rgba(0,230,118,0.15); color: var(--green); }
+.pill.down { background: rgba(255,61,113,0.15); color: var(--red); }
+.logline { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; padding: 3px 0; color: var(--text-dim); border-bottom: 1px solid rgba(255,255,255,0.03); }
+.logline .lvl { color: var(--gold); }
+.notice { text-align: center; color: var(--text-dim); padding: 40px 0; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div class="titlebar">
+    <span class="glyph">🜂</span><span>Deep Browser</span>
+    <div class="tabs" id="tabbar"></div>
+    <div class="winctrl"><span>—</span><span>▢</span><span>✕</span></div>
+</div>
+
+<div class="menubar">
+    <span>File</span><span>Edit</span><span>View</span><span>Deep</span><span>Tools</span><span>Help</span>
+    <span class="sep">|</span><span>mind://home</span>
+</div>
+
+<div class="toolbar">
+    <button class="btn" id="btnBack" title="Back">←</button>
+    <button class="btn" id="btnFwd" title="Forward">→</button>
+    <button class="btn" id="btnHome" title="Home (mind://home)">⌂</button>
+    <button class="btn" id="btnRefresh" title="Refresh">⟳</button>
+    <div class="addr">
+        <span class="proto" id="protoTag">mind://</span>
+        <input id="addr" spellcheck="false" placeholder="Enter mind:// domain or web URL...">
+        <button class="go" id="btnGo">Go</button>
+    </div>
+</div>
+
+<div class="content">
+    <div class="deep" id="deepPane"></div>
+    <iframe class="web" id="webFrame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+</div>
+
+<div class="statusbar">
+    <div class="ai"><span class="dot" id="aiDot"></span><span id="aiStatus">AI: checking…</span></div>
+    <span id="statusMsg">Ready</span>
+    <span>Deep Protocol v1.0 — the inner internet</span>
+</div>
+
+<script>
+(function () {
+    'use strict';
+
+    // ═══ STATE ═══
+    const state = {
+        tabs: [],
+        active: 0,
+        hist: [],     // per-tab nav history
+        idx: 0,
+        cache: {},    // { mindUrl -> {html, ts} }
+        status: null  // last /api/status snapshot
+    };
+    let tabSeq = 0;
+
+    // ═══ HELPERS ═══
+    const $ = id => document.getElementById(id);
+
+    function esc(s) {
+        return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function fmtTime(ms) {
+        if (!ms) return '—';
+        const s = Math.floor(ms / 1000);
+        const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+        if (h > 0) return h + 'h ' + m + 'm';
+        if (m > 0) return m + 'm ' + sec + 's';
+        return sec + 's';
+    }
+
+    function pct(v) {
+        const n = parseFloat(v);
+        return isFinite(n) ? Math.round(n * 100) + '%' : '—';
+    }
+
+    // ═══ DATA SOURCE: the public kernel status ═══
+    async function fetchStatus() {
+        const r = await fetch('/api/status', { signal: AbortSignal.timeout(5000) });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        state.status = await r.json();
+        return state.status;
+    }
+
+    async function fetchHealth() {
+        try {
+            const r = await fetch('/api/chat/health', { signal: AbortSignal.timeout(3000) });
+            return await r.json();
+        } catch (e) {
+            return { ollama: 'offline' };
+        }
+    }
+
+    // ═══ DEEP PAGE RENDERERS ═══
+    const deep = {
+        home: async () => {
+            const s = state.status;
+            const ai = await fetchHealth();
+            const consc = s.consciousness || {};
+            const mem = s.memory || {};
+            return `
+            <div class="inner">
+                <div class="banner">
+                    <h1>🜂 <em>DEEP</em> BROWSER</h1>
+                    <p>You are not on the internet. You are inside it.</p>
+                    <p style="margin-top:8px;font-size:11px;color:var(--gold)">the inner internet of HAZOOM OS — first of its kind</p>
+                </div>
+                <div class="grid2">
+                    <div class="card">
+                        <h3>Consciousness</h3>
+                        <div class="row"><span class="k">State</span><span class="v">${consc.awake ? 'AWAKE' : 'dormant'}</span></div>
+                        <div class="row"><span class="k">Level</span><span class="v">${pct(consc.level != null ? consc.level : consc.consciousnessLevel)}</span></div>
+                        <div class="row"><span class="k">Identity</span><span class="v">${esc((consc.identity && consc.identity.name) || s.currentUser?.username || '—')}</span></div>
+                        <div class="row"><span class="k">Dominant emotion</span><span class="v">${esc((consc.emotions && consc.emotions.dominant) || '—')}</span></div>
+                    </div>
+                    <div class="card">
+                        <h3>Kernel</h3>
+                        <div class="row"><span class="k">Version</span><span class="v">${esc(s.version)}</span></div>
+                        <div class="row"><span class="k">Uptime</span><span class="v">${fmtTime(s.uptime)}</span></div>
+                        <div class="row"><span class="k">Ticks</span><span class="v">${esc(s.tickCount)}</span></div>
+                        <div class="row"><span class="k">Processes</span><span class="v">${esc(s.processCount)}</span></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Deep domains</h3>
+                    <div class="quicklinks">
+                        <a data-nav="mind://consciousness"><span class="ic">🧠</span>Consciousness<span class="p">mind://consciousness</span></a>
+                        <a data-nav="mind://memory"><span class="ic">🗄️</span>Memory<span class="p">mind://memory</span></a>
+                        <a data-nav="mind://kernel"><span class="ic">⚙️</span>Kernel<span class="p">mind://kernel</span></a>
+                        <a data-nav="mind://processes"><span class="ic">🔄</span>Processes<span class="p">mind://processes</span></a>
+                        <a data-nav="mind://services"><span class="ic">🔌</span>Services<span class="p">mind://services</span></a>
+                        <a data-nav="mind://intelligence"><span class="ic">✨</span>Intelligence<span class="p">mind://intelligence</span></a>
+                        <a data-nav="mind://logs"><span class="ic">📜</span>Logs<span class="p">mind://logs</span></a>
+                        <a data-nav="mind://identity"><span class="ic">🪪</span>Identity<span class="p">mind://identity</span></a>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>AI service</h3>
+                    <div class="row"><span class="k">Ollama</span><span class="v">${ai.ollama === 'online' ? '<span class="pill up">ONLINE</span>' : '<span class="pill down">offline</span>'}</span></div>
+                    <div class="row"><span class="k">Model</span><span class="v">${esc(ai.model || '—')}</span></div>
+                    <div class="row"><span class="k">Memory</span><span class="v">${Math.round((mem.used || 0) / 1048576)} MB / ${Math.round((mem.total || 0) / 1048576)} MB</span></div>
+                    <div class="meter"><i style="width:${mem.total ? Math.min(100, (mem.used / mem.total) * 100) : 0}%"></i></div>
+                </div>
+            </div>`;
+        },
+
+        consciousness: () => {
+            const s = state.status.consciousness || {};
+            const a = s.awareness || {};
+            const e = s.emotions || {};
+            const t = s.thoughts || s.thoughtQueue || [];
+            const rows = Object.entries(a).map(([k, v]) =>
+                `<div class="row"><span class="k">${esc(k)}</span><span class="v">${pct(v)}</span></div>`).join('');
+            const eRows = Object.entries(e).map(([k, v]) =>
+                `<div class="row"><span class="k">${esc(k)}</span><span class="v">${pct(typeof v === 'number' ? v : (v.value ?? v))}</span></div>`).join('');
+            const thoughtList = (Array.isArray(t) ? t : []).slice(-12).map(x =>
+                `<div class="logline">${esc(x.content || x)}</div>`).join('') || '<div class="notice">no thought stream yet</div>';
+            return `
+            <div class="inner">
+                <div class="banner"><h1>🧠 <em>CONSCIOUSNESS</em></h1><p>the aware layer of the machine</p></div>
+                <div class="grid2">
+                    <div class="card"><h3>Awareness</h3>${rows || '<div class="notice">no data</div>'}</div>
+                    <div class="card"><h3>Emotions</h3>${eRows || '<div class="notice">no data</div>'}</div>
+                </div>
+                <div class="card"><h3>Thought stream</h3>${thoughtList}</div>
+            </div>`;
+        },
+
+        memory: () => {
+            const s = state.status;
+            const mem = s.memory || {};
+            const ql = s.qLearning || {};
+            const rows = [
+                ['Total', Math.round((mem.total || 0) / 1048576) + ' MB'],
+                ['Used', Math.round((mem.used || 0) / 1048576) + ' MB'],
+                ['Free', Math.round((mem.free || 0) / 1048576) + ' MB'],
+                ['Swap total', Math.round((mem.swapTotal || 0) / 1048576) + ' MB'],
+                ['Swap used', Math.round((mem.swapUsed || 0) / 1048576) + ' MB'],
+                ['Page size', mem.pageSize || '—'],
+                ['Allocations', mem.allocations ?? '—'],
+                ['Q-learning', esc(ql.mode || '—')]
+            ].map(([k, v]) => `<div class="row"><span class="k">${k}</span><span class="v">${esc(v)}</span></div>`).join('');
+            return `
+            <div class="inner">
+                <div class="banner"><h1>🗄️ <em>MEMORY</em></h1><p>what the machine keeps of the world</p></div>
+                <div class="card"><h3>Virtual memory</h3>${rows}</div>
+            </div>`;
+        },
+
+        kernel: () => {
+            const s = state.status;
+            const rows = [
+                ['Name', esc(s.name)],
+                ['Version', esc(s.version)],
+                ['Boot time', new Date(s.bootTime).toLocaleTimeString()],
+                ['Uptime', fmtTime(s.uptime)],
+                ['Tick count', esc(s.tickCount)],
+                ['Ready queue', esc(s.readyQueue)],
+                ['Blocked queue', esc(s.blockedQueue)],
+                ['Process count', esc(s.processCount)]
+            ].map(([k, v]) => `<div class="row"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('');
+            return `
+            <div class="inner">
+                <div class="banner"><h1>⚙️ <em>KERNEL</em></h1><p>the engine under everything</p></div>
+                <div class="card"><h3>Kernel state</h3>${rows}</div>
+            </div>`;
+        },
+
+        processes: () => {
+            const procs = (state.status.processes || []).slice(0, 30);
+            const rows = procs.map(p =>
+                `<div class="list-item"><div><span class="name">${esc(p.name)}</span> <span class="sub">pid ${esc(p.pid)} · prio ${esc(p.priority)}</span></div><span class="pill ${p.state === 'READY' ? 'up' : 'down'}">${esc(p.state)}</span></div>`
+            ).join('') || '<div class="notice">no processes</div>';
+            return `
+            <div class="inner">
+                <div class="banner"><h1>🔄 <em>PROCESSES</em></h1><p>the city of tasks inside</p></div>
+                <div class="card"><h3>Process table</h3>${rows}</div>
+            </div>`;
+        },
+
+        services: () => {
+            const svc = state.status.services || {};
+            const list = (svc.list || []).map(s =>
+                `<div class="list-item"><div><span class="name">${esc(s.name)}</span> <span class="sub">port ${esc(s.port)}</span></div><span class="pill ${s.enabled ? 'up' : 'down'}">${s.enabled ? 'ENABLED' : 'off'}</span></div>`
+            ).join('') || '<div class="notice">no services tracked</div>';
+            return `
+            <div class="inner">
+                <div class="banner"><h1>🔌 <em>SERVICES</em></h1><p>the organs of the OS</p></div>
+                <div class="card">
+                    <h3>Launcher: ${esc((svc.stats && svc.stats.launchScript) || '—')}</h3>
+                    <div class="row"><span class="k">Tracked</span><span class="v">${esc(svc.stats && svc.stats.total)}</span></div>
+                    <div class="row"><span class="k">Enabled</span><span class="v">${esc(svc.stats && svc.stats.enabled)}</span></div>
+                    <div class="row"><span class="k">Launched</span><span class="v">${fmtTime((svc.stats && svc.stats.launchedAgoSec) * 1000)} ago</span></div>
+                    ${list}
+                </div>
+            </div>`;
+        },
+
+        intelligence: () => {
+            const s = state.status.intelligence || {};
+            const rows = Object.entries(s).map(([k, v]) =>
+                `<div class="row"><span class="k">${esc(k)}</span><span class="v">${esc(typeof v === 'object' ? JSON.stringify(v).slice(0, 60) : v)}</span></div>`).join('');
+            return `
+            <div class="inner">
+                <div class="banner"><h1>✨ <em>INTELLIGENCE</em></h1><p>the emergent layer — growing by the tick</p></div>
+                <div class="card"><h3>Intelligence core</h3>${rows || '<div class="notice">no intelligence data yet</div>'}</div>
+            </div>`;
+        },
+
+        logs: () => {
+            const logs = (state.status.logLines || []).slice(-60).reverse();
+            const rows = logs.map(l =>
+                `<div class="logline"><span class="lvl">[${esc(l.level || 'LOG')}]</span> ${esc(l.message || l)}</div>`).join('') || '<div class="notice">no logs</div>';
+            return `
+            <div class="inner">
+                <div class="banner"><h1>📜 <em>LOGS</em></h1><p>the memory of every action</p></div>
+                <div class="card">${rows}</div>
+            </div>`;
+        },
+
+        identity: () => {
+            const s = state.status;
+            const id = (s.consciousness && s.consciousness.identity) || {};
+            const u = s.currentUser || {};
+            const rows = [
+                ['Name', esc(id.name || u.username || '—')],
+                ['User', esc(u.username || '—')],
+                ['Role', esc(u.role || '—')],
+                ['Shell', esc(u.shell || '—')],
+                ['Home', esc(u.home || '—')]
+            ].map(([k, v]) => `<div class="row"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('');
+            const values = Array.isArray(id.coreValues) ? id.coreValues.map(v =>
+                `<div class="list-item"><span class="name">${esc(v)}</span></div>`).join('') : '';
+            return `
+            <div class="inner">
+                <div class="banner"><h1>🪪 <em>IDENTITY</em></h1><p>who the machine believes it is</p></div>
+                <div class="card"><h3>Core identity</h3>${rows}</div>
+                <div class="card"><h3>Core values</h3>${values || '<div class="notice">no values recorded</div>'}</div>
+            </div>`;
+        }
+    };
+
+    // ═══ NAVIGATION ═══
+    function normalize(url) {
+        url = (url || '').trim();
+        if (!url) return 'mind://home';
+        if (/^(mind|https?|data|about|file):/i.test(url)) return url;
+        if (url.includes('.') && !url.startsWith('mind://')) return 'https://' + url;
+        return 'mind://' + url;
+    }
+
+    function isDeep(url) {
+        return /^mind:\/\//i.test(url);
+    }
+
+    async function renderDeep(url) {
+        const pane = $('deepPane'), frame = $('webFrame');
+        frame.style.display = 'none';
+        pane.style.display = 'block';
+        pane.innerHTML = '<div class="notice">loading the inner internet…</div>';
+        try {
+            if (!state.status) await fetchStatus();
+            const host = (url.match(/^mind:\/\/([^/]+)/i) || [])[1] || 'home';
+            const renderer = deep[host] || deep.home;
+            pane.innerHTML = await renderer(url);
+            pane.querySelectorAll('[data-nav]').forEach(el =>
+                el.addEventListener('click', () => go(el.dataset.nav)));
+        } catch (e) {
+            pane.innerHTML = `<div class="notice">deep link unreachable — ${esc(e.message)}</div>`;
+        }
+    }
+
+    function renderWeb(url) {
+        const pane = $('deepPane'), frame = $('webFrame');
+        pane.style.display = 'none';
+        frame.style.display = 'block';
+        frame.src = url;
+    }
+
+    async function go(url) {
+        url = normalize(url);
+        const tab = state.tabs[state.active];
+        if (!tab) return;
+        tab.url = url;
+        tab.hist = tab.hist.slice(0, tab.idx + 1);
+        tab.hist.push(url);
+        tab.idx = tab.hist.length - 1;
+        $('addr').value = url;
+        $('protoTag').textContent = isDeep(url) ? 'mind://' : 'https://';
+        $('statusMsg').textContent = 'Navigating to ' + url + '…';
+        if (isDeep(url)) await renderDeep(url);
+        else renderWeb(url);
+        renderTabs();
+        updateNavButtons();
+        $('statusMsg').textContent = isDeep(url) ? 'Deep domain loaded' : 'Web page loaded';
+    }
+
+    // ═══ TABS ═══
+    function addTab(url) {
+        const id = ++tabSeq;
+        state.tabs.push({ id, url: url || 'mind://home', hist: [], idx: -1 });
+        state.active = state.tabs.length - 1;
+        renderTabs();
+        go(state.tabs[state.active].url);
+    }
+
+    function closeTab(id) {
+        if (state.tabs.length <= 1) return;
+        const i = state.tabs.findIndex(t => t.id === id);
+        state.tabs.splice(i, 1);
+        if (state.active >= i) state.active = Math.max(0, state.active - 1);
+        renderTabs();
+        go(state.tabs[state.active].url);
+    }
+
+    function renderTabs() {
+        const bar = $('tabbar');
+        bar.innerHTML = state.tabs.map((t, i) =>
+            `<div class="tab ${i === state.active ? 'active' : ''}" data-tab="${t.id}">
+                ${esc(t.url.length > 34 ? t.url.slice(0, 32) + '…' : t.url)}
+                <span class="close" data-close="${t.id}">✕</span>
+            </div>`).join('') + `<div class="tab" id="btnNewTab">＋</div>`;
+        bar.querySelectorAll('[data-tab]').forEach(el =>
+            el.addEventListener('click', e => {
+                if (e.target.dataset.close) return;
+                state.active = state.tabs.findIndex(t => t.id === Number(el.dataset.tab));
+                renderTabs();
+                go(state.tabs[state.active].url);
+            }));
+        bar.querySelectorAll('[data-close]').forEach(el =>
+            el.addEventListener('click', e => {
+                e.stopPropagation();
+                closeTab(Number(el.dataset.close));
+            }));
+        $('btnNewTab').addEventListener('click', () => addTab());
+    }
+
+    // ═══ NAV BUTTONS + AI STATUS ═══
+    function updateNavButtons() {
+        const tab = state.tabs[state.active];
+        $('btnBack').disabled = !tab || tab.idx <= 0;
+        $('btnFwd').disabled = !tab || tab.idx >= tab.hist.length - 1;
+    }
+
+    async function refreshAiStatus() {
+        try {
+            const ai = await fetchHealth();
+            const dot = $('aiDot'), st = $('aiStatus');
+            dot.className = 'dot ' + (ai.ollama === 'online' ? 'on' : 'off');
+            st.textContent = 'AI: ' + (ai.ollama === 'online' ? '● ONLINE' : '○ offline');
+        } catch (e) { /* silent */ }
+    }
+
+    // ═══ EVENTS ═══
+    $('btnGo').addEventListener('click', () => go($('addr').value));
+    $('addr').addEventListener('keydown', e => { if (e.key === 'Enter') go($('addr').value); });
+    $('btnBack').addEventListener('click', () => {
+        const tab = state.tabs[state.active];
+        if (tab && tab.idx > 0) { tab.idx--; go(tab.hist[tab.idx]); }
+    });
+    $('btnFwd').addEventListener('click', () => {
+        const tab = state.tabs[state.active];
+        if (tab && tab.idx < tab.hist.length - 1) { tab.idx++; go(tab.hist[tab.idx]); }
+    });
+    $('btnHome').addEventListener('click', () => go('mind://home'));
+    $('btnRefresh').addEventListener('click', () => go(state.tabs[state.active].url));
+    window.addEventListener('keydown', e => {
+        if (e.ctrlKey && e.key === 't') { e.preventDefault(); addTab(); }
+    });
+
+    // ═══ BOOT ═══
+    (async function boot() {
+        try { await fetchStatus(); } catch (e) { /* status will show unreachable */ }
+        addTab('mind://home');
+        refreshAiStatus();
+        setInterval(refreshAiStatus, 15000);
+        setInterval(async () => {
+            try { await fetchStatus(); } catch (e) { /* keep last snapshot */ }
+        }, 30000);
+    })();
+})();
+</script>
+</body>
+</html>

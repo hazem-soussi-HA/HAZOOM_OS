@@ -105,40 +105,30 @@ class HazoomDesktop {
     const appList = [
       // Core
       { id: 'dashboard', name: 'Dashboard', icon: '📊', color: '#00d4ff', width: 900, height: 600, category: 'core', src: 'apps/aether-dashboard.html' },
-      { id: 'terminal', name: 'Terminal', icon: '⌨️', color: '#10b981', width: 700, height: 450, category: 'core', src: 'apps/terminal.html' },
-      { id: 'files', name: 'Files', icon: '📁', color: '#ffd700', width: 750, height: 500, category: 'core', src: 'apps/filemanager.html' },
-      { id: 'browser', name: 'Secure Browser', icon: '🌐', color: '#06b6d4', width: 900, height: 600, category: 'core', src: 'apps/browser.html' },
-      { id: 'settings', name: 'Settings', icon: '⚙️', color: '#6b7280', width: 500, height: 450, category: 'core', src: 'apps/settings.html' },
+      { id: 'terminal', name: 'Terminal', icon: '⌨️', color: '#10b981', width: 700, height: 450, category: 'core', src: 'apps/core-apps/terminal.html' },
+      { id: 'files', name: 'Files', icon: '📁', color: '#ffd700', width: 750, height: 500, category: 'core', src: 'apps/core-apps/filemanager.html' },
+      { id: 'browser', name: 'Deep Browser', icon: '🜂', color: '#0a3d62', width: 900, height: 600, category: 'core', src: 'apps/core-apps/deep-browser.html' },
+      { id: 'settings', name: 'Settings', icon: '⚙️', color: '#6b7280', width: 500, height: 450, category: 'core', src: 'apps/core-apps/settings.html' },
       
       // AI
       { id: 'aether-chat', name: 'Aether Chat', icon: '🧠', color: '#a855f7', width: 600, height: 500, category: 'ai', src: 'apps/aether-dashboard.html' },
-      { id: 'consciousness', name: 'Consciousness', icon: '💭', color: '#8b5cf6', width: 700, height: 550, category: 'ai', src: 'apps/consciousness_portal.html' },
-      { id: 'punch-cards', name: 'Punch Cards', icon: '🎴', color: '#f59e0b', width: 850, height: 600, category: 'ai', src: 'apps/punch-cards.html' },
-      { id: 'llm-studio', name: 'LLM Studio', icon: '🤖', color: '#22c55e', width: 800, height: 550, category: 'ai' },
-      { id: 'model-marketplace', name: 'Model Market', icon: '🏪', color: '#ec4899', width: 750, height: 500, category: 'ai' },
-      { id: 'training-lab', name: 'Training Lab', icon: '🏋️', color: '#f97316', width: 700, height: 500, category: 'ai' },
-      { id: 'knowledge-graph', name: 'Knowledge Graph', icon: '🕸️', color: '#14b8a6', width: 800, height: 550, category: 'ai' },
+      { id: 'consciousness', name: 'Consciousness', icon: '💭', color: '#8b5cf6', width: 700, height: 550, category: 'ai', src: 'apps/tools/consciousness_portal.html' },
+      { id: 'ai-assistant', name: 'AI Assistant', icon: '🤖', color: '#22c55e', width: 800, height: 550, category: 'ai', src: 'apps/ai-apps/hazoom_ai_assistant.html' },
+      { id: 'deep-think', name: 'Deep Think Explorer', icon: '🔭', color: '#a855f7', width: 800, height: 550, category: 'ai', src: 'apps/ai-apps/deep_think_explorer.html' },
       
       // Games
-      { id: 'chess', name: 'Chess', icon: '♟️', color: '#8b5cf6', width: 650, height: 600, category: 'games', src: 'apps/games/chess-v2/index.html' },
       { id: 'neon-drift', name: 'Neon Drift', icon: '🏎️', color: '#ff6b6b', width: 900, height: 600, category: 'games', src: 'apps/games/neon-drift/index.html' },
-      { id: 'mario-gta', name: 'Mario GTA6', icon: '🎮', color: '#22c55e', width: 900, height: 600, category: 'games', src: 'apps/games/super-mario-gta6/index.html' },
+      { id: 'mario-gta', name: 'Mario GTA6', icon: '🎮', color: '#22c55e', width: 900, height: 600, category: 'games', src: 'apps/games/super-mario-gta6/website/index.html' },
       
       // Tools
-      { id: 'secure-scraper', name: 'Scraper', icon: '🕸️', color: '#f97316', width: 700, height: 500, category: 'tools', src: 'apps/secure_scraper.html' },
-      { id: 'quantum-monitor', name: 'Monitor', icon: '📈', color: '#22c55e', width: 650, height: 500, category: 'tools', src: 'apps/quantum_monitor.html' },
-      { id: 'security-center', name: 'Security', icon: '🔐', color: '#dc2626', width: 600, height: 480, category: 'tools', src: 'apps/security_settings.html' },
+      { id: 'secure-scraper', name: 'Scraper', icon: '🕸️', color: '#f97316', width: 700, height: 500, category: 'tools', src: 'apps/tools/secure_scraper.html' },
+      { id: 'quantum-monitor', name: 'Monitor', icon: '📈', color: '#22c55e', width: 650, height: 500, category: 'tools', src: 'apps/tools/quantum_monitor.html' },
+      { id: 'security-center', name: 'Security', icon: '🔐', color: '#dc2626', width: 600, height: 480, category: 'tools', src: 'apps/tools/security_settings.html' },
       { id: 'focus-timer', name: 'Focus Timer', icon: '⏱️', color: '#f59e0b', width: 520, height: 520, category: 'tools', src: 'apps/tools/focus-timer/index.html' },
-      { id: 'camera', name: 'Camera', icon: '📷', color: '#64748b', width: 600, height: 480, category: 'tools', src: 'apps/camera_stream.html' },
-      
-      // Dev
-      { id: 'code-editor', name: 'Code Editor', icon: '💻', color: '#3b82f6', width: 900, height: 600, category: 'development' },
-      { id: 'api-tester', name: 'API Tester', icon: '🔌', color: '#8b5cf6', width: 700, height: 500, category: 'development' },
-      { id: 'git-manager', name: 'Git Manager', icon: '🔀', color: '#f97316', width: 750, height: 500, category: 'development' },
+      { id: 'admin-monitor', name: 'Admin Monitor', icon: '📡', color: '#64748b', width: 700, height: 500, category: 'tools', src: 'apps/tools/admin_monitor.html' },
       
       // Media
       { id: 'music', name: 'Neural FM', icon: '🎵', color: '#f59e0b', width: 420, height: 540, category: 'media' },
-      { id: 'image-editor', name: 'Image Editor', icon: '🖼️', color: '#ec4899', width: 800, height: 550, category: 'media' },
     ];
     
     for (const app of appList) {
