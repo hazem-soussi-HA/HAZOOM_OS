@@ -1,0 +1,38 @@
+name: HAZOOM OS Observe — GitHub → OS callback
+on:
+  workflow_run:
+    workflows: ["HAZOOM OS CI/CD Pipeline"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+env:
+  OS_WEBHOOK_URL: ${{ secrets.OS_WEBHOOK_URL || '' }}
+  OS_WEBHOOK_SECRET: ${{ secrets.OS_WEBHOOK_SECRET || '' }}
+
+jobs:
+  observe:
+    name: Report workflow run to HAZOOM OS
+    runs-on: ubuntu-latest
+    if: env.OS_WEBHOOK_URL != '' && env.OS_WEBHOOK_SECRET != ''
+    steps:
+      - name: Build signed payload and POST to the OS
+        env:
+          RUN_STATUS: ${{ github.event.workflow_run.status }}
+          RUN_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          RUN_NAME: ${{ github.event.workflow_run.name }}
+          RUN_NUMBER: ${{ github.event.workflow_run.run_number }}
+          RUN_SHA: ${{ github.event.workflow_run.head_sha }}
+          RUN_BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          PAYLOAD=$(cat <<EOF
+          {"action":"completed","workflow_run":{"id":${{ github.event.workflow_run.id }},"name":"${RUN_NAME}","run_number":${RUN_NUMBER},"status":"${RUN_STATUS}","conclusion":"${RUN_CONCLUSION}","head_sha":"${RUN_SHA}","head_branch":"${RUN_BRANCH}","display_title":"CI ${RUN_CONCLUSION}","repository":{"full_name":"${{ github.repository }}"}},"sender":{"login":"github-actions"}}
+          EOF
+          )
+          SIG="sha256=$(printf '%s' "$PAYLOAD" | openssl dgst -sha256 -hmac "$OS_WEBHOOK_SECRET" | awk '{print $2}')"
+          curl -sf -X POST "$OS_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -H "X-GitHub-Event: workflow_run" \
+            -H "X-Hub-Signature-256: $SIG" \
+            -d "$PAYLOAD" || echo "OS unreachable (webhook skipped)"

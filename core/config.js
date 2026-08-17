@@ -80,6 +80,17 @@ const DEFAULTS = {
         baseUrl: 'http://127.0.0.1:11434'
     },
 
+    // GitHub Bridge — real-time observation of the repo.
+    // Token + secret are env-driven (GITHUB_TOKEN / GITHUB_WEBHOOK_SECRET).
+    github: {
+        owner: 'hazem-soussi-HA',
+        repo: 'HAZOOM_OS',
+        token: '',
+        webhookSecret: '',
+        pollInterval: 30000,
+        maxEvents: 200
+    },
+
     // Paths
     sslDir: 'ssl',
     staticDir: '.'
@@ -125,15 +136,31 @@ class Config {
             HTTPS_PORT: 'httpsPort',
             HOST: 'host',
             NODE_ENV: 'env',
-            LOG_LEVEL: 'logLevel'
+            LOG_LEVEL: 'logLevel',
+            GITHUB_TOKEN: 'github.token',
+            GITHUB_WEBHOOK_SECRET: 'github.webhookSecret',
+            GITHUB_OWNER: 'github.owner',
+            GITHUB_REPO: 'github.repo',
+            GITHUB_POLL_INTERVAL: 'github.pollInterval'
         };
 
         for (const [envKey, configKey] of Object.entries(envMap)) {
             if (process.env[envKey] !== undefined) {
                 const val = process.env[envKey];
-                this._config[configKey] = /^\d+$/.test(val) ? parseInt(val) : val;
+                this._set(configKey, /^\d+$/.test(val) ? parseInt(val) : val);
             }
         }
+    }
+
+    /** Set nested dot-key config value */
+    _set(key, value) {
+        const keys = key.split('.');
+        let current = this._config;
+        for (let i = 0; i < keys.length - 1; i++) {
+            if (!current[keys[i]]) current[keys[i]] = {};
+            current = current[keys[i]];
+        }
+        current[keys[keys.length - 1]] = value;
     }
 
     _merge(obj) {

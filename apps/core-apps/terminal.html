@@ -581,8 +581,124 @@
                     }
                 }
                 return 'Cannot close terminal from this context.';
+            },
+            gh: async function(args) {
+                var sub = args[0];
+                try {
+                    if (sub === 'listen') {
+                        ghListen = true;
+                        return 'Listening for GitHub events in real time... (Ctrl+C: gh unlisten)';
+                    }
+                    if (sub === 'unlisten') {
+                        ghListen = false;
+                        return 'Stopped listening to GitHub events.';
+                    }
+                    if (sub === 'events') {
+                        var r = await fetch('/api/github/events');
+                        var d = await r.json();
+                        if (!d.items || !d.items.length) return 'No GitHub events observed yet.';
+                        return d.items.map(function(e) { return fmtGhEvent(e); }).join('\n');
+                    }
+                    if (sub === 'sync') {
+                        var r2 = await fetch('/api/github/sync', { method: 'POST' });
+                        return JSON.stringify(await r2.json());
+                    }
+                    var r3 = await fetch('/api/github/status');
+                    var st = await r3.json();
+                    var out = 'GitHub Bridge — ' + st.owner + '/' + st.repo + '\n' +
+                        '  enabled: ' + st.enabled + '\n' +
+                        '  lastSync: ' + (st.lastSync ? new Date(st.lastSync).toISOString() : 'never') + '\n' +
+                        '  observedEvents: ' + st.observedEvents + '\n' +
+                        (st.lastSyncResult ? '  poll: ' + JSON.stringify(st.lastSyncResult) + '\n' : '') +
+                        (st.syncError ? '  syncError: ' + st.syncError + '\n' : '') +
+                        'Usage: gh [status|events|sync|listen|unlisten]';
+                    return out;
+                } catch (e) {
+                    return 'gh: bridge unreachable — ' + e.message;
+                }
             }
         };
+
+        // ── REAL SHELL OBSERVATION (HAZOOM OS v6) ──────────────
+        // Commands matching the OS gated allowlist run on the real
+        // machine via WebSocket. Everything else stays simulated.
+
+        var REAL_PATTERNS = [
+            /^git\s+(status|log|diff|branch|show|rev-parse|remote|fetch|pull\s+--ff-only|tag|blame)\b/,
+            /^ps\s/,
+            /^uptime$/, /^ls\s/, /^df\s/, /^free\s/, /^uname\s/, /^date$/, /^hostname$/, /^whoami$/,
+            /^node\s+--version$/, /^npm\s+--version$/,
+            /^docker\s+(ps|stats\s+--no-stream|images|network\s+ls|volume\s+ls)\b/,
+            /^juju\s+(status|machines|models|controllers)\b/,
+            /^kubectl\s+(get|describe|top|logs)\b/
+        ];
+
+        function isRealCommand(cmdLine) {
+            var trimmed = cmdLine.trim();
+            for (var i = 0; i < REAL_PATTERNS.length; i++) {
+                if (REAL_PATTERNS[i].test(trimmed)) return true;
+            }
+            return false;
+        }
+
+        var ws = null;
+        var ghListen = false;
+
+        function connectWS() {
+            try {
+                ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/');
+                ws.onopen = function() {
+                    ws.send(JSON.stringify({ type: 'subscribe', events: ['github'] }));
+                };
+                ws.onmessage = function(e) {
+                    var m = JSON.parse(e.data);
+                    if (m.type === 'github_event') {
+                        if (ghListen) print('[GH] ' + fmtGhEvent(m.event), 'info');
+                    }
+                };
+                ws.onclose = function() {
+                    setTimeout(connectWS, 5000);
+                };
+            } catch (e) { /* ws unavailable */ }
+        }
+
+        function fmtGhEvent(e) {
+            var line = '#' + (e.head || '?') + ' ' + e.type;
+            if (e.action) line += '/' + e.action;
+            line += ' — ' + (e.actor || '?') + ' — ' + (e.message || '').slice(0, 60);
+            if (e.runStatus) line += ' [' + e.runStatus + (e.runConclusion ? '/' + e.runConclusion : '') + ']';
+            return line;
+        }
+
+        function execReal(cmdLine) {
+            return new Promise(function(resolve) {
+                if (!ws || ws.readyState !== 1) {
+                    return resolve('real shell: offline (no WebSocket connection)');
+                }
+                ws.send(JSON.stringify({ type: 'command', command: cmdLine }));
+                var onMsg = function(e) {
+                    var m = JSON.parse(e.data);
+                    if (m.type === 'command_result' && m.command === cmdLine) {
+                        ws.removeEventListener('message', onMsg);
+                        var out = m.result;
+                        if (m.allowed && m.exitCode === 0) {
+                            resolve('[REAL] ' + out);
+                        } else if (m.allowed) {
+                            resolve('[REAL][exit ' + m.exitCode + '] ' + out);
+                        } else {
+                            resolve('[DENIED] ' + out);
+                        }
+                    }
+                };
+                ws.addEventListener('message', onMsg);
+                setTimeout(function() {
+                    ws.removeEventListener('message', onMsg);
+                    resolve('real shell: timeout');
+                }, 9000);
+            });
+        }
+
+        connectWS();
 
         function formatUptime(seconds) {
             var h = Math.floor(seconds / 3600);
@@ -607,13 +723,21 @@
                     var args = parts.slice(1);
                     if (commands[cmd]) {
                         var result = commands[cmd](args);
-                        if (result) {
+                        if (result && typeof result.then === 'function') {
+                            result.then(function(r) {
+                                if (r) print(r, cmd === 'gh' ? 'info' : '');
+                            });
+                        } else if (result) {
                             var cls = '';
                             if (cmd === 'neofetch') cls = 'info';
                             else if (cmd === 'whoami') cls = 'gold';
                             else if (cmd === 'help') cls = 'info';
                             print(result, cls);
                         }
+                    } else if (isRealCommand(cmdLine)) {
+                        execReal(cmdLine).then(function(r) {
+                            print(r, 'info');
+                        });
                     } else {
                         print('Command not found: ' + cmd + ' — Type \'help\' for available commands.', 'error');
                     }

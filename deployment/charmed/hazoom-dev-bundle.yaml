@@ -1,0 +1,54 @@
+# HAZOOM OS — Microservice Dev Farm bundle (Juju on LXD)
+# 6 machines, one per major microservice, orchestrated via Kubernetes.
+#
+# Deploy:
+#   juju add-model hazoom-dev
+#   juju deploy ./deployment/charmed/hazoom-dev-bundle.yaml
+#   bash scripts/deploy-dev-machines.sh    # provision + k8s registration
+#
+# Copyright © 2024-2026 Hazem Soussi — All Rights Reserved
+
+bundle: kubernetes
+name: hazoom-dev-farm
+description: |
+  HAZOOM OS microservice dev farm — 6 Juju machines (LXD) hosting
+  per-service development environments. Kubernetes (Charmed K8s)
+  registers and exposes them via the hazoom-dev namespace.
+applications: {}
+machines:
+  "0":
+    series: ubuntu
+    base: ubuntu@24.04
+    constraints: cores=1 mem=1024M
+    labels:
+      hazoom-service: planet-earth
+  "1":
+    series: ubuntu
+    base: ubuntu@24.04
+    constraints: cores=1 mem=1024M
+    labels:
+      hazoom-service: hazoom-pod
+  "2":
+    series: ubuntu
+    base: ubuntu@24.04
+    constraints: cores=1 mem=1024M
+    labels:
+      hazoom-service: chatdev-ornith
+  "3":
+    series: ubuntu
+    base: ubuntu@24.04
+    constraints: cores=1 mem=1024M
+    labels:
+      hazoom-service: birds-encyclopedia
+  "4":
+    series: ubuntu
+    base: ubuntu@24.04
+    constraints: cores=1 mem=1024M
+    labels:
+      hazoom-service: collaborative-beat
+  "5":
+    series: ubuntu
+    base: ubuntu@24.04
+    constraints: cores=1 mem=1024M
+    labels:
+      hazoom-service: descer

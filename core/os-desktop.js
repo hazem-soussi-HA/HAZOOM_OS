@@ -646,6 +646,7 @@
                 setInterval(() => this.checkServiceHealth(), 30000);
                 this.loadAppRegistry();
                 this.initOS();
+                this._initGitHubObservation();
 
                 if (this.consciousness) {
                     this.consciousness.emit('system.boot', { version: this.version });
@@ -1469,6 +1470,20 @@
 
                 // Auto-scroll
                 body.scrollTop = body.scrollHeight;
+            },
+
+            _initGitHubObservation() {
+                // Real-time GitHub observation toasts (push / PR / workflow run)
+                if (window.HazoomAether && typeof window.HazoomAether.subscribe === 'function') {
+                    window.HazoomAether.subscribe((data) => {
+                        if (data && data.type === 'github_event' && data.event) {
+                            const e = data.event;
+                            let title = 'GitHub: ' + e.type;
+                            if (e.action) title += ' / ' + e.action;
+                            this.showNotification(title, (e.actor || '?') + ' — ' + (e.message || '').slice(0, 80));
+                        }
+                    });
+                }
             },
 
             showNotification(title, message) {

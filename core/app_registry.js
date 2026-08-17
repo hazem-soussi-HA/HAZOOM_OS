@@ -67,6 +67,9 @@
     // === REGISTER DEEP BROWSER (inner-internet explorer) ===
     Registry.registerApp('tool-deep-browser', { name: 'Deep Browser', icon: '🜂' });
 
+    // === REGISTER GITHUB BRIDGE (real-time OS ↔ GitHub observation) ===
+    Registry.registerApp('tool-github-bridge', { name: 'GitHub Bridge', icon: '🔗' });
+
     // === REGISTER GAMES ===
     var gameApps = [
         { id: 'game-smg6', name: 'Super Mario GTA6', icon: '🍄' },

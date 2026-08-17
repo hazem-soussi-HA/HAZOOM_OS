@@ -1,0 +1,123 @@
+# HAZOOM OS — Dev Farm orchestration on Charmed Kubernetes
+# Juju machines (LXD) host the microservice dev environments; Kubernetes
+# acts as the registry/proxy exposing them to the OS and the internet.
+# Endpoints are populated by scripts/dev-farm-endpoints.sh from
+# `juju machines` (machine IPs change across reboots).
+#
+# Copyright © 2024-2026 Hazem Soussi — All Rights Reserved
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hazoom-dev
+  labels:
+    hazoom-os.io/managed-by: juju
+    hazoom-os.io/role: dev-farm
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dev-planet-earth
+  namespace: hazoom-dev
+  labels: { hazoom-os.io/service: planet-earth }
+spec:
+  ports:
+    - { port: 80, targetPort: 8080, name: http }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dev-hazoom-pod
+  namespace: hazoom-dev
+  labels: { hazoom-os.io/service: hazoom-pod }
+spec:
+  ports:
+    - { port: 80, targetPort: 4000, name: http }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dev-chatdev-ornith
+  namespace: hazoom-dev
+  labels: { hazoom-os.io/service: chatdev-ornith }
+spec:
+  ports:
+    - { port: 80, targetPort: 5055, name: http }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dev-birds-encyclopedia
+  namespace: hazoom-dev
+  labels: { hazoom-os.io/service: birds-encyclopedia }
+spec:
+  ports:
+    - { port: 80, targetPort: 4100, name: http }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dev-collaborative-beat
+  namespace: hazoom-dev
+  labels: { hazoom-os.io/service: collaborative-beat }
+spec:
+  ports:
+    - { port: 80, targetPort: 5000, name: http }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dev-descer
+  namespace: hazoom-dev
+  labels: { hazoom-os.io/service: descer }
+spec:
+  ports:
+    - { port: 80, targetPort: 6000, name: http }
+---
+# Ingress routes (ingress-nginx is deployed in this cluster)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hazoom-dev-farm
+  namespace: hazoom-dev
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: dev.planet-earth.hazoom.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend: { service: { name: dev-planet-earth, port: { name: http } } }
+    - host: dev.pod.hazoom.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend: { service: { name: dev-hazoom-pod, port: { name: http } } }
+    - host: dev.chat.hazoom.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend: { service: { name: dev-chatdev-ornith, port: { name: http } } }
+    - host: dev.birds.hazoom.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend: { service: { name: dev-birds-encyclopedia, port: { name: http } } }
+    - host: dev.beat.hazoom.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend: { service: { name: dev-collaborative-beat, port: { name: http } } }
+    - host: dev.descer.hazoom.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend: { service: { name: dev-descer, port: { name: http } } }

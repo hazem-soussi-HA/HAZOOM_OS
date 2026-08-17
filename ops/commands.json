@@ -1,0 +1,25 @@
+{
+  "_meta": {
+    "description": "HAZOOM OS GitOps control plane — commands executed by the OS when a push webhook arrives. All commands MUST be in the shell allowlist (read-only + safe git ops). Results are reported as GitHub commit statuses (ops/<name>).",
+    "security": "gated allowlist only",
+    "updated": "2026-08-16"
+  },
+  "commands": [
+    {
+      "name": "sync-repo",
+      "command": "git fetch origin"
+    },
+    {
+      "name": "repo-state",
+      "command": "git status"
+    },
+    {
+      "name": "recent-history",
+      "command": "git log --oneline -5"
+    },
+    {
+      "name": "os-health",
+      "command": "uptime"
+    }
+  ]
+}

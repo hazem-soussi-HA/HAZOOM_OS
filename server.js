@@ -274,7 +274,11 @@ app.disable('x-powered-by');
 
 // ── 8. BODY PARSING ──────────────────────────────────────────────
 
-app.use(express.json({ limit: config.get('maxRequestBody') }));
+// rawBody captured for GitHub webhook HMAC verification (X-Hub-Signature-256)
+app.use(express.json({
+    limit: config.get('maxRequestBody'),
+    verify: (req, res, buf) => { req.rawBody = buf; }
+}));
 app.use(express.urlencoded({ extended: false, limit: config.get('maxRequestBody') }));
 
 // ── 9. FAVICON HANDLER ───────────────────────────────────────────
@@ -333,7 +337,7 @@ app.use((req, res, next) => {
         return next();
     }
 
-    const skipPaths = ['/api/intelligence/stream'];
+    const skipPaths = ['/api/intelligence/stream', '/api/github/'];  // github feed must stay real-time
     if (skipPaths.some(p => req.path.startsWith(p))) return next();
 
     const cacheKey = req.originalUrl;
@@ -506,12 +510,48 @@ if (config.hasSSL) {
     });
 }
 
+// ── SHELL EXECUTOR (gated) ────────────────────────────────────────
+// Real shell observation with allowlist: read-only + safe git ops.
+
+const { getShellExecutor } = require('./core/shell');
+const shellExecutor = getShellExecutor({ workDir: HAZOOM_DIR, logger: logger.child('SHELL') });
+kernel.shellExecutor = shellExecutor;
+logger.info('Shell executor ready — gated allowlist', shellExecutor.getStats());
+
 // ── WEBSOCKET ─────────────────────────────────────────────────────
 
 const wsHandler = new WebSocketHandler(server, kernel, apiRouter, {
     tickInterval: config.get('wsTickInterval'),
-    logger: logger.child('WS')
+    logger: logger.child('WS'),
+    shell: shellExecutor
 });
+
+// ── GITHUB BRIDGE ─────────────────────────────────────────────────
+// Real-time shell observation between GitHub and the OS.
+// Webhook receiver (HMAC-verified) + REST polling + GitOps control.
+
+const { GitHubBridge } = require('./core/github_bridge');
+const githubBridge = new GitHubBridge({
+    owner: config.get('github.owner'),
+    repo: config.get('github.repo'),
+    token: config.get('github.token'),
+    webhookSecret: config.get('github.webhookSecret'),
+    pollInterval: config.get('github.pollInterval'),
+    maxEvents: config.get('github.maxEvents'),
+    workDir: HAZOOM_DIR,
+    logger: logger.child('GITHUB'),
+    broadcast: (msg) => wsHandler.broadcastGitHub(msg)
+});
+kernel.githubBridge = githubBridge;
+
+if (githubBridge.enabled) {
+    logger.info('GitHub bridge enabled — observing GitHub in real time', {
+        repo: `${githubBridge.owner}/${githubBridge.repo}`,
+        events: ['push', 'pull_request', 'workflow_run']
+    });
+} else {
+    logger.warn('GitHub bridge running without token — webhook-only mode (set GITHUB_TOKEN for polling)');
+}
 
 // ── GRACEFUL SHUTDOWN ─────────────────────────────────────────────
 
@@ -539,6 +579,9 @@ function gracefulShutdown(signal) {
 
     // Clean up cache
     apiCache.destroy();
+
+    // Stop GitHub bridge polling
+    if (githubBridge) githubBridge.stop();
 
     server.close(() => {
         logger.info('Server closed');

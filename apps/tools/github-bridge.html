@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  HAZOOM OS v6 — GitHub Bridge
+  Real-time shell observation between GitHub and the OS.
+  Live feed: push / pull_request / workflow_run. Gated shell access.
+  Copyright © 2024-2026 Hazem Soussi. All Rights Reserved.
+-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Bridge - HAZOOM OS</title>
+    <style>
+        :root {
+            --bg: #050510;
+            --panel: #0a0a1a;
+            --accent: #00f0ff;
+            --green: #10b981;
+            --gold: #ffd700;
+            --red: #ef4444;
+            --text: #e8e8f0;
+            --dim: rgba(232, 232, 240, 0.5);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 18px;
+            background: var(--panel);
+            border-bottom: 1px solid rgba(0, 240, 255, 0.15);
+        }
+        .logo { font-size: 1.3rem; color: var(--accent); }
+        h1 { font-size: 1rem; color: var(--accent); letter-spacing: 1px; }
+        .sub { color: var(--dim); font-size: 0.75rem; }
+        .status-pill {
+            margin-left: auto;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+        .status-pill.on { color: var(--green); border-color: var(--green); animation: pulse 2s infinite; }
+        @keyframes pulse { 50% { opacity: 0.55; } }
+        .status-pill.off { color: var(--red); border-color: var(--red); }
+
+        main {
+            flex: 1;
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            min-height: 0;
+        }
+        .feed-panel {
+            flex: 1.4;
+            background: var(--panel);
+            border: 1px solid rgba(0, 240, 255, 0.12);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+        .side-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-width: 0;
+        }
+        .panel-title {
+            padding: 8px 14px;
+            font-size: 0.75rem;
+            color: var(--dim);
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+        }
+        #feed {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 14px;
+        }
+        #feed::-webkit-scrollbar { width: 6px; }
+        #feed::-webkit-scrollbar-thumb { background: rgba(0,240,255,0.2); border-radius: 3px; }
+        .event {
+            padding: 8px 10px;
+            margin-bottom: 8px;
+            border-left: 3px solid var(--accent);
+            background: rgba(0, 240, 255, 0.04);
+            border-radius: 4px;
+            animation: slideIn 0.25s ease;
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-6px); } }
+        .event.push { border-color: var(--green); }
+        .event.pull_request { border-color: var(--gold); }
+        .event.workflow_run { border-color: #8b5cf6; }
+        .ev-head { font-size: 0.78rem; }
+        .ev-type { color: var(--accent); font-weight: bold; }
+        .ev-actor { color: var(--gold); }
+        .ev-msg { margin-top: 3px; font-size: 0.8rem; color: var(--text); }
+        .ev-meta { margin-top: 3px; font-size: 0.68rem; color: var(--dim); }
+        .ev-run { color: #8b5cf6; font-size: 0.68rem; margin-top: 2px; }
+
+        .stat-box {
+            background: var(--panel);
+            border: 1px solid rgba(0, 240, 255, 0.12);
+            border-radius: 8px;
+            padding: 12px 14px;
+        }
+        .stat-row { display: flex; justify-content: space-between; font-size: 0.78rem; padding: 3px 0; }
+        .stat-row .k { color: var(--dim); }
+        .stat-row .v { color: var(--text); }
+        .stat-row .v.ok { color: var(--green); }
+        .stat-row .v.bad { color: var(--red); }
+
+        #shell {
+            flex: 1;
+            background: var(--panel);
+            border: 1px solid rgba(0, 240, 255, 0.12);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            min-height: 200px;
+        }
+        #shellOut {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 14px;
+            font-size: 0.72rem;
+            white-space: pre-wrap;
+            color: var(--green);
+        }
+        .shell-line { display: flex; gap: 6px; padding: 6px 12px; border-top: 1px solid rgba(0,240,255,0.08); }
+        .shell-prompt { color: var(--accent); font-size: 0.75rem; }
+        #shellInput {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--green);
+            font-family: inherit;
+            font-size: 0.75rem;
+            outline: none;
+        }
+        .empty { color: var(--dim); font-size: 0.75rem; text-align: center; padding: 30px 10px; }
+    </style>
+</head>
+<body>
+    <header>
+        <span class="logo">◈</span>
+        <h1>GITHUB BRIDGE</h1>
+        <span class="sub" id="repoSub">observing hazoom-soussi-HA/HAZOOM_OS</span>
+        <span class="status-pill" id="pill">offline</span>
+    </header>
+    <main>
+        <div class="feed-panel">
+            <div class="panel-title">LIVE OBSERVATION — push / pull_request / workflow_run</div>
+            <div id="feed"><div class="empty">Connecting to the OS observation channel...</div></div>
+        </div>
+        <div class="side-panel">
+            <div class="stat-box" id="stats">
+                <div class="stat-row"><span class="k">Bridge</span><span class="v" id="stEnabled">—</span></div>
+                <div class="stat-row"><span class="k">Repo</span><span class="v">hazem-soussi-HA/HAZOOM_OS</span></div>
+                <div class="stat-row"><span class="k">Last sync</span><span class="v" id="stSync">—</span></div>
+                <div class="stat-row"><span class="k">Poll result</span><span class="v" id="stPoll">—</span></div>
+                <div class="stat-row"><span class="k">Observed events</span><span class="v" id="stEvents">0</span></div>
+                <div class="stat-row"><span class="k">Latest</span><span class="v" id="stLatest">—</span></div>
+            </div>
+            <div id="shell">
+                <div class="panel-title">GATED SHELL — read-only + safe git ops</div>
+                <div id="shellOut"><div class="empty">Run an allowlisted command, e.g. <b>git log --oneline -5</b> or <b>juju status</b></div></div>
+                <div class="shell-line">
+                    <span class="shell-prompt">hazoom@os:~$</span>
+                    <input type="text" id="shellInput" autocomplete="off" spellcheck="false">
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        var feed = document.getElementById('feed');
+        var shellOut = document.getElementById('shellOut');
+        var shellInput = document.getElementById('shellInput');
+        var pill = document.getElementById('pill');
+        var events = [];
+
+        function setPill(on) {
+            pill.textContent = on ? '● LIVE' : '○ offline';
+            pill.className = 'status-pill ' + (on ? 'on' : 'off');
+        }
+
+        function addEvent(e) {
+            events.unshift(e);
+            if (events.length > 100) events.pop();
+            var div = document.createElement('div');
+            div.className = 'event ' + e.type;
+            var head = '<span class="ev-type">' + e.type + '</span>';
+            if (e.action) head += ' <span style="color:var(--dim)">/' + e.action + '</span>';
+            head += ' <span class="ev-actor">' + (e.actor || '?') + '</span>';
+            div.innerHTML =
+                '<div class="ev-head">' + head +
+                (e.ref ? ' <span style="color:var(--dim)">→ ' + e.ref + '</span>' : '') +
+                '</div>' +
+                '<div class="ev-msg">' + esc(e.message || '') + '</div>' +
+                (e.runStatus ? '<div class="ev-run">' + esc(e.runName || '') + ' #' + (e.runNumber || '') +
+                    ' [' + e.runStatus + (e.runConclusion ? '/' + e.runConclusion : '') + ']</div>' : '') +
+                '<div class="ev-meta">' + (e.head ? '#' + e.head : '') +
+                ' ' + new Date(e.timestamp).toLocaleTimeString() + ' · ' + e.source + '</div>';
+            feed.prepend(div);
+            while (feed.children.length > 100) feed.lastChild.remove();
+        }
+
+        function esc(s) {
+            var d = document.createElement('div');
+            d.textContent = s;
+            return d.innerHTML;
+        }
+
+        function refreshStats() {
+            fetch('/api/github/status').then(function(r) { return r.json(); }).then(function(d) {
+                document.getElementById('stEnabled').textContent = d.enabled ? 'LIVE' : 'webhook-only';
+                document.getElementById('stEnabled').className = 'v ' + (d.enabled ? 'ok' : 'bad');
+                document.getElementById('stSync').textContent = d.lastSync ? new Date(d.lastSync).toLocaleTimeString() : 'never';
+                document.getElementById('stPoll').textContent = d.lastSyncResult ? JSON.stringify(d.lastSyncResult) : (d.syncError ? d.syncError : '—');
+                document.getElementById('stPoll').className = 'v ' + (d.syncError ? 'bad' : 'ok');
+                document.getElementById('stEvents').textContent = d.observedEvents;
+                document.getElementById('stLatest').textContent = d.latestEvent ? d.latestEvent.type + ' / ' + (d.latestEvent.actor || '?') : '—';
+                setPill(d.enabled);
+            }).catch(function() { setPill(false); });
+        }
+
+        function loadHistory() {
+            fetch('/api/github/events?limit=50').then(function(r) { return r.json(); }).then(function(d) {
+                if (!d.items || !d.items.length) return;
+                events = d.items;
+                feed.innerHTML = '';
+                d.items.slice().reverse().forEach(addEvent);
+            }).catch(function() {});
+        }
+
+        function printShell(text, cls) {
+            var div = document.createElement('div');
+            div.style.cssText = 'margin-bottom:4px;white-space:pre-wrap;' +
+                (cls === 'err' ? 'color:#ef4444;' : cls === 'info' ? 'color:#00f0ff;' : '');
+            div.textContent = text;
+            shellOut.appendChild(div);
+            shellOut.scrollTop = shellOut.scrollHeight;
+            if (shellOut.children[0] && shellOut.children[0].className === 'empty') shellOut.children[0].remove();
+        }
+
+        shellInput.addEventListener('keydown', function(e) {
+            if (e.key !== 'Enter') return;
+            var cmd = shellInput.value.trim();
+            shellInput.value = '';
+            if (!cmd) return;
+            printShell('hazoom@os:~$ ' + cmd, 'info');
+            fetch('/api/shell/exec', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ command: cmd })
+            }).then(function(r) { return r.json(); }).then(function(d) {
+                if (d.allowed) {
+                    printShell(d.output || '(no output)');
+                } else {
+                    printShell(d.output, 'err');
+                }
+            }).catch(function(err) {
+                printShell('shell error: ' + err.message, 'err');
+            });
+        });
+
+        var ws = null;
+        function connect() {
+            try {
+                ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/');
+                ws.onopen = function() {
+                    ws.send(JSON.stringify({ type: 'subscribe', events: ['github'] }));
+                    setPill(true);
+                };
+                ws.onmessage = function(ev) {
+                    var m = JSON.parse(ev.data);
+                    if (m.type === 'github_event') addEvent(m.event);
+                };
+                ws.onclose = function() { setPill(false); setTimeout(connect, 4000); };
+                ws.onerror = function() { setPill(false); };
+            } catch (e) { setTimeout(connect, 5000); }
+        }
+
+        refreshStats();
+        loadHistory();
+        setInterval(refreshStats, 15000);
+        connect();
+    </script>
+</body>
+</html>

@@ -655,6 +655,81 @@ class APIRouter {
             });
         });
 
+        // ── GITHUB BRIDGE ────────────────────────────────────
+        // Real-time shell observation between GitHub and the OS.
+        // POST webhook is HMAC-verified; reads are public (repo is public).
+
+        r.post('/api/github/webhook', async (req, res) => {
+            const bridge = k.githubBridge;
+            if (!bridge) return this._error(res, 404, 'GitHub bridge not loaded', 'NOT_LOADED');
+
+            const eventType = req.headers['x-github-event'];
+            if (!eventType) return this._error(res, 400, 'Missing X-GitHub-Event header', 'VALIDATION');
+
+            if (!bridge.verifySignature(req.rawBody, req.headers['x-hub-signature-256'])) {
+                return this._error(res, 401, 'Invalid webhook signature', 'FORBIDDEN');
+            }
+
+            const event = bridge.handleWebhook(eventType, req.body);
+            if (event && event.type === 'push') {
+                // GitOps control plane: executes ops/commands.json (gated).
+                // Commit-status reporting inside only fires when a token exists.
+                bridge.runOpsCommands(event).catch(() => {});
+            }
+            res.status(202).json({ ok: true, received: eventType, observed: !!event });
+        });
+
+        r.get('/api/github/events', (req, res) => {
+            const bridge = k.githubBridge;
+            if (!bridge) return this._error(res, 404, 'GitHub bridge not loaded', 'NOT_LOADED');
+            const { offset, limit } = this._paginate(req.query);
+            res.json(bridge.getEvents(offset, limit));
+        });
+
+        r.get('/api/github/status', async (req, res) => {
+            const bridge = k.githubBridge;
+            if (!bridge) return this._error(res, 404, 'GitHub bridge not loaded', 'NOT_LOADED');
+            res.json(await bridge.getStatus());
+        });
+
+        r.post('/api/github/sync', async (req, res) => {
+            const bridge = k.githubBridge;
+            if (!bridge) return this._error(res, 404, 'GitHub bridge not loaded', 'NOT_LOADED');
+            res.json(await bridge.sync());
+        });
+
+        r.get('/api/github/stats', (req, res) => {
+            const bridge = k.githubBridge;
+            if (!bridge) return this._error(res, 404, 'GitHub bridge not loaded', 'NOT_LOADED');
+            res.json(bridge.getStats());
+        });
+
+        // ── SHELL OBSERVATION (gated allowlist) ───────────────
+        // Read-only + safe git ops only. See core/shell.js.
+
+        r.post('/api/shell/exec', async (req, res) => {
+            const shell = k.shellExecutor;
+            if (!shell) return this._error(res, 404, 'Shell executor not loaded', 'NOT_LOADED');
+            const { command } = req.body || {};
+            if (!command || typeof command !== 'string') {
+                return this._error(res, 400, 'No command provided', 'VALIDATION');
+            }
+            res.json(await shell.execute(command));
+        });
+
+        r.get('/api/shell/log', (req, res) => {
+            const shell = k.shellExecutor;
+            if (!shell) return this._error(res, 404, 'Shell executor not loaded', 'NOT_LOADED');
+            const { offset, limit } = this._paginate(req.query);
+            res.json(shell.getLog(offset, limit));
+        });
+
+        r.get('/api/shell/stats', (req, res) => {
+            const shell = k.shellExecutor;
+            if (!shell) return this._error(res, 404, 'Shell executor not loaded', 'NOT_LOADED');
+            res.json(shell.getStats());
+        });
+
         // ── VERSIONED API ENDPOINTS (mirrors of key endpoints) ──
 
         r.get('/api/v1/system/metrics', protect, (req, res) => {

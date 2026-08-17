@@ -18,6 +18,7 @@ class WebSocketHandler {
 
         this.wss = new WebSocketServer({ server });
         this.clients = new Set();
+        this.shell = config.shell || null;
 
         this.wss.on('connection', (ws, req) => this._onConnect(ws, req));
 
@@ -94,20 +95,32 @@ class WebSocketHandler {
         });
     }
 
-    _handleMessage(ws, msg) {
+    async _handleMessage(ws, msg) {
         switch (msg.type) {
             case 'ping':
                 ws.send(JSON.stringify({ type: 'pong', timestamp: Date.now() }));
                 break;
             case 'command':
-                // Execute terminal command via kernel
+                // Execute terminal command via the gated shell executor.
+                // Allowlist only: read-only + safe git ops (core/shell.js).
                 if (msg.command) {
-                    // Could route to terminal emulator here
-                    ws.send(JSON.stringify({
-                        type: 'command_result',
-                        command: msg.command,
-                        result: 'Command routing not yet implemented in WS'
-                    }));
+                    if (this.shell) {
+                        const result = await this.shell.execute(msg.command);
+                        ws.send(JSON.stringify({
+                            type: 'command_result',
+                            command: msg.command,
+                            result: result.output,
+                            allowed: result.allowed,
+                            exitCode: result.exitCode,
+                            duration: result.duration
+                        }));
+                    } else {
+                        ws.send(JSON.stringify({
+                            type: 'command_result',
+                            command: msg.command,
+                            result: 'Shell executor not loaded'
+                        }));
+                    }
                 }
                 break;
             case 'subscribe':
@@ -136,6 +149,19 @@ class WebSocketHandler {
     /** Broadcast Q-learning event */
     broadcastQLearning(event) {
         this.broadcast({ type: 'qlearning', event });
+    }
+
+    /** Broadcast GitHub observation event (push / PR / workflow run).
+     *  Sent to clients subscribed to 'github', or all when unsubscribed. */
+    broadcastGitHub(payload) {
+        const data = JSON.stringify(payload);
+        for (const ws of this.clients) {
+            if (ws.readyState !== 1) continue;
+            const subs = ws.subscriptions;
+            if (!subs || subs.size === 0 || subs.has('github')) {
+                ws.send(data);
+            }
+        }
     }
 
     /** Broadcast consciousness event */

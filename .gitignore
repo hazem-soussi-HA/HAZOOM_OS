@@ -91,3 +91,6 @@ memory/
 
 # Generated
 iso_root/
+
+# Local secrets (webhook HMAC, machine-specific) — never commit
+config/local.json
