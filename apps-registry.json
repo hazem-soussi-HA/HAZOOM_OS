@@ -20,7 +20,8 @@
         { "id": "svc-chatdev", "name": "Ornith Chat", "icon": "💬", "path": "http://127.0.0.1:5055/", "source": "services/chatdev-ornith/" },
         { "id": "svc-descer", "name": "DESCER Drum Machine", "icon": "🥁", "path": "http://127.0.0.1:6000/", "source": "services/descer/" },
         { "id": "svc-sovereign", "name": "Sovereign State", "icon": "🏛️", "path": "http://127.0.0.1:4747/", "source": "services/sovereign-state/" },
-        { "id": "svc-bouzelfa", "name": "Bouzelfa Ndhifa", "icon": "🧹", "path": "http://127.0.0.1:7000/", "source": "services/bouzelfa-ndhifa/" }
+        { "id": "svc-bouzelfa", "name": "Bouzelfa Ndhifa", "icon": "🧹", "path": "http://127.0.0.1:7000/", "source": "services/bouzelfa-ndhifa/" },
+        { "id": "svc-deepseek", "name": "DeepSeek Knowledge", "icon": "🧠", "path": "http://127.0.0.1:8200/", "source": "services/deepseek-knowledge/" }
       ]
     },
     {

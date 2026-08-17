@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Birds Encyclopedia</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --bg:#0c1210; --card:#122019; --line:#1f3a2c; --accent:#7CFC9C; --text:#dceadf; --muted:#86a093; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; }
+  header { display:flex; align-items:center; gap:12px; padding:18px 28px; border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--bg); }
+  header h1 { font-size:19px; letter-spacing:1px; }
+  header .atlas-link { margin-left:auto; color:var(--accent); text-decoration:none; font-size:13px; border:1px solid var(--line); padding:7px 14px; border-radius:20px; }
+  main { padding:24px 28px 60px; max-width:1200px; margin:0 auto; }
+  .search { width:100%; max-width:420px; background:#16251d; border:1px solid var(--line); color:var(--text); padding:11px 16px; border-radius:10px; font-size:14px; outline:none; }
+  .search:focus { border-color:var(--accent); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:16px; margin-top:20px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; cursor:pointer; transition:.15s; }
+  .card:hover { border-color:var(--accent); transform:translateY(-2px); }
+  .card h3 { font-size:15px; }
+  .card .latin { font-style:italic; color:var(--muted); font-size:12px; margin-top:2px; }
+  .card .meta { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+  .card .tag { font-size:10.5px; padding:3px 9px; border-radius:20px; background:#1a2c21; color:var(--muted); border:1px solid var(--line); }
+  .card .note { font-size:12px; color:var(--muted); margin-top:10px; line-height:1.5; }
+  .empty { text-align:center; color:var(--muted); padding:50px 0; }
+  .detail { position:fixed; inset:0; background:rgba(6,10,8,.82); display:none; align-items:center; justify-content:center; }
+  .detail.open { display:flex; }
+  .panel { background:var(--card); border:1px solid var(--accent); border-radius:14px; padding:26px; max-width:480px; width:90%; }
+  .panel h2 { font-size:18px; }
+  .panel .latin { font-style:italic; color:var(--accent); margin-top:4px; }
+  .panel p { margin-top:12px; color:var(--muted); line-height:1.6; font-size:14px; }
+  .panel .close { margin-top:18px; background:none; border:1px solid var(--line); color:var(--text); padding:7px 16px; border-radius:8px; cursor:pointer; }
+</style>
+</head>
+<body>
+<header><h1>🐦 BIRDS ENCYCLOPEDIA</h1><a class="atlas-link" href="/atlas/">Atlas →</a></header>
+<main>
+  <input class="search" id="q" placeholder="Search by name, region, diet…">
+  <div id="grid" class="grid"><div class="empty">Loading birds…</div></div>
+</main>
+<div class="detail" id="detail"><div class="panel" id="panel"></div></div>
+<script>
+  let birds = [];
+  async function load() {
+    const r = await fetch('/api/birds');
+    birds = (await r.json()).birds;
+    render();
+  }
+  function render() {
+    const q = document.getElementById('q').value.toLowerCase();
+    const list = q ? birds.filter(b => [b.name, b.latin, b.region, b.diet, b.family, ...b.color].join(' ').toLowerCase().includes(q)) : birds;
+    const grid = document.getElementById('grid');
+    if (!list.length) { grid.innerHTML = '<div class="empty">No birds match.</div>'; return; }
+    grid.innerHTML = list.map(b => `
+      <div class="card" onclick="show('${b.id}')">
+        <h3>${b.name}</h3>
+        <div class="latin">${b.latin}</div>
+        <div class="meta">
+          <span class="tag">${b.region}</span>
+          <span class="tag">${b.size}</span>
+          <span class="tag">${b.diet}</span>
+        </div>
+        <div class="note">${b.note}</div>
+      </div>`).join('');
+  }
+  function show(id) {
+    const b = birds.find(x => x.id === id);
+    document.getElementById('panel').innerHTML = `
+      <h2>${b.name}</h2>
+      <div class="latin">${b.latin} · ${b.family}</div>
+      <p><strong>Region:</strong> ${b.region} · <strong>Size:</strong> ${b.size} · <strong>Diet:</strong> ${b.diet}</p>
+      <p>${b.note}</p>
+      <button class="close" onclick="document.getElementById('detail').classList.remove('open')">Close</button>`;
+    document.getElementById('detail').classList.add('open');
+  }
+  document.getElementById('q').addEventListener('input', render);
+  load();
+</script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bird Atlas</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --bg:#0b1016; --card:#121c2a; --line:#1e2f44; --accent:#4dc3ff; --text:#dce7f3; --muted:#7f94ab; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; }
+  header { display:flex; align-items:center; gap:12px; padding:18px 28px; border-bottom:1px solid var(--line); }
+  header h1 { font-size:19px; letter-spacing:1px; }
+  header .back { margin-left:auto; color:var(--accent); text-decoration:none; font-size:13px; border:1px solid var(--line); padding:7px 14px; border-radius:20px; }
+  main { padding:24px 28px 60px; max-width:1200px; margin:0 auto; }
+  .filters { display:flex; gap:8px; flex-wrap:wrap; }
+  .filters button { background:#16233a; color:var(--muted); border:1px solid var(--line); padding:7px 15px; border-radius:20px; font-size:13px; cursor:pointer; }
+  .filters button.active, .filters button:hover { color:var(--accent); border-color:var(--accent); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:14px; margin-top:20px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; }
+  .card h3 { font-size:14px; }
+  .card .latin { font-style:italic; color:var(--muted); font-size:11.5px; margin-top:2px; }
+  .card .swatch { display:flex; gap:4px; margin-top:10px; }
+  .card .swatch i { width:22px; height:22px; border-radius:50%; border:1px solid rgba(255,255,255,.15); }
+  .card .region { margin-top:8px; font-size:11px; color:var(--muted); }
+</style>
+</head>
+<body>
+<header><h1>🗺️ BIRD ATLAS</h1><a class="back" href="/">← Encyclopedia</a></header>
+<main>
+  <div class="filters" id="filters"></div>
+  <div class="grid" id="grid"></div>
+</main>
+<script>
+  let birds = [], regions = new Set();
+  const SWATCH = { slate:'#64748b', white:'#f1f5f9', brown:'#7c4a21', mottled:'#8a6a3f', red:'#dc2626', black:'#0f172a', blue:'#3b82f6', orange:'#f97316', green:'#22c55e', pink:'#f9a8d4', yellow:'#eab308', barred:'#e2e8f0' };
+  async function load() {
+    birds = (await (await fetch('/api/birds')).json()).birds;
+    birds.forEach(b => b.color.forEach(c => regions.add(c)));
+    const f = document.getElementById('filters');
+    ['All', ...regions].forEach(r => {
+      const b = document.createElement('button');
+      b.textContent = r;
+      b.onclick = () => { document.querySelectorAll('#filters button').forEach(x => x.classList.remove('active')); b.classList.add('active'); render(r); };
+      f.appendChild(b);
+    });
+    f.firstChild.classList.add('active');
+    render('All');
+  }
+  function render(color) {
+    const list = color === 'All' ? birds : birds.filter(b => b.color.includes(color));
+    document.getElementById('grid').innerHTML = list.map(b => `
+      <div class="card">
+        <h3>${b.name}</h3>
+        <div class="latin">${b.latin}</div>
+        <div class="swatch">${b.color.map(c => `<i style="background:${SWATCH[c] || '#888'}"></i>`).join('')}</div>
+        <div class="region">${b.region} · ${b.size}</div>
+      </div>`).join('');
+  }
+  load();
+</script>
+</body>
+</html>

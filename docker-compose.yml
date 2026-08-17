@@ -147,7 +147,7 @@ services:
   planet-earth:
     build:
       context: ./services/planet-earth
-      dockerfile: Dockerfile 2>/dev/null || true
+      dockerfile: Dockerfile
     container_name: hazoom-planet-earth
     restart: unless-stopped
     ports:
@@ -162,7 +162,7 @@ services:
   planet-earth-news:
     build:
       context: ./services/planet-earth-news
-      dockerfile: Dockerfile 2>/dev/null || true
+      dockerfile: Dockerfile
     container_name: hazoom-planet-news
     restart: unless-stopped
     ports:
@@ -177,7 +177,7 @@ services:
   planet-earth-history:
     build:
       context: ./services/planet-earth-history
-      dockerfile: Dockerfile 2>/dev/null || true
+      dockerfile: Dockerfile
     container_name: hazoom-planet-history
     restart: unless-stopped
     ports:
@@ -192,7 +192,7 @@ services:
   birds-encyclopedia:
     build:
       context: ./services/birds-encyclopedia
-      dockerfile: Dockerfile 2>/dev/null || true
+      dockerfile: Dockerfile
     container_name: hazoom-birds
     restart: unless-stopped
     ports:
@@ -207,7 +207,7 @@ services:
   hazoom-pod:
     build:
       context: ./services/hazoom-pod
-      dockerfile: Dockerfile 2>/dev/null || true
+      dockerfile: Dockerfile
     container_name: hazoom-pod
     restart: unless-stopped
     ports:
@@ -222,7 +222,7 @@ services:
   chatdev-ornith:
     build:
       context: ./services/chatdev-ornith
-      dockerfile: Dockerfile 2>/dev/null || true
+      dockerfile: Dockerfile
     container_name: hazoom-chatdev
     restart: unless-stopped
     ports:
@@ -237,7 +237,7 @@ services:
   collaborative-beat:
     build:
       context: ./services/collaborative-beat
-      dockerfile: Dockerfile 2>/dev/null || true
+      dockerfile: Dockerfile
     container_name: hazoom-collab-beat
     restart: unless-stopped
     ports:
@@ -252,7 +252,7 @@ services:
   descer:
     build:
       context: ./services/descer
-      dockerfile: Dockerfile 2>/dev/null || true
+      dockerfile: Dockerfile
     container_name: hazoom-descer
     restart: unless-stopped
     ports:
@@ -267,7 +267,7 @@ services:
   sovereign-state:
     build:
       context: ./services/sovereign-state
-      dockerfile: Dockerfile 2>/dev/null || true
+      dockerfile: Dockerfile
     container_name: hazoom-sovereign
     restart: unless-stopped
     ports:
@@ -313,7 +313,7 @@ services:
   serotonin-engine:
     build:
       context: ./services/serotonin-engine
-      dockerfile: Dockerfile 2>/dev/null || true
+      dockerfile: Dockerfile
     container_name: hazoom-serotonin
     restart: unless-stopped
     ports:
@@ -328,7 +328,7 @@ services:
   mario-gta6:
     build:
       context: ./services/mario-gta6
-      dockerfile: Dockerfile 2>/dev/null || true
+      dockerfile: Dockerfile
     container_name: hazoom-mario-gta6
     restart: unless-stopped
     ports:
@@ -374,6 +374,36 @@ volumes:
     driver: local
   hazoom_config:
     driver: local
+
+  # ─── DeepSeek Knowledge ──────────────────────────────────────────
+  deepseek-knowledge:
+    build:
+      context: ./services/deepseek-knowledge
+      dockerfile: Dockerfile
+    container_name: hazoom-deepseek
+    restart: unless-stopped
+    ports:
+      - "8200:8200"
+    volumes:
+      - ./services/deepseek-knowledge:/app
+    command: python3 serve.py
+    networks:
+      - hazoom-net
+
+  # ─── Mirror Transcendance ────────────────────────────────────────
+  mirror-transcendance:
+    build:
+      context: ./services/mirror-transcendance
+      dockerfile: Dockerfile
+    container_name: hazoom-mirror
+    restart: unless-stopped
+    ports:
+      - "8006:8006"
+    volumes:
+      - ./services/mirror-transcendance:/app
+    command: python3 server.py
+    networks:
+      - hazoom-net
 
 networks:
   hazoom-net:

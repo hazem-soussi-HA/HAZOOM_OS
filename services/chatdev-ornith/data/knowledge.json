@@ -1,0 +1,13 @@
+[
+  { "title": "Peregrine falcon", "keywords": ["peregrine", "falcon", "fastest bird"], "answer": "The peregrine falcon is the fastest animal alive, reaching dive speeds above 320 km/h. It uses a teardrop dive profile to minimize drag." },
+  { "title": "Puffin", "keywords": ["puffin"], "answer": "Atlantic puffins can carry up to 60 fish at once. Their beaks glow under UV light, which may help attract mates." },
+  { "title": "Owls", "keywords": ["owl", "owls"], "answer": "Owls have asymmetrical ears, which lets them locate prey in complete darkness. They can rotate their heads up to 270 degrees." },
+  { "title": "Hummingbirds", "keywords": ["hummingbird", "hummingbirds"], "answer": "Hummingbirds beat their wings up to 80 times per second and are the only birds able to fly backwards." },
+  { "title": "Penguins", "keywords": ["penguin", "penguins"], "answer": "Emperor penguins survive -60°C winters by huddling in rotating formations, and males incubate the single egg for up to 4 months without eating." },
+  { "title": "Earth", "keywords": ["earth", "planet", "world"], "answer": "Earth is the third planet from the Sun — the only known world with liquid surface water and plate tectonics." },
+  { "title": "Moon", "keywords": ["moon"], "answer": "The Moon is drifting away from Earth at about 3.8 cm per year, slowly lengthening our days." },
+  { "title": "HAZOOM OS", "keywords": ["hazoom os", "hazoom", "os", "operating system"], "answer": "HAZOOM OS is a full desktop operating system in the browser — kernel, apps, services, consciousness engine, Q-learning, and a GitHub bridge, all in one repo." },
+  { "title": "GitHub bridge", "keywords": ["github", "bridge", "webhook", "git"], "answer": "The GitHub bridge receives webhooks, verifies signatures with HMAC-SHA256, runs gated GitOps commands from ops/commands.json on every push, and broadcasts events to the OS over WebSockets." },
+  { "title": "Dev farm", "keywords": ["dev farm", "juju", "machine", "kubernetes"], "answer": "The dev farm is a Juju model with 6 LXD machines, each hosting a cloned repo for a microservice, registered in Kubernetes under the hazoom-dev namespace." },
+  { "title": "Shell gating", "keywords": ["shell", "terminal", "command", "allowlist"], "answer": "The OS shell is gated by an allowlist: git operations, process inspection, and system info are allowed; destructive commands are denied with reason codes." }
+]

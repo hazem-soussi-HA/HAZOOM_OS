@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>DeepSeek Knowledge</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --bg:#0a0f1e; --card:#111a33; --line:#1d2b4d; --accent:#4d7cfe; --text:#dbe4ff; --muted:#7c8db8; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; min-height:100vh; }
+  header { display:flex; align-items:center; gap:12px; padding:18px 28px; border-bottom:1px solid var(--line); }
+  header h1 { font-size:19px; letter-spacing:1px; }
+  header .off { margin-left:auto; font-size:11px; color:var(--accent); border:1px solid var(--line); padding:5px 12px; border-radius:20px; }
+  main { max-width:880px; margin:0 auto; padding:26px 28px 60px; }
+  .search { width:100%; background:#0e1830; border:1px solid var(--line); color:var(--text); padding:13px 18px; border-radius:11px; font-size:15px; outline:none; }
+  .search:focus { border-color:var(--accent); }
+  #count { color:var(--muted); font-size:12px; margin:14px 2px; }
+  .entry { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px 20px; margin-bottom:12px; }
+  .entry h3 { font-size:15px; color:var(--accent); }
+  .entry p { margin-top:8px; color:var(--muted); font-size:13.5px; line-height:1.65; }
+  .empty { text-align:center; color:var(--muted); padding:50px 0; font-size:13px; }
+</style>
+</head>
+<body>
+<header><h1>🧠 DEEPSEEK KNOWLEDGE</h1><span class="off">OFFLINE · NO API KEY</span></header>
+<main>
+  <input class="search" id="q" placeholder="Search: distillation, moe, quantization, github bridge…" autocomplete="off">
+  <div id="count"></div>
+  <div id="results"></div>
+</main>
+<script>
+  const q = document.getElementById('q');
+  async function run() {
+    const r = await fetch('/api/knowledge?q=' + encodeURIComponent(q.value));
+    const d = await r.json();
+    document.getElementById('count').textContent = d.count + (d.query ? ` result(s) for "${d.query}"` : ' entries');
+    document.getElementById('results').innerHTML = d.entries.length
+      ? d.entries.map(e => `<div class="entry"><h3>${e.title}</h3><p>${e.body}</p></div>`).join('')
+      : '<div class="empty">Nothing found. Try another term.</div>';
+  }
+  q.addEventListener('input', run);
+  run();
+</script>
+</body>
+</html>

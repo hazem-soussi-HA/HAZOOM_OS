@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mirror Transcendance</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --bg:#0c0c14; --card:#14141f; --line:#26263a; --accent:#c4b5fd; --text:#e9e4f7; --muted:#8b85a8; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; min-height:100vh; }
+  header { display:flex; align-items:center; gap:12px; padding:18px 28px; border-bottom:1px solid var(--line); }
+  header h1 { font-size:19px; letter-spacing:1px; }
+  header .local { margin-left:auto; font-size:11px; color:var(--accent); border:1px solid var(--line); padding:5px 12px; border-radius:20px; }
+  main { max-width:860px; margin:0 auto; padding:26px 28px 60px; }
+  .mirror { background:linear-gradient(160deg,#161626,#10101c); border:1px solid var(--line); border-radius:16px; padding:26px; position:relative; overflow:hidden; }
+  .mirror::before { content:''; position:absolute; top:0; left:-60%; width:40%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,.04),transparent); animation:shine 6s infinite; }
+  @keyframes shine { 0%,55% { left:-60%; } 85%,100% { left:130%; } }
+  .mirror textarea { width:100%; background:transparent; border:none; color:var(--text); font-size:16px; line-height:1.7; resize:vertical; min-height:110px; outline:none; font-family:inherit; }
+  .mirror .row { display:flex; gap:10px; margin-top:14px; align-items:center; }
+  .mood { background:#181828; border:1px solid var(--line); color:var(--muted); padding:8px 14px; border-radius:9px; font-size:12px; cursor:pointer; }
+  .mood.on { color:#111; background:var(--accent); border-color:var(--accent); }
+  #save { margin-left:auto; background:var(--accent); color:#14101f; border:none; padding:10px 22px; border-radius:9px; font-weight:600; cursor:pointer; font-size:13px; }
+  #save:disabled { opacity:.5; }
+  .list { margin-top:30px; display:flex; flex-direction:column; gap:12px; }
+  .refl { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px; }
+  .refl .ts { font-size:11px; color:var(--muted); }
+  .refl p { margin-top:8px; color:var(--text); font-size:14px; line-height:1.65; }
+  .refl .mood { display:inline-block; margin-top:10px; font-size:11px; color:var(--accent); background:#1a1a2c; padding:4px 11px; border-radius:16px; }
+  .empty { text-align:center; color:var(--muted); padding:40px 0; font-size:13px; }
+</style>
+</head>
+<body>
+<header><h1>🪞 MIRROR TRANSCENDANCE</h1><span class="local">LOCAL ONLY · PERSISTED</span></header>
+<main>
+  <div class="mirror">
+    <textarea id="text" placeholder="What is passing through you right now? Write it, then face the mirror."></textarea>
+    <div class="row">
+      <button class="mood" data-m="calm">😌 calm</button>
+      <button class="mood" data-m="clear">🧘 clear</button>
+      <button class="mood" data-m="driven">⚡ driven</button>
+      <button class="mood" data-m="heavy">🌧 heavy</button>
+      <button class="mood" data-m="grateful">🌅 grateful</button>
+      <button id="save">Save reflection</button>
+    </div>
+  </div>
+  <div class="list" id="list"></div>
+</main>
+<script>
+  let mood = '';
+  document.querySelectorAll('.mood').forEach(b => b.onclick = () => {
+    document.querySelectorAll('.mood').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    mood = b.dataset.m;
+  });
+  const save = document.getElementById('save');
+  save.onclick = async () => {
+    const text = document.getElementById('text').value.trim();
+    if (!text) return;
+    save.disabled = true;
+    const r = await fetch('/api/reflections', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, mood }) });
+    if (r.ok) {
+      document.getElementById('text').value = '';
+      document.querySelectorAll('.mood').forEach(x => x.classList.remove('on'));
+      mood = '';
+      load();
+    }
+    save.disabled = false;
+  };
+  async function load() {
+    const r = await fetch('/api/reflections');
+    const d = await r.json();
+    document.getElementById('list').innerHTML = d.count
+      ? d.reflections.map(x => `<div class="refl"><div class="ts">${x.ts}</div><p>${x.text.replace(/</g,'&lt;')}</p>${x.mood ? `<span class="mood">${x.mood}</span>` : ''}</div>`).join('')
+      : '<div class="empty">No reflections yet. The mirror is waiting.</div>';
+  }
+  load();
+</script>
+</body>
+</html>

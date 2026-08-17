@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>DESCER Drum Machine</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --bg:#140a12; --pad:#221322; --pad-on:#ff3366; --accent:#ff3366; --text:#f3d9e4; --muted:#a06a80; --line:#3a1f31; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; min-height:100vh; }
+  header { display:flex; align-items:center; gap:12px; padding:18px 28px; border-bottom:1px solid var(--line); }
+  header h1 { font-size:19px; letter-spacing:1px; }
+  header .live { margin-left:auto; font-size:11px; color:var(--accent); border:1px solid var(--line); padding:5px 12px; border-radius:20px; }
+  main { max-width:900px; margin:0 auto; padding:30px 28px 60px; }
+  .pads { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .pad { aspect-ratio:1; background:var(--pad); border:1px solid var(--line); border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; cursor:pointer; transition:.08s; user-select:none; }
+  .pad .icon { font-size:26px; }
+  .pad .name { font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); }
+  .pad.hit { background:var(--pad-on); border-color:#ff7aa0; transform:scale(.96); }
+  .pad.hit .name { color:#fff; }
+  .controls { display:flex; align-items:center; gap:18px; margin-top:30px; flex-wrap:wrap; }
+  .controls label { font-size:12px; color:var(--muted); letter-spacing:1px; }
+  .controls input[type=range] { accent-color:var(--accent); width:160px; }
+  .btn { background:none; border:1px solid var(--line); color:var(--text); padding:9px 18px; border-radius:9px; cursor:pointer; font-size:13px; }
+  .btn:hover { border-color:var(--accent); }
+  #bpm { font-size:20px; color:var(--accent); min-width:52px; }
+  .seq { display:grid; grid-template-columns:repeat(16,1fr); gap:4px; margin-top:30px; }
+  .step { aspect-ratio:1; background:var(--pad); border:1px solid var(--line); border-radius:5px; cursor:pointer; }
+  .step.on { background:var(--pad-on); }
+  .step.active { border-color:#fff; box-shadow:0 0 8px var(--accent); }
+  .hint { margin-top:24px; color:var(--muted); font-size:12px; line-height:1.7; }
+</style>
+</head>
+<body>
+<header><h1>🥁 DESCER — DRUM MACHINE</h1><span class="live">WEB AUDIO · NO SAMPLES</span></header>
+<main>
+  <div class="pads" id="pads"></div>
+  <div class="controls">
+    <label>BPM</label><span id="bpm">120</span>
+    <input id="tempo" type="range" min="60" max="180" value="120">
+    <button class="btn" id="play">▶ Play</button>
+    <button class="btn" id="randomize">🎲 Randomize</button>
+    <button class="btn" id="clear">Clear</button>
+  </div>
+  <div class="seq" id="seq"></div>
+  <div class="hint">Each pad plays a synthesized drum sound. Click a step to toggle it in the 16-step pattern. Randomize builds a groove — hit Play. All audio is generated in your browser, fully offline.</div>
+</main>
+<script>
+  const PADS = ['kick','snare','clap','closed-hat','open-hat','tom-low','tom-mid','cowbell'];
+  const ICONS = ['🪘','🥁','👏','🥁','🥁','🥁','🥁','🔔'];
+  let ctx = null, timer = null, step = 0, bpm = 120;
+  const seq = PADS.map(() => Array(16).fill(false));
+
+  function ac() { if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)(); return ctx; }
+  function noise(dur) {
+    const c = ac(), buf = ctx.createBuffer(1, ac().sampleRate * dur, ac().sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    return buf;
+  }
+  const SOUNDS = {
+    kick(o) { const c = ac(), g = c.createGain(), s = c.createOscillator(); s.type='sine'; s.frequency.setValueAtTime(150, o); s.frequency.exponentialRampToValueAtTime(40, o + .12); g.gain.setValueAtTime(.9, o); g.gain.exponentialRampToValueAtTime(.001, o + .3); s.connect(g).connect(c.destination); s.start(o); s.stop(o + .32); },
+    snare(o) { const c = ac(), g = c.createGain(), b = c.createBufferSource(); b.buffer = noise(.15); const bp = c.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value = 1800; g.gain.setValueAtTime(.5, o); g.gain.exponentialRampToValueAtTime(.001, o + .15); b.connect(bp).connect(g).connect(c.destination); b.start(o); b.stop(o + .16); },
+    clap(o) { const c = ac(), g = c.createGain(); for (let i = 0; i < 3; i++) { const b = c.createBufferSource(); b.buffer = noise(.03); const bp = c.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value = 1400; b.connect(bp).connect(g); b.start(o + i * .028); b.stop(o + .12); } g.gain.setValueAtTime(.45, o); g.gain.exponentialRampToValueAtTime(.001, o + .18); g.connect(c.destination); },
+    'closed-hat'(o) { const c = ac(), g = c.createGain(), b = c.createBufferSource(); b.buffer = noise(.04); const hp = c.createBiquadFilter(); hp.type='highpass'; hp.frequency.value = 7000; g.gain.setValueAtTime(.3, o); g.gain.exponentialRampToValueAtTime(.001, o + .045); b.connect(hp).connect(g).connect(c.destination); b.start(o); b.stop(o + .05); },
+    'open-hat'(o) { const c = ac(), g = c.createGain(), b = c.createBufferSource(); b.buffer = noise(.4); const hp = c.createBiquadFilter(); hp.type='highpass'; hp.frequency.value = 6500; g.gain.setValueAtTime(.3, o); g.gain.exponentialRampToValueAtTime(.001, o + .4); b.connect(hp).connect(g).connect(c.destination); b.start(o); b.stop(o + .42); },
+    'tom-low'(o) { const c = ac(), g = c.createGain(), s = c.createOscillator(); s.type='sine'; s.frequency.setValueAtTime(140, o); s.frequency.exponentialRampToValueAtTime(70, o + .2); g.gain.setValueAtTime(.6, o); g.gain.exponentialRampToValueAtTime(.001, o + .3); s.connect(g).connect(c.destination); s.start(o); s.stop(o + .32); },
+    'tom-mid'(o) { const c = ac(), g = c.createGain(), s = c.createOscillator(); s.type='sine'; s.frequency.setValueAtTime(210, o); s.frequency.exponentialRampToValueAtTime(105, o + .18); g.gain.setValueAtTime(.55, o); g.gain.exponentialRampToValueAtTime(.001, o + .28); s.connect(g).connect(c.destination); s.start(o); s.stop(o + .3); },
+    cowbell(o) { const c = ac(), g = c.createGain(), s = c.createOscillator(); s.type='square'; s.frequency.value = 540; const f = c.createBiquadFilter(); f.type='bandpass'; f.frequency.value = 1100; f.Q.value = 4; g.gain.setValueAtTime(.35, o); g.gain.exponentialRampToValueAtTime(.001, o + .15); s.connect(f).connect(g).connect(c.destination); s.start(o); s.stop(o + .16); },
+  };
+
+  const padsEl = document.getElementById('pads');
+  PADS.forEach((name, i) => {
+    const p = document.createElement('div');
+    p.className = 'pad';
+    p.innerHTML = `<div class="icon">${ICONS[i]}</div><div class="name">${name}</div>`;
+    p.onclick = () => { p.classList.add('hit'); setTimeout(() => p.classList.remove('hit'), 90); SOUNDS[name](ac().currentTime); };
+    padsEl.appendChild(p);
+  });
+
+  const seqEl = document.getElementById('seq');
+  for (let s = 0; s < 16; s++) {
+    const d = document.createElement('div');
+    d.className = 'step';
+    d.dataset.s = s;
+    d.onclick = () => { seq[0][s] = !seq[0][s]; d.classList.toggle('on', seq[0][s]); };
+    seqEl.appendChild(d);
+  }
+
+  document.getElementById('tempo').oninput = e => { bpm = +e.target.value; document.getElementById('bpm').textContent = bpm; };
+  document.getElementById('randomize').onclick = () => {
+    seq.forEach((row, r) => row.forEach((_, s) => { row[s] = Math.random() < .35; }));
+    seqEl.querySelectorAll('.step').forEach((d, s) => d.classList.toggle('on', seq[0][s]));
+  };
+  document.getElementById('clear').onclick = () => {
+    seq.forEach(row => row.fill(false));
+    seqEl.querySelectorAll('.step').forEach(d => d.classList.remove('on'));
+  };
+  document.getElementById('play').onclick = function () {
+    if (timer) { clearInterval(timer); timer = null; this.textContent = '▶ Play'; return; }
+    this.textContent = '⏸ Stop';
+    ac();
+    const interval = 60000 / bpm / 4;
+    step = 0;
+    timer = setInterval(() => {
+      seqEl.querySelectorAll('.step').forEach((d, s) => d.classList.toggle('active', s === step));
+      seq.forEach((row, r) => { if (row[step]) SOUNDS[PADS[r]](ac().currentTime); });
+      step = (step + 1) % 16;
+    }, interval);
+  };
+</script>
+</body>
+</html>
