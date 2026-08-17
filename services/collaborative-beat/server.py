@@ -24,7 +24,8 @@ import time
 import urllib.request
 
 STATE_DIR = os.path.dirname(os.path.abspath(__file__))
-PORT = 9191
+PORT = int(os.environ.get('PORT', 9191))
+BIND = os.environ.get('BIND', '127.0.0.1')
 
 # CPU sampling (Linux /proc/stat). On non-Linux, falls back to 0.
 _cpu_prev = None
@@ -237,7 +238,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
 def main():
     os.chdir(STATE_DIR)
     socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.TCPServer(("127.0.0.1", PORT), Handler) as httpd:
+    with socketserver.TCPServer((BIND, PORT), Handler) as httpd:
         print(f"[OK] COLLABORATIVE BEAT live: http://127.0.0.1:{PORT}")
         print(f"     SILHOUETTE is breathing with your CPU. Open it.")
         try:

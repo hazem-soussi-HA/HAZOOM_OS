@@ -9,7 +9,8 @@ import http.server
 import socketserver
 import os
 
-PORT = 8080
+PORT = int(os.environ.get('PORT', 8080))
+BIND = os.environ.get('BIND', '127.0.0.1')
 ROOT = os.path.dirname(os.path.abspath(__file__))
 
 MIME = {
@@ -57,7 +58,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
 if __name__ == '__main__':
     socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.TCPServer(('127.0.0.1', PORT), Handler) as httpd:
+    with socketserver.TCPServer((BIND, PORT), Handler) as httpd:
         print(f'Serving {ROOT} at http://127.0.0.1:{PORT}')
         try:
             httpd.serve_forever()
