@@ -7,7 +7,8 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const PORT = 4100;
+const PORT = Number(process.env.PORT || 4100);
+const BIND = process.env.BIND || '127.0.0.1';
 const ROOT = path.join(__dirname, '..');
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -55,6 +56,6 @@ const server = http.createServer((req, res) => {
   return serveFile(res, p);
 });
 
-server.listen(PORT, '127.0.0.1', () => {
+server.listen(PORT, BIND, () => {
   console.log(`[HAZOOM] Birds Encyclopedia on http://127.0.0.1:${PORT}/ (atlas /atlas/)`);
 });

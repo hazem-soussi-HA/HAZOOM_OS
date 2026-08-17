@@ -9,7 +9,8 @@ import json
 import os
 import socketserver
 
-PORT = 6000
+PORT = int(os.environ.get('PORT', 6000))
+BIND = os.environ.get('BIND', '127.0.0.1')
 ROOT = os.path.dirname(os.path.abspath(__file__))
 
 MIME = {
@@ -63,6 +64,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
 if __name__ == '__main__':
     socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.TCPServer(('127.0.0.1', PORT), Handler) as httpd:
+    with socketserver.TCPServer((BIND, PORT), Handler) as httpd:
         print(f'[HAZOOM] DESCER drum machine on http://127.0.0.1:{PORT}/')
         httpd.serve_forever()

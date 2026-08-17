@@ -10,7 +10,8 @@ import os
 import socketserver
 import time
 
-PORT = 8006
+PORT = int(os.environ.get('PORT', 8006))
+BIND = os.environ.get('BIND', '127.0.0.1')
 ROOT = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(ROOT, 'data', 'reflections.json')
 
@@ -95,6 +96,6 @@ class Handler(http.server.BaseHTTPRequestHandler):
 if __name__ == '__main__':
     os.makedirs(os.path.dirname(DATA), exist_ok=True)
     socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.TCPServer(('127.0.0.1', PORT), Handler) as httpd:
+    with socketserver.TCPServer((BIND, PORT), Handler) as httpd:
         print(f'[HAZOOM] Mirror Transcendance on http://127.0.0.1:{PORT}/')
         httpd.serve_forever()
