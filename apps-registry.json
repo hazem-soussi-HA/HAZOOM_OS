@@ -32,8 +32,8 @@
         { "id": "ai-general-intel", "name": "General Intelligence", "icon": "♾️", "path": "http://127.0.0.1:8004/", "source": "services/general-intelligence/" },
         { "id": "ai-serotonin", "name": "Serotonin Engine", "icon": "✨", "path": "http://127.0.0.1:8005/", "source": "services/serotonin-engine/" },
         { "id": "ai-mirror", "name": "Mirror Transcendance", "icon": "🪞", "path": "http://127.0.0.1:8006/", "source": "services/mirror-transcendance/" },
-        { "id": "ai-quantum", "name": "Quantum AI Assistant", "icon": "⚛️", "path": "apps/ai-apps/quantum_ai_assistant.html" },
-        { "id": "ai-super", "name": "Super Intelligent Agent", "icon": "🤖", "path": "apps/ai-apps/super_intelligent_agent.html" },
+        { "id": "ai-quantum", "name": "Quantum AI Assistant", "icon": "⚛️", "path": "apps/ai-apps/hazoom_ai_assistant.html" },
+        { "id": "ai-super", "name": "Super Intelligent Agent", "icon": "🤖", "path": "apps/ai-apps/ai-assistant-v3.html" },
         { "id": "ai-deepthink", "name": "Deep Think Explorer", "icon": "🔭", "path": "apps/ai-apps/deep_think_explorer.html" }
       ]
     },

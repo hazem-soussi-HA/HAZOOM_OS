@@ -231,7 +231,7 @@
                         height: 720,
                         desktop: true,
                         category: 'music',
-                        src: 'apps/music/descer.html'
+                        src: 'http://127.0.0.1:6000/'
                     },
                     settings: {
                         id: 'settings',
@@ -433,7 +433,7 @@
                         height: 650,
                         desktop: true,
                         category: 'docs',
-                        src: 'docs/user-guide.html'
+                        src: 'apps/docs/HAZOOM_OS_TOUR.html'
                     },
                     'background-office': {
                         id: 'background-office',
@@ -1473,16 +1473,28 @@
             },
 
             _initGitHubObservation() {
-                // Real-time GitHub observation toasts (push / PR / workflow run)
+                // Real-time GitHub observation toasts (push / PR / workflow run).
+                // Uses the Aether bridge when loaded; otherwise opens its own
+                // WebSocket so toasts work on every desktop entry point.
+                const onGithubEvent = (data) => {
+                    if (data && data.type === 'github_event' && data.event) {
+                        const e = data.event;
+                        let title = 'GitHub: ' + e.type;
+                        if (e.action) title += ' / ' + e.action;
+                        this.showNotification(title, (e.actor || '?') + ' — ' + (e.message || '').slice(0, 80));
+                    }
+                };
                 if (window.HazoomAether && typeof window.HazoomAether.subscribe === 'function') {
-                    window.HazoomAether.subscribe((data) => {
-                        if (data && data.type === 'github_event' && data.event) {
-                            const e = data.event;
-                            let title = 'GitHub: ' + e.type;
-                            if (e.action) title += ' / ' + e.action;
-                            this.showNotification(title, (e.actor || '?') + ' — ' + (e.message || '').slice(0, 80));
-                        }
-                    });
+                    window.HazoomAether.subscribe(onGithubEvent);
+                } else {
+                    try {
+                        const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                        const ws = new WebSocket(proto + '//' + window.location.host + '/');
+                        ws.onmessage = (ev) => {
+                            try { onGithubEvent(JSON.parse(ev.data)); } catch (e) {}
+                        };
+                        ws.onclose = () => setTimeout(() => this._initGitHubObservation(), 5000);
+                    } catch (e) {}
                 }
             },
 

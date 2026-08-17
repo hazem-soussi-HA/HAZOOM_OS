@@ -16,12 +16,12 @@ const DEFAULT_ALLOWLIST = [
     { pattern: /^git\s+(status|log|diff|branch|show|rev-parse|remote|fetch|pull\s+--ff-only|tag|blame)\b/, label: 'git read/safe' },
 
     // ── System observation ──────────────────────────────────────
-    { pattern: /^ps\s+(-?\w+\s*)+$/, label: 'ps' },
+    { pattern: /^ps(\s+-?\w+(\s+-?\w+)*)?$/, label: 'ps' },
     { pattern: /^uptime$/, label: 'uptime' },
-    { pattern: /^ls\s+(-la?|--color)?(\s+\S+)*$/, label: 'ls' },
-    { pattern: /^df\s+-h(\s+\S+)*$/, label: 'df' },
-    { pattern: /^free\s+-h$/, label: 'free' },
-    { pattern: /^uname\s+(-a|\s)*-?[a-z]*$/, label: 'uname' },
+    { pattern: /^ls(-la?)?(\s+--color(=\w+)?)?(\s+(\S+|\.\.|~))*$/, label: 'ls' },
+    { pattern: /^df(\s+-h)?(\s+(\S+))*$/, label: 'df' },
+    { pattern: /^free(\s+-h)?$/, label: 'free' },
+    { pattern: /^uname(\s+-a)?$/, label: 'uname' },
     { pattern: /^date$/, label: 'date' },
     { pattern: /^hostname$/, label: 'hostname' },
     { pattern: /^whoami$/, label: 'whoami' },

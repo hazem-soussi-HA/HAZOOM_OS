@@ -32,7 +32,7 @@ const net = require('net');
 // or env HAZOOM_LAUNCH.
 const DEFAULT_SERVICES = [
     { name: 'planet_earth',       port: 8080, url: 'http://127.0.0.1:8080/',          enabled: true },
-    { name: 'planet_earth_news',  port: 8000, url: 'https://127.0.0.1:8000/',         enabled: true },
+    { name: 'planet_earth_news',  port: 8001, url: 'http://127.0.0.1:8001/',         enabled: true },
     { name: 'birds_encyclopedia',  port: 4100, url: 'http://127.0.0.1:4100/ (atlas /atlas/)', enabled: true },
     { name: 'hazoom_pod',          port: 4000, url: 'http://127.0.0.1:4000/',          enabled: true },
     { name: 'hazoom_os',           port: 3000, url: 'http://127.0.0.1:3000/ (desktop /os.html)', enabled: true },
