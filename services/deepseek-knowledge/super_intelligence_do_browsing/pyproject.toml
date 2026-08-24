@@ -1,0 +1,24 @@
+[project]
+name = "mimo-intelligent-browser"
+version = "2.5.0"
+description = "Autonomous intelligent browsing system - MiMo v2.5"
+requires-python = ">=3.10"
+dependencies = [
+    "playwright>=1.40.0",
+    "aiohttp>=3.9.0",
+    "beautifulsoup4>=4.12.0",
+    "lxml>=5.0.0",
+    "rich>=13.0.0",
+    "pydantic>=2.5.0",
+    "aiofiles>=23.0.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-asyncio", "ruff"]
+
+[project.scripts]
+mimo-browser = "mimo_browser.cli:main"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

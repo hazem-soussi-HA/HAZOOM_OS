@@ -1,0 +1,7 @@
+# MiMo Browser v4 — runtime dependencies (pinned, minimal)
+# Python >= 3.10
+aiohttp>=3.9.0
+beautifulsoup4>=4.12.0
+lxml>=5.0.0
+cryptography>=41.0.0
+playwright>=1.40.0

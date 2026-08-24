@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ornith Demo Chat</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0e14;--surface:#131920;--surface2:#1a2230;--border:#253040;
+--primary:#4da6ff;--secondary:#a78bfa;--accent:#f59e0b;--green:#34d399;
+--red:#f87171;--text:#e2e8f0;--dim:#64748b;--radius:12px}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* HEADER */
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.header-left{display:flex;align-items:center;gap:14px}
+.logo{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;font-size:1.4rem;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.header h1{font-size:1.2rem;font-weight:700}
+.header h1 span{background:linear-gradient(90deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header-right{display:flex;align-items:center;gap:12px}
+.model-select{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 14px;border-radius:8px;font-size:.85rem;cursor:pointer}
+.model-select:focus{outline:none;border-color:var(--primary)}
+.status-dot{width:10px;height:10px;border-radius:50%;background:var(--red);transition:background .3s}
+.status-dot.online{background:var(--green);box-shadow:0 0 8px var(--green)}
+.status-label{font-size:.75rem;color:var(--dim)}
+
+/* CHAT AREA */
+.chat-area{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:16px;scroll-behavior:smooth}
+.chat-area::-webkit-scrollbar{width:6px}
+.chat-area::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.msg{max-width:72%;padding:14px 18px;border-radius:var(--radius);line-height:1.7;font-size:.95rem;white-space:pre-wrap;word-wrap:break-word;animation:msgIn .4s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.msg.user{align-self:flex-end;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border-bottom-right-radius:4px}
+.msg.assistant{align-self:flex-start;background:var(--surface2);border:1px solid var(--border);border-bottom-left-radius:4px}
+.msg.system-msg{align-self:center;background:transparent;color:var(--dim);font-size:.8rem;padding:4px}
+.msg.error{align-self:center;background:rgba(248,113,113,.1);border:1px solid var(--red);color:var(--red);font-size:.85rem}
+.msg .thinking{color:var(--dim);font-style:italic;font-size:.85rem}
+.msg code{background:rgba(0,0,0,.3);padding:2px 6px;border-radius:4px;font-family:'Courier New',monospace;font-size:.88em}
+.msg pre{background:rgba(0,0,0,.4);padding:12px;border-radius:8px;overflow-x:auto;margin:8px 0}
+.msg pre code{background:none;padding:0}
+
+/* TYPING */
+.typing{align-self:flex-start;display:none;padding:14px 18px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius)}
+.typing span{display:inline-block;width:7px;height:7px;background:var(--primary);border-radius:50%;margin:0 2px;animation:bounce 1.4s infinite}
+.typing span:nth-child(2){animation-delay:.2s}
+.typing span:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+
+/* INPUT */
+.input-area{background:var(--surface);border-top:1px solid var(--border);padding:16px 24px;display:flex;gap:12px;align-items:flex-end;flex-shrink:0}
+.input-area textarea{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;color:var(--text);font-size:.95rem;font-family:inherit;resize:none;height:54px;max-height:150px;line-height:1.5;transition:border-color .3s}
+.input-area textarea:focus{outline:none;border-color:var(--primary)}
+.input-area textarea::placeholder{color:var(--dim)}
+.btn-send{background:linear-gradient(135deg,var(--primary),var(--secondary));border:none;color:#fff;width:54px;height:54px;border-radius:var(--radius);cursor:pointer;font-size:1.3rem;display:flex;align-items:center;justify-content:center;transition:transform .2s,opacity .2s}
+.btn-send:hover{transform:scale(1.05)}
+.btn-send:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn-clear{background:var(--surface2);border:1px solid var(--border);color:var(--dim);width:54px;height:54px;border-radius:var(--radius);cursor:pointer;font-size:1.1rem;transition:all .2s}
+.btn-clear:hover{border-color:var(--red);color:var(--red)}
+
+/* WELCOME */
+.welcome{text-align:center;padding:40px 20px;animation:msgIn .6s ease}
+.welcome .icon{font-size:4rem;margin-bottom:16px;animation:float 3s ease-in-out infinite}
+.welcome h2{font-size:1.6rem;margin-bottom:8px}
+.welcome p{color:var(--dim);font-size:.95rem;max-width:500px;margin:0 auto}
+.welcome .chips{display:flex;gap:10px;justify-content:center;margin-top:20px;flex-wrap:wrap}
+.welcome .chip{background:var(--surface2);border:1px solid var(--border);padding:8px 16px;border-radius:20px;font-size:.85rem;cursor:pointer;transition:all .2s}
+.welcome .chip:hover{border-color:var(--primary);color:var(--primary)}
+
+/* RESPONSIVE */
+@media(max-width:600px){.msg{max-width:90%}.header h1{font-size:1rem}.input-area{padding:12px}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">🦅</div>
+    <div>
+      <h1><span>Ornith</span> Demo Chat</h1>
+      <div class="status-label" id="statusLabel">connecting...</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <select class="model-select" id="modelSelect"><option>ornith:35b</option></select>
+    <div class="status-dot" id="statusDot"></div>
+  </div>
+</div>
+
+<div class="chat-area" id="chatArea">
+  <div class="welcome" id="welcome">
+    <div class="icon">🦅</div>
+    <h2>Chat with <span style="color:var(--primary)">Ornith</span></h2>
+    <p>Your local agentic coding intelligence. Ask anything — code, debug, explain, create.</p>
+    <div class="chips">
+      <div class="chip" onclick="quickSend('Write a Python REST API with Flask')">🐍 Flask API</div>
+      <div class="chip" onclick="quickSend('Explain how MoE architecture works')">🧠 Explain MoE</div>
+      <div class="chip" onclick="quickSend('Debug this: TypeError undefined is not a function')">🐛 Debug Help</div>
+      <div class="chip" onclick="quickSend('Write a sorting algorithm in JavaScript')">⚡ JS Sort</div>
+    </div>
+  </div>
+</div>
+
+<div class="typing" id="typing"><span></span><span></span><span></span></div>
+
+<div class="input-area">
+  <textarea id="userInput" placeholder="Message Ornith..." rows="1"></textarea>
+  <button class="btn-send" id="sendBtn" onclick="sendMessage()">➤</button>
+  <button class="btn-clear" onclick="clearChat()" title="Clear chat">🗑</button>
+</div>
+
+<script>
+const chatArea=document.getElementById('chatArea');
+const userInput=document.getElementById('userInput');
+const sendBtn=document.getElementById('sendBtn');
+const typing=document.getElementById('typing');
+const statusDot=document.getElementById('statusDot');
+const statusLabel=document.getElementById('statusLabel');
+const modelSelect=document.getElementById('modelSelect');
+const welcome=document.getElementById('welcome');
+let messages=[];
+let isStreaming=false;
+
+// Auto-resize textarea
+userInput.addEventListener('input',function(){this.style.height='54px';this.style.height=Math.min(this.scrollHeight,150)+'px'});
+userInput.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}});
+
+// Health check
+async function checkHealth(){
+  try{
+    const r=await fetch('/api/models');
+    const d=await r.json();
+    if(d.status==='online'){
+      statusDot.classList.add('online');
+      statusLabel.textContent='Ollama connected';
+      modelSelect.innerHTML=d.models.map(m=>`<option ${m.includes('ornith')?'selected':''}>${m}</option>`).join('');
+    }else{throw''}
+  }catch{
+    statusDot.classList.remove('online');
+    statusLabel.textContent='Ollama offline';
+  }
+}
+checkHealth();setInterval(checkHealth,10000);
+
+function addMsg(role,text){
+  if(welcome)welcome.style.display='none';
+  const div=document.createElement('div');
+  div.className='msg '+role;
+  div.textContent=text;
+  chatArea.appendChild(div);
+  chatArea.scrollTop=chatArea.scrollHeight;
+  return div;
+}
+
+function quickSend(text){userInput.value=text;sendMessage()}
+
+async function sendMessage(){
+  const text=userInput.value.trim();
+  if(!text||isStreaming)return;
+
+  addMsg('user',text);
+  messages.push({role:'user',content:text});
+  userInput.value='';userInput.style.height='54px';
+  sendBtn.disabled=true;isStreaming=true;
+  typing.style.display='block';
+  chatArea.scrollTop=chatArea.scrollHeight;
+
+  const assistantDiv=document.createElement('div');
+  assistantDiv.className='msg assistant';
+  assistantDiv.textContent='';
+  chatArea.appendChild(assistantDiv);
+
+  let fullReply='';
+
+  try{
+    const res=await fetch('/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({messages:messages,model:modelSelect.value})
+    });
+
+    typing.style.display='none';
+    const reader=res.body.getReader();
+    const decoder=new TextDecoder();
+    let buffer='';
+
+    while(true){
+      const{done,value}=await reader.read();
+      if(done)break;
+      buffer+=decoder.decode(value,{stream:true});
+      const lines=buffer.split('\n');
+      buffer=lines.pop();
+      for(const line of lines){
+        if(line.startsWith('data: ')){
+          try{
+            const d=JSON.parse(line.slice(6));
+            if(d.token){fullReply+=d.token;assistantDiv.textContent=fullReply;chatArea.scrollTop=chatArea.scrollHeight}
+            if(d.error){assistantDiv.className='msg error';assistantDiv.textContent='Error: '+d.error}
+          }catch{}
+        }
+      }
+    }
+  }catch(err){
+    typing.style.display='none';
+    assistantDiv.className='msg error';
+    assistantDiv.textContent='Connection error: '+err.message;
+  }
+
+  if(fullReply)messages.push({role:'assistant',content:fullReply});
+  sendBtn.disabled=false;isStreaming=false;
+  userInput.focus();
+}
+
+function clearChat(){
+  messages=[];
+  chatArea.innerHTML='';
+  const w=document.createElement('div');
+  w.className='welcome';w.id='welcome';
+  w.innerHTML=`<div class="icon">🦅</div><h2>Chat with <span style="color:var(--primary)">Ornith</span></h2><p>Chat cleared. Ask anything.</p>`;
+  chatArea.appendChild(w);
+}
+</script>
+</body>
+</html>

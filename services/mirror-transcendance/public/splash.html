@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAZOOM — Mirroring Transcendance Intelligence</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --void: #06060c;
+            --abyss: #0a0a12;
+            --deep: #0e0e1a;
+            --surface: #141428;
+            --ghost: #1a1a35;
+            --mist: #2a2a4a;
+            --pulse: #00e5ff;
+            --pulse-soft: #00e5ff18;
+            --pulse-glow: #00e5ff40;
+            --pulse-strong: #00e5ff80;
+            --ember: #ff4081;
+            --ember-soft: #ff408115;
+            --ember-glow: #ff408140;
+            --amber: #ffab40;
+            --violet: #7c4dff;
+            --violet-soft: #7c4dff18;
+            --violet-glow: #7c4dff40;
+            --text: #c8c8d4;
+            --text-dim: #5a5a72;
+            --text-faint: #3a3a52;
+            --border: #1a1a2e;
+            --gradient: linear-gradient(135deg, #00e5ff 0%, #7c4dff 50%, #ff4081 100%);
+            --gradient-slow: linear-gradient(135deg, #00e5ff, #7c4dff, #ff4081, #00e5ff);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            background: var(--void);
+            color: var(--text);
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+        }
+
+        /* ═══════════════════════════════════════════ */
+        /* SPLASH CONTAINER                           */
+        /* ═══════════════════════════════════════════ */
+
+        #splash {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            background:
+                radial-gradient(ellipse at 30% 20%, rgba(0, 229, 255, 0.04) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 80%, rgba(124, 77, 255, 0.04) 0%, transparent 60%),
+                radial-gradient(ellipse at 50% 50%, rgba(255, 64, 129, 0.02) 0%, transparent 50%),
+                radial-gradient(ellipse at center, var(--deep) 0%, var(--void) 100%);
+            overflow: hidden;
+        }
+
+        /* ═══════════════════════════════════════════ */
+        /* SCAN LINES                                */
+        /* ═══════════════════════════════════════════ */
+
+        #scanlines {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 999;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 0, 0, 0.03) 2px,
+                rgba(0, 0, 0, 0.03) 4px
+            );
+        }
+
+        /* ═══════════════════════════════════════════ */
+        /* BACKGROUND GRID                           */
+        /* ═══════════════════════════════════════════ */
+
+        #grid {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            perspective: 600px;
+        }
+
+        #grid-inner {
+            position: absolute;
+            inset: -50%;
+            background-image:
+                linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            transform: rotateX(60deg);
+            animation: grid-scroll 20s linear infinite;
+            mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+            -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+        }
+
+        @keyframes grid-scroll {
+            to { transform: rotateX(60deg) translateY(50%); }
+        }
+
+        /* ═══════════════════════════════════════════ */
+        /* AMBIENT PARTICLES                         */
+        /* ═══════════════════════════════════════════ */
+
+        #particles {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0;
+            animation: float-up 25s ease-in-out infinite;
+        }
+
+        .particle-1 { width: 1px; height: 1px; background: var(--pulse); }
+        .particle-2 { width: 2px; height: 2px; background: var(--violet); }
+        .particle-3 { width: 1px; height: 1px; background: var(--ember); }
+
+        /* ═══════════════════════════════════════════ */
+        /* PULSE RINGS — Expanding from center      */
+        /* ═══════════════════════════════════════════ */
+
+        #rings {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .pulse-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 1px solid;
+            border-radius: 50%;
+            opacity: 0;
+            animation: ring-expand 6s ease-out infinite;
+        }
+
+        .pulse-ring:nth-child(1) {
+            width: 100px; height: 100px;
+            border-color: var(--pulse);
+            animation-delay: 0s;
+        }
+        .pulse-ring:nth-child(2) {
+            width: 200px; height: 200px;
+            border-color: var(--violet);
+            animation-delay: 1.5s;
+        }
+        .pulse-ring:nth-child(3) {
+            width: 300px; height: 300px;
+            border-color: var(--ember);
+            animation-delay: 3s;
+        }
+        .pulse-ring:nth-child(4) {
+            width: 400px; height: 400px;
+            border-color: var(--pulse);
+            animation-delay: 4.5s;
+        }
+
+        @keyframes ring-expand {
+            0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0.4; }
+            100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+        }
+
+        /* ═══════════════════════════════════════════ */
+        /* LOGO — HAZOOM Diamond                     */
+        /* ═══════════════════════════════════════════ */
+
+        #logo-container {
+            text-align: center;
+            margin-bottom: 50px;
+            position: relative;
+            z-index: 1;
+        }
+
+        #mirror-logo {
+            width: 220px;
+            height: 220px;
+            display: inline-block;
+            position: relative;
+            animation: logo-float 6s ease-in-out infinite;
+        }
+
+        /* Outer rotating ring with gradient */
+        #mirror-logo::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: -15px;
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            background: conic-gradient(
+                var(--pulse) 0deg,
+                var(--violet) 90deg,
+                var(--ember) 180deg,
+                var(--violet) 270deg,
+                var(--pulse) 360deg
+            );
+            opacity: 0.15;
+            animation: rotate-slow 8s linear infinite;
+            mask: radial-gradient(circle, transparent 48%, black 48.5%, black 51.5%, transparent 52%);
+            -webkit-mask: radial-gradient(circle, transparent 48%, black 48.5%, black 51.5%, transparent 52%);
+        }
+
+        /* Inner glow ring */
+        #mirror-logo::after {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            width: 230px;
+            height: 230px;
+            border-radius: 50%;
+            border: 1px solid var(--pulse-glow);
+            opacity: 0.3;
+            animation: rotate-slow 12s linear infinite reverse;
+        }
+
+        /* Central diamond */
+        #mirror-logo .diamond {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: var(--gradient);
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            opacity: 0.6;
+            animation: diamond-pulse 3s ease-in-out infinite;
+            filter: blur(1px);
+        }
+
+        /* Inner diamond — smaller, brighter */
+        #mirror-logo .diamond-inner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: var(--pulse);
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            opacity: 0.8;
+            animation: diamond-pulse 3s ease-in-out infinite reverse;
+            box-shadow: 0 0 30px var(--pulse-glow), 0 0 60px var(--pulse-soft);
+        }
+
+        /* Small orbiting dots */
+        .orbit-dot {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--pulse);
+            box-shadow: 0 0 6px var(--pulse);
+        }
+        .orbit-dot:nth-child(4) { animation: orbit-1 4s linear infinite; top: 50%; left: 50%; }
+        .orbit-dot:nth-child(5) { animation: orbit-2 5s linear infinite; top: 50%; left: 50%; }
+        .orbit-dot:nth-child(6) { animation: orbit-3 6s linear infinite; top: 50%; left: 50%; }
+
+        @keyframes orbit-1 {
+            0% { transform: translate(-50%, -50%) rotate(0deg) translateX(100px); }
+            100% { transform: translate(-50%, -50%) rotate(360deg) translateX(100px); }
+        }
+        @keyframes orbit-2 {
+            0% { transform: translate(-50%, -50%) rotate(120deg) translateX(85px); }
+            100% { transform: translate(-50%, -50%) rotate(480deg) translateX(85px); }
+        }
+        @keyframes orbit-3 {
+            0% { transform: translate(-50%, -50%) rotate(240deg) translateX(70px); }
+            100% { transform: translate(-50%, -50%) rotate(600deg) translateX(70px); }
+        }
+
+        @keyframes logo-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        @keyframes diamond-pulse {
+            0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.1); }
+        }
+
+        /* ═══════════════════════════════════════════ */
+        /* BRAND NAME — HAZOOM with gradient text    */
+        /* ═══════════════════════════════════════════ */
+
+        #brand {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 52px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            background: var(--gradient);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradient-shift 4s ease infinite;
+            opacity: 0;
+            animation: fade-in 1s ease forwards 0.3s, gradient-shift 4s ease infinite 0.3s;
+            text-shadow: none;
+            filter: drop-shadow(0 0 30px var(--pulse-soft));
+            line-height: 1.1;
+        }
+
+        @keyframes gradient-shift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* Subtitle */
+        #tagline {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 300;
+            color: var(--text-dim);
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
+            margin-top: 8px;
+            opacity: 0;
+            animation: fade-in 1s ease forwards 0.8s;
+        }
+
+        #tagline .accent {
+            color: var(--pulse);
+        }
+
+        #tagline .accent-violet {
+            color: var(--violet);
+        }
+
+        /* ═══════════════════════════════════════════ */
+        /* MOTTO — Typewriter style                  */
+        /* ═══════════════════════════════════════════ */
+
+        #motto {
+            font-size: 13px;
+            color: var(--text-faint);
+            font-style: italic;
+            max-width: 600px;
+            margin: 24px auto 0;
+            line-height: 1.7;
+            opacity: 0;
+            animation: fade-in 1.5s ease forwards 1.2s;
+            text-align: center;
+            padding: 0 24px;
+            z-index: 1;
+            position: relative;
+        }
+
+        #motto .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 14px;
+            background: var(--pulse);
+            margin-left: 2px;
+            animation: blink-cursor 1s step-end infinite;
+            vertical-align: text-bottom;
+        }
+
+        @keyframes blink-cursor {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* ═══════════════════════════════════════════ */
+        /* VERSION & COPYRIGHT                        */
+        /* ═══════════════════════════════════════════ */
+
+        #version {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            color: var(--text-faint);
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            opacity: 0;
+            animation: fade-in 1s ease forwards 1.8s;
+            z-index: 1;
+        }
+
+        #copyright {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9px;
+            color: var(--text-faint);
+            letter-spacing: 0.15em;
+            opacity: 0.5;
+            opacity: 0;
+            animation: fade-in 1s ease forwards 2.5s;
+            white-space: nowrap;
+            z-index: 1;
+        }
+
+        /* ═══════════════════════════════════════════ */
+        /* ENTER BUTTON — Neon cyberpunk             */
+        /* ═══════════════════════════════════════════ */
+
+        #enter-btn {
+            position: absolute;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 14px 48px;
+            background: transparent;
+            border: 1px solid var(--pulse-glow);
+            border-radius: 4px;
+            color: var(--pulse);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            cursor: pointer;
+            opacity: 0;
+            animation: fade-in 1s ease forwards 2s;
+            position: relative;
+            transition: all 0.4s ease;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        /* Corner brackets */
+        #enter-btn::before,
+        #enter-btn::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-color: var(--pulse);
+            border-style: solid;
+            transition: all 0.4s ease;
+        }
+
+        #enter-btn::before {
+            top: -1px;
+            left: -1px;
+            border-width: 1px 0 0 1px;
+        }
+
+        #enter-btn::after {
+            bottom: -1px;
+            right: -1px;
+            border-width: 0 1px 1px 0;
+        }
+
+        /* Inner corner brackets (hover) */
+        #enter-btn .corner-tl,
+        #enter-btn .corner-br {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-color: var(--pulse);
+            border-style: solid;
+            transition: all 0.4s ease;
+            opacity: 0;
+        }
+
+        #enter-btn .corner-tl {
+            top: -1px;
+            right: -1px;
+            border-width: 1px 1px 0 0;
+        }
+
+        #enter-btn .corner-br {
+            bottom: -1px;
+            left: -1px;
+            border-width: 0 0 1px 1px;
+        }
+
+        /* Hover glow fill */
+        #enter-btn .btn-glow {
+            position: absolute;
+            inset: -1px;
+            background: var(--gradient);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: -1;
+        }
+
+        #enter-btn .btn-text {
+            position: relative;
+            z-index: 1;
+        }
+
+        #enter-btn:hover {
+            border-color: transparent;
+            color: var(--void);
+            transform: translateX(-50%) scale(1.05);
+            box-shadow: 0 0 40px var(--pulse-glow), 0 0 80px var(--pulse-soft);
+        }
+
+        #enter-btn:hover .btn-glow {
+            opacity: 1;
+        }
+
+        #enter-btn:hover::before,
+        #enter-btn:hover::after {
+            opacity: 0;
+        }
+
+        #enter-btn:hover .corner-tl,
+        #enter-btn:hover .corner-br {
+            opacity: 1;
+        }
+
+        /* ═══════════════════════════════════════════ */
+        /* CSS GLITCH TEXT (on brand hover)           */
+        /* ═══════════════════════════════════════════ */
+
+        /* ═══════════════════════════════════════════ */
+        /* ANIMATIONS                                 */
+        /* ═══════════════════════════════════════════ */
+
+        @keyframes fade-in {
+            to { opacity: 1; }
+        }
+
+        @keyframes float-up {
+            0% { opacity: 0; transform: translateY(0) translateX(0); }
+            5% { opacity: var(--p-opacity, 0.3); }
+            90% { opacity: var(--p-opacity, 0.3); }
+            100% { opacity: 0; transform: translateY(-100vh) translateX(var(--x-move, 50px)); }
+        }
+
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
+
+        @keyframes rotate-slow {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes blink {
+            0%, 50%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0.3; }
+        }
+
+        /* Loading state */
+        #splash.loading #mirror-logo .diamond {
+            animation: diamond-pulse 3s ease-in-out infinite, glow-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes glow-pulse {
+            0%, 100% { filter: blur(1px) drop-shadow(0 0 20px var(--pulse-glow)); }
+            50% { filter: blur(2px) drop-shadow(0 0 50px var(--pulse-glow)); }
+        }
+
+        /* ═══════════════════════════════════════════ */
+        /* MEDIA QUERIES                              */
+        /* ═══════════════════════════════════════════ */
+
+        @media (max-width: 768px) {
+            #mirror-logo {
+                width: 160px;
+                height: 160px;
+            }
+
+            #mirror-logo::before {
+                width: 190px;
+                height: 190px;
+                top: -15px;
+                left: -15px;
+            }
+
+            #mirror-logo::after {
+                width: 170px;
+                height: 170px;
+            }
+
+            #mirror-logo .diamond {
+                width: 60px;
+                height: 60px;
+            }
+
+            #mirror-logo .diamond-inner {
+                width: 30px;
+                height: 30px;
+            }
+
+            @keyframes orbit-1 {
+                0% { transform: translate(-50%, -50%) rotate(0deg) translateX(70px); }
+                100% { transform: translate(-50%, -50%) rotate(360deg) translateX(70px); }
+            }
+            @keyframes orbit-2 {
+                0% { transform: translate(-50%, -50%) rotate(120deg) translateX(60px); }
+                100% { transform: translate(-50%, -50%) rotate(480deg) translateX(60px); }
+            }
+            @keyframes orbit-3 {
+                0% { transform: translate(-50%, -50%) rotate(240deg) translateX(50px); }
+                100% { transform: translate(-50%, -50%) rotate(600deg) translateX(50px); }
+            }
+
+            #brand {
+                font-size: 32px;
+            }
+
+            #tagline {
+                font-size: 9px;
+                margin-top: 6px;
+            }
+
+            #motto {
+                font-size: 11px;
+                max-width: 90%;
+            }
+
+            #enter-btn {
+                padding: 12px 36px;
+                font-size: 10px;
+                bottom: 100px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #brand {
+                font-size: 24px;
+            }
+
+            #mirror-logo {
+                width: 120px;
+                height: 120px;
+            }
+
+            #mirror-logo::before {
+                width: 150px;
+                height: 150px;
+            }
+
+            #mirror-logo::after {
+                width: 130px;
+                height: 130px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="scanlines"></div>
+
+    <div id="splash">
+        <div id="grid">
+            <div id="grid-inner"></div>
+        </div>
+
+        <div id="particles"></div>
+
+        <div id="rings">
+            <div class="pulse-ring"></div>
+            <div class="pulse-ring"></div>
+            <div class="pulse-ring"></div>
+            <div class="pulse-ring"></div>
+        </div>
+
+        <div id="logo-container">
+            <div id="mirror-logo">
+                <div class="diamond"></div>
+                <div class="diamond-inner"></div>
+                <div class="orbit-dot"></div>
+                <div class="orbit-dot"></div>
+                <div class="orbit-dot"></div>
+            </div>
+        </div>
+
+        <div id="brand">HAZOOM</div>
+        <div id="tagline">
+            <span class="accent">⟡</span> MIRRORING TRANSCENDANCE <span class="accent-violet">⟡</span>
+            <br>
+            INTELLIGENCE
+        </div>
+
+        <div id="motto">
+            "The mirror doesn't lie. That's why it scares you. That's why you need it."<span class="cursor"></span>
+        </div>
+
+        <div id="version">HAZOOM v0.2.0 · MTI Engine · AES-256-GCM</div>
+
+        <button id="enter-btn" onclick="enterApplication()">
+            <span class="btn-glow"></span>
+            <span class="corner-tl"></span>
+            <span class="corner-br"></span>
+            <span class="btn-text">⟡ Enter the Mirror ⟡</span>
+        </button>
+
+        <div id="copyright">
+            © HAZOOM — All rights reserved. Hazem Soussi — Lead Computing Architect
+        </div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════
+        // PARTICLE SYSTEM — Enhanced
+        // ═══════════════════════════════════════════════════
+
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const types = ['particle-1', 'particle-2', 'particle-3'];
+            const particleCount = 80;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                const type = types[i % types.length];
+                particle.className = 'particle ' + type;
+
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 25 + 's';
+                particle.style.animationDuration = (20 + Math.random() * 30) + 's';
+                particle.style.setProperty('--x-move', (Math.random() - 0.5) * 120 + 'px');
+                particle.style.setProperty('--p-opacity', (0.1 + Math.random() * 0.4));
+
+                container.appendChild(particle);
+            }
+        }
+
+        // ═══════════════════════════════════════════════════
+        // ENTER APPLICATION
+        // ═══════════════════════════════════════════════════
+
+        function enterApplication() {
+            const splash = document.getElementById('splash');
+            splash.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+            splash.style.opacity = '0';
+            splash.style.transform = 'scale(1.05)';
+
+            setTimeout(() => {
+                window.location.href = '/mirror';
+            }, 800);
+        }
+
+        // ═══════════════════════════════════════════════════
+        // AUTO-ENTRY AFTER TIMEOUT
+        // ═══════════════════════════════════════════════════
+
+        let autoEnterTimer;
+
+        function resetAutoEnter() {
+            clearTimeout(autoEnterTimer);
+            autoEnterTimer = setTimeout(() => {
+                enterApplication();
+            }, 20000);
+        }
+
+        document.addEventListener('mousemove', resetAutoEnter);
+        document.addEventListener('keydown', resetAutoEnter);
+        document.addEventListener('click', resetAutoEnter);
+
+        // ═══════════════════════════════════════════════════
+        // PARALLAX ON MOUSE MOVE (subtle)
+        // ═══════════════════════════════════════════════════
+
+        document.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth - 0.5) * 6;
+            const y = (e.clientY / window.innerHeight - 0.5) * 6;
+            const logo = document.getElementById('mirror-logo');
+            const brand = document.getElementById('brand');
+            if (logo) logo.style.transform = `translate(${x}px, ${y}px)`;
+            if (brand) brand.style.transform = `translate(${x * -0.5}px, ${y * -0.5}px)`;
+        });
+
+        // ═══════════════════════════════════════════════════
+        // INITIALIZATION
+        // ═══════════════════════════════════════════════════
+
+        document.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            resetAutoEnter();
+
+            setTimeout(() => {
+                document.getElementById('splash').classList.add('loading');
+            }, 500);
+        });
+    </script>
+</body>
+</html>

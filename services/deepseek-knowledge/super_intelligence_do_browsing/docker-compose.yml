@@ -1,0 +1,12 @@
+services:
+  mimo:
+    build: .
+    container_name: mimo-browser
+    ports:
+      - "8080:8080"
+    environment:
+      # Optional: enable the REAL AI sidebar (DeepSeek/OpenAI-compatible).
+      # Leave unset to run fully offline on the built-in heuristic AI.
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
+      - MIMO_LLM_MODEL=${MIMO_LLM_MODEL:-deepseek-chat}
+    restart: unless-stopped

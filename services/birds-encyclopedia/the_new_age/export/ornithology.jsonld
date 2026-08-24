@@ -1,0 +1,2149 @@
+{
+  "@context": {
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "taxon": "http://purl.org/NET/biol/ns#",
+    "dwc": "http://rs.tdwg.org/dwc/terms/",
+    "ex": "https://local.agi/ontology/birds#",
+    "name": "dwc:scientificName",
+    "commonName": "ex:commonName",
+    "order": "dwc:order",
+    "family": "dwc:family",
+    "iucnStatus": "ex:iucnStatus",
+    "range": "ex:range",
+    "habitat": "ex:habitat",
+    "diet": "ex:diet",
+    "lengthCm": "ex:lengthCm",
+    "wingspanCm": "ex:wingspanCm",
+    "call": "ex:call",
+    "funFacts": "ex:funFact",
+    "renderType": "ex:renderType",
+    "speciesOf": {
+      "@reverse": "ex:hasSpecies"
+    }
+  },
+  "@graph": [
+    {
+      "@id": "https://local.agi/ontology/birds#african-grey-parrot",
+      "@type": [
+        "ex:Bird",
+        "owl:Thing"
+      ],
+      "name": "Psittacus erithacus",
+      "commonName": "African Grey Parrot",
+      "order": "Psittaciformes",
+      "family": "Psittacidae",
+      "iucnStatus": "EN",
+      "range": [
+        "West & Central Africa rainforest belt",
+        "Ghana",
+        "Cameroon",
+        "DR Congo",
+        "Ivory Coast"
+      ],
+      "habitat": "Dense lowland rainforest, gallery forest, savanna-edge mangroves",
+      "diet": "Seeds, nuts, fruits, berries, palm nuts; occasional bark and blossoms",
+      "lengthCm": 33,
+      "wingspanCm": 46,
+      "call": "Loud screech 'kraa-kraa'; exceptional mimicry of human speech and environmental sounds",
+      "funFacts": [
+        "Considered one of the most cognitively advanced birds; studies show concept of zero and numerical competence.",
+        "Alex, an African Grey studied by Irene Pepperberg, learned over 100 words and could classify objects by color, shape, and quantity.",
+        "Wild flocks use vocal dialects that vary regionally."
+      ],
+      "renderType": "gltf",
+      "soundProfile": "parrot"
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#greater-flamingo",
+      "@type": [
+        "ex:Bird",
+        "owl:Thing"
+      ],
+      "name": "Phoenicopterus roseus",
+      "commonName": "Greater Flamingo",
+      "order": "Phoenicopteriformes",
+      "family": "Phoenicopteridae",
+      "iucnStatus": "LC",
+      "range": [
+        "East Africa (Rift Valley lakes)",
+        "North Africa",
+        "Saharan salt lakes",
+        "Southern Africa (Etosha, Makgadikgadi)"
+      ],
+      "habitat": "Alkaline and hypersaline lakes, lagoons, estuaries; feeds in shallow water",
+      "diet": "Blue-green algae, diatoms, brine shrimp, molluscs strained through lamellae",
+      "lengthCm": 110,
+      "wingspanCm": 140,
+      "call": "Goose-like honking 'ka-ha-ha'; nasal 'ung-ung-ung' contact calls",
+      "funFacts": [
+        "Pink coloration comes from carotenoid pigments in their food, not innate.",
+        "They feed with their head upside-down, pumping water through comb-like lamellae.",
+        "Flamingos can filter up to several litres of water per minute while feeding."
+      ],
+      "renderType": "gltf",
+      "soundProfile": "flamingo"
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#yellow-billed-stork",
+      "@type": [
+        "ex:Bird",
+        "owl:Thing"
+      ],
+      "name": "Mycteria ibis",
+      "commonName": "Yellow-billed Stork",
+      "order": "Ciconiiformes",
+      "family": "Ciconiidae",
+      "iucnStatus": "LC",
+      "range": [
+        "Sub-Saharan Africa",
+        "East Africa",
+        "Southern Africa",
+        "Senegal to Ethiopia"
+      ],
+      "habitat": "Freshwater marshes, floodplains, rice paddies, lake margins",
+      "diet": "Fish, frogs, insects, crustaceans; tactile-foraging in murky water",
+      "lengthCm": 97,
+      "wingspanCm": 150,
+      "call": "Mostly silent; bill-clattering at nest",
+      "funFacts": [
+        "Forages by 'groping' with the partially open bill submerged, snapping shut on contact.",
+        "Breeding adults flush pink on the scapulars and develop a darker yellow bill.",
+        "Highly nomadic, tracking seasonal floods across the savanna."
+      ],
+      "renderType": "gltf",
+      "soundProfile": "stork"
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#common-ostrich",
+      "@type": [
+        "ex:Bird",
+        "owl:Thing"
+      ],
+      "name": "Struthio camelus",
+      "commonName": "Common Ostrich",
+      "order": "Struthioniformes",
+      "family": "Struthionidae",
+      "iucnStatus": "LC",
+      "range": [
+        "Sahel to Southern Africa",
+        "East African savanna",
+        "Kalahari",
+        "Serengeti"
+      ],
+      "habitat": "Open savanna, semi-desert, dry grasslands",
+      "diet": "Omnivorous: seeds, grasses, shrubs, insects, small vertebrates",
+      "lengthCm": 210,
+      "wingspanCm": 200,
+      "call": "Low booming 'booh-boooh' from males; hissing when threatened",
+      "funFacts": [
+        "Largest living bird; cannot fly but can sprint at 70 km/h.",
+        "Eyes are the largest of any land vertebrate (~5 cm diameter).",
+        "A single egg weighs ~1.4 kg — the largest egg of any living bird."
+      ],
+      "renderType": "procedural",
+      "soundProfile": "ostrich"
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#secretary-bird",
+      "@type": [
+        "ex:Bird",
+        "owl:Thing"
+      ],
+      "name": "Sagittarius serpentarius",
+      "commonName": "Secretary Bird",
+      "order": "Accipitriformes",
+      "family": "Sagittariidae",
+      "iucnStatus": "VU",
+      "range": [
+        "Sub-Saharan Africa",
+        "East Africa",
+        "Southern Africa savanna"
+      ],
+      "habitat": "Open grassland, savanna, semi-arid steppe",
+      "diet": "Snakes (incl. venomous), lizards, rodents, large insects, small birds",
+      "lengthCm": 113,
+      "wingspanCm": 210,
+      "call": "Croaking 'kurr-kurr'; usually silent away from nest",
+      "funFacts": [
+        "Hunts on foot, stomping prey with kicks measured at ~5 m/s force.",
+        "Elongated central tail feathers and crest recall quill pens behind an ear — hence 'secretary'.",
+        "Can cover 20-30 km on foot in a single day of hunting."
+      ],
+      "renderType": "procedural",
+      "soundProfile": "secretary"
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#lilac-breasted-roller",
+      "@type": [
+        "ex:Bird",
+        "owl:Thing"
+      ],
+      "name": "Coracias caudatus",
+      "commonName": "Lilac-breasted Roller",
+      "order": "Coraciiformes",
+      "family": "Coraciidae",
+      "iucnStatus": "LC",
+      "range": [
+        "Eastern & Southern Africa",
+        "Kenya",
+        "Tanzania",
+        "Botswana",
+        "Zimbabwe"
+      ],
+      "habitat": "Open woodland, savanna with scattered trees, cultivated land",
+      "diet": "Insects, grasshoppers, beetles, small reptiles; hawks from perches",
+      "lengthCm": 36,
+      "wingspanCm": 50,
+      "call": "Rolling, grating 'rak-rak-rak' and harsh 'aaak'",
+      "funFacts": [
+        "Performs spectacular tumbling 'roller' courtship flights.",
+        "One of the most photographed birds in Africa due to vivid plumage.",
+        "National bird of Kenya and Botswana."
+      ],
+      "renderType": "procedural",
+      "soundProfile": "roller"
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#african-fish-eagle",
+      "@type": [
+        "ex:Bird",
+        "owl:Thing"
+      ],
+      "name": "Haliaeetus vocifer",
+      "commonName": "African Fish Eagle",
+      "order": "Accipitriformes",
+      "family": "Accipitridae",
+      "iucnStatus": "LC",
+      "range": [
+        "Sub-Saharan Africa near water",
+        "Lake Victoria",
+        "Okavango Delta",
+        "Zambezi"
+      ],
+      "habitat": "Lakes, rivers, reservoirs, coastline with abundant fish",
+      "diet": "Fish (snatched from surface), waterbirds, carrion",
+      "lengthCm": 63,
+      "wingspanCm": 200,
+      "call": "Iconic yelping 'weee-ah-koh-koh-koh' — the 'voice of Africa'",
+      "funFacts": [
+        "Monogamous, pairs duet and defend territories year-round.",
+        "Can lock its talons and may drown if gripping a fish too heavy to lift.",
+        "National bird of Zambia, Zimbabwe, Namibia, and South Sudan."
+      ],
+      "renderType": "procedural",
+      "soundProfile": "accipiter"
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#grey-crowned-crane",
+      "@type": [
+        "ex:Bird",
+        "owl:Thing"
+      ],
+      "name": "Balearica regulorum",
+      "commonName": "Grey Crowned Crane",
+      "order": "Gruiformes",
+      "family": "Gruidae",
+      "iucnStatus": "EN",
+      "range": [
+        "East Africa",
+        "Southern Africa",
+        "Uganda",
+        "Kenya",
+        "South Africa"
+      ],
+      "habitat": "Wetlands, upland grasslands, croplands near water",
+      "diet": "Grass tips, seeds, insects, frogs, small fish",
+      "lengthCm": 100,
+      "wingspanCm": 200,
+      "call": "Resonant honking 'ou-ou-ou' with a dancing display",
+      "funFacts": [
+        "One of only two crane species that roost in trees (has a hind toe).",
+        "Elaborate dancing displays strengthen pair bonds.",
+        "National bird of Uganda."
+      ],
+      "renderType": "procedural",
+      "soundProfile": "crane"
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#southern-ground-hornbill",
+      "@type": [
+        "ex:Bird",
+        "owl:Thing"
+      ],
+      "name": "Bucorvus leadbeateri",
+      "commonName": "Southern Ground Hornbill",
+      "order": "Bucerotiformes",
+      "family": "Bucorvidae",
+      "iucnStatus": "VU",
+      "range": [
+        "Southern Africa",
+        "Botswana",
+        "Zimbabwe",
+        "NE South Africa",
+        "southern Kenya"
+      ],
+      "habitat": "Savanna, open woodland, grassland with large trees for nesting",
+      "diet": "Insects, reptiles, small mammals, birds, frogs",
+      "lengthCm": 90,
+      "wingspanCm": 135,
+      "call": "Deep booming 'oom-oom-oom' audible over 3 km",
+      "funFacts": [
+        "Cooperative breeders; helpers assist a dominant pair for years.",
+        "Long-lived (up to 50-60 years); slow to mature.",
+        "Traditionally regarded as a rain-bringer in many cultures."
+      ],
+      "renderType": "procedural",
+      "soundProfile": "hornbill"
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#shoebill",
+      "@type": [
+        "ex:Bird",
+        "owl:Thing"
+      ],
+      "name": "Balaeniceps rex",
+      "commonName": "Shoebill",
+      "order": "Pelecaniformes",
+      "family": "Balaenicipitidae",
+      "iucnStatus": "VU",
+      "range": [
+        "Central & East Africa swamps",
+        "Sudan",
+        "Uganda",
+        "Zambia",
+        "DR Congo"
+      ],
+      "habitat": "Papyrus and reed swamps, poorly oxygenated marshes",
+      "diet": "Lungfish, catfish, snakes, baby crocodiles; strike-and-gulp",
+      "lengthCm": 115,
+      "wingspanCm": 230,
+      "call": "Bill-clattering like a machine gun; rarely vocal otherwise",
+      "funFacts": [
+        "Its shoe-shaped bill can be up to 24 cm long and 20 cm wide.",
+        "Often stands motionless for hours ('statue' hunting) before a swift strike.",
+        "Closely related to pelicans despite the stork-like look."
+      ],
+      "renderType": "procedural",
+      "soundProfile": "shoebill"
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#kori-bustard",
+      "@type": [
+        "ex:Bird",
+        "owl:Thing"
+      ],
+      "name": "Ardeotis kori",
+      "commonName": "Kori Bustard",
+      "order": "Otidiformes",
+      "family": "Otididae",
+      "iucnStatus": "NT",
+      "range": [
+        "Southern & East Africa",
+        "Kalahari",
+        "Serengeti",
+        "Etosha"
+      ],
+      "habitat": "Semi-arid savanna, grassland, open woodland",
+      "diet": "Insects, lizards, small mammals, seeds, berries",
+      "lengthCm": 120,
+      "wingspanCm": 230,
+      "call": "Deep booming 'oomf' from inflated throat; usually quiet",
+      "funFacts": [
+        "Heaviest flying bird native to Africa (males up to 19 kg).",
+        "Drinks by sucking rather than tilting the head back.",
+        "National bird of Botswana (with the lilac-breasted roller)."
+      ],
+      "renderType": "procedural",
+      "soundProfile": "bustard"
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#helmeted-guineafowl",
+      "@type": [
+        "ex:Bird",
+        "owl:Thing"
+      ],
+      "name": "Numida meleagris",
+      "commonName": "Helmeted Guineafowl",
+      "order": "Galliformes",
+      "family": "Numididae",
+      "iucnStatus": "LC",
+      "range": [
+        "Sub-Saharan Africa",
+        "Widespread",
+        "Also feral in the Americas/Europe"
+      ],
+      "habitat": "Savanna, open woodland, farmland, scrub",
+      "diet": "Seeds, roots, insects, ticks, small invertebrates",
+      "lengthCm": 53,
+      "wingspanCm": 75,
+      "call": "Loud 'kek-kek-kek-kek-kek' alarm chatter",
+      "funFacts": [
+        "Excellent tick-eaters — a single flock can clear thousands per day.",
+        "Roost communally in trees at night for safety.",
+        "Domesticated forms are kept worldwide as pest control."
+      ],
+      "renderType": "procedural",
+      "soundProfile": "guineafowl"
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#tawny-eagle",
+      "@type": [
+        "ex:Bird",
+        "owl:Thing"
+      ],
+      "name": "Aquila rapax",
+      "commonName": "Tawny Eagle",
+      "order": "Accipitriformes",
+      "family": "Accipitridae",
+      "iucnStatus": "VU",
+      "range": [
+        "Sahel to Southern Africa",
+        "East Africa",
+        "India (subspecies)"
+      ],
+      "habitat": "Arid savanna, desert edge, open grassland",
+      "diet": "Carrion, small mammals, birds, reptiles, insects",
+      "lengthCm": 62,
+      "wingspanCm": 170,
+      "call": "Weak, high-pitched 'kee-kee' and barking notes",
+      "funFacts": [
+        "Highly variable plumage — from pale sandy to dark brown.",
+        "Often usurps kills from smaller raptors.",
+        "Nests on isolated trees or rocky outcrops."
+      ],
+      "renderType": "procedural",
+      "soundProfile": "accipiter"
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#yellow-billed-oxpecker",
+      "@type": [
+        "ex:Bird",
+        "owl:Thing"
+      ],
+      "name": "Buphagus africanus",
+      "commonName": "Yellow-billed Oxpecker",
+      "order": "Passeriformes",
+      "family": "Buphagidae",
+      "iucnStatus": "LC",
+      "range": [
+        "Sub-Saharan Africa (west of Rift)",
+        "Savanna with large mammals"
+      ],
+      "habitat": "Open woodland and savanna with herds of ungulates",
+      "diet": "Ticks and ectoparasites from large mammals; blood and wound tissue",
+      "lengthCm": 20,
+      "wingspanCm": 35,
+      "call": "Hissing 'sss-sss' and shrill chirps",
+      "funFacts": [
+        "Ride on buffalo, rhino, giraffe and hippo, gleaning ticks.",
+        "Have bristle-tipped tails used as a prop when clinging to hides.",
+        "Their presence can reduce tick loads on a host by thousands per day."
+      ],
+      "renderType": "procedural",
+      "soundProfile": "oxpecker"
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#african-penguin",
+      "@type": [
+        "ex:Bird",
+        "owl:Thing"
+      ],
+      "name": "Spheniscus demersus",
+      "commonName": "African Penguin",
+      "order": "Sphenisciformes",
+      "family": "Spheniscidae",
+      "iucnStatus": "CR",
+      "range": [
+        "Southern African coastline",
+        "South Africa",
+        "Namibia",
+        "Benguela upwelling"
+      ],
+      "habitat": "Rocky offshore islands and mainland burrows near cold currents",
+      "diet": "Anchovies, sardines, squid, small crustaceans",
+      "lengthCm": 60,
+      "wingspanCm": 0,
+      "call": "Braying 'bray-bray' like a donkey; hence 'jackass penguin'",
+      "funFacts": [
+        "The only penguin breeding in Africa.",
+        "Pink gland above the eye flushes to dump heat in hot weather.",
+        "Population crashed >95% since the 1900s due to overfishing and oil spills."
+      ],
+      "renderType": "procedural",
+      "soundProfile": "penguin"
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#crowned-lapwing",
+      "@type": [
+        "ex:Bird",
+        "owl:Thing"
+      ],
+      "name": "Vanellus coronatus",
+      "commonName": "Crowned Lapwing",
+      "order": "Charadriiformes",
+      "family": "Charadriidae",
+      "iucnStatus": "LC",
+      "range": [
+        "Sub-Saharan Africa",
+        "East & Southern Africa dry grasslands"
+      ],
+      "habitat": "Short grassland, fallow fields, dry savanna",
+      "diet": "Insects, termites, beetles, seeds",
+      "lengthCm": 31,
+      "wingspanCm": 65,
+      "call": "Sharp 'kik-kik-kik' alarm; whistled 'whee-whee'",
+      "funFacts": [
+        "Striking black-and-white crest gives its 'crowned' name.",
+        "Perform broken-wing distraction displays to lure predators from nests.",
+        "Often forage in mixed flocks with other lapwings."
+      ],
+      "renderType": "procedural",
+      "soundProfile": "lapwing"
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#violet-backed-starling",
+      "@type": [
+        "ex:Bird",
+        "owl:Thing"
+      ],
+      "name": "Cinnyricinclus leucogaster",
+      "commonName": "Violet-backed Starling",
+      "order": "Passeriformes",
+      "family": "Sturnidae",
+      "iucnStatus": "LC",
+      "range": [
+        "Sub-Saharan Africa",
+        "Woodland and forest edges"
+      ],
+      "habitat": "Open woodland, savanna with trees, gardens, forest edge",
+      "diet": "Fruit, figs, insects; forages in canopy",
+      "lengthCm": 18,
+      "wingspanCm": 35,
+      "call": "Whistled 'tsee-tsee' and soft warbling",
+      "funFacts": [
+        "Males are iridescent violet above, white below; females are streaked brown.",
+        "One of the smallest starlings in Africa.",
+        "Nests in tree holes, often usurped from woodpeckers."
+      ],
+      "renderType": "procedural",
+      "soundProfile": "starling"
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#african-jacana",
+      "@type": [
+        "ex:Bird",
+        "owl:Thing"
+      ],
+      "name": "Actophilornis africanus",
+      "commonName": "African Jacana",
+      "order": "Charadriiformes",
+      "family": "Jacanidae",
+      "iucnStatus": "LC",
+      "range": [
+        "Sub-Saharan Africa",
+        "Freshwater wetlands with floating vegetation"
+      ],
+      "habitat": "Lakes and pans with lily pads and floating mats",
+      "diet": "Insects, seeds, molluscs picked from floating plants",
+      "lengthCm": 30,
+      "wingspanCm": 55,
+      "call": "Harsh 'kree-kree' and rattling alarm",
+      "funFacts": [
+        "Enormous toes spread weight to walk on lily pads — 'Jesus bird'.",
+        "Polyandrous: females mate with several males who incubate eggs.",
+        "Males perform broken-wing displays to distract predators."
+      ],
+      "renderType": "procedural",
+      "soundProfile": "jacana"
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#hadada-ibis",
+      "@type": [
+        "ex:Bird",
+        "owl:Thing"
+      ],
+      "name": "Bostrychia hagedash",
+      "commonName": "Hadada Ibis",
+      "order": "Pelecaniformes",
+      "family": "Threskiornithidae",
+      "iucnStatus": "LC",
+      "range": [
+        "Sub-Saharan Africa",
+        "Wetlands, lawns, urban parks"
+      ],
+      "habitat": "Wetlands, riverine forest, grasslands, suburban gardens",
+      "diet": "Earthworms, insects, snails, crustaceans; probes soft soil",
+      "lengthCm": 76,
+      "wingspanCm": 120,
+      "call": "Loud, raucous 'haa-da-da' at dawn and dusk",
+      "funFacts": [
+        "The name imitates its distinctive call.",
+        "Thrives alongside humans; common in city parks and golf courses.",
+        "Iridescent bronze sheen on the wings in sunlight."
+      ],
+      "renderType": "procedural",
+      "soundProfile": "ibis"
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#family/Psittacidae",
+      "@type": "ex:Family",
+      "commonName": "Psittacidae",
+      "order": "Psittaciformes",
+      "hasSpecies": [
+        "African Grey Parrot"
+      ]
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#family/Phoenicopteridae",
+      "@type": "ex:Family",
+      "commonName": "Phoenicopteridae",
+      "order": "Phoenicopteriformes",
+      "hasSpecies": [
+        "Greater Flamingo"
+      ]
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#family/Ciconiidae",
+      "@type": "ex:Family",
+      "commonName": "Ciconiidae",
+      "order": "Ciconiiformes",
+      "hasSpecies": [
+        "Yellow-billed Stork"
+      ]
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#family/Struthionidae",
+      "@type": "ex:Family",
+      "commonName": "Struthionidae",
+      "order": "Struthioniformes",
+      "hasSpecies": [
+        "Common Ostrich"
+      ]
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#family/Sagittariidae",
+      "@type": "ex:Family",
+      "commonName": "Sagittariidae",
+      "order": "Accipitriformes",
+      "hasSpecies": [
+        "Secretary Bird"
+      ]
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#family/Coraciidae",
+      "@type": "ex:Family",
+      "commonName": "Coraciidae",
+      "order": "Coraciiformes",
+      "hasSpecies": [
+        "Lilac-breasted Roller"
+      ]
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#family/Accipitridae",
+      "@type": "ex:Family",
+      "commonName": "Accipitridae",
+      "order": "Accipitriformes",
+      "hasSpecies": [
+        "African Fish Eagle",
+        "Tawny Eagle"
+      ]
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#family/Gruidae",
+      "@type": "ex:Family",
+      "commonName": "Gruidae",
+      "order": "Gruiformes",
+      "hasSpecies": [
+        "Grey Crowned Crane"
+      ]
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#family/Bucorvidae",
+      "@type": "ex:Family",
+      "commonName": "Bucorvidae",
+      "order": "Bucerotiformes",
+      "hasSpecies": [
+        "Southern Ground Hornbill"
+      ]
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#family/Balaenicipitidae",
+      "@type": "ex:Family",
+      "commonName": "Balaenicipitidae",
+      "order": "Pelecaniformes",
+      "hasSpecies": [
+        "Shoebill"
+      ]
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#family/Otididae",
+      "@type": "ex:Family",
+      "commonName": "Otididae",
+      "order": "Otidiformes",
+      "hasSpecies": [
+        "Kori Bustard"
+      ]
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#family/Numididae",
+      "@type": "ex:Family",
+      "commonName": "Numididae",
+      "order": "Galliformes",
+      "hasSpecies": [
+        "Helmeted Guineafowl"
+      ]
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#family/Buphagidae",
+      "@type": "ex:Family",
+      "commonName": "Buphagidae",
+      "order": "Passeriformes",
+      "hasSpecies": [
+        "Yellow-billed Oxpecker"
+      ]
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#family/Spheniscidae",
+      "@type": "ex:Family",
+      "commonName": "Spheniscidae",
+      "order": "Sphenisciformes",
+      "hasSpecies": [
+        "African Penguin"
+      ]
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#family/Charadriidae",
+      "@type": "ex:Family",
+      "commonName": "Charadriidae",
+      "order": "Charadriiformes",
+      "hasSpecies": [
+        "Crowned Lapwing"
+      ]
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#family/Sturnidae",
+      "@type": "ex:Family",
+      "commonName": "Sturnidae",
+      "order": "Passeriformes",
+      "hasSpecies": [
+        "Violet-backed Starling"
+      ]
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#family/Jacanidae",
+      "@type": "ex:Family",
+      "commonName": "Jacanidae",
+      "order": "Charadriiformes",
+      "hasSpecies": [
+        "African Jacana"
+      ]
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#family/Threskiornithidae",
+      "@type": "ex:Family",
+      "commonName": "Threskiornithidae",
+      "order": "Pelecaniformes",
+      "hasSpecies": [
+        "Hadada Ibis"
+      ]
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/african-grey-parrot_lilac-breasted-roller",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#african-grey-parrot",
+      "target": "https://local.agi/ontology/birds#lilac-breasted-roller",
+      "relation": [
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:similarSizeTo",
+      "strength": 0.3
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/african-grey-parrot_grey-crowned-crane",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#african-grey-parrot",
+      "target": "https://local.agi/ontology/birds#grey-crowned-crane",
+      "relation": [
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/african-grey-parrot_shoebill",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#african-grey-parrot",
+      "target": "https://local.agi/ontology/birds#shoebill",
+      "relation": [
+        "ex:sharesRangeWith"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/african-grey-parrot_kori-bustard",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#african-grey-parrot",
+      "target": "https://local.agi/ontology/birds#kori-bustard",
+      "relation": [
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/african-grey-parrot_helmeted-guineafowl",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#african-grey-parrot",
+      "target": "https://local.agi/ontology/birds#helmeted-guineafowl",
+      "relation": [
+        "ex:sharesDietWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/african-grey-parrot_yellow-billed-oxpecker",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#african-grey-parrot",
+      "target": "https://local.agi/ontology/birds#yellow-billed-oxpecker",
+      "relation": [
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:similarSizeTo",
+      "strength": 0.3
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/african-grey-parrot_crowned-lapwing",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#african-grey-parrot",
+      "target": "https://local.agi/ontology/birds#crowned-lapwing",
+      "relation": [
+        "ex:sharesDietWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/african-grey-parrot_african-jacana",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#african-grey-parrot",
+      "target": "https://local.agi/ontology/birds#african-jacana",
+      "relation": [
+        "ex:sharesDietWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/greater-flamingo_yellow-billed-stork",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#greater-flamingo",
+      "target": "https://local.agi/ontology/birds#yellow-billed-stork",
+      "relation": [
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:similarSizeTo",
+      "strength": 0.3
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/greater-flamingo_secretary-bird",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#greater-flamingo",
+      "target": "https://local.agi/ontology/birds#secretary-bird",
+      "relation": [
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:similarSizeTo",
+      "strength": 0.3
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/greater-flamingo_grey-crowned-crane",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#greater-flamingo",
+      "target": "https://local.agi/ontology/birds#grey-crowned-crane",
+      "relation": [
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:similarSizeTo",
+      "strength": 0.3
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/greater-flamingo_southern-ground-hornbill",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#greater-flamingo",
+      "target": "https://local.agi/ontology/birds#southern-ground-hornbill",
+      "relation": [
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:similarSizeTo",
+      "strength": 0.3
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/greater-flamingo_shoebill",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#greater-flamingo",
+      "target": "https://local.agi/ontology/birds#shoebill",
+      "relation": [
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:similarSizeTo",
+      "strength": 0.3
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/greater-flamingo_kori-bustard",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#greater-flamingo",
+      "target": "https://local.agi/ontology/birds#kori-bustard",
+      "relation": [
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:similarSizeTo",
+      "strength": 0.3
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/greater-flamingo_hadada-ibis",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#greater-flamingo",
+      "target": "https://local.agi/ontology/birds#hadada-ibis",
+      "relation": [
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:similarSizeTo",
+      "strength": 0.3
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/yellow-billed-stork_common-ostrich",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#yellow-billed-stork",
+      "target": "https://local.agi/ontology/birds#common-ostrich",
+      "relation": [
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/yellow-billed-stork_secretary-bird",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#yellow-billed-stork",
+      "target": "https://local.agi/ontology/birds#secretary-bird",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/yellow-billed-stork_lilac-breasted-roller",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#yellow-billed-stork",
+      "target": "https://local.agi/ontology/birds#lilac-breasted-roller",
+      "relation": [
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/yellow-billed-stork_african-fish-eagle",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#yellow-billed-stork",
+      "target": "https://local.agi/ontology/birds#african-fish-eagle",
+      "relation": [
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:similarSizeTo",
+      "strength": 0.3
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/yellow-billed-stork_grey-crowned-crane",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#yellow-billed-stork",
+      "target": "https://local.agi/ontology/birds#grey-crowned-crane",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:sharesDietWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/yellow-billed-stork_southern-ground-hornbill",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#yellow-billed-stork",
+      "target": "https://local.agi/ontology/birds#southern-ground-hornbill",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:sharesDietWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/yellow-billed-stork_shoebill",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#yellow-billed-stork",
+      "target": "https://local.agi/ontology/birds#shoebill",
+      "relation": [
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:similarSizeTo",
+      "strength": 0.3
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/yellow-billed-stork_kori-bustard",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#yellow-billed-stork",
+      "target": "https://local.agi/ontology/birds#kori-bustard",
+      "relation": [
+        "ex:sharesDietWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/yellow-billed-stork_helmeted-guineafowl",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#yellow-billed-stork",
+      "target": "https://local.agi/ontology/birds#helmeted-guineafowl",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/yellow-billed-stork_tawny-eagle",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#yellow-billed-stork",
+      "target": "https://local.agi/ontology/birds#tawny-eagle",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:sharesDietWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/yellow-billed-stork_african-penguin",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#yellow-billed-stork",
+      "target": "https://local.agi/ontology/birds#african-penguin",
+      "relation": [
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:similarSizeTo",
+      "strength": 0.3
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/yellow-billed-stork_crowned-lapwing",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#yellow-billed-stork",
+      "target": "https://local.agi/ontology/birds#crowned-lapwing",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/yellow-billed-stork_violet-backed-starling",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#yellow-billed-stork",
+      "target": "https://local.agi/ontology/birds#violet-backed-starling",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/yellow-billed-stork_african-jacana",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#yellow-billed-stork",
+      "target": "https://local.agi/ontology/birds#african-jacana",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/yellow-billed-stork_hadada-ibis",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#yellow-billed-stork",
+      "target": "https://local.agi/ontology/birds#hadada-ibis",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:sharesDietWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/common-ostrich_lilac-breasted-roller",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#common-ostrich",
+      "target": "https://local.agi/ontology/birds#lilac-breasted-roller",
+      "relation": [
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/common-ostrich_grey-crowned-crane",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#common-ostrich",
+      "target": "https://local.agi/ontology/birds#grey-crowned-crane",
+      "relation": [
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/common-ostrich_southern-ground-hornbill",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#common-ostrich",
+      "target": "https://local.agi/ontology/birds#southern-ground-hornbill",
+      "relation": [
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/common-ostrich_kori-bustard",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#common-ostrich",
+      "target": "https://local.agi/ontology/birds#kori-bustard",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/common-ostrich_helmeted-guineafowl",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#common-ostrich",
+      "target": "https://local.agi/ontology/birds#helmeted-guineafowl",
+      "relation": [
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/common-ostrich_tawny-eagle",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#common-ostrich",
+      "target": "https://local.agi/ontology/birds#tawny-eagle",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/common-ostrich_crowned-lapwing",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#common-ostrich",
+      "target": "https://local.agi/ontology/birds#crowned-lapwing",
+      "relation": [
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/common-ostrich_violet-backed-starling",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#common-ostrich",
+      "target": "https://local.agi/ontology/birds#violet-backed-starling",
+      "relation": [
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/common-ostrich_african-jacana",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#common-ostrich",
+      "target": "https://local.agi/ontology/birds#african-jacana",
+      "relation": [
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/common-ostrich_hadada-ibis",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#common-ostrich",
+      "target": "https://local.agi/ontology/birds#hadada-ibis",
+      "relation": [
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/secretary-bird_african-fish-eagle",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#secretary-bird",
+      "target": "https://local.agi/ontology/birds#african-fish-eagle",
+      "relation": [
+        "ex:sameOrderAs"
+      ],
+      "primary": "ex:sameOrderAs",
+      "strength": 0.7
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/secretary-bird_grey-crowned-crane",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#secretary-bird",
+      "target": "https://local.agi/ontology/birds#grey-crowned-crane",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/secretary-bird_southern-ground-hornbill",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#secretary-bird",
+      "target": "https://local.agi/ontology/birds#southern-ground-hornbill",
+      "relation": [
+        "ex:sharesHabitatWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesHabitatWith",
+      "strength": 0.5
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/secretary-bird_shoebill",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#secretary-bird",
+      "target": "https://local.agi/ontology/birds#shoebill",
+      "relation": [
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:similarSizeTo",
+      "strength": 0.3
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/secretary-bird_kori-bustard",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#secretary-bird",
+      "target": "https://local.agi/ontology/birds#kori-bustard",
+      "relation": [
+        "ex:sharesDietWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/secretary-bird_helmeted-guineafowl",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#secretary-bird",
+      "target": "https://local.agi/ontology/birds#helmeted-guineafowl",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:sharesHabitatWith"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/secretary-bird_tawny-eagle",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#secretary-bird",
+      "target": "https://local.agi/ontology/birds#tawny-eagle",
+      "relation": [
+        "ex:sameOrderAs",
+        "ex:sharesRangeWith",
+        "ex:sharesHabitatWith"
+      ],
+      "primary": "ex:sameOrderAs",
+      "strength": 0.7
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/secretary-bird_crowned-lapwing",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#secretary-bird",
+      "target": "https://local.agi/ontology/birds#crowned-lapwing",
+      "relation": [
+        "ex:sharesRangeWith"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/secretary-bird_violet-backed-starling",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#secretary-bird",
+      "target": "https://local.agi/ontology/birds#violet-backed-starling",
+      "relation": [
+        "ex:sharesRangeWith"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/secretary-bird_african-jacana",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#secretary-bird",
+      "target": "https://local.agi/ontology/birds#african-jacana",
+      "relation": [
+        "ex:sharesRangeWith"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/secretary-bird_hadada-ibis",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#secretary-bird",
+      "target": "https://local.agi/ontology/birds#hadada-ibis",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/lilac-breasted-roller_grey-crowned-crane",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#lilac-breasted-roller",
+      "target": "https://local.agi/ontology/birds#grey-crowned-crane",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/lilac-breasted-roller_southern-ground-hornbill",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#lilac-breasted-roller",
+      "target": "https://local.agi/ontology/birds#southern-ground-hornbill",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:sharesHabitatWith",
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/lilac-breasted-roller_kori-bustard",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#lilac-breasted-roller",
+      "target": "https://local.agi/ontology/birds#kori-bustard",
+      "relation": [
+        "ex:sharesHabitatWith",
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesHabitatWith",
+      "strength": 0.5
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/lilac-breasted-roller_helmeted-guineafowl",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#lilac-breasted-roller",
+      "target": "https://local.agi/ontology/birds#helmeted-guineafowl",
+      "relation": [
+        "ex:sharesHabitatWith",
+        "ex:sharesDietWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesHabitatWith",
+      "strength": 0.5
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/lilac-breasted-roller_tawny-eagle",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#lilac-breasted-roller",
+      "target": "https://local.agi/ontology/birds#tawny-eagle",
+      "relation": [
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/lilac-breasted-roller_yellow-billed-oxpecker",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#lilac-breasted-roller",
+      "target": "https://local.agi/ontology/birds#yellow-billed-oxpecker",
+      "relation": [
+        "ex:sharesHabitatWith"
+      ],
+      "primary": "ex:sharesHabitatWith",
+      "strength": 0.5
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/lilac-breasted-roller_african-penguin",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#lilac-breasted-roller",
+      "target": "https://local.agi/ontology/birds#african-penguin",
+      "relation": [
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:similarSizeTo",
+      "strength": 0.3
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/lilac-breasted-roller_crowned-lapwing",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#lilac-breasted-roller",
+      "target": "https://local.agi/ontology/birds#crowned-lapwing",
+      "relation": [
+        "ex:sharesDietWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/lilac-breasted-roller_violet-backed-starling",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#lilac-breasted-roller",
+      "target": "https://local.agi/ontology/birds#violet-backed-starling",
+      "relation": [
+        "ex:sharesHabitatWith",
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesHabitatWith",
+      "strength": 0.5
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/lilac-breasted-roller_african-jacana",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#lilac-breasted-roller",
+      "target": "https://local.agi/ontology/birds#african-jacana",
+      "relation": [
+        "ex:sharesDietWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/lilac-breasted-roller_hadada-ibis",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#lilac-breasted-roller",
+      "target": "https://local.agi/ontology/birds#hadada-ibis",
+      "relation": [
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/african-fish-eagle_grey-crowned-crane",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#african-fish-eagle",
+      "target": "https://local.agi/ontology/birds#grey-crowned-crane",
+      "relation": [
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:similarSizeTo",
+      "strength": 0.3
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/african-fish-eagle_southern-ground-hornbill",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#african-fish-eagle",
+      "target": "https://local.agi/ontology/birds#southern-ground-hornbill",
+      "relation": [
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:similarSizeTo",
+      "strength": 0.3
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/african-fish-eagle_helmeted-guineafowl",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#african-fish-eagle",
+      "target": "https://local.agi/ontology/birds#helmeted-guineafowl",
+      "relation": [
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:similarSizeTo",
+      "strength": 0.3
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/african-fish-eagle_tawny-eagle",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#african-fish-eagle",
+      "target": "https://local.agi/ontology/birds#tawny-eagle",
+      "relation": [
+        "ex:sameFamilyAs",
+        "ex:sameOrderAs",
+        "ex:sharesDietWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sameFamilyAs",
+      "strength": 1
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/african-fish-eagle_african-penguin",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#african-fish-eagle",
+      "target": "https://local.agi/ontology/birds#african-penguin",
+      "relation": [
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:similarSizeTo",
+      "strength": 0.3
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/african-fish-eagle_african-jacana",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#african-fish-eagle",
+      "target": "https://local.agi/ontology/birds#african-jacana",
+      "relation": [
+        "ex:sharesHabitatWith"
+      ],
+      "primary": "ex:sharesHabitatWith",
+      "strength": 0.5
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/african-fish-eagle_hadada-ibis",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#african-fish-eagle",
+      "target": "https://local.agi/ontology/birds#hadada-ibis",
+      "relation": [
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:similarSizeTo",
+      "strength": 0.3
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/grey-crowned-crane_southern-ground-hornbill",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#grey-crowned-crane",
+      "target": "https://local.agi/ontology/birds#southern-ground-hornbill",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:sharesDietWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/grey-crowned-crane_shoebill",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#grey-crowned-crane",
+      "target": "https://local.agi/ontology/birds#shoebill",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/grey-crowned-crane_kori-bustard",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#grey-crowned-crane",
+      "target": "https://local.agi/ontology/birds#kori-bustard",
+      "relation": [
+        "ex:sharesDietWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/grey-crowned-crane_helmeted-guineafowl",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#grey-crowned-crane",
+      "target": "https://local.agi/ontology/birds#helmeted-guineafowl",
+      "relation": [
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/grey-crowned-crane_tawny-eagle",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#grey-crowned-crane",
+      "target": "https://local.agi/ontology/birds#tawny-eagle",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:sharesDietWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/grey-crowned-crane_african-penguin",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#grey-crowned-crane",
+      "target": "https://local.agi/ontology/birds#african-penguin",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/grey-crowned-crane_crowned-lapwing",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#grey-crowned-crane",
+      "target": "https://local.agi/ontology/birds#crowned-lapwing",
+      "relation": [
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/grey-crowned-crane_violet-backed-starling",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#grey-crowned-crane",
+      "target": "https://local.agi/ontology/birds#violet-backed-starling",
+      "relation": [
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/grey-crowned-crane_african-jacana",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#grey-crowned-crane",
+      "target": "https://local.agi/ontology/birds#african-jacana",
+      "relation": [
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/grey-crowned-crane_hadada-ibis",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#grey-crowned-crane",
+      "target": "https://local.agi/ontology/birds#hadada-ibis",
+      "relation": [
+        "ex:sharesHabitatWith",
+        "ex:sharesDietWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesHabitatWith",
+      "strength": 0.5
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/southern-ground-hornbill_shoebill",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#southern-ground-hornbill",
+      "target": "https://local.agi/ontology/birds#shoebill",
+      "relation": [
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:similarSizeTo",
+      "strength": 0.3
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/southern-ground-hornbill_kori-bustard",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#southern-ground-hornbill",
+      "target": "https://local.agi/ontology/birds#kori-bustard",
+      "relation": [
+        "ex:sharesHabitatWith",
+        "ex:sharesDietWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesHabitatWith",
+      "strength": 0.5
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/southern-ground-hornbill_helmeted-guineafowl",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#southern-ground-hornbill",
+      "target": "https://local.agi/ontology/birds#helmeted-guineafowl",
+      "relation": [
+        "ex:sharesHabitatWith",
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesHabitatWith",
+      "strength": 0.5
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/southern-ground-hornbill_tawny-eagle",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#southern-ground-hornbill",
+      "target": "https://local.agi/ontology/birds#tawny-eagle",
+      "relation": [
+        "ex:sharesDietWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/southern-ground-hornbill_yellow-billed-oxpecker",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#southern-ground-hornbill",
+      "target": "https://local.agi/ontology/birds#yellow-billed-oxpecker",
+      "relation": [
+        "ex:sharesHabitatWith"
+      ],
+      "primary": "ex:sharesHabitatWith",
+      "strength": 0.5
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/southern-ground-hornbill_african-penguin",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#southern-ground-hornbill",
+      "target": "https://local.agi/ontology/birds#african-penguin",
+      "relation": [
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:similarSizeTo",
+      "strength": 0.3
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/southern-ground-hornbill_crowned-lapwing",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#southern-ground-hornbill",
+      "target": "https://local.agi/ontology/birds#crowned-lapwing",
+      "relation": [
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/southern-ground-hornbill_violet-backed-starling",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#southern-ground-hornbill",
+      "target": "https://local.agi/ontology/birds#violet-backed-starling",
+      "relation": [
+        "ex:sharesHabitatWith",
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesHabitatWith",
+      "strength": 0.5
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/southern-ground-hornbill_african-jacana",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#southern-ground-hornbill",
+      "target": "https://local.agi/ontology/birds#african-jacana",
+      "relation": [
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/southern-ground-hornbill_hadada-ibis",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#southern-ground-hornbill",
+      "target": "https://local.agi/ontology/birds#hadada-ibis",
+      "relation": [
+        "ex:sharesDietWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/shoebill_kori-bustard",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#shoebill",
+      "target": "https://local.agi/ontology/birds#kori-bustard",
+      "relation": [
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:similarSizeTo",
+      "strength": 0.3
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/shoebill_hadada-ibis",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#shoebill",
+      "target": "https://local.agi/ontology/birds#hadada-ibis",
+      "relation": [
+        "ex:sameOrderAs",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sameOrderAs",
+      "strength": 0.7
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/kori-bustard_helmeted-guineafowl",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#kori-bustard",
+      "target": "https://local.agi/ontology/birds#helmeted-guineafowl",
+      "relation": [
+        "ex:sharesHabitatWith",
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesHabitatWith",
+      "strength": 0.5
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/kori-bustard_tawny-eagle",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#kori-bustard",
+      "target": "https://local.agi/ontology/birds#tawny-eagle",
+      "relation": [
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/kori-bustard_yellow-billed-oxpecker",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#kori-bustard",
+      "target": "https://local.agi/ontology/birds#yellow-billed-oxpecker",
+      "relation": [
+        "ex:sharesHabitatWith"
+      ],
+      "primary": "ex:sharesHabitatWith",
+      "strength": 0.5
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/kori-bustard_crowned-lapwing",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#kori-bustard",
+      "target": "https://local.agi/ontology/birds#crowned-lapwing",
+      "relation": [
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/kori-bustard_violet-backed-starling",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#kori-bustard",
+      "target": "https://local.agi/ontology/birds#violet-backed-starling",
+      "relation": [
+        "ex:sharesHabitatWith",
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesHabitatWith",
+      "strength": 0.5
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/kori-bustard_african-jacana",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#kori-bustard",
+      "target": "https://local.agi/ontology/birds#african-jacana",
+      "relation": [
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/kori-bustard_hadada-ibis",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#kori-bustard",
+      "target": "https://local.agi/ontology/birds#hadada-ibis",
+      "relation": [
+        "ex:sharesDietWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/helmeted-guineafowl_tawny-eagle",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#helmeted-guineafowl",
+      "target": "https://local.agi/ontology/birds#tawny-eagle",
+      "relation": [
+        "ex:sharesDietWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/helmeted-guineafowl_yellow-billed-oxpecker",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#helmeted-guineafowl",
+      "target": "https://local.agi/ontology/birds#yellow-billed-oxpecker",
+      "relation": [
+        "ex:sharesHabitatWith"
+      ],
+      "primary": "ex:sharesHabitatWith",
+      "strength": 0.5
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/helmeted-guineafowl_african-penguin",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#helmeted-guineafowl",
+      "target": "https://local.agi/ontology/birds#african-penguin",
+      "relation": [
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:similarSizeTo",
+      "strength": 0.3
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/helmeted-guineafowl_crowned-lapwing",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#helmeted-guineafowl",
+      "target": "https://local.agi/ontology/birds#crowned-lapwing",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/helmeted-guineafowl_violet-backed-starling",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#helmeted-guineafowl",
+      "target": "https://local.agi/ontology/birds#violet-backed-starling",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:sharesHabitatWith",
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/helmeted-guineafowl_african-jacana",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#helmeted-guineafowl",
+      "target": "https://local.agi/ontology/birds#african-jacana",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/helmeted-guineafowl_hadada-ibis",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#helmeted-guineafowl",
+      "target": "https://local.agi/ontology/birds#hadada-ibis",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:sharesDietWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/tawny-eagle_african-penguin",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#tawny-eagle",
+      "target": "https://local.agi/ontology/birds#african-penguin",
+      "relation": [
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:similarSizeTo",
+      "strength": 0.3
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/tawny-eagle_crowned-lapwing",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#tawny-eagle",
+      "target": "https://local.agi/ontology/birds#crowned-lapwing",
+      "relation": [
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/tawny-eagle_violet-backed-starling",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#tawny-eagle",
+      "target": "https://local.agi/ontology/birds#violet-backed-starling",
+      "relation": [
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/tawny-eagle_african-jacana",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#tawny-eagle",
+      "target": "https://local.agi/ontology/birds#african-jacana",
+      "relation": [
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/tawny-eagle_hadada-ibis",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#tawny-eagle",
+      "target": "https://local.agi/ontology/birds#hadada-ibis",
+      "relation": [
+        "ex:sharesDietWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesDietWith",
+      "strength": 0.4
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/yellow-billed-oxpecker_crowned-lapwing",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#yellow-billed-oxpecker",
+      "target": "https://local.agi/ontology/birds#crowned-lapwing",
+      "relation": [
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:similarSizeTo",
+      "strength": 0.3
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/yellow-billed-oxpecker_violet-backed-starling",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#yellow-billed-oxpecker",
+      "target": "https://local.agi/ontology/birds#violet-backed-starling",
+      "relation": [
+        "ex:sameOrderAs",
+        "ex:sharesHabitatWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sameOrderAs",
+      "strength": 0.7
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/yellow-billed-oxpecker_african-jacana",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#yellow-billed-oxpecker",
+      "target": "https://local.agi/ontology/birds#african-jacana",
+      "relation": [
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:similarSizeTo",
+      "strength": 0.3
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/african-penguin_hadada-ibis",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#african-penguin",
+      "target": "https://local.agi/ontology/birds#hadada-ibis",
+      "relation": [
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:similarSizeTo",
+      "strength": 0.3
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/crowned-lapwing_violet-backed-starling",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#crowned-lapwing",
+      "target": "https://local.agi/ontology/birds#violet-backed-starling",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/crowned-lapwing_african-jacana",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#crowned-lapwing",
+      "target": "https://local.agi/ontology/birds#african-jacana",
+      "relation": [
+        "ex:sameOrderAs",
+        "ex:sharesRangeWith",
+        "ex:sharesDietWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sameOrderAs",
+      "strength": 0.7
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/crowned-lapwing_hadada-ibis",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#crowned-lapwing",
+      "target": "https://local.agi/ontology/birds#hadada-ibis",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/violet-backed-starling_african-jacana",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#violet-backed-starling",
+      "target": "https://local.agi/ontology/birds#african-jacana",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:sharesDietWith",
+        "ex:similarSizeTo"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/violet-backed-starling_hadada-ibis",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#violet-backed-starling",
+      "target": "https://local.agi/ontology/birds#hadada-ibis",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    },
+    {
+      "@id": "https://local.agi/ontology/birds#edge/african-jacana_hadada-ibis",
+      "@type": "ex:Relation",
+      "source": "https://local.agi/ontology/birds#african-jacana",
+      "target": "https://local.agi/ontology/birds#hadada-ibis",
+      "relation": [
+        "ex:sharesRangeWith",
+        "ex:sharesDietWith"
+      ],
+      "primary": "ex:sharesRangeWith",
+      "strength": 0.6
+    }
+  ]
+}

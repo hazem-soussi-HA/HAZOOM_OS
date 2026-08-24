@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bald Eagle — 3D Mascot</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden;
+    background: radial-gradient(circle at 50% 22%, #274a80 0%, #101a30 55%, #060a15 100%);
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; color: #e8eefc; }
+  #scene { position: fixed; inset: 0; display: block; cursor: grab; }
+  #scene:active { cursor: grabbing; }
+  .hud { position: fixed; z-index: 5; pointer-events: none; }
+  #title { top: 14px; left: 18px; }
+  #title h1 { margin: 0; font-size: 18px; letter-spacing: .3px; }
+  #title .sub { color: #a9bbe0; font-size: 12px; margin-top: 2px; }
+  #hint { bottom: 58px; left: 50%; transform: translateX(-50%); color: #9fb0d6; font-size: 12px;
+    background: rgba(12,20,40,.5); padding: 5px 12px; border-radius: 20px; }
+  #hint b { color: #ffd76a; }
+  #controls { bottom: 16px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 8px; pointer-events: auto; }
+  .btn { background: #16224a; border: 1px solid #2a3a63; color: #e8eefc;
+    padding: 8px 14px; border-radius: 9px; font-size: 12px; cursor: pointer; transition: border-color .15s; }
+  .btn:hover { border-color: #4d8dff; }
+  .btn.off { color: #93a4c8; opacity: .7; }
+  .btn.hero { background: linear-gradient(180deg,#c9962f,#9a6c14); border-color:#e0b552; font-weight:600; }
+  #credit { bottom: 6px; right: 10px; color: #5c6d94; font-size: 10px; pointer-events: auto; }
+  #credit a { color: #7f93bf; text-decoration: none; }
+  #credit a:hover { text-decoration: underline; }
+  #status { top: 16px; right: 18px; color: #7fe0a8; font-size: 12px; }
+  #err { top: 50%; left: 50%; transform: translate(-50%,-50%); color: #ff9a9a;
+    font-size: 13px; text-align: center; max-width: 80%; }
+  #flash { top: 44%; left: 50%; transform: translate(-50%,-50%); font-size: 44px; font-weight: 800;
+    letter-spacing: 2px; color: #ffd76a; text-shadow: 0 4px 24px rgba(0,0,0,.6);
+    opacity: 0; transition: opacity .25s, transform .25s; }
+</style>
+</head>
+<body>
+<canvas id="scene"></canvas>
+<div id="title" class="hud">
+  <h1>🦅 Bald Eagle</h1>
+  <div class="sub"><i>Haliaeetus leucocephalus</i> — national bird of the United States</div>
+</div>
+<div id="status" class="hud">loading model…</div>
+<div id="hint" class="hud"><b>Click the eagle</b> to see it take flight · drag to orbit · scroll to zoom</div>
+<div id="flash" class="hud">SOAR!</div>
+<div id="controls" class="hud">
+  <button id="fly" class="btn hero">🦅 Take flight!</button>
+  <button id="rotate" class="btn">⏸ Auto-rotate</button>
+  <button id="reset" class="btn">⟲ Reset view</button>
+</div>
+<div id="credit" class="hud">Model: “Eagle” by <a href="https://poly.pizza/m/d7CSLvsHULY" target="_blank" rel="noopener">Poly by Google</a> · CC-BY</div>
+<div id="err" class="hud"></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "/atlas/vendor/three.module.js",
+    "three/addons/": "/atlas/vendor/three/addons/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+const canvas = document.getElementById('scene');
+const statusEl = document.getElementById('status');
+const errEl = document.getElementById('err');
+const flashEl = document.getElementById('flash');
+
+// ---- tiny offline screech synth (Web Audio, no files) ----
+let actx = null;
+function screech() {
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!actx) actx = new AC();
+    if (actx.state === 'suspended') actx.resume();
+    const master = actx.createGain(); master.gain.value = 0.5; master.connect(actx.destination);
+    const t = actx.currentTime;
+    const cry = (t0, f0, f1, dur, g = 0.28) => {
+      const o = actx.createOscillator(), ga = actx.createGain();
+      o.type = 'sawtooth'; o.frequency.setValueAtTime(f0, t0);
+      o.frequency.exponentialRampToValueAtTime(f1, t0 + dur);
+      ga.gain.setValueAtTime(0.0001, t0);
+      ga.gain.exponentialRampToValueAtTime(g, t0 + 0.03);
+      ga.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      o.connect(ga); ga.connect(master); o.start(t0); o.stop(t0 + dur + 0.05);
+    };
+    // classic descending raptor "kee-kee-kee" scream
+    cry(t, 1500, 900, 0.22, 0.3);
+    cry(t + 0.24, 1700, 1000, 0.2, 0.26);
+    cry(t + 0.46, 1600, 850, 0.26, 0.24);
+  } catch (e) { /* audio optional */ }
+}
+
+try {
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(0x0a1120, 20, 60);
+
+  const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 300);
+  const CAM_START = new THREE.Vector3(4.5, 2.4, 7);
+  camera.position.copy(CAM_START);
+
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.minDistance = 3;
+  controls.maxDistance = 40;
+  controls.target.set(0, 1.4, 0);
+  controls.autoRotate = true;
+  controls.autoRotateSpeed = 0.7;
+
+  // ---- lighting ----
+  scene.add(new THREE.HemisphereLight(0xbcd2ff, 0x223046, 0.85));
+  const key = new THREE.DirectionalLight(0xfff2dc, 2.0);
+  key.position.set(6, 12, 7); key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048);
+  key.shadow.camera.near = 1; key.shadow.camera.far = 60;
+  key.shadow.camera.left = -14; key.shadow.camera.right = 14;
+  key.shadow.camera.top = 14; key.shadow.camera.bottom = -14;
+  key.shadow.bias = -0.0004;
+  scene.add(key);
+  const fill = new THREE.DirectionalLight(0x7fa8ff, 0.6); fill.position.set(-8, 4, -3); scene.add(fill);
+  const rim = new THREE.DirectionalLight(0xffffff, 1.2); rim.position.set(0, 5, -10); scene.add(rim);
+
+  // ---- ground + glow ring ----
+  const ground = new THREE.Mesh(
+    new THREE.CylinderGeometry(6, 6.6, 0.4, 64),
+    new THREE.MeshStandardMaterial({ color: 0x101a30, roughness: 1 }));
+  ground.position.y = -0.2; ground.receiveShadow = true; scene.add(ground);
+  const ring = new THREE.Mesh(
+    new THREE.RingGeometry(1.4, 3.2, 48),
+    new THREE.MeshBasicMaterial({ color: 0x2a6cff, transparent: true, opacity: 0.08, side: THREE.DoubleSide }));
+  ring.rotation.x = -Math.PI / 2; ring.position.y = 0.02; scene.add(ring);
+
+  // ---- eagle ----
+  const pivot = new THREE.Group();          // position (perch <-> sky)
+  pivot.position.set(0, 1.4, 0);
+  const spinner = new THREE.Group();        // yaw/roll (banking)
+  pivot.add(spinner);
+  scene.add(pivot);
+  const PERCH = new THREE.Vector3(0, 1.4, 0);
+
+  let model = null;
+  let hitMeshes = [];
+  const loader = new GLTFLoader();
+  loader.load('/atlas/assets/models/Eagle.glb', (gltf) => {
+    model = gltf.scene;
+    model.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; hitMeshes.push(o); } });
+    const box = new THREE.Box3().setFromObject(model);
+    const size = box.getSize(new THREE.Vector3());
+    const scale = 2.4 / (size.y || 1);
+    model.scale.setScalar(scale);
+    box.setFromObject(model);
+    const c = box.getCenter(new THREE.Vector3());
+    model.position.sub(c);
+    const b2 = new THREE.Box3().setFromObject(model);
+    model.position.y -= b2.min.y;
+    spinner.add(model);
+    statusEl.textContent = 'live';
+    setTimeout(() => { statusEl.style.transition = 'opacity 1s'; statusEl.style.opacity = '0'; }, 1200);
+  }, (ev) => { if (ev.total) statusEl.textContent = 'loading ' + Math.round(ev.loaded / ev.total * 100) + '%'; },
+     (err) => { console.error(err); errEl.textContent = 'Eagle model failed to load: ' + (err.message || err); statusEl.textContent = ''; });
+
+  // ---- HERO FLIGHT state machine ----
+  // Phases: idle -> crouch -> launch -> soar (heroic circle) -> return -> idle
+  let phase = 'idle';
+  let phaseT = 0;           // seconds elapsed in current phase
+  let circleAngle = 0;
+  const DUR = { crouch: 0.45, launch: 1.1, soar: 5.5, return: 1.6 };
+  const easeOut = (x) => 1 - Math.pow(1 - x, 3);
+  const easeInOut = (x) => x < 0.5 ? 4*x*x*x : 1 - Math.pow(-2*x+2,3)/2;
+
+  function launch() {
+    if (phase !== 'idle') return;
+    phase = 'crouch'; phaseT = 0;
+    controls.autoRotate = false;
+    rotateBtn.classList.add('off'); rotateBtn.textContent = '▶ Auto-rotate';
+    screech();
+    flashEl.textContent = 'SOAR!';
+    flashEl.style.opacity = '1'; flashEl.style.transform = 'translate(-50%,-50%) scale(1.15)';
+    setTimeout(() => { flashEl.style.opacity = '0'; flashEl.style.transform = 'translate(-50%,-50%) scale(1)'; }, 1100);
+  }
+
+  function updateFlight(dt) {
+    if (!model || phase === 'idle') {
+      if (model && phase === 'idle') { // gentle perched breathing
+        const tt = clock.getElapsedTime();
+        pivot.position.y = PERCH.y + Math.sin(tt * 1.1) * 0.05;
+        spinner.rotation.z += (0 - spinner.rotation.z) * 0.08;
+        spinner.rotation.x += (0 - spinner.rotation.x) * 0.08;
+      }
+      return;
+    }
+    phaseT += dt;
+
+    if (phase === 'crouch') {
+      const p = Math.min(phaseT / DUR.crouch, 1);
+      // dip down + lean forward, coiling to spring
+      pivot.position.y = PERCH.y - 0.35 * Math.sin(p * Math.PI);
+      spinner.rotation.x = -0.25 * p;
+      if (p >= 1) { phase = 'launch'; phaseT = 0; }
+    }
+    else if (phase === 'launch') {
+      const p = Math.min(phaseT / DUR.launch, 1); const e = easeOut(p);
+      // rocket straight up with a slight forward arc
+      pivot.position.y = PERCH.y + e * 6.0;
+      pivot.position.x = Math.sin(e * Math.PI) * 0.6;
+      pivot.position.z = -e * 1.5;
+      spinner.rotation.x = -0.25 + e * 0.25;          // level out
+      spinner.rotation.z = Math.sin(p * Math.PI) * 0.3; // little wobble
+      if (p >= 1) { phase = 'soar'; phaseT = 0; circleAngle = 0; }
+    }
+    else if (phase === 'soar') {
+      const p = Math.min(phaseT / DUR.soar, 1);
+      // heroic banked circle high above the perch
+      circleAngle += dt * 1.05;
+      const R = 4.2, H = 7.2;
+      pivot.position.x = Math.cos(circleAngle) * R;
+      pivot.position.z = Math.sin(circleAngle) * R;
+      pivot.position.y = H + Math.sin(circleAngle * 2) * 0.5;   // gentle undulation
+      // face along the tangent of the circle + bank into the turn
+      spinner.rotation.y = -circleAngle + Math.PI / 2;
+      spinner.rotation.z = 0.5;                                  // heroic bank angle
+      spinner.rotation.x = 0.05;
+      if (p >= 1) { phase = 'return'; phaseT = 0;
+        // remember where we are so we can glide home smoothly
+        returnFrom.copy(pivot.position);
+        returnYaw = spinner.rotation.y;
+      }
+    }
+    else if (phase === 'return') {
+      const p = Math.min(phaseT / DUR.return, 1); const e = easeInOut(p);
+      pivot.position.lerpVectors(returnFrom, PERCH, e);
+      spinner.rotation.z = 0.5 * (1 - e);
+      spinner.rotation.x = 0.05 * (1 - e) - 0.15 * Math.sin(p * Math.PI); // flare to land
+      spinner.rotation.y = returnYaw * (1 - e);
+      if (p >= 1) { phase = 'idle'; phaseT = 0;
+        pivot.position.copy(PERCH);
+        spinner.rotation.set(0, 0, 0);
+      }
+    }
+  }
+  const returnFrom = new THREE.Vector3();
+  let returnYaw = 0;
+
+  // ---- raycast click on the bird ----
+  const raycaster = new THREE.Raycaster();
+  const ndc = new THREE.Vector2();
+  let downXY = null;
+  renderer.domElement.addEventListener('pointerdown', (e) => { downXY = [e.clientX, e.clientY]; });
+  renderer.domElement.addEventListener('pointerup', (e) => {
+    if (!downXY) return;
+    const moved = Math.hypot(e.clientX - downXY[0], e.clientY - downXY[1]);
+    downXY = null;
+    if (moved > 6) return;                 // it was a drag, not a click
+    if (!model || phase !== 'idle') return;
+    ndc.x = (e.clientX / window.innerWidth) * 2 - 1;
+    ndc.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(ndc, camera);
+    if (raycaster.intersectObjects(hitMeshes, true).length > 0) launch();
+  });
+
+  // ---- UI ----
+  const flyBtn = document.getElementById('fly');
+  const rotateBtn = document.getElementById('rotate');
+  flyBtn.addEventListener('click', launch);
+  rotateBtn.addEventListener('click', () => {
+    controls.autoRotate = !controls.autoRotate;
+    rotateBtn.classList.toggle('off', !controls.autoRotate);
+    rotateBtn.textContent = (controls.autoRotate ? '⏸' : '▶') + ' Auto-rotate';
+  });
+  document.getElementById('reset').addEventListener('click', () => {
+    camera.position.copy(CAM_START); controls.target.set(0, 1.4, 0); controls.update();
+  });
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  const clock = new THREE.Clock();
+  function animate() {
+    requestAnimationFrame(animate);
+    const dt = Math.min(clock.getDelta(), 0.05);
+    updateFlight(dt);
+    // camera gently tracks the eagle's height while it flies
+    if (phase !== 'idle') controls.target.lerp(new THREE.Vector3(0, pivot.position.y * 0.6 + 0.6, 0), 0.04);
+    else controls.target.lerp(new THREE.Vector3(0, 1.4, 0), 0.04);
+    controls.update();
+    renderer.render(scene, camera);
+  }
+  animate();
+} catch (e) {
+  errEl.textContent = '3D view failed to load: ' + (e && e.message ? e.message : e);
+  console.error(e);
+}
+</script>
+</body>
+</html>

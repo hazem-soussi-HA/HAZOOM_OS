@@ -1,0 +1,23 @@
+{
+  "name": "birds-encyclopedia",
+  "version": "1.0.0",
+  "description": "A full-stack, multi-user encyclopedia for learning about birds: taxonomy, identification, behavior, habitats, conservation, and curated learning tracks.",
+  "type": "module",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "node --watch server/server.js",
+    "seed": "node server/seed.js",
+    "test": "node server/test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^11.3.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

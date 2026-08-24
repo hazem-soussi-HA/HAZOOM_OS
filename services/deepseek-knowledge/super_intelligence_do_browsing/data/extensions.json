@@ -1,0 +1,59 @@
+{
+  "ad-blocker": {
+    "id": "ad-blocker",
+    "name": "Ad Blocker",
+    "version": "1.0.0",
+    "description": "Blocks ads and trackers on web pages",
+    "enabled": true,
+    "permissions": [
+      "webRequest",
+      "storage"
+    ],
+    "content_script": "\n                (function(){\n                    // Common ad selectors\n                    var selectors = [\n                        '[id*=\"ad-\"]', '[class*=\"ad-\"]', '[id*=\"ads-\"]',\n                        '[class*=\"ads-\"]', '[id*=\"banner\"]', '[class*=\"sponsor\"]',\n                        'iframe[src*=\"doubleclick\"]', 'iframe[src*=\"googlesyndication\"]',\n                        'iframe[src*=\"facebook.com/plugins\"]', '[data-ad]',\n                        '.adsbygoogle', '#adsense'\n                    ];\n                    function removeAds() {\n                        selectors.forEach(function(sel) {\n                            document.querySelectorAll(sel).forEach(function(el) {\n                                el.style.display = 'none';\n                            });\n                        });\n                    }\n                    removeAds();\n                    var observer = new MutationObserver(removeAds);\n                    observer.observe(document.body, {childList: true, subtree: true});\n                })();\n                ",
+    "background_script": "",
+    "icon": "\ud83d\udee1\ufe0f",
+    "settings": {}
+  },
+  "dark-mode": {
+    "id": "dark-mode",
+    "name": "Dark Mode",
+    "version": "1.0.0",
+    "description": "Applies dark theme to web pages",
+    "enabled": true,
+    "permissions": [
+      "content"
+    ],
+    "content_script": "\n                (function(){\n                    var style = document.createElement('style');\n                    style.textContent = 'html { filter: invert(1) hue-rotate(180deg) !important; } img, video, svg { filter: invert(1) hue-rotate(180deg) !important; }';\n                    document.head.appendChild(style);\n                })();\n                ",
+    "background_script": "",
+    "icon": "\ud83c\udf19",
+    "settings": {}
+  },
+  "privacy-guard": {
+    "id": "privacy-guard",
+    "name": "Privacy Guard",
+    "version": "1.0.0",
+    "description": "Blocks tracking scripts and fingerprinting",
+    "enabled": true,
+    "permissions": [
+      "webRequest"
+    ],
+    "content_script": "\n                (function(){\n                    // Block common tracking scripts\n                    var blocked = ['analytics', 'tracking', 'pixel', 'beacon', 'telemetry'];\n                    var origOpen = XMLHttpRequest.prototype.open;\n                    XMLHttpRequest.prototype.open = function() {\n                        var url = arguments[1] || '';\n                        for (var i = 0; i < blocked.length; i++) {\n                            if (url.indexOf(blocked[i]) !== -1) return;\n                        }\n                        return origOpen.apply(this, arguments);\n                    };\n                    // Block navigator.sendBeacon\n                    var origBeacon = navigator.sendBeacon;\n                    navigator.sendBeacon = function(url) {\n                        for (var i = 0; i < blocked.length; i++) {\n                            if (url.indexOf(blocked[i]) !== -1) return false;\n                        }\n                        return origBeacon.apply(this, arguments);\n                    };\n                })();\n                ",
+    "background_script": "",
+    "icon": "\ud83d\udd12",
+    "settings": {}
+  },
+  "reading-time": {
+    "id": "reading-time",
+    "name": "Reading Time",
+    "version": "1.0.0",
+    "description": "Shows estimated reading time for articles",
+    "enabled": true,
+    "permissions": [
+      "content"
+    ],
+    "content_script": "\n                (function(){\n                    var article = document.querySelector('article') || document.querySelector('main') || document.body;\n                    var text = article.innerText || '';\n                    var words = text.split(/\\s+/).length;\n                    var minutes = Math.ceil(words / 200);\n                    var badge = document.createElement('div');\n                    badge.style.cssText = 'position:fixed;bottom:16px;right:16px;background:rgba(0,0,0,0.8);color:#fff;padding:6px 12px;border-radius:16px;font-size:12px;z-index:99999;font-family:sans-serif;';\n                    badge.textContent = '\u23f1\ufe0f ' + minutes + ' min read';\n                    document.body.appendChild(badge);\n                })();\n                ",
+    "background_script": "",
+    "icon": "\u23f1\ufe0f",
+    "settings": {}
+  }
+}

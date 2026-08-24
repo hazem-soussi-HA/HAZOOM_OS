@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="The New Age of Birds emblem">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="70%">
+      <stop offset="0%" stop-color="#13203f"/>
+      <stop offset="100%" stop-color="#0b1020"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f2c14e"/>
+      <stop offset="100%" stop-color="#d9a441"/>
+    </linearGradient>
+    <linearGradient id="cyan" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3f86ff"/>
+      <stop offset="100%" stop-color="#1a4fcc"/>
+    </linearGradient>
+    <linearGradient id="emerald" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3da34a"/>
+      <stop offset="100%" stop-color="#1b5e20"/>
+    </linearGradient>
+    <clipPath id="globe">
+      <circle cx="256" cy="256" r="200"/>
+    </clipPath>
+  </defs>
+
+  <!-- shield/emblem backdrop -->
+  <circle cx="256" cy="256" r="248" fill="url(#bg)" stroke="#2a6cff" stroke-width="3" stroke-opacity="0.55"/>
+
+  <!-- wireframe globe (3D tech feel) -->
+  <g clip-path="url(#globe)" stroke="#2a6cff" stroke-opacity="0.30" fill="none" stroke-width="1.5">
+    <circle cx="256" cy="256" r="200"/>
+    <ellipse cx="256" cy="256" rx="200" ry="70"/>
+    <ellipse cx="256" cy="256" rx="200" ry="135"/>
+    <ellipse cx="256" cy="256" rx="70" ry="200"/>
+    <ellipse cx="256" cy="256" rx="135" ry="200"/>
+    <line x1="56" y1="186" x2="456" y2="186"/>
+    <line x1="56" y1="326" x2="456" y2="326"/>
+  </g>
+
+  <!-- stylized Africa landmass (low-poly) -->
+  <g clip-path="url(#globe)">
+    <path d="M196,300 C190,282 208,272 226,276 C242,279 252,268 264,271 C280,274 288,286 282,297
+             C292,302 286,318 270,323 C264,340 252,356 242,350 C231,344 220,333 210,324
+             C194,320 188,312 196,300 Z"
+          fill="url(#emerald)" fill-opacity="0.55" stroke="#2e7d32" stroke-opacity="0.6" stroke-width="1.5"/>
+  </g>
+
+  <!-- low-poly bird (crowned crane in flight) -->
+  <g stroke="#0b1020" stroke-width="1.5" stroke-linejoin="round">
+    <!-- left wing -->
+    <polygon points="248,214 95,140 205,256" fill="url(#gold)"/>
+    <polygon points="95,140 150,206 205,256" fill="url(#emerald)"/>
+    <polygon points="248,214 205,256 240,250" fill="url(#cyan)" fill-opacity="0.9"/>
+    <!-- right wing -->
+    <polygon points="264,214 417,140 307,256" fill="url(#gold)"/>
+    <polygon points="417,140 362,206 307,256" fill="url(#emerald)"/>
+    <polygon points="264,214 307,256 272,250" fill="url(#cyan)" fill-opacity="0.9"/>
+    <!-- body -->
+    <polygon points="256,200 236,250 256,302 276,250" fill="url(#gold)"/>
+    <!-- head + crown -->
+    <polygon points="256,150 244,202 268,202" fill="url(#cyan)"/>
+    <polygon points="256,128 250,150 262,150" fill="#ff2e2e"/>
+    <!-- tail -->
+    <polygon points="256,302 240,348 272,348" fill="url(#emerald)"/>
+  </g>
+  <!-- eye -->
+  <circle cx="256" cy="176" r="5" fill="#ffcc33" stroke="#0b1020" stroke-width="1"/>
+</svg>

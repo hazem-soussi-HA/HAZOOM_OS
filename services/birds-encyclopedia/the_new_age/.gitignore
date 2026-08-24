@@ -1,0 +1,14 @@
+# Dev-only verification deps (the app itself is zero-dependency / fully offline)
+node_modules/
+package.json
+package-lock.json
+
+# Never commit cloud sync artifacts / personal trésor / secrets
+*.log
+.DS_Store
+.env
+*.key
+*.pem
+secrets/
+data/private/
+_third_party_*/

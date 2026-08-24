@@ -1,0 +1,21 @@
+{
+  "name": "hazoom-mirror",
+  "version": "0.2.0",
+  "description": "HAZOOM — Mirroring Transcendance Intelligence. Consciousness reflection engine with MTI technology.",
+  "main": "server.js",
+  "bin": {
+    "mirror-mcp": "mcp-server.js"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "mcp": "node mcp-server.js"
+  },
+  "keywords": ["hazoom", "mti", "mirror", "consciousness", "reflection", "hazoom-os"],
+  "author": "Hazem Soussi — Lead Computing Architect",
+  "license": "SEE LICENSE IN LICENSE",
+  "copyright": "© HAZOOM — All rights reserved. Protected by HAZOOM copyright. Hazem Soussi.",
+  "type": "commonjs",
+  "dependencies": {
+    "ws": "^8.21.0"
+  }
+}

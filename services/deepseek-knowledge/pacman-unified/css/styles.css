@@ -1,0 +1,205 @@
+/* ═══════════════════════════════════════════════════════
+   styles.css — All game styles
+   ═══════════════════════════════════════════════════════ */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-family: 'Courier New', 'Lucida Console', 'Monaco', monospace;
+  font-weight: bold;
+  overflow: hidden;
+  flex-direction: column;
+  color: #fff;
+}
+
+#wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+  /* never wider than viewport */
+  max-width: 100vw;
+  max-height: 100vh;
+  padding: 8px;
+}
+
+#hud {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 2px;
+}
+
+.hud {
+  color: #fff;
+  font-size: 13px;
+  text-shadow: 1px 1px 0 #000;
+}
+.hud span { color: #ffff00; }
+
+#lives {
+  display: flex;
+  gap: 4px;
+}
+
+.life {
+  width: 14px;
+  height: 14px;
+  background: #ffff00;
+  border-radius: 50%;
+  clip-path: polygon(100% 50%, 50% 50%, 25% 0, 0 0, 0 100%, 25% 100%, 50% 50%);
+}
+
+canvas {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  /* canvas will be sized by JS resize() */
+  display: block;
+}
+
+/* ── Overlay ── */
+#ov {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.92);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+#ov.active {
+  pointer-events: all;
+  opacity: 1;
+}
+
+#ov h1 {
+  color: #ffff00;
+  font-size: 28px;
+  text-shadow: 3px 3px 0 #ff0000, 6px 6px 0 #000;
+  animation: pulse 1.5s ease-in-out infinite;
+  text-align: center;
+}
+
+#ov h2 {
+  color: #00ffff;
+  font-size: 14px;
+  text-shadow: 2px 2px 0 #000;
+  text-align: center;
+}
+
+#ov .sub {
+  color: #aaa;
+  font-size: 10px;
+  line-height: 2;
+  text-align: center;
+  max-width: 80%;
+}
+
+.btn {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 12px 24px;
+  background: #2121de;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  text-shadow: 1px 1px 0 #000;
+  transition: all 0.2s;
+}
+.btn:hover { background: #44f; transform: scale(1.05); }
+.btn:active { transform: scale(0.95); }
+
+/* ── Mobile d-pad ── */
+#mob {
+  display: none;
+  margin-top: 4px;
+}
+
+.dpad {
+  display: grid;
+  grid-template-columns: 44px 44px 44px;
+  grid-template-rows: 44px 44px 44px;
+  gap: 2px;
+}
+
+.db {
+  background: #333;
+  border: 2px solid #555;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+.db:active { background: #666; }
+.db.e { background: transparent; border: none; }
+
+/* ── Ghost mode tags ── */
+#modes {
+  display: flex;
+  gap: 4px;
+  margin-top: 2px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.mode-tag {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: #fff;
+  text-shadow: 1px 1px 0 #000;
+}
+
+#ai-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #ff0000;
+  color: #fff;
+  font-size: 8px;
+  padding: 3px 6px;
+  border-radius: 3px;
+  z-index: 5;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
+/* ── Small screens ── */
+@media (max-width: 600px) {
+  #mob { display: flex; }
+  .hud { font-size: 10px; }
+  #ov h1 { font-size: 20px; }
+  #ov h2 { font-size: 11px; }
+  #ov .sub { font-size: 9px; }
+}
+
+/* ── Very short screens (landscape phone) ── */
+@media (max-height: 500px) {
+  #wrap { gap: 2px; padding: 4px; }
+  .hud { font-size: 9px; }
+  #ov { gap: 6px; }
+  #ov h1 { font-size: 16px; }
+}

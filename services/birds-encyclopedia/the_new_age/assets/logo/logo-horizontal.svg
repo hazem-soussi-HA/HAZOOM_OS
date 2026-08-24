@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 200" width="760" height="200" role="img" aria-label="The New Age of Birds">
+  <!-- emblem (reuse geometry at smaller scale) -->
+  <g transform="translate(100,100) scale(0.36)">
+    <circle cx="0" cy="0" r="248" fill="#0b1020" stroke="#2a6cff" stroke-width="3" stroke-opacity="0.55"/>
+    <g stroke="#2a6cff" stroke-opacity="0.30" fill="none" stroke-width="1.5">
+      <circle cx="0" cy="0" r="200"/>
+      <ellipse cx="0" cy="0" rx="200" ry="70"/>
+      <ellipse cx="0" cy="0" rx="200" ry="135"/>
+      <ellipse cx="0" cy="0" rx="70" ry="200"/>
+      <ellipse cx="0" cy="0" rx="135" ry="200"/>
+    </g>
+    <g stroke="#0b1020" stroke-width="1.5" stroke-linejoin="round">
+      <polygon points="-8,14 -161,-60 51,56" fill="#f2c14e"/>
+      <polygon points="-161,-60 -106,6 51,56" fill="#2e7d32"/>
+      <polygon points="8,14 161,-60 -49,56" fill="#f2c14e"/>
+      <polygon points="161,-60 106,6 -49,56" fill="#2e7d32"/>
+      <polygon points="0,-56 -20,-6 0,46 20,-6" fill="#f2c14e"/>
+      <polygon points="0,-106 -12,-54 12,-54" fill="#3f86ff"/>
+      <polygon points="0,-128 -6,-106 6,-106" fill="#ff2e2e"/>
+      <polygon points="0,46 -16,92 16,92" fill="#2e7d32"/>
+    </g>
+    <circle cx="0" cy="-30" r="5" fill="#ffcc33" stroke="#0b1020" stroke-width="1"/>
+  </g>
+
+  <!-- wordmark -->
+  <g font-family="system-ui, Segoe UI, Roboto, sans-serif" text-anchor="start">
+    <text x="250" y="92" font-size="40" font-weight="700" fill="#e8eefc">THE NEW AGE</text>
+    <text x="250" y="140" font-size="40" font-weight="700" fill="#2a6cff">OF BIRDS</text>
+    <text x="252" y="168" font-size="15" fill="#93a4c8" letter-spacing="2">3D ORNITHOLOGY ATLAS · OFFLINE · CONFIDENTIAL</text>
+  </g>
+</svg>

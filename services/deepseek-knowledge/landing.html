@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MiMo Browser — The Privacy-First AI Browser That Pays You</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#0a0a0f;color:#e0e0e0;line-height:1.6}
+  a{color:#00d4ff;text-decoration:none}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+  header{background:linear-gradient(135deg,#0a0a0f,#16213e);border-bottom:1px solid #1e2a4a;padding:18px 0}
+  .nav{display:flex;align-items:center;justify-content:space-between}
+  .logo{font-size:22px;font-weight:800;color:#00d4ff;letter-spacing:-.5px}
+  .logo span{color:#7b2ff7}
+  .cta{background:#00d4ff;color:#0a0a0f;padding:10px 20px;border-radius:8px;font-weight:700;font-size:14px}
+  .cta:hover{filter:brightness(1.1)}
+  .hero{padding:80px 0 60px;text-align:center;background:radial-gradient(circle at 50% 0%,#16213e33,transparent)}
+  .hero h1{font-size:48px;line-height:1.1;font-weight:800;margin-bottom:18px}
+  .hero h1 .g{background:linear-gradient(90deg,#00d4ff,#7b2ff7);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .hero p{font-size:18px;color:#aab;max-width:640px;margin:0 auto 30px}
+  .btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+  .btn{display:inline-block;padding:14px 28px;border-radius:8px;font-weight:700;font-size:15px}
+  .btn-p{background:#00d4ff;color:#0a0a0f}
+  .btn-s{background:transparent;border:1px solid #1e2a4a;color:#e0e0e0}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding:50px 0}
+  .card{background:#12121a;border:1px solid #1e2a4a;border-radius:12px;padding:24px}
+  .card .ic{font-size:30px;margin-bottom:12px}
+  .card h3{color:#00d4ff;font-size:17px;margin-bottom:8px}
+  .card p{font-size:14px;color:#99a}
+  .hazoom{background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid #7b2ff755;border-radius:16px;padding:40px;margin:20px 0;text-align:center}
+  .hazoom h2{font-size:30px;margin-bottom:12px}
+  .hazoom .pill{display:inline-block;background:#7b2ff722;color:#c9a3ff;padding:6px 14px;border-radius:20px;font-size:13px;margin:4px}
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:30px 0}
+  .step{background:#12121a;border:1px solid #1e2a4a;border-radius:10px;padding:18px;text-align:center}
+  .step .n{font-size:24px;font-weight:800;color:#7b2ff7}
+  .step p{font-size:13px;color:#99a;margin-top:6px}
+  footer{border-top:1px solid #1e2a4a;padding:30px 0;color:#667;font-size:13px;text-align:center}
+  .code{background:#0d0d12;border:1px solid #1e2a4a;border-radius:8px;padding:16px;font-family:'Cascadia Code',monospace;font-size:13px;color:#00ff88;overflow-x:auto}
+  @media(max-width:760px){.grid,.steps{grid-template-columns:1fr}.hero h1{font-size:34px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap nav">
+    <div class="logo">Mi<span>Mo</span></div>
+    <a class="cta" href="#get">Get MiMo</a>
+  </div>
+</header>
+
+<section class="hero wrap">
+  <h1>The privacy-first AI browser<br>that <span class="g">pays you to browse</span>.</h1>
+  <p>MiMo is a self-hosted browser you run as a service. It strips trackers,
+  enforces private DNS, and gives you an AI that actually reads the page — and
+  every private action earns you <strong>HAZOOM</strong>, its native reward token.</p>
+  <div class="btns">
+    <a class="btn btn-p" href="#get">Deploy in one command</a>
+    <a class="btn btn-s" href="#features">See features</a>
+  </div>
+</section>
+
+<section class="wrap" id="features">
+  <div class="grid">
+    <div class="card"><div class="ic">🛡️</div><h3>Real privacy</h3><p>Proxy-based browsing with ad/tracker blocking, DNS-over-HTTPS, fingerprint protection and HTTPS-only enforcement. No telemetry, no accounts.</p></div>
+    <div class="card"><div class="ic">🤖</div><h3>AI that reads the page</h3><p>Summarize, ask questions, extract links and tech stacks. Works offline with built-in heuristics, or upgrade to a real LLM via one env var.</p></div>
+    <div class="card"><div class="ic">🪙</div><h3>HAZOOM rewards</h3><p>Private search, reader mode, BASIC programs and daily streaks earn HAZOOM — a real per-deployment loyalty ledger, not vapor.</p></div>
+    <div class="card"><div class="ic">📖</div><h3>Reader + DevTools</h3><p>Distraction-free reader mode, plus console, network and security inspectors built in. Power-user tooling without the bloat.</p></div>
+    <div class="card"><div class="ic">🔷</div><h3>In-browser BASIC</h3><p>Write and run HAZOOM BASIC programs with an encrypted IDE. Graphics, starfields, mazes — stored privately on your server.</p></div>
+    <div class="card"><div class="ic">🐳</div><h3>One-command deploy</h3><p>Docker or docker-compose. Self-host on your own box, sell per-seat licenses, or offer it as a hosted service.</p></div>
+  </div>
+</section>
+
+<section class="wrap">
+  <div class="hazoom">
+    <h2>🪙 Earn HAZOOM just by browsing privately</h2>
+    <p style="color:#aab;max-width:600px;margin:0 auto 18px">HAZOOM is the browser's native reward token. It's a server-authoritative
+    ledger — no crypto exchange needed. Link a wallet later if you want the
+    optional on-chain bridge.</p>
+    <span class="pill">Private search +2</span>
+    <span class="pill">Reader mode +5</span>
+    <span class="pill">Publish BASIC +3</span>
+    <span class="pill">AI query +1</span>
+    <span class="pill">10 trackers blocked +1</span>
+    <span class="pill">Daily streak +10</span>
+  </div>
+</section>
+
+<section class="wrap" id="get">
+  <h2 style="text-align:center;margin-bottom:8px">Deploy in 60 seconds</h2>
+  <div class="code">git clone &lt;your-repo&gt; &amp;&amp; cd super_intelligence_do_browsing
+docker compose up --build
+# open http://localhost:8080</div>
+  <p style="text-align:center;color:#667;font-size:13px;margin-top:10px">
+  Or run locally: <code style="color:#00d4ff">pip install -r requirements.txt &amp;&amp; playwright install chromium &amp;&amp; python -m mimo_browser_v4.main</code></p>
+
+  <div class="steps" style="margin-top:30px">
+    <div class="step"><div class="n">1</div><p>Self-host on your server</p></div>
+    <div class="step"><div class="n">2</div><p>Sell per-seat / per-server keys</p></div>
+    <div class="step"><div class="n">3</div><p>Or bundle as a hosted SaaS</p></div>
+    <div class="step"><div class="n">4</div><p>Keep users with HAZOOM rewards</p></div>
+  </div>
+</section>
+
+<footer class="wrap">
+  MiMo Browser v4 — Privacy-first AI browser with HAZOOM rewards. MIT Licensed.
+  <br>HAZOOM is a loyalty token; not financial advice. The on-chain HAZOOMCoin contract is an optional bridge.
+</footer>
+</body>
+</html>

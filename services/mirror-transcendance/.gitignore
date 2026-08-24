@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Local env
+.env
+
+# Editor
+.vscode/
+.idea/
+node_modules/

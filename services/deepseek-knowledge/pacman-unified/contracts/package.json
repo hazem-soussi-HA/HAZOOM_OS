@@ -1,0 +1,7 @@
+{
+  "name": "hazoom-coin",
+  "version": "1.0.0",
+  "description": "HAZOOM Coin — collaboration token on Base",
+  "contracts": ["contracts/HAZOOMCoin.sol"],
+  "dependencies": {}
+}

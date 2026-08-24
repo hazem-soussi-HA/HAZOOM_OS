@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.git/
+data/
+logs/
+downloads/
+node_modules/
+**/node_modules/
+forks/
+*.exe
+qb64*/

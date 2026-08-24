@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" width="720" height="300" role="img" aria-label="Ornith eagle logo">
+  <defs>
+    <linearGradient id="wing" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#22d3ee"/>
+      <stop offset="0.5" stop-color="#3b82f6"/>
+      <stop offset="1" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#cbd5e1"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="0.5" cy="0.42" r="0.6">
+      <stop offset="0" stop-color="#1e3a8a" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#0f1117" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="720" height="300" rx="22" fill="#0b0d13"/>
+  <ellipse cx="240" cy="132" rx="200" ry="130" fill="url(#halo)"/>
+
+  <!-- EAGLE: symmetric spread-wing raptor -->
+  <g filter="url(#glow)">
+    <!-- left wing (feather layers) -->
+    <g fill="url(#wing)">
+      <path d="M240 118 C180 96 118 92 70 70 C104 104 118 118 150 132 C110 128 84 132 58 122 C96 148 128 156 168 158 C240 150 240 150 240 118 Z"/>
+      <path d="M240 128 C196 122 150 130 112 150 C158 154 196 152 240 142 Z" opacity="0.85"/>
+    </g>
+    <!-- right wing (mirror) -->
+    <g fill="url(#wing)" transform="translate(480,0) scale(-1,1)">
+      <path d="M240 118 C180 96 118 92 70 70 C104 104 118 118 150 132 C110 128 84 132 58 122 C96 148 128 156 168 158 C240 150 240 150 240 118 Z"/>
+      <path d="M240 128 C196 122 150 130 112 150 C158 154 196 152 240 142 Z" opacity="0.85"/>
+    </g>
+
+    <!-- head + hooked beak -->
+    <g>
+      <path d="M240 96 C226 96 216 108 216 124 C216 150 232 176 240 190 C248 176 264 150 264 124 C264 108 254 96 240 96 Z" fill="url(#body)"/>
+      <path d="M240 190 C236 198 232 206 236 214 C240 210 244 206 240 190 Z" fill="#f59e0b"/>
+      <path d="M232 108 l-14 -6 l10 12 Z" fill="#f59e0b"/>
+      <path d="M248 108 l14 -6 l-10 12 Z" fill="#f59e0b"/>
+      <!-- fierce eyes -->
+      <circle cx="231" cy="124" r="4.5" fill="#0b0d13"/>
+      <circle cx="249" cy="124" r="4.5" fill="#0b0d13"/>
+      <circle cx="232.5" cy="122.5" r="1.4" fill="#22d3ee"/>
+      <circle cx="250.5" cy="122.5" r="1.4" fill="#22d3ee"/>
+    </g>
+
+    <!-- tail feathers -->
+    <path d="M240 190 C232 214 236 240 240 258 C244 240 248 214 240 190 Z" fill="url(#wing)"/>
+  </g>
+
+  <!-- wordmark -->
+  <text x="378" y="150" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="80" font-weight="800" fill="#f8fafc" letter-spacing="3">ORNITH</text>
+  <text x="380" y="184" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="18" fill="#7dd3fc" letter-spacing="7">OFFLINE · LOCAL · SOVEREIGN AI</text>
+</svg>

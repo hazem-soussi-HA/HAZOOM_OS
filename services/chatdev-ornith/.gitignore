@@ -1,0 +1,14 @@
+# Secrets
+.env
+data/keys.json
+
+# Dependencies
+node_modules/
+
+# Logs
+*.log
+server.log
+
+# Python
+__pycache__/
+*.pyc

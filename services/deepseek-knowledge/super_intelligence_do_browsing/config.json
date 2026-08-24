@@ -1,0 +1,13 @@
+{
+  "headless": true,
+  "timeout_ms": 30000,
+  "viewport_width": 1920,
+  "viewport_height": 1080,
+  "user_agent": null,
+  "proxy": null,
+  "download_path": "./downloads",
+  "screenshot_on_error": true,
+  "max_concurrent_tabs": 5,
+  "retry_attempts": 3,
+  "retry_delay_s": 1.0
+}

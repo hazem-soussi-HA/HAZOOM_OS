@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ Hermes LLM - Emoji Animations</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .header { text-align: center; margin-bottom: 50px; animation: fadeInDown 1s ease-out; }
+        h1 { font-size: 3em; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .subtitle { font-size: 1.2em; opacity: 0.9; }
+        .emoji-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            padding: 20px;
+        }
+        .emoji-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        .emoji-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .emoji {
+            font-size: 4em;
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+        .emoji-card:nth-child(1) .emoji { animation-delay: 0s; }
+        .emoji-card:nth-child(2) .emoji { animation-delay: 0.2s; }
+        .emoji-card:nth-child(3) .emoji { animation-delay: 0.4s; }
+        .emoji-card:nth-child(4) .emoji { animation-delay: 0.6s; }
+        .emoji-card:nth-child(5) .emoji { animation-delay: 0.8s; }
+        .emoji-card:nth-child(6) .emoji { animation-delay: 1s; }
+        .emoji-card:nth-child(7) .emoji { animation-delay: 1.2s; }
+        .emoji-card:nth-child(8) .emoji { animation-delay: 1.4s; }
+        .emoji-label { margin-top: 15px; font-size: 1.1em; font-weight: bold; }
+        .emoji-desc { margin-top: 10px; font-size: 0.9em; opacity: 0.8; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚡ Hermes LLM Ecosystem ⚡</h1>
+        <p class="subtitle">Optimisé pour RTX 3050 (4GB VRAM)</p>
+    </div>
+    <div class="emoji-container">
+        <div class="emoji-card">
+            <div class="emoji">⚡</div>
+            <div class="emoji-label">Vitesse</div>
+            <div class="emoji-desc">Réponses ultra-rapides</div>
+        </div>
+        <div class="emoji-card">
+            <div class="emoji">🧠</div>
+            <div class="emoji-label">Intelligence</div>
+            <div class="emoji-desc">LLM avancé</div>
+        </div>
+        <div class="emoji-card">
+            <div class="emoji">🔧</div>
+            <div class="emoji-label">Outils</div>
+            <div class="emoji-desc">17+ tools intégrés</div>
+        </div>
+        <div class="emoji-card">
+            <div class="emoji">🎯</div>
+            <div class="emoji-label">Précision</div>
+            <div class="emoji-desc">Exécution parfaite</div>
+        </div>
+        <div class="emoji-card">
+            <div class="emoji">🚀</div>
+            <div class="emoji-label">Performance</div>
+            <div class="emoji-desc">Optimisé GPU</div>
+        </div>
+        <div class="emoji-card">
+            <div class="emoji">💻</div>
+            <div class="emoji-label">Code</div>
+            <div class="emoji-desc">Multi-langages</div>
+        </div>
+        <div class="emoji-card">
+            <div class="emoji">🌐</div>
+            <div class="emoji-label">Web</div>
+            <div class="emoji-desc">Recherche & Browsing</div>
+        </div>
+        <div class="emoji-card">
+            <div class="emoji">🎨</div>
+            <div class="emoji-label">Créativité</div>
+            <div class="emoji-desc">68+ skills</div>
+        </div>
+    </div>
+    <script>
+        document.querySelectorAll('.emoji-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                const emoji = card.querySelector('.emoji');
+                emoji.style.animation = 'spin 0.5s ease-in-out';
+                setTimeout(() => {
+                    emoji.style.animation = 'float 3s ease-in-out infinite';
+                }, 500);
+            });
+        });
+        const style = document.createElement('style');
+        style.textContent = `@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

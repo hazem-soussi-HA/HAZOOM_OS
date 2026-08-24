@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Birds of Africa — 3D Ornithology Atlas</title>
+<link rel="icon" type="image/svg+xml" href="assets/logo/logo-icon.svg" />
+<style>
+  :root {
+    --bg: #0b1020; --panel: #121a30; --panel2: #0e1526; --ink: #e8eefc; --muted: #93a4c8;
+    --accent: #2a6cff; --line: #243150;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; overflow: hidden; }
+  #scene { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+  .hud { position: fixed; pointer-events: none; z-index: 5; }
+  #topbar { top: 0; left: 0; right: 0; padding: 14px 18px; display: flex; gap: 14px;
+    align-items: center; background: linear-gradient(180deg, rgba(8,12,24,.85), rgba(8,12,24,0)); }
+  #topbar h1 { font-size: 16px; margin: 0; letter-spacing: .3px; }
+  #topbar .sub { color: var(--muted); font-size: 12px; }
+  #status { margin-left: auto; color: #7fe0a8; font-size: 12px; pointer-events: none; }
+  .mute { margin-left: 12px; background: #16224a; border: 1px solid var(--line); color: var(--ink);
+    padding: 6px 12px; border-radius: 8px; font-size: 12px; cursor: pointer; }
+  .mute:hover { border-color: var(--accent); }
+  .mute.off { color: var(--muted); opacity: .7; }
+  .rels { margin-left: 12px; display: inline-flex; align-items: center; gap: 4px; }
+  .rels-label { color: var(--muted); font-size: 12px; margin-right: 2px; }
+  .rel-btn { background: #16224a; border: 1px solid var(--line); color: var(--muted);
+    padding: 5px 9px; border-radius: 7px; font-size: 11px; cursor: pointer; }
+  .rel-btn:hover { border-color: var(--accent); }
+  .rel-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  #left { top: 64px; left: 0; bottom: 0; width: 320px; padding: 12px; display: flex; flex-direction: column; gap: 10px; pointer-events: auto; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px; }
+  #tools { display: flex; gap: 8px; }
+  #tools input, #tools select { flex: 1; background: var(--panel2); border: 1px solid var(--line);
+    color: var(--ink); padding: 8px 10px; border-radius: 8px; font-size: 13px; }
+  #birds { overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 6px; padding-right: 4px; }
+  #birds::-webkit-scrollbar { width: 8px; } #birds::-webkit-scrollbar-thumb { background: #243150; border-radius: 8px; }
+  .bird-card { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px;
+    background: var(--panel2); border: 1px solid transparent; cursor: pointer; transition: .15s; }
+  .bird-card:hover { border-color: var(--line); }
+  .bird-card.active { border-color: var(--accent); background: #16224a; }
+  .bird-card .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+  .bird-card .name { flex: 1; font-size: 13px; }
+  .bird-card .order { color: var(--muted); font-size: 11px; }
+  #info { position: fixed; right: 0; top: 64px; width: 360px; max-height: calc(100vh - 80px); overflow-y: auto;
+    background: var(--panel); border-left: 1px solid var(--line); padding: 16px; transform: translateX(110%);
+    transition: transform .25s ease; z-index: 6; }
+  #info.open { transform: none; }
+  #info .close { position: absolute; right: 12px; top: 12px; background: none; border: none; color: var(--muted);
+    font-size: 18px; cursor: pointer; }
+  #info h2 { margin: 0 0 2px; font-size: 20px; }
+  #info .panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  #info .sound-btn { flex: none; background: var(--accent); color: #fff; border: none; border-radius: 8px;
+    padding: 8px 12px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+  #info .sound-btn:hover { filter: brightness(1.1); }
+  #info .sci { font-style: italic; color: var(--muted); margin-bottom: 10px; }
+  #info .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  #info .tag { font-size: 11px; padding: 3px 8px; border-radius: 999px; background: #1a2440; color: #b9c8ee; }
+  #info .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; margin-bottom: 10px; }
+  #info .grid b { color: var(--muted); }
+  #info .section { font-size: 13px; margin: 8px 0; line-height: 1.45; }
+  #info .facts { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 10px; font-size: 12px; }
+  #info .facts ul { margin: 6px 0 0; padding-left: 18px; } #info .facts li { margin: 4px 0; line-height: 1.4; }
+  #info .agi { margin-top: 12px; font-size: 11px; color: var(--muted); background: #0c1326; border: 1px dashed var(--line);
+    border-radius: 8px; padding: 8px; } #info .agi code { color: #8fd0ff; }
+  #hint { bottom: 14px; left: 50%; transform: translateX(-50%); color: var(--muted); font-size: 12px;
+    background: rgba(8,12,24,.6); padding: 6px 12px; border-radius: 999px; }
+  .secure { color: #7fe0a8; }
+</style>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+
+  <div class="hud" id="topbar">
+    <div>
+      <h1>🦅 Birds of Africa <span class="sub">— 3D Ornithology Atlas</span></h1>
+      <div class="sub"><span class="secure">● SECURE · OFFLINE · CONFIDENTIAL</span> — for the AGI</div>
+    </div>
+    <div id="status">loading…</div>
+    <button id="muteBtn" class="mute" onclick="window.__toggleMute()" title="Mute / unmute all bird calls">🔊 Sound</button>
+    <span class="rels">
+      <span class="rels-label">Relations</span>
+      <button class="rel-btn active" data-mode="all" onclick="window.__setRelationMode('all')">All</button>
+      <button class="rel-btn" data-mode="selected" onclick="window.__setRelationMode('selected')">Selected</button>
+      <button class="rel-btn" data-mode="off" onclick="window.__setRelationMode('off')">Off</button>
+    </span>
+  </div>
+
+  <div class="hud" id="left">
+    <div class="panel" id="tools">
+      <input id="search" placeholder="Search species, family, order…" />
+      <select id="filterStatus">
+        <option value="">All status</option>
+        <option value="LC">Least Concern</option>
+        <option value="NT">Near Threatened</option>
+        <option value="VU">Vulnerable</option>
+        <option value="EN">Endangered</option>
+        <option value="CR">Critically Endangered</option>
+      </select>
+    </div>
+    <div class="panel" id="birds"></div>
+  </div>
+
+  <div id="info"></div>
+
+  <div class="hud" id="hint">Drag to orbit · scroll to zoom · click a bird or a card to inspect</div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./vendor/three.module.js",
+      "three/addons/": "./vendor/three/addons/"
+    }
+  }
+  </script>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

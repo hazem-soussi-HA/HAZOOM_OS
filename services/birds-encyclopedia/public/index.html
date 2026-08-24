@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Birds Encyclopedia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      html { scroll-behavior: smooth; }
+      body { overflow-x: hidden; }
+      /* Let the 3D atlas escape the centered SPA container and fill the viewport width. */
+      .atlas-fullbleed { width: 100vw; margin-left: calc(50% - 50vw); }
+      /* On the atlas view, hide the footer and drop main's padding so the canvas is flush. */
+      body.atlas-active footer { display: none; }
+      body.atlas-active main#view { padding: 0; max-width: none; }
+      .prose p { margin-bottom: 0.75rem; line-height: 1.6; }
+      .prose ul { list-style: disc; padding-left: 1.25rem; margin-bottom: 0.75rem; }
+      .prose li { margin-bottom: 0.25rem; }
+      .nav-active { color: #16a34a; font-weight: 600; }
+    </style>
+  </head>
+  <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+    <header class="bg-white shadow-sm sticky top-0 z-20">
+      <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-4">
+        <a href="#/" class="text-xl font-bold text-emerald-700 flex items-center gap-2">
+          <span>🦉</span><span>Birds Encyclopedia</span>
+        </a>
+        <nav class="hidden md:flex gap-4 text-sm text-slate-600 ml-4">
+          <a href="#/browse" class="hover:text-emerald-700">Browse</a>
+          <a href="#/atlas" class="hover:text-emerald-700">3D Atlas</a>
+          <a href="#/eagle" class="hover:text-emerald-700">🦅 Eagle</a>
+          <a href="#/learn" class="hover:text-emerald-700">Learn</a>
+          <a href="#/about" class="hover:text-emerald-700">About</a>
+        </nav>
+        <div id="auth-area" class="ml-auto flex items-center gap-2 text-sm"></div>
+      </div>
+    </header>
+
+    <main id="view" class="flex-1 max-w-6xl w-full mx-auto px-4 py-6"></main>
+
+    <footer class="bg-white border-t text-center text-xs text-slate-500 py-4">
+      Birds Encyclopedia · A full-stack learning project · Data for education; verify with field guides.
+    </footer>
+
+    <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 hidden bg-slate-800 text-white text-sm px-4 py-2 rounded shadow-lg z-50"></div>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

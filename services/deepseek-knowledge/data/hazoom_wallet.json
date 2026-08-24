@@ -1,0 +1,46 @@
+{
+  "balance": 11,
+  "total_earned": 11,
+  "transactions": [
+    {
+      "id": 5,
+      "action": "basic_publish",
+      "amount": 3,
+      "meta": "",
+      "at": "2026-07-12T18:34:42.989999+00:00"
+    },
+    {
+      "id": 4,
+      "action": "private_search",
+      "amount": 2,
+      "meta": "",
+      "at": "2026-07-12T18:34:06.323553+00:00"
+    },
+    {
+      "id": 3,
+      "action": "private_search",
+      "amount": 2,
+      "meta": "",
+      "at": "2026-07-12T17:34:52.531395+00:00"
+    },
+    {
+      "id": 2,
+      "action": "private_search",
+      "amount": 2,
+      "meta": "",
+      "at": "2026-07-12T17:27:58.713439+00:00"
+    },
+    {
+      "id": 1,
+      "action": "private_search",
+      "amount": 2,
+      "meta": "",
+      "at": "2026-07-12T17:23:13.721460+00:00"
+    }
+  ],
+  "streak": 0,
+  "last_active_date": "2026-07-12",
+  "linked_wallet": "0x5B22031115E34407Da54a314A66E16c98744E05F",
+  "blocked_accum": 0,
+  "created_at": "2026-07-12T17:21:51.329060+00:00"
+}

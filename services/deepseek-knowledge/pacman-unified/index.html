@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PAC-MAN UNIFIED</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div id="wrap">
+  <div id="hud">
+    <div class="hud">SCORE <span id="sc">0</span></div>
+    <div class="hud">HI <span id="hi">0</span></div>
+    <div class="hud">LVL <span id="lv">1</span></div>
+  </div>
+
+  <div style="position:relative;display:inline-block">
+    <canvas id="c"></canvas>
+    <div id="ai-badge">AI PATHFINDING</div>
+    <div id="ov" class="active">
+      <h1>PAC-MAN</h1>
+      <h2>4-in-1 Unified Edition</h2>
+      <div class="sub">BASIC &bull; YABASIC &bull; Python &bull; JavaScript &bull; AI</div>
+      <button class="btn" id="go">START</button>
+      <button class="btn" id="wallet-btn" style="font-size:10px;padding:8px 16px;background:#333">Connect Wallet</button>
+      <div class="sub">WASD / Arrows to move<br>P pause &bull; M mute<br>Ghost AI: A* + Per-Personality Targeting</div>
+    </div>
+  </div>
+
+  <div id="lives"></div>
+  <div id="modes"></div>
+</div>
+
+<div id="mob">
+  <div class="dpad">
+    <div class="db e"></div>
+    <div class="db" data-d="up">&#9650;</div>
+    <div class="db e"></div>
+    <div class="db" data-d="left">&#9664;</div>
+    <div class="db e"></div>
+    <div class="db" data-d="right">&#9654;</div>
+    <div class="db e"></div>
+    <div class="db" data-d="down">&#9660;</div>
+    <div class="db e"></div>
+  </div>
+</div>
+
+<script src="https://cdn.ethers.org/lib/ethers-6.7.0.min.js"></script>
+<script type="module" src="js/game.js"></script>
+</body>
+</html>
