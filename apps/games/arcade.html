@@ -723,37 +723,215 @@
             }
         }
         
-        // ===== TETRIS & BREAKOUT placeholders =====
+        // ===== TETRIS =====
+        let tetrisBoard, tetrisPiece, tetrisNext, tetrisInterval, tetrisDX;
+        const TCOLS = 10, TROWS = 20, TSIZE = 28;
+        const TPIECES = [
+            [[1,1,1,1]],               // I
+            [[1,0],[1,0],[1,1]],        // L
+            [[0,1],[0,1],[1,1]],        // J
+            [[1,1],[1,1]],              // O
+            [[0,1,1],[1,1,0]],          // S
+            [[1,1,0],[0,1,1]],          // Z
+            [[0,1,0],[1,1,1]]           // T
+        ];
+        const TCOLORS = ['#00f0ff','#ff8800','#0066ff','#ffcc00','#00ff88','#ff4488','#aa44ff'];
+
         function initTetris() {
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, 600, 400);
-            ctx.fillStyle = '#00d4ff';
-            ctx.font = '24px Courier New';
-            ctx.fillText('TETRIS', 250, 180);
-            ctx.fillStyle = '#888';
-            ctx.font = '14px Courier New';
-            ctx.fillText('Coming Soon!', 260, 220);
-            ctx.fillText('Press ESC to exit', 240, 260);
-            
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') closeGame();
-            });
+            tetrisBoard = Array.from({length:TROWS}, () => Array(TCOLS).fill(0));
+            score = 0;
+            spawnTetris();
+            tetrisInterval = setInterval(updateTetris, 500);
+            document.addEventListener('keydown', tetrisKeyHandler);
         }
-        
-        function initBreakout() {
+
+        function spawnTetris() {
+            const idx = Math.floor(Math.random() * TPIECES.length);
+            tetrisPiece = { shape: TPIECES[idx].map(r => [...r]), color: TCOLORS[idx], x: 3, y: 0 };
+            tetrisNext = Math.floor(Math.random() * TPIECES.length);
+            if (!tetrisFit(tetrisPiece.shape, tetrisPiece.x, tetrisPiece.y)) {
+                clearInterval(tetrisInterval);
+                alert('Game Over! Score: ' + score);
+                closeGame();
+            }
+        }
+
+        function tetrisFit(shape, ox, oy) {
+            for (let r = 0; r < shape.length; r++)
+                for (let c = 0; c < shape[r].length; c++)
+                    if (shape[r][c]) {
+                        const nx = ox + c, ny = oy + r;
+                        if (nx < 0 || nx >= TCOLS || ny >= TROWS) return false;
+                        if (ny >= 0 && tetrisBoard[ny][nx]) return false;
+                    }
+            return true;
+        }
+
+        function tetrisLock() {
+            const s = tetrisPiece;
+            for (let r = 0; r < s.shape.length; r++)
+                for (let c = 0; c < s.shape[r].length; c++)
+                    if (s.shape[r][c] && s.y + r >= 0)
+                        tetrisBoard[s.y + r][s.x + c] = s.color;
+            // Clear lines
+            for (let r = TROWS - 1; r >= 0; r--) {
+                if (tetrisBoard[r].every(c => c)) {
+                    tetrisBoard.splice(r, 1);
+                    tetrisBoard.unshift(Array(TCOLS).fill(0));
+                    score += 100;
+                    document.getElementById('score').textContent = score;
+                    r++;
+                }
+            }
+            spawnTetris();
+        }
+
+        function updateTetris() {
+            if (tetrisFit(tetrisPiece.shape, tetrisPiece.x, tetrisPiece.y + 1)) {
+                tetrisPiece.y++;
+            } else {
+                tetrisLock();
+            }
+            drawTetris();
+        }
+
+        function rotateTetris() {
+            const shape = tetrisPiece.shape;
+            const rows = shape.length, cols = shape[0].length;
+            const rotated = Array.from({length:cols}, () => Array(rows).fill(0));
+            for (let r = 0; r < rows; r++)
+                for (let c = 0; c < cols; c++)
+                    rotated[c][rows - 1 - r] = shape[r][c];
+            if (tetrisFit(rotated, tetrisPiece.x, tetrisPiece.y))
+                tetrisPiece.shape = rotated;
+        }
+
+        function tetrisKeyHandler(e) {
+            if (currentGame !== 'tetris') return;
+            if (e.key === 'ArrowLeft' && tetrisFit(tetrisPiece.shape, tetrisPiece.x - 1, tetrisPiece.y)) tetrisPiece.x--;
+            if (e.key === 'ArrowRight' && tetrisFit(tetrisPiece.shape, tetrisPiece.x + 1, tetrisPiece.y)) tetrisPiece.x++;
+            if (e.key === 'ArrowDown' && tetrisFit(tetrisPiece.shape, tetrisPiece.x, tetrisPiece.y + 1)) tetrisPiece.y++;
+            if (e.key === 'ArrowUp') rotateTetris();
+            if (e.key === 'Escape') closeGame();
+            drawTetris();
+        }
+
+        function drawTetris() {
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, 600, 400);
-            ctx.fillStyle = '#b87fff';
-            ctx.font = '24px Courier New';
-            ctx.fillText('BREAKOUT', 240, 180);
+            const ox = (600 - TCOLS * TSIZE) / 2;
+            // Board
+            for (let r = 0; r < TROWS; r++)
+                for (let c = 0; c < TCOLS; c++)
+                    if (tetrisBoard[r][c]) {
+                        ctx.fillStyle = tetrisBoard[r][c];
+                        ctx.fillRect(ox + c * TSIZE, r * TSIZE, TSIZE - 1, TSIZE - 1);
+                    }
+            // Current piece
+            if (tetrisPiece) {
+                ctx.fillStyle = tetrisPiece.color;
+                for (let r = 0; r < tetrisPiece.shape.length; r++)
+                    for (let c = 0; c < tetrisPiece.shape[r].length; c++)
+                        if (tetrisPiece.shape[r][c] && tetrisPiece.y + r >= 0)
+                            ctx.fillRect(ox + (tetrisPiece.x + c) * TSIZE, (tetrisPiece.y + r) * TSIZE, TSIZE - 1, TSIZE - 1);
+            }
+            // Border
+            ctx.strokeStyle = '#333';
+            ctx.strokeRect(ox - 1, 0, TCOLS * TSIZE + 2, TROWS * TSIZE);
             ctx.fillStyle = '#888';
-            ctx.font = '14px Courier New';
-            ctx.fillText('Coming Soon!', 260, 220);
-            ctx.fillText('Press ESC to exit', 240, 260);
-            
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') closeGame();
-            });
+            ctx.font = '12px Courier New';
+            ctx.fillText('← → Move | ↑ Rotate | ↓ Drop | ESC Quit', ox, TROWS * TSIZE + 18);
+        }
+
+        // ===== BREAKOUT =====
+        let brPaddle, brBall, brBricks, brInterval;
+        const BRICK_ROWS = 5, BRICK_COLS = 10, BRICK_W = 50, BRICK_H = 16, BRICK_PAD = 3;
+        const BRICK_COLORS = ['#ef4444','#f59e0b','#10b981','#06b6d4','#8b5cf6'];
+
+        function initBreakout() {
+            score = 0;
+            brPaddle = { x: 270, w: 80 };
+            brBall = { x: 300, y: 350, dx: 3, dy: -3, r: 5 };
+            brBricks = [];
+            for (let r = 0; r < BRICK_ROWS; r++)
+                for (let c = 0; c < BRICK_COLS; c++)
+                    brBricks.push({ x: 30 + c * (BRICK_W + BRICK_PAD), y: 40 + r * (BRICK_H + BRICK_PAD), alive: true, color: BRICK_COLORS[r] });
+            brInterval = setInterval(updateBreakout, 16);
+            document.addEventListener('keydown', breakoutKeyHandler);
+        }
+
+        function breakoutKeyHandler(e) {
+            if (currentGame !== 'breakout') return;
+            if (e.key === 'ArrowLeft') brPaddle.x = Math.max(0, brPaddle.x - 20);
+            if (e.key === 'ArrowRight') brPaddle.x = Math.min(520, brPaddle.x + 20);
+            if (e.key === 'Escape') closeGame();
+        }
+
+        function updateBreakout() {
+            brBall.x += brBall.dx;
+            brBall.y += brBall.dy;
+
+            // Walls
+            if (brBall.x <= brBall.r || brBall.x >= 600 - brBall.r) brBall.dx *= -1;
+            if (brBall.y <= brBall.r) brBall.dy *= -1;
+
+            // Paddle
+            if (brBall.y >= 380 && brBall.x >= brPaddle.x && brBall.x <= brPaddle.x + brPaddle.w && brBall.dy > 0) {
+                brBall.dy = -Math.abs(brBall.dy);
+                brBall.dx += (brBall.x - (brPaddle.x + brPaddle.w / 2)) * 0.1;
+            }
+
+            // Bottom
+            if (brBall.y > 400) {
+                clearInterval(brInterval);
+                alert('Game Over! Score: ' + score);
+                closeGame();
+                return;
+            }
+
+            // Bricks
+            for (let b of brBricks) {
+                if (!b.alive) continue;
+                if (brBall.x > b.x && brBall.x < b.x + BRICK_W && brBall.y > b.y && brBall.y < b.y + BRICK_H) {
+                    b.alive = false;
+                    brBall.dy *= -1;
+                    score += 10;
+                    document.getElementById('score').textContent = score;
+                    break;
+                }
+            }
+
+            // Win
+            if (brBricks.every(b => !b.alive)) {
+                clearInterval(brInterval);
+                alert('You Win! Score: ' + score);
+                closeGame();
+                return;
+            }
+
+            drawBreakout();
+        }
+
+        function drawBreakout() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, 600, 400);
+            // Bricks
+            for (let b of brBricks) {
+                if (!b.alive) continue;
+                ctx.fillStyle = b.color;
+                ctx.fillRect(b.x, b.y, BRICK_W, BRICK_H);
+            }
+            // Paddle
+            ctx.fillStyle = '#00f0ff';
+            ctx.fillRect(brPaddle.x, 385, brPaddle.w, 8);
+            // Ball
+            ctx.fillStyle = '#ff4444';
+            ctx.beginPath();
+            ctx.arc(brBall.x, brBall.y, brBall.r, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#888';
+            ctx.font = '12px Courier New';
+            ctx.fillText('← → Move Paddle | ESC Quit', 180, 398);
         }
     </script>
 </body>

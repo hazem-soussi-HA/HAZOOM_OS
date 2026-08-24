@@ -1,4 +1,4 @@
-.PHONY: all kernel kernel-v6 kernel-v1 clean run-qemu iso dev-install \
+.PHONY: all kernel kernel-v6 kernel-v1 clean run-qemu iso release dev-install \
         check bootloader userspace services python-services help
 
 all: kernel
@@ -65,6 +65,10 @@ iso: kernel
 	@echo "ISO built: hazoom-os.iso"
 	@ls -lh hazoom-os.iso
 
+release:
+	@echo "Building HAZOOM OS alpha release..."
+	@bash scripts/build-release.sh
+
 dev-install:
 	@echo "Installing development dependencies..."
 	sudo apt-get update && sudo apt-get install -y \
@@ -91,6 +95,7 @@ help:
 	@echo "  make bootloader   - Build UEFI bootloader"
 	@echo "  make userspace    - Build userspace components"
 	@echo "  make iso          - Build bootable ISO"
+	@echo "  make release      - Build versioned alpha release in dist/"
 	@echo "  make run-qemu     - Boot kernel in QEMU"
 	@echo "  make clean        - Clean all builds"
 	@echo "  make dev-install  - Install build dependencies"

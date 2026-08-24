@@ -29,30 +29,30 @@ void gdt_init(void) {
     /* Kernel Code Segment (0x08) - Ring 0, Readable, Executable, 64-bit */
     encode_gdt_entry(&gdt[1], 0, 0xFFFFF,
         GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_SEGMENT |
-        GDT_ACCESS_EXECUTABLE | GDT_ACCESS_READABLE,
+        GDT_ACCESS_EXECUTABLE | GDT_ACCESS_READABLE | GDT_ACCESS_ACCESSED,
         GDT_FLAG_GRANULARITY | GDT_FLAG_64BIT);
 
     /* Kernel Data Segment (0x10) - Ring 0, Writable */
     encode_gdt_entry(&gdt[2], 0, 0xFFFFF,
         GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_SEGMENT |
-        GDT_ACCESS_WRITABLE,
-        GDT_FLAG_GRANULARITY | GDT_FLAG_64BIT);
+        GDT_ACCESS_WRITABLE | GDT_ACCESS_ACCESSED,
+        GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
 
     /* User Code Segment (0x18) - Ring 3, Readable, Executable, 64-bit */
     encode_gdt_entry(&gdt[3], 0, 0xFFFFF,
         GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_SEGMENT |
-        GDT_ACCESS_EXECUTABLE | GDT_ACCESS_READABLE,
+        GDT_ACCESS_EXECUTABLE | GDT_ACCESS_READABLE | GDT_ACCESS_ACCESSED,
         GDT_FLAG_GRANULARITY | GDT_FLAG_64BIT);
 
     /* User Data Segment (0x20) - Ring 3, Writable */
     encode_gdt_entry(&gdt[4], 0, 0xFFFFF,
         GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_SEGMENT |
-        GDT_ACCESS_WRITABLE,
-        GDT_FLAG_GRANULARITY | GDT_FLAG_64BIT);
+        GDT_ACCESS_WRITABLE | GDT_ACCESS_ACCESSED,
+        GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
 
     /* TSS Segment (0x28) - placeholder, filled when TSS is set up */
     encode_gdt_entry(&gdt[5], 0, 0,
-        GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | 0x09,  /* 64-bit TSS type */
+        GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | 0x09,  /* 64-bit TSS type */
         0);
 
     /* Set up GDT pointer and load */

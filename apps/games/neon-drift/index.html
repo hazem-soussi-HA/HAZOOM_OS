@@ -1,72 +1,442 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>NEON DRIFT — SKY RACER</title>
-  <link rel="stylesheet" href="/src/styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>NEON DRIFT — Sky Racer</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#050510;color:#e8e8f0;font-family:'JetBrains Mono',monospace;height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center}
+canvas{display:block;border:1px solid rgba(0,240,255,0.2);border-radius:8px}
+#ui{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
+#hud{position:absolute;top:12px;left:12px;display:flex;gap:16px;font-size:0.7rem;color:rgba(255,255,255,0.6);pointer-events:none}
+#hud span{color:#00f0ff;font-weight:700}
+#speed-display{position:absolute;bottom:16px;right:16px;text-align:right;pointer-events:none}
+#speed-num{font-size:3rem;font-weight:800;color:#00f0ff;text-shadow:0 0 20px rgba(0,240,255,0.5)}
+#speed-unit{font-size:0.7rem;color:rgba(255,255,255,0.4)}
+#nitro-bar{position:absolute;bottom:16px;left:16px;width:120px;height:6px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;pointer-events:none}
+#nitro-fill{height:100%;background:linear-gradient(90deg,#ff6b00,#ffd700);width:100%;transition:width 0.1s;border-radius:3px}
+#start-screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(5,5,16,0.95);z-index:10;pointer-events:auto}
+#start-screen h1{font-size:3rem;background:linear-gradient(135deg,#00f0ff,#8b5cf6,#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+#start-screen .sub{color:rgba(255,255,255,0.4);margin-bottom:24px;font-size:0.8rem}
+#start-btn{padding:14px 40px;background:linear-gradient(135deg,#00f0ff,#8b5cf6);border:none;border-radius:30px;color:white;font-size:1.1rem;font-weight:700;cursor:pointer;letter-spacing:2px;transition:all 0.3s;font-family:inherit}
+#start-btn:hover{transform:scale(1.05);box-shadow:0 0 30px rgba(0,240,255,0.4)}
+.controls-info{margin-top:20px;font-size:0.65rem;color:rgba(255,255,255,0.3);text-align:center;line-height:1.8}
+#game-over{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(5,5,16,0.95);z-index:10;pointer-events:auto}
+#game-over h1{font-size:1.8rem;color:#ffd700;margin-bottom:16px}
+#game-over .stats{font-size:0.85rem;color:rgba(255,255,255,0.6);margin-bottom:6px}
+#game-over .stats span{color:#00f0ff;font-weight:700}
+#restart-btn{margin-top:20px;padding:12px 32px;background:linear-gradient(135deg,#10b981,#06b6d4);border:none;border-radius:20px;color:white;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.3s}
+#restart-btn:hover{transform:scale(1.05)}
+#countdown{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:5rem;font-weight:900;color:#ffd700;text-shadow:0 0 40px rgba(255,215,0,0.6);z-index:11;pointer-events:none;display:none}
+</style>
 </head>
 <body>
-  <div id="ui">
+<canvas id="c"></canvas>
+<div id="ui">
     <div id="hud">
-      <div>LAP <span id="lap">1</span>/3</div>
-      <div>TIME <span id="time">0:00.00</span></div>
-      <div id="lap-current">LAP TIME <span id="current-lap">0:00.00</span></div>
+        <div>LAP <span id="lap">1</span>/3</div>
+        <div>TIME <span id="time">0:00.00</span></div>
+        <div>BEST <span id="best">--</span></div>
     </div>
-    <div id="lap-times"></div>
-    <div id="rank-badge">1st</div>
-    <div id="track-name">QUANTUM COMMAND</div>
-    <div id="speed-display"><div id="speed-number">0</div><div id="speed-unit">KM/H</div></div>
+    <div id="speed-display"><div id="speed-num">0</div><div id="speed-unit">KM/H</div></div>
     <div id="nitro-bar"><div id="nitro-fill"></div></div>
-    <canvas id="minimap" width="140" height="140"></canvas>
-    <div id="sound-toggle">🔊</div>
-    <div id="countdown"></div>
-    <div id="countdown-instruction">HOLD W TO ACCELERATE</div>
-    <div id="go-flash"></div>
-    <div id="speed-lines"></div>
-
     <div id="start-screen">
-      <div id="start-bg"></div>
-      <div class="logo-container">
-        <div class="logo-main">NEON DRIFT</div>
-        <div class="logo-sub">SKY RACER</div>
-      </div>
-      <div id="track-select">
-        <div class="track-card selected" data-track="command-center">
-          <div class="track-icon">🌆</div>
-          <div class="track-name">Quantum Command</div>
-          <div class="track-desc">Race through 12 cyberpunk city-states. Neon towers pierce the sky.</div>
-          <div class="track-stats">12 waypoints • 2.4km</div>
-        </div>
-        <div class="track-card" data-track="starwars">
-          <div class="track-icon">🌌</div>
-          <div class="track-name">Galactic Core</div>
-          <div class="track-desc">Orbital racing around star systems. Low-gravity drift physics.</div>
-          <div class="track-stats">4 waypoints • 1.8km</div>
-        </div>
-        <div class="track-card" data-track="world-map">
-          <div class="track-icon">🌍</div>
-          <div class="track-name">Earth Circuit</div>
-          <div class="track-desc">8 real-world cities, one epic global sky race.</div>
-          <div class="track-stats">8 waypoints • 2.0km</div>
-        </div>
-      </div>
-      <button id="start-btn">⚡ START RACE ⚡</button>
-      <button id="ai-btn" class="ai-toggle">🤖 AI DEMO</button>
-      <div id="controls-info">W/↑ ACCELERATE &nbsp; S/↓ BRAKE &nbsp; A/← D/→ STEER &nbsp; SPACE NITRO &nbsp; SHIFT DRIFT &nbsp; ESC QUIT</div>
+        <h1>NEON DRIFT</h1>
+        <div class="sub">SKY RACER</div>
+        <button id="start-btn" onclick="startRace()">⚡ START RACE</button>
+        <div class="controls-info">W / ↑ ACCELERATE &nbsp;|&nbsp; S / ↓ BRAKE &nbsp;|&nbsp; A← D→ STEER<br>SPACE NITRO &nbsp;|&nbsp; ESC QUIT</div>
     </div>
-
     <div id="game-over">
-      <h1>🏁 RACE COMPLETE 🏁</h1>
-      <p class="stats">Time: <span id="final-time">0:00.00</span></p>
-      <p class="stats">Best Lap: <span id="best-lap">0:00.00</span></p>
-      <p class="stats">Top Speed: <span id="top-speed">0</span> KM/H</p>
-      <p class="stats">Position: <span id="final-position">1st</span></p>
-      <div id="lap-breakdown"></div>
-      <button id="restart-btn">🔄 RACE AGAIN</button>
+        <h1>🏁 RACE COMPLETE</h1>
+        <div class="stats">Time: <span id="final-time">0:00.00</span></div>
+        <div class="stats">Best Lap: <span id="best-lap">0:00.00</span></div>
+        <div class="stats">Top Speed: <span id="top-speed">0</span> KM/H</div>
+        <button id="restart-btn" onclick="startRace()">🔄 RACE AGAIN</button>
     </div>
-  </div>
+    <div id="countdown"></div>
+</div>
 
-  <script type="module" src="/src/main.ts"></script>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const W = canvas.width = 960;
+const H = canvas.height = 540;
+
+// Game state
+let running = false, paused = false, countdownActive = false;
+let car, road, lap, lapTime, totalTime, bestLap, topSpeed, nitro, nitroMax;
+let stars = [], particles = [], keys = {};
+const LAPS = 3;
+const ROAD_W = 220;
+const SEG_LEN = 200;
+const CAM_D = 100;
+const DRAW_DIST = 180;
+
+// Road segments
+let segments = [];
+let trackLen = 0;
+
+function buildTrack() {
+    segments = [];
+    const numSeg = 400;
+    for (let i = 0; i < numSeg; i++) {
+        let curve = 0, hill = 0;
+        // Curves
+        if (i > 20 && i < 60) curve = 3;
+        if (i > 80 && i < 120) curve = -4;
+        if (i > 150 && i < 190) curve = 5;
+        if (i > 220 && i < 260) curve = -3;
+        if (i > 300 && i < 340) curve = 4;
+        if (i > 360 && i < 380) curve = -2;
+        // Hills
+        if (i > 40 && i < 70) hill = Math.sin((i - 40) / 30 * Math.PI) * 30;
+        if (i > 100 && i < 140) hill = -Math.sin((i - 100) / 40 * Math.PI) * 25;
+        if (i > 200 && i < 250) hill = Math.sin((i - 200) / 50 * Math.PI) * 40;
+        if (i > 310 && i < 350) hill = -Math.sin((i - 310) / 40 * Math.PI) * 35;
+
+        segments.push({ index: i, curve, hill, y: 0, clip: 0 });
+    }
+    // Compute Y positions
+    let y = 0;
+    for (let i = 0; i < numSeg; i++) {
+        segments[i].y = y;
+        y += segments[i].hill;
+    }
+    trackLen = numSeg * SEG_LEN;
+}
+
+function init() {
+    buildTrack();
+    // Stars
+    stars = [];
+    for (let i = 0; i < 200; i++) {
+        stars.push({ x: Math.random() * W, y: Math.random() * H, s: Math.random() * 2, p: Math.random() * Math.PI * 2 });
+    }
+    resetCar();
+}
+
+function resetCar() {
+    car = { x: 0, speed: 0, maxSpeed: 320, accel: 0, steer: 0, nitroActive: false };
+    lap = 1; lapTime = 0; totalTime = 0; bestLap = Infinity; topSpeed = 0;
+    nitro = 100; nitroMax = 100;
+    particles = [];
+}
+
+function startRace() {
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('game-over').style.display = 'none';
+    resetCar();
+    running = false;
+    countdownActive = true;
+    const cd = document.getElementById('countdown');
+    cd.style.display = 'block';
+    let count = 3;
+    cd.textContent = count;
+    const iv = setInterval(() => {
+        count--;
+        if (count > 0) cd.textContent = count;
+        else if (count === 0) cd.textContent = 'GO!';
+        else {
+            clearInterval(iv);
+            cd.style.display = 'none';
+            countdownActive = false;
+            running = true;
+        }
+    }, 800);
+}
+
+function finishRace() {
+    running = false;
+    document.getElementById('game-over').style.display = 'flex';
+    document.getElementById('final-time').textContent = formatTime(totalTime);
+    document.getElementById('best-lap').textContent = bestLap < Infinity ? formatTime(bestLap) : '--';
+    document.getElementById('top-speed').textContent = Math.round(topSpeed);
+}
+
+function formatTime(ms) {
+    const m = Math.floor(ms / 60000);
+    const s = Math.floor((ms % 60000) / 1000);
+    const cs = Math.floor((ms % 1000) / 10);
+    return `${m}:${String(s).padStart(2,'0')}.${String(cs).padStart(2,'0')}`;
+}
+
+// Input
+document.addEventListener('keydown', e => {
+    keys[e.key] = true;
+    if (e.key === 'Escape' && running) finishRace();
+});
+document.addEventListener('keyup', e => { keys[e.key] = false; });
+
+// Update
+function update(dt) {
+    if (!running || countdownActive) return;
+
+    // Acceleration
+    const acc = car.nitroActive ? 180 : 120;
+    if (keys['w'] || keys['W'] || keys['ArrowUp']) car.speed = Math.min(car.maxSpeed, car.speed + acc * dt);
+    else if (keys['s'] || keys['S'] || keys['ArrowDown']) car.speed = Math.max(0, car.speed - 200 * dt);
+    else car.speed = Math.max(0, car.speed - 30 * dt); // friction
+
+    // Nitro
+    if ((keys[' '] || keys['Shift']) && nitro > 0 && car.speed > 100) {
+        car.nitroActive = true;
+        nitro = Math.max(0, nitro - 40 * dt);
+        // Exhaust particles
+        for (let i = 0; i < 2; i++) {
+            particles.push({
+                x: W / 2 + (Math.random() - 0.5) * 20,
+                y: H - 40,
+                vx: (Math.random() - 0.5) * 3,
+                vy: 2 + Math.random() * 3,
+                life: 1,
+                color: Math.random() > 0.5 ? '#ff6b00' : '#ffd700'
+            });
+        }
+    } else {
+        car.nitroActive = false;
+        nitro = Math.min(nitroMax, nitro + 8 * dt);
+    }
+
+    // Steering
+    const steerSpeed = 2.5 * (car.speed / car.maxSpeed);
+    if (keys['a'] || keys['A'] || keys['ArrowLeft']) car.x = Math.max(-1, car.x - steerSpeed * dt);
+    if (keys['d'] || keys['D'] || keys['ArrowRight']) car.x = Math.min(1, car.x + steerSpeed * dt);
+
+    topSpeed = Math.max(topSpeed, car.speed);
+
+    // Position along track
+    const pos = (car.speed * dt * 2) % trackLen;
+    car.pos = ((car.pos || 0) + pos) % trackLen;
+
+    // Get current segment
+    const segIdx = Math.floor(car.pos / SEG_LEN) % segments.length;
+    const seg = segments[segIdx];
+
+    // Centrifugal force from curves
+    car.x += seg.curve * car.speed / car.maxSpeed * dt * 0.5;
+
+    // Off-road slowdown
+    if (Math.abs(car.x) > 0.8) {
+        car.speed = Math.max(0, car.speed - 100 * dt);
+    }
+
+    // Lap counting
+    lapTime += dt * 1000;
+    totalTime += dt * 1000;
+
+    if (car.pos < pos) { // Crossed start line
+        if (lapTime > 1000) { // debounce
+            if (lapTime < bestLap) bestLap = lapTime;
+            lap++;
+            if (lap > LAPS) { finishRace(); return; }
+            lapTime = 0;
+        }
+    }
+
+    // Update particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= dt * 2;
+        if (p.life <= 0) particles.splice(i, 1);
+    }
+}
+
+// Render
+function render() {
+    // Sky gradient
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.5);
+    skyGrad.addColorStop(0, '#050510');
+    skyGrad.addColorStop(0.5, '#0a0a2e');
+    skyGrad.addColorStop(1, '#1a0a3e');
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, W, H);
+
+    // Stars
+    const t = Date.now() / 1000;
+    stars.forEach(s => {
+        const flicker = 0.5 + 0.5 * Math.sin(t * 2 + s.p);
+        ctx.fillStyle = `rgba(255,255,255,${flicker * 0.7})`;
+        ctx.fillRect(s.x, s.y, s.s, s.s);
+    });
+
+    // Road
+    const baseSeg = Math.floor((car.pos || 0) / SEG_LEN) % segments.length;
+    const baseOffset = ((car.pos || 0) % SEG_LEN) / SEG_LEN;
+    const camH = 1200;
+
+    let maxY = H;
+    let dx = 0;
+    let x = 0;
+
+    // Draw road segments back to front
+    for (let n = 0; n < DRAW_DIST; n++) {
+        const idx = (baseSeg + n) % segments.length;
+        const seg = segments[idx];
+        const segDist = (n - baseOffset) * SEG_LEN;
+        if (segDist <= 0) continue;
+
+        const scale = camD / segDist;
+        const projX = W / 2 + (x - car.x * ROAD_W * 2) * scale;
+        const projY = H / 2 - (camH - seg.y) * scale * 0.01 + 80;
+        const projW = ROAD_W * scale;
+
+        if (projY >= maxY) continue;
+
+        // Road surface
+        const stripe = seg.index % 6 < 3;
+        ctx.fillStyle = stripe ? '#1a1a2e' : '#141428';
+        ctx.fillRect(projX - projW / 2, projY, projW, 4);
+
+        // Shoulder
+        ctx.fillStyle = '#0a0a1a';
+        ctx.fillRect(projX - projW / 2 - projW * 0.15, projY, projW * 0.15, 4);
+        ctx.fillRect(projX + projW / 2, projY, projW * 0.15, 4);
+
+        // Center line
+        if (seg.index % 4 < 2) {
+            ctx.fillStyle = 'rgba(0,240,255,0.15)';
+            ctx.fillRect(projX - 1, projY, 2, 4);
+        }
+
+        // Neon edges
+        if (seg.index % 3 === 0) {
+            ctx.fillStyle = 'rgba(0,240,255,0.3)';
+            ctx.fillRect(projX - projW / 2, projY, projW, 1);
+        }
+
+        // Scenery - neon pillars
+        if (seg.index % 8 === 0) {
+            const pillarH = 40 * scale;
+            const side = seg.index % 16 === 0 ? -1 : 1;
+            const px = projX + side * (projW / 2 + 30 * scale);
+            ctx.fillStyle = 'rgba(139,92,246,0.4)';
+            ctx.fillRect(px - 2 * scale, projY - pillarH, 4 * scale, pillarH);
+            ctx.fillStyle = 'rgba(0,240,255,0.6)';
+            ctx.fillRect(px - 3 * scale, projY - pillarH, 6 * scale, 2 * scale);
+        }
+
+        x += dx;
+        dx += seg.curve * 0.02;
+        maxY = projY;
+    }
+
+    // Car (centered at bottom)
+    drawCar(W / 2, H - 50);
+
+    // Particles
+    particles.forEach(p => {
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, 3, 3);
+    });
+    ctx.globalAlpha = 1;
+
+    // HUD updates
+    document.getElementById('lap').textContent = Math.min(lap, LAPS);
+    document.getElementById('time').textContent = formatTime(totalTime);
+    document.getElementById('best').textContent = bestLap < Infinity ? formatTime(bestLap) : '--';
+    document.getElementById('speed-num').textContent = Math.round(car.speed);
+    document.getElementById('speed-num').style.color = car.nitroActive ? '#ffd700' : '#00f0ff';
+    document.getElementById('nitro-fill').style.width = (nitro / nitroMax * 100) + '%';
+
+    // Speed lines when fast
+    if (car.speed > 200) {
+        const intensity = (car.speed - 200) / 120;
+        for (let i = 0; i < 3; i++) {
+            ctx.strokeStyle = `rgba(0,240,255,${intensity * 0.2})`;
+            ctx.beginPath();
+            const sx = Math.random() * W;
+            ctx.moveTo(sx, 0);
+            ctx.lineTo(sx + (Math.random() - 0.5) * 20, H);
+            ctx.stroke();
+        }
+    }
+}
+
+function drawCar(x, y) {
+    // Shadow
+    ctx.fillStyle = 'rgba(0,240,255,0.1)';
+    ctx.beginPath();
+    ctx.ellipse(x, y + 18, 30, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Body
+    const bodyGrad = ctx.createLinearGradient(x - 18, y, x + 18, y);
+    bodyGrad.addColorStop(0, '#1a1a3e');
+    bodyGrad.addColorStop(0.5, '#2a2a5e');
+    bodyGrad.addColorStop(1, '#1a1a3e');
+    ctx.fillStyle = bodyGrad;
+    ctx.beginPath();
+    ctx.moveTo(x - 16, y + 12);
+    ctx.lineTo(x - 20, y - 2);
+    ctx.lineTo(x - 14, y - 14);
+    ctx.lineTo(x + 14, y - 14);
+    ctx.lineTo(x + 20, y - 2);
+    ctx.lineTo(x + 16, y + 12);
+    ctx.closePath();
+    ctx.fill();
+
+    // Windshield
+    ctx.fillStyle = 'rgba(0,240,255,0.3)';
+    ctx.beginPath();
+    ctx.moveTo(x - 10, y - 4);
+    ctx.lineTo(x - 8, y - 12);
+    ctx.lineTo(x + 8, y - 12);
+    ctx.lineTo(x + 10, y - 4);
+    ctx.closePath();
+    ctx.fill();
+
+    // Neon glow
+    ctx.shadowColor = car.nitroActive ? '#ffd700' : '#00f0ff';
+    ctx.shadowBlur = car.nitroActive ? 25 : 15;
+    ctx.strokeStyle = car.nitroActive ? '#ffd700' : '#00f0ff';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(x - 16, y + 12);
+    ctx.lineTo(x - 20, y - 2);
+    ctx.lineTo(x - 14, y - 14);
+    ctx.lineTo(x + 14, y - 14);
+    ctx.lineTo(x + 20, y - 2);
+    ctx.lineTo(x + 16, y + 12);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // Headlights
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(x - 12, y - 14, 4, 2);
+    ctx.fillRect(x + 8, y - 14, 4, 2);
+
+    // Tail lights
+    ctx.fillStyle = '#ef4444';
+    ctx.fillRect(x - 14, y + 10, 5, 2);
+    ctx.fillRect(x + 9, y + 10, 5, 2);
+
+    // Nitro flames
+    if (car.nitroActive) {
+        const flicker = Math.random() * 8;
+        ctx.fillStyle = '#ff6b00';
+        ctx.fillRect(x - 8, y + 12 + flicker, 4, 6 + Math.random() * 4);
+        ctx.fillStyle = '#ffd700';
+        ctx.fillRect(x + 4, y + 12 + flicker, 4, 6 + Math.random() * 4);
+    }
+}
+
+// Game loop
+let lastTime = 0;
+function gameLoop(ts) {
+    const dt = Math.min((ts - lastTime) / 1000, 0.05);
+    lastTime = ts;
+    update(dt);
+    render();
+    requestAnimationFrame(gameLoop);
+}
+
+init();
+car.pos = 0;
+requestAnimationFrame(gameLoop);
+</script>
 </body>
 </html>

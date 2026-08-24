@@ -42,7 +42,6 @@ CFLAGS  := -ffreestanding             \
            -fno-stack-protector       \
            -fno-pic                   \
            -mno-red-zone              \
-
            -mabi=sysv                 \
            -std=gnu11                 \
            -I.

@@ -140,6 +140,16 @@ bits 64
     mov gs, ax
     mov ss, ax
 
+    ; Enable SSE so GCC float code (qlearn) cannot #UD.
+    ; CR0: clear EM (bit 2), set MP (bit 1). CR4: OSFXSR (9), OSXMMEXCPT (10).
+    mov rax, cr0
+    and eax, ~(1 << 2)
+    or eax, (1 << 1)
+    mov cr0, rax
+    mov rax, cr4
+    or eax, (1 << 9) | (1 << 10)
+    mov cr4, rax
+
     ; Fresh long-mode stack (identity-mapped low memory).
     mov rsp, 0x9F000
     and rsp, ~0xF

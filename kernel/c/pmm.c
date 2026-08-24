@@ -44,6 +44,14 @@ static void bitmap_mark_range(uint64_t start, uint64_t count, int value) {
     }
 }
 
+/* Helper: check that [start, start + count) is entirely free */
+static int bitmap_range_is_free(uint64_t start, uint64_t count) {
+    for (uint64_t i = 0; i < count; i++) {
+        if (bitmap_get(start + i) != FRAME_FREE) return 0;
+    }
+    return 1;
+}
+
 /* Initialize the physical memory manager */
 void pmm_init(mmap_entry_t *mmap, uint32_t entries) {
     /* First pass: find total memory to determine bitmap size */
@@ -89,15 +97,35 @@ void pmm_init(mmap_entry_t *mmap, uint32_t entries) {
         free_lists[i] = 0; /* 0 means empty list */
     }
 
-    /* Populate buddy allocator free lists with available memory */
-    /* Simple approach: add all available frames to order 0 list */
-    for (uint64_t f = kernel_frames; f < total_frames; f++) {
-        if (bitmap_get(f) == FRAME_FREE) {
-            /* Add to order 0 free list (linked list at frame start) */
-            /* We store next pointer at the frame itself */
+    /* Populate buddy allocator free lists with properly aligned blocks.
+     * Walk each usable region and greedily emit the largest power-of-two
+     * block that is both size-aligned and fully inside free space, so
+     * pmm_alloc()'s split logic and pmm_free()'s coalescing stay valid. */
+    for (uint32_t i = 0; i < entries; i++) {
+        if (mmap[i].type != 1) continue;
+
+        uint64_t start = mmap[i].base / PMM_PAGE_SIZE;
+        uint64_t end   = start + mmap[i].length / PMM_PAGE_SIZE;
+        if (end > total_frames) end = total_frames;
+
+        uint64_t f = start;
+        while (f < end) {
+            if (f < kernel_frames) { f = kernel_frames; continue; }
+            if (bitmap_get(f) != FRAME_FREE) { f++; continue; }
+
+            uint8_t order = 0;
+            while (order < PMM_MAX_ORDER
+                   && (f & ((1ULL << (order + 1)) - 1)) == 0
+                   && f + (1ULL << (order + 1)) <= end
+                   && bitmap_range_is_free(f, 1ULL << (order + 1))) {
+                order++;
+            }
+
             uint64_t *frame_ptr = (uint64_t *)pmm_frame_to_addr(f);
-            *frame_ptr = free_lists[0];
-            free_lists[0] = f;
+            *frame_ptr = free_lists[order];
+            free_lists[order] = f;
+
+            f += (1ULL << order);
         }
     }
 

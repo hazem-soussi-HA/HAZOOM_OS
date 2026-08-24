@@ -1,5 +1,15 @@
 # HAZOOM OS v6.0 — Progress Report
 
+## Release Status: 6.0.0-alpha.1
+
+- [x] Kernel builds clean (`make kernel`)
+- [x] Bootable ISO (GRUB multiboot2, BIOS) — `make iso`
+- [x] Headless selftest over serial (PMM, process manager, Q-learning)
+- [x] Interactive VGA shell (help, ps, mem, ls, run, kill, qlearn, uptime,
+      clear, neofetch, exit)
+- [x] Release pipeline: `make release` → dist/ (ISO + ELF + bin + SHA256SUMS
+      + RELEASE_NOTES.md)
+
 ## Completed (Week 1-2)
 
 ### Kernel Foundation
@@ -37,29 +47,14 @@ kernel/
 └── ai/qtable.c         ✅ Q-learning
 ```
 
-## Next Steps
+## Next Steps (post-alpha)
 
-### Week 3: Devices & Boot
-- [ ] Keyboard driver
-- [ ] VGA text output
-- [ ] UEFI bootloader
-- [ ] Initramfs
-
-### Week 4: Userspace
-- [ ] Complete libc
-- [ ] Wayland compositor (minimal)
-- [ ] HAZOOM shell
-- [ ] Port 3 apps
-
-### Week 5: AI Integration
-- [ ] Consciousness in kernel
-- [ ] Pascal engine C port
-- [ ] Aether protocol
-
-### Week 6: Distribution
-- [ ] Full ISO
-- [ ] Real hardware testing
-- [ ] Release v6.0
+### Beta targets
+- [ ] Userspace on bare metal: init + shell as ring-3 processes
+- [ ] Persistent filesystem (HAZOOM-FS or FAT32)
+- [ ] UEFI boot path (boot/ skeleton → working hazoom_boot.efi)
+- [ ] Q-table persistence across reboots
+- [ ] Real hardware validation
 
 ## Testing Current Build
 

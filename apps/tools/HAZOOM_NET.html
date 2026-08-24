@@ -111,7 +111,7 @@ const OSI_LAYERS = [
     {num:5,name:"Session",proto:"NetBIOS, RPC, PPTP, SCP",desc:"Session management & control",color:"#c084fc",status:"active",icon:"🔗"},
     {num:4,name:"Transport",proto:"TCP, UDP, SCTP",desc:"Reliable delivery, flow control, multiplexing",color:"#06b6d4",status:"active",icon:"📦"},
     {num:3,name:"Network",proto:"IP, ICMP, ARP, OSPF, BGP",desc:"Logical addressing & routing",color:"#0ea5e9",status:"routing",icon:"🗺️"},
-    {num:2,name:"Data Link",proto:"Ethernet, WiFi (802.11), PPP",desc:"Physical addressing, framing, error detection",color:#f59e0b,status:"active",icon:"📡"},
+    {num:2,name:"Data Link",proto:"Ethernet, WiFi (802.11), PPP",desc:"Physical addressing, framing, error detection",color:"#f59e0b",status:"active",icon:"📡"},
     {num:1,name:"Physical",proto:"RJ45, Fiber,无线电, DSL",desc:"Raw bit transmission over medium",color:"#ef4444",status:"physical",icon:"⚡"}
 ];
 
@@ -259,7 +259,7 @@ function renderIPPacket() {
         {label:'Source IP',value:src,tip:''},
         {label:'Dest IP',value:dst,tip:''},
     ];
-    let html = '<div class="packet-section"><h4>IPv4 Header (20 bytes)</h4><class="hex-row">';
+    let html = '<div class="packet-section"><h4>IPv4 Header (20 bytes)</h4><div class="hex-row">';
     for(let i=0;i<40;i++) html += `<span class="hex-byte">${Math.random()>0.5?'XX':'__'}</span>`;
     html += '</div><table>';
     fields.forEach(f => html += `<tr style="font-size:0.6rem"><td style="color:rgba(255,255,255,0.4);padding:2px 8px 2px 0">${f.label}</td><td style="color:#06b6d4">${f.value}</td></tr>`);

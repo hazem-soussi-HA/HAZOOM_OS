@@ -37,18 +37,17 @@ case "$MODE" in
 
     kernel)
         echo "[INFO] Starting HAZOOM OS in bare-metal kernel mode..."
-        if [ ! -f kernel/c/hazoom-kernel.bin ]; then
-            echo "[INFO] Kernel not built. Building now..."
-            make kernel
+        if [ ! -f hazoom-os.iso ]; then
+            echo "[INFO] ISO not found. Building now..."
+            make iso
         fi
-        echo "[INFO] Launching QEMU with OVMF UEFI..."
+        echo "[INFO] Booting HAZOOM OS ISO in QEMU (VGA + serial console)..."
+        echo "[INFO] Serial log: hazoom-serial.log"
         exec qemu-system-x86_64 \
-            -bios /usr/share/ovmf/OVMF.fd \
-            -drive format=raw,file=kernel/c/hazoom-kernel.bin \
-            -serial stdio \
-            -s \
+            -cdrom hazoom-os.iso \
             -m 512M \
-            -machine q35,accel=kvm:hvf:tcg \
+            -serial stdio \
+            -machine accel=kvm:tcg \
             -cpu max
         ;;
 

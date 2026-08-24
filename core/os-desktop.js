@@ -21,9 +21,9 @@
                         id: 'dashboard',
                         name: 'Dashboard',
                         icon: '📊',
-                        color: '#00f0ff',
-                        width: 520,
-                        height: 420,
+                        color: '#10b981',
+                        width: 650,
+                        height: 480,
                         desktop: true,
                         category: 'core',
                         content: () => `
@@ -50,8 +50,8 @@
                                     <div class="stat-label">Quick Info</div>
                                     <div style="margin-top:8px;font-size:0.85rem;color:var(--text-dim);">
                                         HAZOOM OS v${this.version} — AI-Powered Workspace<br>
-                                        Creator: Hazem Soussi — May 2026<br>
-                                        Open Source · Self-Hosted · Cloud Ready
+                                        Creator: Hazem Soussi<br>
+                                        Open Source · Self-Hosted
                                     </div>
                                 </div>
                             </div>
@@ -69,7 +69,7 @@
                         content: () => `
                             <div class="app-terminal" id="terminal-body">
                                 <div class="terminal-line" style="color:var(--accent);">HAZOOM OS v${this.version} — Terminal</div>
-                                <div class="terminal-line" style="color:var(--text-dim);">Type 'help' for available commands.</div>
+                                <div class="terminal-line" style="color:var(--text-dim);">Type 'help' for commands.</div>
                                 <div class="terminal-line">&nbsp;</div>
                                 <div class="terminal-line"><span class="terminal-prompt">hazoom@os:~$ </span><input class="terminal-input" id="terminal-input" autofocus></div>
                             </div>
@@ -100,8 +100,8 @@
                         content: () => `
                             <div class="app-chat">
                                 <div class="chat-messages" id="ai-chat">
-                                    <div class="chat-msg system">HAZOOM AI Assistant — Powered by Ollama</div>
-                                    <div class="chat-msg ai">Hello! I'm your AI assistant. How can I help you today?</div>
+                                    <div class="chat-msg system">HAZOOM AI — Powered by Ollama</div>
+                                    <div class="chat-msg ai">Hello! I'm your AI assistant. Ask me anything.</div>
                                 </div>
                                 <div class="chat-input-bar">
                                     <input type="text" id="ai-input" placeholder="Ask anything...">
@@ -169,53 +169,29 @@
                         icon: '🎵',
                         color: '#f59e0b',
                         width: 440,
-                        height: 580,
+                        height: 500,
                         desktop: true,
                         category: 'music',
                         content: () => `
                             <div class="app-music">
                                 <div class="music-header">🎵 Neural FM</div>
-                                <div class="music-sub">7 playlists • 35 tracks • Royalty-free audio</div>
-                                <div class="playlist-card" onclick="HAZOOM.playPlaylist('neuralcode')">
+                                <div class="music-sub">Royalty-free focus music</div>
+                                <div class="playlist-card" onclick="HAZOOM.playPlaylist('lofi')">
                                     <div style="display:flex;align-items:center;gap:10px;">
-                                        <div style="width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,#e63946,#f59e0b);display:flex;align-items:center;justify-content:center;font-size:18px;">🧠</div>
-                                        <div><div style="font-size:0.85rem;font-weight:600;">Neural Code</div><div style="font-size:0.7rem;color:var(--text-dim);">Deep focus • Coding flow state</div></div>
+                                        <div style="width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,#10b981,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:18px;">🍃</div>
+                                        <div><div style="font-size:0.85rem;font-weight:600;">Lo-Fi Focus</div><div style="font-size:0.7rem;color:var(--text-dim);">Chill beats for deep work</div></div>
                                     </div>
                                 </div>
                                 <div class="playlist-card" onclick="HAZOOM.playPlaylist('synthwave')">
                                     <div style="display:flex;align-items:center;gap:10px;">
                                         <div style="width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,#ff6b6b,#ffa500);display:flex;align-items:center;justify-content:center;font-size:18px;">🌅</div>
-                                        <div><div style="font-size:0.85rem;font-weight:600;">Synthwave Flow</div><div style="font-size:0.7rem;color:var(--text-dim);">Kavinsky, The Midnight, FM-84</div></div>
-                                    </div>
-                                </div>
-                                <div class="playlist-card" onclick="HAZOOM.playPlaylist('lofi')">
-                                    <div style="display:flex;align-items:center;gap:10px;">
-                                        <div style="width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,#10b981,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:18px;">🍃</div>
-                                        <div><div style="font-size:0.85rem;font-weight:600;">Lo-Fi Focus</div><div style="font-size:0.7rem;color:var(--text-dim);">Chillhop, Lofi Girl beats</div></div>
+                                        <div><div style="font-size:0.85rem;font-weight:600;">Synthwave</div><div style="font-size:0.7rem;color:var(--text-dim);">Retro electronic vibes</div></div>
                                     </div>
                                 </div>
                                 <div class="playlist-card" onclick="HAZOOM.playPlaylist('electronic')">
                                     <div style="display:flex;align-items:center;gap:10px;">
                                         <div style="width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,#00f0ff,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:18px;">⚡</div>
-                                        <div><div style="font-size:0.85rem;font-weight:600;">Electronic Rush</div><div style="font-size:0.7rem;color:var(--text-dim);">Daft Punk, Justice, Deadmau5</div></div>
-                                    </div>
-                                </div>
-                                <div class="playlist-card" onclick="HAZOOM.playPlaylist('cyberpunk')">
-                                    <div style="display:flex;align-items:center;gap:10px;">
-                                        <div style="width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,#a855f7,#ec4899);display:flex;align-items:center;justify-content:center;font-size:18px;">🌆</div>
-                                        <div><div style="font-size:0.85rem;font-weight:600;">Cyberpunk</div><div style="font-size:0.7rem;color:var(--text-dim);">Perturbator, Carpenter Brut</div></div>
-                                    </div>
-                                </div>
-                                <div class="playlist-card" onclick="HAZOOM.playPlaylist('ambient')">
-                                    <div style="display:flex;align-items:center;gap:10px;">
-                                        <div style="width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,#1e3a5f,#4a90d9);display:flex;align-items:center;justify-content:center;font-size:18px;">🌌</div>
-                                        <div><div style="font-size:0.85rem;font-weight:600;">Deep Space</div><div style="font-size:0.7rem;color:var(--text-dim);">Brian Eno, Hans Zimmer</div></div>
-                                    </div>
-                                </div>
-                                <div class="playlist-card" onclick="HAZOOM.playPlaylist('bossfight')">
-                                    <div style="display:flex;align-items:center;gap:10px;">
-                                        <div style="width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,#dc2626,#9333ea);display:flex;align-items:center;justify-content:center;font-size:18px;">🔥</div>
-                                        <div><div style="font-size:0.85rem;font-weight:600;">Boss Fight</div><div style="font-size:0.7rem;color:var(--text-dim);">DOOM, Power Glove, Overdrive</div></div>
+                                        <div><div style="font-size:0.85rem;font-weight:600;">Electronic</div><div style="font-size:0.7rem;color:var(--text-dim);">High energy focus</div></div>
                                     </div>
                                 </div>
                                 <div id="music-player-container" style="margin-top:12px;display:none;"></div>
@@ -247,7 +223,7 @@
                                 <div style="font-size:1.1rem;font-weight:700;margin-bottom:8px;">System Settings</div>
                                 <div class="setting-row">
                                     <span class="setting-label">Version</span>
-                                    <span class="setting-value">3.0.0</span>
+                                    <span class="setting-value">4.0.0</span>
                                 </div>
                                 <div class="setting-row">
                                     <span class="setting-label">Creator</span>
@@ -259,12 +235,11 @@
                                 </div>
                                 <div class="setting-row">
                                     <span class="setting-label">Repository</span>
-                                    <span class="setting-value" style="color:var(--accent);cursor:pointer;" onclick="window.open('https://github.com/hazem-soussi-HA/hazoom-os-unified','_blank')">GitHub ↗</span>
+                                    <span class="setting-value" style="color:var(--accent);cursor:pointer;" onclick="window.open('https://github.com/hazem-soussi-HA/HAZOOM_OS','_blank')">GitHub ↗</span>
                                 </div>
                             </div>
                         `
                     },
-                    // ai-assistant, quantum-ai, copilot removed — files deleted
                     'hazoom-ai': {
                         id: 'hazoom-ai',
                         name: 'Hazoom AI',
@@ -552,7 +527,7 @@
                     },
                     'hazoom-net': {
                         id: 'hazoom-net',
-                        name: 'HAZOOM NET',
+                        name: 'Network',
                         icon: '🌐',
                         color: '#06b6d4',
                         width: 900,
@@ -561,11 +536,52 @@
                         category: 'tools',
                         src: 'apps/tools/HAZOOM_NET.html'
                     },
-
-                    // === INTEGRATED FROM ALPHA PONY ===
+                    'focus-timer': {
+                        id: 'focus-timer',
+                        name: 'Focus Timer',
+                        icon: '⏱️',
+                        color: '#f59e0b',
+                        width: 400,
+                        height: 400,
+                        desktop: true,
+                        category: 'tools',
+                        src: 'apps/tools/focus-timer/index.html'
+                    },
+                    'user-guide': {
+                        id: 'user-guide',
+                        name: 'Guide',
+                        icon: '📖',
+                        color: '#10b981',
+                        width: 700,
+                        height: 550,
+                        desktop: true,
+                        category: 'docs',
+                        src: 'apps/docs/HAZOOM_OS_TOUR.html'
+                    },
+                    map: {
+                        id: 'map',
+                        name: 'Map',
+                        icon: '🗺️',
+                        color: '#10b981',
+                        width: 700,
+                        height: 550,
+                        desktop: true,
+                        category: 'visualizers',
+                        src: 'apps/visualizers/futuristic-map.html'
+                    },
+                    growflow: {
+                        id: 'growflow',
+                        name: 'GrowFlow',
+                        icon: '🌱',
+                        color: '#22c55e',
+                        width: 600,
+                        height: 500,
+                        category: 'visualizers',
+                        src: 'apps/visualizers/growflow/index.html'
+                    },
                     'ap-arcade': {
                         id: 'ap-arcade',
-                        name: 'Retro Arcade',
+                        name: 'Arcade',
                         icon: '🕹️',
                         color: '#ff6b35',
                         width: 800,
@@ -573,27 +589,6 @@
                         desktop: true,
                         category: 'games',
                         src: 'apps/games/arcade.html'
-                    },
-
-
-
-                    // ap-admin-panel removed — file deleted
-
-
-
-
-
-                    // === GAMES ===
-                    'game-smg6': {
-                        id: 'game-smg6',
-                        name: 'Super Mario GTA6',
-                        icon: '🍄',
-                        color: '#e63946',
-                        width: 960,
-                        height: 540,
-                        desktop: true,
-                        category: 'games',
-                        src: 'apps/games/super-mario-gta6/website/index.html'
                     },
                     'game-neon-drift': {
                         id: 'game-neon-drift',
@@ -1565,16 +1560,6 @@
                 const div = document.createElement('div');
                 div.textContent = text;
                 return div.innerHTML;
-            },
-
-            navigateBrowser() {
-                const url = document.getElementById('browser-url');
-                const frame = document.getElementById('browser-frame');
-                if (url && frame) {
-                    let href = url.value.trim();
-                    if (!href.startsWith('http')) href = 'https://' + href;
-                    frame.src = href;
-                }
             },
 
             playlists: {
@@ -2660,16 +2645,16 @@
                     this.aiOrchestrator = new window.AIOrchestrator();
                     this.aiOrchestrator.loadState(localStorage);
                     this.aiOrchestrator.on('agent-registered', (e) => {
-                        this._emitNotification('🤖 AI Agent', `Agent "${e.detail.agentId}" registered`);
+                        this.showNotification('🤖 AI Agent', `Agent "${e.detail.agentId}" registered`);
                     });
                     this.aiOrchestrator.on('message-added', (e) => {
                         if (e.detail.message.role === 'assistant') {
-                            this._emitNotification('💬 AI Response', e.detail.message.content.substring(0, 60) + '...');
+                            this.showNotification('💬 AI Response', e.detail.message.content.substring(0, 60) + '...');
                         }
                     });
                     // Register default agents
                     this.aiOrchestrator.registerAgent('main', { name: 'HAZOOM Main', type: 'chat' });
-                    this.aiOrchestrator.registerAgent('deep-think', { name: 'Deep Think', type: 'reasoning' });
+                    this.aiOrchestrator.registerAgent('reasoner', { name: 'Reasoner', type: 'reasoning' });
                     this.aiOrchestrator.registerAgent('code', { name: 'Code Assistant', type: 'coding' });
                 }
 

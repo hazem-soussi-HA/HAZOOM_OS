@@ -242,9 +242,9 @@ function renderStorage() {
 function renderKernel() {
     document.getElementById('panel-area').innerHTML = `
     <div class="metrics-row" style="padding:0;border:none">
-        <div class="metric"><div class="card-label">Modules</div><div class="card-value" style="color:#ffd700">4/4</div></div>
-        <div class="metric"><div class="card-label">Uptime</div><div class="card-value" style="color:#10b981">${Math.floor(uptime/3600)}h ${Math.floor((uptime%3600)/60)}m</div></div>
-        <div class="metric"><div class="card-label">Resonance</div><div class="card-value" style="color:#a855f7">852 Hz</div></div>
+        <div class="metric"><div class="metric-label">Modules</div><div class="metric-value" style="color:#ffd700">4/4</div></div>
+        <div class="metric"><div class="metric-label">Uptime</div><div class="metric-value" style="color:#10b981">${Math.floor(uptime/3600)}h ${Math.floor((uptime%3600)/60)}m</div></div>
+        <div class="metric"><div class="metric-label">Resonance</div><div class="metric-value" style="color:#a855f7">852 Hz</div></div>
     </div>
     <table><tr><th>Module</th><th>Type</th><th>Version</th><th>Status</th><th>Description</th></tr>
     <tr><td><span style="color:#ffd700">⬡</span> aether_engine</td><td>Protocol</td><td>3.0.0</td><td style="color:#10b981">loaded</td><td>Quantum communication engine</td></tr>
@@ -255,7 +255,7 @@ function renderKernel() {
     <div style="margin-top:12px;font-size:0.65rem;color:rgba(255,255,255,0.4);line-height:1.8">
     <strong style="color:#ffd700">Kernel Command:</strong> run /sbin/hazoom-os.sh [start|stop|restart]<br>
     <strong style="color:#ffd700">Boot Args:</strong> quiet splash hazoom.consciousness=enabled<br>
-    <strong style="color:#ffd700">Secure Boot:</span> <span style="color:#10b981">Enabled (HAZOOM Trust Authority)</span><br>
+    <strong style="color:#ffd700">Secure Boot:</strong> <span style="color:#10b981">Enabled (HAZOOM Trust Authority)</span><br>
     </div>`;
 }
 

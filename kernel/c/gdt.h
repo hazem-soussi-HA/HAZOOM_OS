@@ -28,7 +28,10 @@ typedef struct {
     uint64_t base;           /* Base address of GDT */
 } __attribute__((packed)) gdt_ptr_t;
 
-/* GDT access byte flags */
+/* GDT access byte flags
+ * Type field layout (bits 3..0):
+ *   data: E(2) W(1) A(0)   code: C(2) R(1) A(0)
+ */
 #define GDT_ACCESS_PRESENT      (1 << 7)
 #define GDT_ACCESS_RING0         (0 << 5)
 #define GDT_ACCESS_RING1         (1 << 5)
@@ -36,16 +39,16 @@ typedef struct {
 #define GDT_ACCESS_RING3         (3 << 5)
 #define GDT_ACCESS_SEGMENT      (1 << 4)
 #define GDT_ACCESS_EXECUTABLE   (1 << 3)
-#define GDT_ACCESS_CONFORMING   (1 << 2)
-#define GDT_ACCESS_READABLE     (1 << 2)
-#define GDT_ACCESS_WRITABLE     (1 << 2)
-#define GDT_ACCESS_DIRECTION    (1 << 2)
+#define GDT_ACCESS_CONFORMING   (1 << 2)  /* code: conforming */
+#define GDT_ACCESS_DIRECTION    (1 << 2)  /* data: expand-down */
+#define GDT_ACCESS_READABLE     (1 << 1)  /* code: readable */
+#define GDT_ACCESS_WRITABLE     (1 << 1)  /* data: writable (required for SS) */
 #define GDT_ACCESS_ACCESSED     (1 << 0)
 
 /* GDT flags (upper nibble of byte 6) */
 #define GDT_FLAG_GRANULARITY    (1 << 3)  /* 4K granularity */
-#define GDT_FLAG_32BIT          (1 << 2)  /* 32-bit segment */
-#define GDT_FLAG_64BIT          (1 << 1)  /* 64-bit segment */
+#define GDT_FLAG_32BIT          (1 << 2)  /* D/B bit (data segs in long mode) */
+#define GDT_FLAG_64BIT          (1 << 1)  /* L bit (64-bit code segs only) */
 
 /* Function prototypes */
 void gdt_init(void);
