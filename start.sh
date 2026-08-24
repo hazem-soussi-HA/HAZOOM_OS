@@ -6,6 +6,9 @@ cd "$HAZOOM_DIR"
 
 MODE="${1:-simulation}"
 
+# The law before the machine — contract guard at boot (CONTRACT_ENFORCE=1 to hard-fail)
+bash scripts/contract-check.sh || { echo "boot refused: contract enforcement failed"; exit 1; }
+
 print_banner() {
     echo "╔══════════════════════════════════════════════════════════════╗"
     echo "║              HAZOOM OS v6.0                                ║"
