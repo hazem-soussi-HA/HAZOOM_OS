@@ -79,6 +79,15 @@
     ];
     gameApps.forEach(function(a) { Registry.registerApp(a.id, { name: a.name, icon: a.icon }); });
 
+    // === REGISTER VISUALIZERS ===
+    var visualizerApps = [
+        { id: 'human-energy-construct', name: 'Human Energy Construct', icon: '⚡', url: '/apps/visualizers/human-energy/index.html' },
+    ];
+    visualizerApps.forEach(function(a) {
+        Registry.registerApp(a.id, { name: a.name, icon: a.icon });
+        if (a.url) { try { Registry.meta[a.id] = Registry.meta[a.id] || {}; Registry.meta[a.id].url = a.url; } catch (e) {} }
+    });
+
     // === REGISTER INTEGRATED FULLSTACK SERVICES (launched by HAZOOM OS) ===
     var osServices = [
         { id: 'svc-planet-earth', name: 'Planet Earth', icon: '🌍', url: 'http://127.0.0.1:8080/' },

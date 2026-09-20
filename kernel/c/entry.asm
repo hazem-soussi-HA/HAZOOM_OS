@@ -42,7 +42,7 @@ align 4
 mb1_header_start:
     dd 0x1BADB002              ; magic
     dd 0x00010000              ; flags: bit16 set => use address fields
-    dd 0x1BADB002 - 0x00010000  ; checksum = -(magic + flags)
+    dd -(0x1BADB002 + 0x00010000)
     dd mb1_header_start        ; header_addr
     dd 0x00100000              ; load_addr
     dd 0x00000000              ; load_end_addr (0 = entire image)

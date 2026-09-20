@@ -335,16 +335,68 @@
         .tray-item:hover { background: rgba(255,255,255,0.06); }
 
         /* ═══════════════════════════════════════════
+           QUANTUM WIDGET — Topbar Coherence Indicator
+           ═══════════════════════════════════════════ */
+        .quantum-widget {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: linear-gradient(135deg, rgba(139,92,246,0.15), rgba(0,232,255,0.1));
+            border: 1px solid rgba(139,92,246,0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            min-width: 80px;
+        }
+        .quantum-widget:hover {
+            background: linear-gradient(135deg, rgba(139,92,246,0.25), rgba(0,232,255,0.2));
+            border-color: var(--accent);
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(139,92,246,0.3), 0 0 40px rgba(0,232,255,0.15);
+        }
+        .quantum-widget:active { transform: scale(0.98); }
+        .quantum-icon {
+            font-size: 14px;
+            animation: quantumSpin 4s linear infinite;
+        }
+        @keyframes quantumSpin {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        .quantum-coherence {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--green);
+            text-shadow: 0 0 8px var(--green);
+        }
+        .quantum-coherence.warning { color: var(--gold); text-shadow: 0 0 8px var(--gold); }
+        .quantum-coherence.critical { color: var(--red); text-shadow: 0 0 8px var(--red); animation: criticalPulse 1s ease-in-out infinite; }
+        @keyframes criticalPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .quantum-pulse {
+            position: absolute;
+            inset: -2px;
+            border-radius: 10px;
+            border: 1px solid var(--accent);
+            opacity: 0;
+            animation: quantumPulseRing 2s ease-out infinite;
+            pointer-events: none;
+        }
+        @keyframes quantumPulseRing {
+            0% { transform: scale(1); opacity: 0.6; }
+            100% { transform: scale(1.3); opacity: 0; }
+        }
+
+        /* ═══════════════════════════════════════════
            DESKTOP — Living Background
            ═══════════════════════════════════════════ */
         #desktop {
             position: absolute;
             inset: 0;
-            background:
-                radial-gradient(ellipse 800px 600px at 15% 50%, rgba(0, 232, 255, 0.04) 0%, transparent 100%),
-                radial-gradient(ellipse 600px 800px at 85% 20%, rgba(139, 92, 246, 0.035) 0%, transparent 100%),
-                radial-gradient(ellipse 700px 500px at 50% 90%, rgba(255, 201, 64, 0.025) 0%, transparent 100%),
-                var(--bg-primary);
+            background: var(--bg-primary);
             overflow: hidden;
         }
 
@@ -353,43 +405,7 @@
             inset: 0;
             pointer-events: none;
             z-index: 0;
-            opacity: 0.6;
-        }
-
-        /* Ambient light orbs */
-        .ambient-orb {
-            position: absolute;
-            border-radius: 50%;
-            pointer-events: none;
-            filter: blur(80px);
-            opacity: 0.04;
-            animation: orbFloat 20s ease-in-out infinite alternate;
-        }
-        .ambient-orb:nth-child(1) {
-            width: 400px; height: 400px;
-            background: var(--accent);
-            top: 10%; left: 10%;
-            animation-delay: 0s;
-        }
-        .ambient-orb:nth-child(2) {
-            width: 350px; height: 350px;
-            background: var(--purple);
-            top: 60%; right: 10%;
-            animation-delay: -7s;
-            animation-duration: 25s;
-        }
-        .ambient-orb:nth-child(3) {
-            width: 300px; height: 300px;
-            background: var(--gold);
-            bottom: 15%; left: 40%;
-            animation-delay: -14s;
-            animation-duration: 30s;
-        }
-        @keyframes orbFloat {
-            0% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(40px, -30px) scale(1.1); }
-            66% { transform: translate(-30px, 20px) scale(0.9); }
-            100% { transform: translate(20px, -40px) scale(1.05); }
+            opacity: 1;
         }
 
         /* ═══════════════════════════════════════════
@@ -1235,6 +1251,11 @@
                 <span class="tray-item" id="tray-mem">💾 0MB</span>
                 <span class="tray-item" id="tray-windows">📱 0</span>
             </div>
+            <div class="tray-item quantum-widget" id="quantum-widget" onclick="HAZOOM.openApp('quantum-portal')" title="Quantum State — Click for Portal">
+                <span class="quantum-icon">⚛️</span>
+                <span class="quantum-coherence" id="quantum-coherence">100%</span>
+                <span class="quantum-pulse"></span>
+            </div>
             <span class="topbar-clock" id="topbar-clock"></span>
             <button class="topbar-action-btn" onclick="HAZOOM.restart()" title="Restart OS" style="background:none;border:1px solid rgba(255,255,255,0.06);color:var(--text-dim);padding:3px 8px;border-radius:5px;font-size:0.7rem;cursor:pointer;transition:all 0.2s;">⏻</button>
         </div>
@@ -1243,9 +1264,6 @@
     <!-- Desktop -->
     <div id="desktop">
         <canvas id="desktop-canvas"></canvas>
-        <div class="ambient-orb"></div>
-        <div class="ambient-orb"></div>
-        <div class="ambient-orb"></div>
         <div id="desktop-icons"></div>
         <div id="windows-container"></div>
         <div id="matrix-selector"></div>
@@ -1281,6 +1299,11 @@
         </div>
     </div>
 
+    <script src="core/universe_background.js"></script>
+    <script src="core/service_constellation.js"></script>
+    <script src="core/quantum_state.js"></script>
+    <script src="core/quantum_crypto.js"></script>
+    <script src="core/quantum_events.js"></script>
     <script src="core/app_registry.js"></script>
     <script src="core/privacy_browser.js"></script>
     <script src="core/app_launcher.js"></script>
@@ -1322,6 +1345,67 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             HAZOOM.boot();
+            
+            // Initialize Quantum Systems
+            setTimeout(async () => {
+                try {
+                    // Initialize quantum state manager
+                    if (window.HAZOOM_QUANTUM_STATE) {
+                        await window.HAZOOM_QUANTUM_STATE.init();
+                        window.HAZOOM.QuantumState = window.HAZOOM_QUANTUM_STATE;
+                    }
+                    
+                    // Initialize quantum crypto
+                    if (window.HAZOOM_QUANTUM_CRYPTO) {
+                        await window.HAZOOM_QUANTUM_CRYPTO.init();
+                        window.HAZOOM.QuantumCrypto = window.HAZOOM_QUANTUM_CRYPTO;
+                    }
+                    
+                    // Initialize quantum events
+                    if (window.HAZOOM_QUANTUM_EVENTS) {
+                        window.HAZOOM_QUANTUM_EVENTS.enableWindowSync();
+                        window.HAZOOM.QuantumEvents = window.HAZOOM_QUANTUM_EVENTS;
+                    }
+                    
+                    // Update quantum widget from state
+                    const updateQuantumWidget = () => {
+                        const widget = document.getElementById('quantum-widget');
+                        const coherenceEl = document.getElementById('quantum-coherence');
+                        if (!widget || !coherenceEl || !window.HAZOOM_QUANTUM_STATE) return;
+                        
+                        const coherence = window.HAZOOM_QUANTUM_STATE.getCoherence();
+                        coherenceEl.textContent = Math.round(coherence) + '%';
+                        
+                        // Update color based on coherence
+                        coherenceEl.classList.remove('warning', 'critical');
+                        if (coherence < 30) coherenceEl.classList.add('critical');
+                        else if (coherence < 60) coherenceEl.classList.add('warning');
+                        
+                        // Sync universe background mood
+                        if (window.HAZOOM_UNIVERSE && window.HAZOOM_UNIVERSE.setMood) {
+                            const mood = coherence > 80 ? 'focused' : 
+                                       coherence > 60 ? 'calm' : 
+                                       coherence > 30 ? 'energetic' : 'night';
+                            window.HAZOOM_UNIVERSE.setMood(mood);
+                        }
+                    };
+                    
+                    // Initial update
+                    updateQuantumWidget();
+                    
+                    // Subscribe to coherence changes
+                    if (window.HAZOOM_QUANTUM_EVENTS) {
+                        window.HAZOOM_QUANTUM_EVENTS.on('coherence_change', updateQuantumWidget);
+                    }
+                    
+                    // Also poll as fallback
+                    setInterval(updateQuantumWidget, 1000);
+                    
+                    console.log('[Quantum] Systems initialized');
+                } catch (e) {
+                    console.error('[Quantum] Init failed:', e);
+                }
+            }, 1000);
         });
 
         document.addEventListener('click', (e) => {

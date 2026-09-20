@@ -1119,6 +1119,42 @@ function getAppConfig(appId) {
             permissions: ['network'],
             category: 'quantum'
         },
+        'quantum_lab': {
+            title: 'Quantum Lab',
+            content: loadAppContent('quantum_lab'),
+            defaultWidth: 1200,
+            defaultHeight: 900,
+            requiresSandbox: true,
+            permissions: ['network', 'webgpu'],
+            category: 'quantum'
+        },
+        'quantum_messenger': {
+            title: 'Quantum Messenger',
+            content: loadAppContent('quantum_messenger'),
+            defaultWidth: 1000,
+            defaultHeight: 750,
+            requiresSandbox: true,
+            permissions: ['network', 'crypto'],
+            category: 'quantum'
+        },
+        'quantum_heat': {
+            title: 'Quantum Heat 3D',
+            content: loadAppContent('quantum_heat'),
+            defaultWidth: 1100,
+            defaultHeight: 800,
+            requiresSandbox: true,
+            permissions: ['network', 'webgpu'],
+            category: 'quantum'
+        },
+        'quantum_portal': {
+            title: 'Quantum Portal',
+            content: loadAppContent('quantum_portal'),
+            defaultWidth: 1400,
+            defaultHeight: 1000,
+            requiresSandbox: true,
+            permissions: ['network', 'crypto', 'webgpu'],
+            category: 'quantum'
+        },
         'hazoom_integration': {
             title: 'Hazoom Integration',
             content: loadAppContent('hazoom_integration'),

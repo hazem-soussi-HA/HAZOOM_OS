@@ -408,18 +408,20 @@ app.use(apiRouter.getMiddleware());
 // must never hardcode a backend port (v3 used localhost:9004 and broke
 // on CORS + port drift). Point CHAT_BACKEND at whatever serves /chat.
 
-const CHAT_BACKEND = process.env.CHAT_BACKEND || 'http://127.0.0.1:9004';
+const CHAT_BACKEND = process.env.CHAT_BACKEND || 'http://127.0.0.1:8791';
+const CHAT_PATH = process.env.CHAT_BACKEND ? '/chat' : '/api/chat';
+const CHAT_HEALTH_PATH = process.env.CHAT_BACKEND ? '/health' : '/api/health';
 
 app.post('/api/chat', async (req, res) => {
     try {
-        const r = await fetch(`${CHAT_BACKEND}/chat`, {
+        const r = await fetch(`${CHAT_BACKEND}${CHAT_PATH}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(req.body),
-            signal: AbortSignal.timeout(30000)
+            signal: AbortSignal.timeout(130000)
         });
         const data = await r.json().catch(() => ({}));
-        res.status(r.status).json(data);
+        res.status(r.status).json({ ...data, reply: data.reply || data.response || data.error || 'No response from model' });
     } catch (e) {
         logger.warn('AI chat backend unreachable', { error: e.message });
         res.status(503).json({ error: 'AI backend offline' });
@@ -428,8 +430,9 @@ app.post('/api/chat', async (req, res) => {
 
 app.get('/api/chat/health', async (req, res) => {
     try {
-        const r = await fetch(`${CHAT_BACKEND}/health`, { signal: AbortSignal.timeout(3000) });
-        res.status(r.status).json(await r.json().catch(() => ({})));
+        const r = await fetch(`${CHAT_BACKEND}${CHAT_HEALTH_PATH}`, { signal: AbortSignal.timeout(5000) });
+        const data = await r.json().catch(() => ({}));
+        res.status(r.status).json({ ...data, ollama: data.ollama || (data.ollama_alive ? 'online' : 'offline') });
     } catch (e) {
         res.json({ status: 'ok', ollama: 'offline', model: null });
     }

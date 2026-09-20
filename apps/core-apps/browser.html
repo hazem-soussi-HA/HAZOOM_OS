@@ -6,31 +6,180 @@
     <title>Browser - HAZOOM OS</title>
     <style>
         body { font-family: 'Inter', sans-serif; background: #0f172a; color: white; margin: 0; display: flex; flex-direction: column; height: 100vh; }
-        .toolbar { display: flex; gap: 10px; padding: 10px; background: #1e293b; border-bottom: 1px solid #334155; }
-        input { flex: 1; padding: 8px 12px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 5px; outline: none; }
+        .toolbar { display: flex; gap: 10px; padding: 10px; background: #1e293b; border-bottom: 1px solid #334155; align-items: center; flex-wrap: wrap; }
+        input { flex: 1 1 200px; min-width: 150px; padding: 8px 12px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 5px; outline: none; }
         .btn { padding: 8px 15px; background: #3b82f6; border: none; color: white; border-radius: 5px; cursor: pointer; }
+        .btn:disabled { opacity: 0.45; cursor: default; }
+        .note { flex: 1 1 100%; font-size: 12px; color: #94a3b8; }
+        .note a { color: #60a5fa; }
         .content { flex: 1; position: relative; }
         iframe { width: 100%; height: 100%; border: none; background: white; }
+        .home-panel { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background: #0f172a; padding: 20px; text-align: center; }
+        .tiles { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 10px; }
+        .tile { padding: 8px 14px; background: #1e293b; border: 1px solid #334155; border-radius: 6px; color: #93c5fd; text-decoration: none; }
+        @media (max-width: 600px) {
+            .toolbar { gap: 6px; padding: 6px; }
+            .btn { padding: 8px 10px; }
+        }
     </style>
 </head>
 <body>
     <div class="toolbar">
-        <input type="text" id="urlInput" placeholder="Enter URL (e.g., https://www.bing.com)" value="https://www.wikipedia.org">
-        <button class="btn" onclick="loadUrl()">Go</button>
+        <button class="btn" id="backBtn" aria-label="Go back to previous page" title="Back">&#9664;</button>
+        <button class="btn" id="forwardBtn" aria-label="Go forward to next page" title="Forward">&#9654;</button>
+        <button class="btn" id="reloadBtn" aria-label="Reload current page" title="Reload">&#10227;</button>
+        <button class="btn" id="homeBtn" aria-label="Go to home page" title="Home">&#8962;</button>
+        <input type="text" id="urlInput" aria-label="Website address" placeholder="Enter URL (https://example.com)" value="">
+        <button class="btn" id="goBtn" aria-label="Navigate to entered address" title="Go">Go</button>
+        <p class="note" aria-live="polite">Note: many websites (e.g. Google, GitHub) block embedding in iframes, so they may appear blank or error here. <a id="openTabLink" href="#" target="_blank" rel="noopener noreferrer">Open current page in a new tab</a>.</p>
     </div>
     <div class="content">
-        <iframe id="browserFrame" src="https://www.wikipedia.org" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+        <iframe id="browserFrame" title="Browser content frame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+        <div id="homePanel" class="home-panel" aria-label="Home panel">
+            <h1>HAZOOM Browser</h1>
+            <p>Enter a web address above and press Go or Enter.</p>
+            <p>Many sites block being embedded in frames and may appear blank; use the new-tab link in the toolbar note if so.</p>
+            <div class="tiles" id="homeTiles"></div>
+        </div>
     </div>
 
     <script>
-        function loadUrl() {
-            let url = document.getElementById('urlInput').value;
-            if (!url.startsWith('http')) url = 'https://' + url;
-            document.getElementById('browserFrame').src = url;
+        const HOME_URL = 'hazoom://home';
+        const urlInput = document.getElementById('urlInput');
+        const frame = document.getElementById('browserFrame');
+        const homePanel = document.getElementById('homePanel');
+        const backBtn = document.getElementById('backBtn');
+        const forwardBtn = document.getElementById('forwardBtn');
+        const goBtn = document.getElementById('goBtn');
+        const openTabLink = document.getElementById('openTabLink');
+        const tilesEl = document.getElementById('homeTiles');
+        let history = [];
+        let index = -1;
+
+        function normalizeUrl(raw) {
+            let value = (raw || '').trim();
+            if (!value) return null;
+            if (value === HOME_URL) return HOME_URL;
+            if (!/^[a-z][a-z0-9+.-]*:/i.test(value)) value = 'https://' + value;
+            try {
+                const parsed = new URL(value);
+                if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
+                if (!parsed.hostname) return null;
+                return parsed.href;
+            } catch (err) {
+                return null;
+            }
         }
-        document.getElementById('urlInput').onkeypress = (e) => {
-            if (e.key === 'Enter') loadUrl();
-        };
+
+        function homeTiles() {
+            return [
+                { label: 'Wikipedia', url: 'https://en.wikipedia.org' },
+                { label: 'MDN', url: 'https://developer.mozilla.org' },
+                { label: 'OpenStreetMap', url: 'https://www.openstreetmap.org' },
+                { label: 'Bing', url: 'https://www.bing.com' }
+            ];
+        }
+
+        function buildHomePanel() {
+            tilesEl.innerHTML = '';
+            homeTiles().forEach(function (tile) {
+                const link = document.createElement('a');
+                link.className = 'tile';
+                link.href = tile.url;
+                link.textContent = tile.label;
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    navigateTo(tile.url);
+                });
+                tilesEl.appendChild(link);
+            });
+        }
+
+        function showHome(show) {
+            if (show) {
+                frame.style.display = 'none';
+                homePanel.style.display = 'flex';
+            } else {
+                frame.style.display = 'block';
+                homePanel.style.display = 'none';
+            }
+        }
+
+        function syncInput(entry) {
+            if (!entry) return;
+            urlInput.value = entry === HOME_URL ? '' : entry;
+            openTabLink.href = entry === HOME_URL ? '#' : entry;
+        }
+
+        function updateButtons() {
+            backBtn.disabled = index <= 0;
+            forwardBtn.disabled = index === -1 || index >= history.length - 1;
+        }
+
+        function pushHistory(url) {
+            if (history[index] === url) return;
+            history = history.slice(0, index + 1);
+            history.push(url);
+            index = history.length - 1;
+        }
+
+        function navigateTo(url, opts) {
+            const options = opts || {};
+            if (!options.noRecord) pushHistory(url);
+            index = options.index !== undefined ? options.index : index;
+            syncInput(url);
+            updateButtons();
+            if (url === HOME_URL) {
+                showHome(true);
+            } else {
+                showHome(false);
+                frame.src = url;
+            }
+        }
+
+        function loadUrl() {
+            const url = normalizeUrl(urlInput.value);
+            if (!url) return;
+            if (url === HOME_URL) { navigateTo(HOME_URL); return; }
+            navigateTo(url);
+        }
+
+        function goBack() {
+            if (index <= 0) return;
+            navigateTo(history[index - 1], { noRecord: true, index: index - 1 });
+        }
+
+        function goForward() {
+            if (index >= history.length - 1) return;
+            navigateTo(history[index + 1], { noRecord: true, index: index + 1 });
+        }
+
+        function reload() {
+            if (index === -1) return;
+            const url = history[index];
+            if (url === HOME_URL) { navigateTo(HOME_URL, { noRecord: true, index: index }); return; }
+            showHome(false);
+            frame.src = url;
+        }
+
+        function goHome() {
+            navigateTo(HOME_URL);
+        }
+
+        backBtn.addEventListener('click', goBack);
+        forwardBtn.addEventListener('click', goForward);
+        goBtn.addEventListener('click', loadUrl);
+        reloadBtn.addEventListener('click', reload);
+        homeBtn.addEventListener('click', goHome);
+        urlInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                loadUrl();
+            }
+        });
+        buildHomePanel();
+        showHome(true);
+        updateButtons();
     </script>
 </body>
 </html>

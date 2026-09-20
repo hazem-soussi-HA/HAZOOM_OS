@@ -1,6 +1,7 @@
 'use strict';
 
 const express = require('express');
+const crypto = require('crypto');
 const { AuthManager } = require('./auth');
 
 class APIRouter {
@@ -468,6 +469,49 @@ class APIRouter {
             const list = k.serviceManager.list();
             const health = await k.serviceManager.health();
             res.json({ stats: k.serviceManager.getStats(), list, health });
+        });
+
+        r.get('/api/services/constellation', async (req, res, next) => {
+            try {
+            if (!k.serviceManager) return this._error(res, 404, 'ServiceManager not loaded', 'NOT_LOADED');
+            const health = await k.serviceManager.health();
+            const stars = health.map((s, i) => {
+                const h = crypto.createHash('sha256').update(`hazoom-constellation:${s.name}`).digest();
+                return {
+                    name: s.name,
+                    port: s.port,
+                    url: s.url,
+                    enabled: s.enabled,
+                    up: s.up,
+                    status: !s.enabled ? 'disabled' : (s.up ? 'online' : 'offline'),
+                    // Stable pseudo-random position derived from service name
+                    x: h[0] / 255,            // 0..1 horizontal
+                    y: h[1] / 255,            // 0..1 vertical
+                    magnitude: 1.6 + (h[2] / 255) * 1.4, // brightness 1.6..3.0
+                    hue: h[3] / 255,          // 0..1 color phase
+                    order: i
+                };
+            });
+            // Links: connect each star to its nearest neighbor (constellation lines)
+            const links = stars.map((a, i) => {
+                let best = -1, bestD = Infinity;
+                stars.forEach((b, j) => {
+                    if (i === j) return;
+                    const dx = a.x - b.x, dy = a.y - b.y;
+                    const d = dx * dx + dy * dy;
+                    if (d < bestD) { bestD = d; best = j; }
+                });
+                return { from: i, to: best };
+            });
+            res.json({
+                timestamp: Date.now(),
+                stats: { total: stars.length, online: stars.filter(s => s.up).length },
+                stars,
+                links: links.filter(link => link.to >= 0 && link.from < link.to)
+            });
+            } catch (error) {
+                next(error);
+            }
         });
 
         r.post('/api/services/start', protect, async (req, res) => {

@@ -4,6 +4,7 @@
             windowIdCounter: 0,
             focusedWindow: null,
             apps: {},
+            essentialApps: ['browser', 'files', 'terminal', 'settings', 'system-monitor', 'user-guide'],
 
             state: {
                 uptime: 0,
@@ -132,21 +133,13 @@
                     browser: {
                         id: 'browser',
                         name: 'Browser',
-                        icon: '�',
+                        icon: '🌐',
                         color: '#06b6d4',
                         width: 800,
                         height: 550,
                         desktop: true,
                         category: 'core',
-                        content: () => `
-                            <div class="app-browser">
-                                <div class="browser-bar">
-                                    <input type="text" id="browser-url" value="https://github.com/hazem-soussi-HA/hazoom-os-unified" placeholder="Enter URL...">
-                                    <button onclick="HAZOOM.navigateBrowser()">Go</button>
-                                </div>
-                                <iframe class="browser-frame" id="browser-frame" src="https://github.com/hazem-soussi-HA/hazoom-os-unified" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
-                            </div>
-                        `
+                        src: 'apps/core-apps/browser.html'
                     },
                     deepBrowser: {
                         id: 'deepBrowser',
@@ -215,7 +208,7 @@
                         icon: '⚙️',
                         color: '#6b7280',
                         width: 420,
-                        height: 380,
+                        height: 480,
                         desktop: true,
                         category: 'core',
                         content: () => `
@@ -237,8 +230,52 @@
                                     <span class="setting-label">Repository</span>
                                     <span class="setting-value" style="color:var(--accent);cursor:pointer;" onclick="window.open('https://github.com/hazem-soussi-HA/HAZOOM_OS','_blank')">GitHub ↗</span>
                                 </div>
+                                
+                                <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.04);">
+                                    <div style="font-size:1rem;font-weight:700;margin-bottom:12px;">🌌 Universe Background</div>
+                                    <div class="setting-row">
+                                        <span class="setting-label">Intensity</span>
+                                        <input type="range" id="universe-intensity" min="0" max="100" value="70" style="flex:1;accent-color:var(--accent);" oninput="HAZOOM_UNIVERSE.setIntensity(this.value/100); document.getElementById('intensity-value').textContent=this.value+'%'">
+                                        <span id="intensity-value" class="setting-value" style="min-width:40px;text-align:right;">70%</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <span class="setting-label">Mood Sync</span>
+                                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                                            <input type="checkbox" id="universe-mood-sync" checked style="accent-color:var(--accent);">
+                                            <span class="setting-value" style="color:var(--text-dim);font-size:0.75rem;">Sync with OS mood</span>
+                                        </label>
+                                    </div>
+                                    <div class="setting-row" style="justify-content:flex-start;gap:8px;">
+                                        <span class="setting-label" style="width:auto;">Presets:</span>
+                                        <select id="universe-preset" style="flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:6px;padding:6px 10px;color:var(--text);font-size:0.75rem;" onchange="HAZOOM_UNIVERSE.setPreset(this.value)">
+                                            <option value="default">Default</option>
+                                            <option value="calm">🌊 Calm</option>
+                                            <option value="creative">🎨 Creative</option>
+                                            <option value="energetic">⚡ Energetic</option>
+                                            <option value="focused">🎯 Focused</option>
+                                            <option value="night">🌙 Night</option>
+                                            <option value="golden">✨ Golden</option>
+                                            <option value="deep-space">🌌 Deep Space</option>
+                                            <option value="nebula-rich">☁️ Nebula Rich</option>
+                                            <option value="minimal">⚫ Minimal</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
-                        `
+                        `,
+                        onMount: () => {
+                            // Sync intensity slider with universe
+                            if (window.HAZOOM_UNIVERSE) {
+                                const slider = document.getElementById('universe-intensity');
+                                if (slider) slider.value = 70;
+                            }
+                            // Mood sync checkbox
+                            const moodSync = document.getElementById('universe-mood-sync');
+                            if (moodSync && window.HAZOOM_UNIVERSE) {
+                                moodSync.checked = window.HAZOOM_UNIVERSE.moodSyncEnabled;
+                                moodSync.onchange = (e) => window.HAZOOM_UNIVERSE.setMoodSync(e.target.checked);
+                            }
+                        }
                     },
                     'hazoom-ai': {
                         id: 'hazoom-ai',
@@ -429,6 +466,50 @@
                         height: 520,
                         category: 'tools',
                         src: 'apps/tools/quantum_travel.html'
+                    },
+                    'quantum-lab': {
+                        id: 'quantum-lab',
+                        name: 'Quantum Lab',
+                        icon: '⚛️',
+                        color: '#a855f7',
+                        width: 900,
+                        height: 650,
+                        desktop: true,
+                        category: 'tools',
+                        src: 'apps/tools/quantum_lab.html'
+                    },
+                    'quantum-messenger': {
+                        id: 'quantum-messenger',
+                        name: 'Quantum Messenger',
+                        icon: '🔐',
+                        color: '#06b6d4',
+                        width: 700,
+                        height: 550,
+                        desktop: true,
+                        category: 'tools',
+                        src: 'apps/tools/quantum_messenger.html'
+                    },
+                    'quantum-heat': {
+                        id: 'quantum-heat',
+                        name: 'Quantum Heat 3D',
+                        icon: '🌡️',
+                        color: '#f97316',
+                        width: 800,
+                        height: 600,
+                        desktop: true,
+                        category: 'tools',
+                        src: 'apps/tools/quantum_heat.html'
+                    },
+                    'quantum-portal': {
+                        id: 'quantum-portal',
+                        name: 'Quantum Portal',
+                        icon: '🌟',
+                        color: '#8b5cf6',
+                        width: 1000,
+                        height: 700,
+                        desktop: true,
+                        category: 'tools',
+                        src: 'apps/tools/quantum_portal.html'
                     },
                     'prompt-engineering': {
                         id: 'prompt-engineering',
@@ -642,6 +723,7 @@
                 this.loadAppRegistry();
                 this.initOS();
                 this._initGitHubObservation();
+                if (window.HAZOOM_CONSTELLATION) window.HAZOOM_CONSTELLATION.init();
 
                 if (this.consciousness) {
                     this.consciousness.emit('system.boot', { version: this.version });
@@ -670,7 +752,7 @@
             buildDock() {
                 const dock = document.getElementById('dock');
                 dock.innerHTML = '';
-                const appOrder = ['dashboard', 'terminal', 'ai', 'consciousness-core', 'user-guide', 'files', 'browser', 'deepBrowser', 'music', 'focus-timer', 'hazoom-ai', 'quantum-monitor', 'settings', 'system-monitor', 'security-center', 'hazoom-net'];
+                const appOrder = ['dashboard', ...this.essentialApps.filter(id => id !== 'user-guide'), 'ai', 'deepBrowser', 'music', 'quantum-monitor', 'security-center'];
 
                 appOrder.forEach(id => {
                     const app = this.apps[id];
@@ -1704,6 +1786,7 @@
                 const canvas = document.getElementById('desktop-canvas');
                 if (!canvas) return;
                 const ctx = canvas.getContext('2d');
+                if (!ctx) return;
                 canvas.width = window.innerWidth;
                 canvas.height = window.innerHeight;
 
@@ -2227,8 +2310,8 @@
                     if (e.key === 'Escape') {
                         if (this.focusedWindow) this.closeWindow(this.focusedWindow);
                     }
-                    // Super/Meta key — Toggle start menu
-                    if (e.key === 'Meta' || e.key === 'OS') {
+                    // Super/Meta key — Toggle start menu (ignore key combos)
+                    if ((e.key === 'Meta' || e.key === 'OS') && !e.ctrlKey && !e.altKey && !e.shiftKey) {
                         e.preventDefault();
                         this.toggleStartMenu();
                     }
@@ -2238,7 +2321,7 @@
                         this.cycleWindows(e.shiftKey ? -1 : 1);
                     }
                     // Super+D — Show Desktop (minimize all)
-                    if ((e.key === 'Meta' || e.key === 'OS') && e.key === 'd') {
+                    if ((e.metaKey || (e.key === 'Meta')) && e.key.toLowerCase() === 'd') {
                         e.preventDefault();
                         this.toggleShowDesktop();
                     }
@@ -2984,6 +3067,11 @@
                 document.body.classList.remove('mood-calm','mood-focused','mood-creative','mood-energetic','mood-serious','mood-night','mood-golden');
                 document.body.classList.add('mood-' + mood);
                 try { localStorage.setItem('hazoom_mood', mood); } catch(e) {}
+                
+                // Update 3D universe background
+                if (window.HAZOOM_UNIVERSE && window.HAZOOM_UNIVERSE.setMood) {
+                    window.HAZOOM_UNIVERSE.setMood(mood);
+                }
                 
                 const names = { calm: '🌊 Calm', focused: '🎯 Focused', creative: '🎨 Creative', energetic: '⚡ Energetic', serious: '💼 Serious', night: '🌙 Night', golden: '✨ Golden' };
                 this.showNotification('🎨 Mood', names[mood] || mood);

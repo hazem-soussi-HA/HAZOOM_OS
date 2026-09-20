@@ -314,17 +314,8 @@ static void kernel_shell(void) {
 void kernel_main(uint64_t boot_magic, uint64_t boot_info) {
     (void)boot_magic; (void)boot_info;
 
-    /* Early boot marker: write directly to COM1 before any subsystem init,
-       so we can prove the kernel was entered even if later code faults. */
-    {
-        static const char *msg = "HAZOOM: kernel_main entered\r\n";
-        volatile uint16_t *port = (volatile uint16_t *)0x3F8;
-        (void)port;
-        for (const char *p = msg; *p; p++) {
-            while (!(*(volatile uint8_t *)0x3FD & 0x20)) __asm__ volatile("pause");
-            *(volatile uint8_t *)0x3F8 = (uint8_t)*p;
-        }
-    }
+    serial_init();
+    serial_print("HAZOOM: kernel_main entered\r\n");
 
     vga_set_color(VGA_CYAN, VGA_BLACK);
     vga_clear();

@@ -39,7 +39,7 @@ class IntelligenceCore {
         // token (measured >120s). We auto-select the fastest *responsive* local
         // model at boot, preferring smaller/faster ones. This keeps the OS genuinely
         // intelligent and offline, instead of claiming ornith "thinks" while it hangs.
-        this.preferredModel = opts.model || process.env.OLLAMA_MODEL || 'ornith:35b';
+        this.preferredModel = opts.model || process.env.OLLAMA_MODEL || 'hazoom-omega:v3';
         // Order = preference if multiple respond (fast-first). Tiny models win on CPU.
         this.candidateOrder = ['tinyllama:1.1b', 'gemma:2b', 'qwen2.5-coder:3b', 'phi3:mini', 'llama3.1:8b', this.preferredModel];
         this.model = null;               // resolved at boot via _selectModel()
@@ -81,6 +81,12 @@ class IntelligenceCore {
             if (r.ok) { const j = await r.json(); list = (j.models || []).map(m => m.name); }
         } catch (e) { this.offline = true; this.lastError = e.message; return null; }
         if (!list.length) { this.offline = true; this.lastError = 'no local models'; return null; }
+        if (list.includes(this.preferredModel)) {
+            this.model = this.preferredModel;
+            this.offline = false;
+            this.lastError = null;
+            return this.model;
+        }
 
         // Candidate order: fast-first preference, only those present locally.
         const order = this.candidateOrder.filter(m => list.includes(m) || list.some(x => x.startsWith(m.split(':')[0])));

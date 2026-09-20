@@ -7,10 +7,20 @@ SECTIONS
     /* Kernel starts at 1 MiB. */
     . = 0x100000;
 
-    /* Multiboot2 header MUST be within the first 32KB of the image so the
-       bootloader can find the magic. Place it first. */
-    .multiboot : {
+    /* Multiboot2 header MUST be at file offset 0 for QEMU's multiboot loader.
+       Use AT(0) to place it at file offset 0 while keeping VMA at 0x100000. */
+    .multiboot : AT(0) {
         *(.multiboot)
+    }
+
+    /* PVH ELF note for QEMU -kernel x86_64 */
+    .note.pvh : {
+        *(.note.pvh)
+    }
+
+    /* Discard build-id note - not needed for boot */
+    /DISCARD/ : {
+        *(.note.gnu.build-id)
     }
 
     /* Boot-time page tables and GDT (must be in the loaded image). */
