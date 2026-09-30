@@ -114,11 +114,16 @@ not local-first.
 
 ## Archived
 
-Archived on GitHub 2026-10-01. Read-only, history intact, not deleted:
+Archived on GitHub 2026-10-01. Read-only, renamed with `-archived`, each
+description points here. History intact, nothing deleted:
 
 ```
-hazoom-os             hazoom-os-v2     hazoom-os-unified
-hazoom-cloud          hazoom-cloud-hub hazoom-cloud-unified
+hazoom-os-archived            attempt 1  Go skeleton
+hazoom-os-v2-archived         attempt 2  one service
+hazoom-os-unified-archived    attempt 3  187k orphaned lines
+hazoom-cloud-archived         control plane, not local-first
+hazoom-cloud-hub-archived     service map
+hazoom-cloud-unified-archived kept as a reference index of the ecosystem
 ```
 
 Nothing is lost. They are still there whenever you want to look. They are
