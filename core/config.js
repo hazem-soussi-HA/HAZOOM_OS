@@ -1,5 +1,5 @@
 /**
- * HAZOOM OS v5.0 — Centralized Configuration
+ * HAZOOM OS v6.0 — Centralized Configuration
  * No dotenv dependency. Environment variables with file-based defaults.
  * 
  * Copyright © 2024-2026 Hazem Soussi — All Rights Reserved
@@ -15,7 +15,7 @@ const DEFAULTS = {
     // Server
     httpPort: 3000,
     httpsPort: 8443,
-    host: '0.0.0.0',
+    host: '127.0.0.1',
     maxRequestBody: '1mb',
 
     // Security
@@ -68,16 +68,20 @@ const DEFAULTS = {
     // Override its path here or via env HAZOOM_LAUNCH.
     services: {
         enabled: true,
-        launchScript: '/mnt/c/Users/HP/Desktop/planet_earth/hazoom-os-launch.sh',
+        launchScript: 'services/planet-earth/hazoom-os-launch.sh',
         persistencePath: 'data/services'
     },
 
     // Intelligence Core — real reasoning via local Ollama (offline-first).
-    // ornith:35b is the local model already pulled on this machine.
+    // ornith:35b is NOT installed on this machine; naming it as the default made
+    // the kernel select a non-existent model and report "AI offline" while a working
+    // local model sat idle. Default to a model that is actually pulled here, and
+    // allow OLLAMA_MODEL to override. IntelligenceCore auto-selects the fastest
+    // installed model when the configured one is absent.
     intelligence: {
         enabled: true,
-        model: 'ornith:35b',
-        baseUrl: 'http://127.0.0.1:11434'
+        model: process.env.OLLAMA_MODEL || 'hazoom-omega:v3',
+        baseUrl: process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434'
     },
 
     // GitHub Bridge — real-time observation of the repo.
@@ -133,6 +137,7 @@ class Config {
     _loadEnv() {
         const envMap = {
             PORT: 'httpPort',
+            HTTP_PORT: 'httpPort',
             HTTPS_PORT: 'httpsPort',
             HOST: 'host',
             NODE_ENV: 'env',
@@ -141,13 +146,20 @@ class Config {
             GITHUB_WEBHOOK_SECRET: 'github.webhookSecret',
             GITHUB_OWNER: 'github.owner',
             GITHUB_REPO: 'github.repo',
-            GITHUB_POLL_INTERVAL: 'github.pollInterval'
+            GITHUB_POLL_INTERVAL: 'github.pollInterval',
+            HAZOOM_LAUNCH: 'services.launchScript',
+            QLEARNING_ENABLED: 'qLearning.enabled',
+            QLEARNING_MODE: 'qLearning.mode',
+            QLEARNING_PERSIST_PATH: 'qLearning.persistencePath'
         };
 
         for (const [envKey, configKey] of Object.entries(envMap)) {
             if (process.env[envKey] !== undefined) {
                 const val = process.env[envKey];
-                this._set(configKey, /^\d+$/.test(val) ? parseInt(val) : val);
+                let parsed = val;
+                if (/^\d+$/.test(val)) parsed = parseInt(val, 10);
+                else if (/^(true|false)$/i.test(val)) parsed = val.toLowerCase() === 'true';
+                this._set(configKey, parsed);
             }
         }
     }

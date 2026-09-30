@@ -16,6 +16,7 @@
 #include "process.h"
 #include "qlearn.h"
 #include "pic.h"
+#include "pit.h"
 #include "serial.h"
 
 #define PML4_ADDR     0x1000000
@@ -355,6 +356,14 @@ void kernel_main(uint64_t boot_magic, uint64_t boot_info) {
     vga_print("[INIT] Initializing serial (COM1)...\n");
     serial_init();
     serial_print("HAZOOM OS v6.0 serial console online\n");
+
+    /* Program the PIT BEFORE pic_init(): pic_init() unmasks IRQ0, and a tick
+       must not be able to arrive before the IRQ0 handler is in place. */
+    vga_print("[INIT] Starting PIT timer at 100 Hz...\n");
+    pit_init(100);
+    vga_print("[INIT] PIT running at ");
+    print_num(pit_hz());
+    vga_print(" Hz.\n");
 
     vga_print("[INIT] Remapping PIC and enabling timer+keyboard IRQs...\n");
     pic_init();

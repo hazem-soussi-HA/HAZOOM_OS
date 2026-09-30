@@ -12,6 +12,20 @@
 require('dotenv').config();
 
 const path = require('path');
+
+// Refuse to boot in production without a real signing secret. Without this the
+// server starts happily and jwt.sign() throws on the first login, or worse,
+// signs tokens with an empty key.
+if (process.env.NODE_ENV === 'production') {
+  const secret = process.env.JWT_SECRET || '';
+  if (secret.length < 32) {
+    console.error(
+      '[fatal] JWT_SECRET must be set to at least 32 characters in production.\n' +
+      '        Generate one with: node -e "console.log(require(\'crypto\').randomBytes(48).toString(\'base64\'))"'
+    );
+    process.exit(1);
+  }
+}
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');

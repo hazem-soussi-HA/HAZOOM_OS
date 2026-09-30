@@ -13,6 +13,7 @@ Features:
 
 import asyncio
 import json
+import os
 import ssl
 from typing import Dict, List, Optional, Set
 from datetime import datetime
@@ -321,3 +322,9 @@ __all__ = [
     'emit_to_websocket',
     'start_websocket_server',
 ]
+
+if __name__ == '__main__':
+    asyncio.run(get_websocket_server(
+        os.environ.get('WS_HOST', '0.0.0.0'),
+        int(os.environ.get('WS_PORT', '9090'))
+    ).start())

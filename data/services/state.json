@@ -1,5 +1,5 @@
 {
-  "lastStarted": 1789745998010,
+  "lastStarted": 1790478651190,
   "services": [
     {
       "name": "planet_earth",
@@ -27,6 +27,10 @@
     },
     {
       "name": "chatdev",
+      "enabled": true
+    },
+    {
+      "name": "jev",
       "enabled": true
     }
   ]

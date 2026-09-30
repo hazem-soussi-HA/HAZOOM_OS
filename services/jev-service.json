@@ -1,0 +1,26 @@
+{
+  "id": "svc-jev",
+  "name": "JEV 1.13",
+  "icon": "\u26a1",
+  "description": "TypeSafe's System One decision model - fast, calibrated, type-safe judgments",
+  "path": "http://127.0.0.1:8440/terminal/",
+  "source": "core/jev-core.js",
+  "port": 8440,
+  "upstream_port": 8323,
+  "protocol": "jev",
+  "engine": "local-jev-clone",
+  "model": "jev-1.13",
+  "context": 64000,
+  "pricing": "$0.042/M tokens",
+  "category": "ai",
+  "enabled": true,
+  "endpoints": {
+    "terminal": "http://127.0.0.1:8440/terminal/",
+    "admin": "http://127.0.0.1:8440/admin",
+    "health": "http://127.0.0.1:8440/healthz",
+    "api_decide": "http://127.0.0.1:8440/api/local/decide",
+    "api_status": "http://127.0.0.1:8323/api/status"
+  },
+  "mode": "cloud",
+  "api_key_source": "/root/.env"
+}

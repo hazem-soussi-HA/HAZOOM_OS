@@ -5,7 +5,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "check": "node --check server.js && node --check core/api.js && node --check core/auth.js && node --check core/boot_audio.js && node --check core/html_sanitizer.js && node --check core/config.js && node --check core/intelligence_api.js && node --check core/intelligence-core.js && node --check core/kernel.js && node --check core/os-desktop.js && node --check core/quantum_state.js && node --check core/services.js && node --check core/system_monitor.js && node --check core/universe_background.js && node --check core/web_fetch.js && node --check core/websocket.js",
+    "test": "bash scripts/smoke-test.sh"
   },
   "dependencies": {
     "compression": "^1.7.5",

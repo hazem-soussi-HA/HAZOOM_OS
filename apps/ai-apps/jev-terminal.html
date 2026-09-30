@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jev Terminal</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+@keyframes flicker{0%,100%{opacity:1}50%{opacity:.8}}
+@keyframes pulse{0%,100%{opacity:.3}50%{opacity:.6}}
+@keyframes explode{0%{transform:scale(1);filter:brightness(1)}50%{transform:scale(2.5);filter:brightness(3)}100%{transform:scale(1);filter:brightness(1)}}
+@keyframes ringExpand{0%{transform:scale(.3);opacity:1}100%{transform:scale(5);opacity:0}}
+body{
+  background:#000;
+  color:#0f0;
+  font-family:'Courier New',monospace;
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+#fourd-bg{position:fixed;top:0;left:0;right:0;bottom:0;z-index:0;opacity:.4;animation:pulse 3s ease-in-out infinite}
+body::before{
+  content:'';position:fixed;top:0;left:0;right:0;bottom:0;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.12) 0px,rgba(0,0,0,.12) 1px,transparent 1px,transparent 2px);
+  pointer-events:none;z-index:1;
+}
+#explosion-ring{position:fixed;top:50%;left:50%;width:200px;height:200px;border:2px solid #0f0;border-radius:50%;transform:translate(-50%,-50%);z-index:0;opacity:0;pointer-events:none;animation:ringExpand 3s ease-out infinite}
+#explosion-ring:nth-child(2){animation-delay:1s}
+#explosion-ring:nth-child(3){animation-delay:2s}
+.header{
+  background:rgba(0,20,0,0.85);backdrop-filter:blur(8px);
+  padding:.8rem 1.5rem;border-bottom:2px solid #0f0;
+  display:flex;align-items:center;gap:1rem;z-index:10;
+}
+.header h1{color:#0f0;font-size:1.2rem;font-weight:bold;letter-spacing:3px;text-shadow:0 0 20px #0f0,0 0 40px #0f0}
+.header .status{color:#0f0;font-size:.8rem;animation:flicker 1s infinite}
+.terminal{flex:1;overflow-y:auto;padding:1rem 1.5rem;display:flex;flex-direction:column;gap:.6rem;z-index:10}
+.msg{padding:.8rem 1rem;max-width:85%;word-wrap:break-word;border:1px solid #0f0;background:rgba(0,50,0,0.3);align-self:flex-start;backdrop-filter:blur(4px);animation:flicker 2s infinite}
+.msg.user{background:rgba(0,255,0,0.1);align-self:flex-end;border-color:#0a0}
+.msg.error{background:rgba(255,0,0,0.2);align-self:flex-start;border-color:#f00;color:#f00}
+.msg .label{color:#0a0;font-size:.65rem;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:2px}
+.msg.user .label{color:#070}
+.msg pre{white-space:pre-wrap;margin:0;font-family:inherit;font-size:.9rem;line-height:1.4}
+.input-area{background:rgba(0,20,0,0.85);backdrop-filter:blur(8px);padding:1rem 1.5rem;border-top:2px solid #0f0;display:flex;gap:.8rem;z-index:10}
+.input-area textarea{flex:1;background:#000;color:#0f0;border:1px solid #0f0;padding:.6rem .8rem;resize:none;font-family:inherit;font-size:.9rem;caret-color:#0f0}
+.input-area textarea:focus{outline:none;box-shadow:0 0 10px rgba(0,255,0,0.5)}
+.input-area textarea::placeholder{color:#050}
+.input-area button{background:#000;color:#0f0;border:1px solid #0f0;padding:.6rem 1.2rem;cursor:pointer;font-family:inherit;font-weight:bold;text-transform:uppercase;letter-spacing:1px}
+.input-area button:hover{background:#0f0;color:#000;box-shadow:0 0 20px rgba(0,255,0,0.5)}
+.input-area button.ghost{background:transparent;border-color:#050;color:#050}
+.input-area button.ghost:hover{border-color:#0f0;color:#0f0}
+.config{display:flex;gap:.8rem;align-items:center;padding:.5rem 1.5rem;background:rgba(0,30,0,0.8);border-bottom:1px solid #050;font-size:.75rem;z-index:10}
+.config input{background:#000;color:#0f0;border:1px solid #050;padding:.3rem .5rem;width:280px;font-family:inherit}
+.config input:focus{outline:none;border-color:#0f0}
+.config label{color:#050}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#000}::-webkit-scrollbar-thumb{background:#050;border:1px solid #0f0}
+</style>
+</head>
+<body>
+<canvas id="fourd-bg"></canvas>
+<div id="explosion-ring"></div>
+<div id="explosion-ring"></div>
+<div id="explosion-ring"></div>
+<div class="header">
+<h1>[ JEV ]</h1>
+<span class="status" id="status">connecting...</span>
+<span style="flex:1"></span>
+<span style="color:#050;font-size:.8rem">[ /help ]</span>
+</div>
+<div class="config">
+<label>API:</label>
+<input type="text" id="api-url" value="http://127.0.0.1:8440" placeholder="Guard URL">
+<label>MODE:</label>
+<select id="api-mode" style="background:#000;color:#0f0;border:1px solid #0f0;padding:.3rem;font-family:inherit">
+<option value="local">LOCAL (free)</option>
+<option value="cloud">CLOUD (TypeSafe)</option>
+</select>
+<label>TOKEN:</label>
+<input type="password" id="api-token" value="IuJivkbWtJvjpbhs6duXzdYg15XsDh5j" placeholder="Bearer token">
+</div>
+<div class="terminal" id="terminal"></div>
+<div class="input-area">
+<textarea id="input" rows="2" placeholder="ENTER QUERY..."></textarea>
+<button id="send">SEND</button>
+<button class="ghost" id="clear-btn">CLEAR</button>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const term=document.getElementById('terminal');
+const input=document.getElementById('input');
+const statusEl=document.getElementById('status');
+let history=[];let historyIdx=-1;
+
+function addMsg(type,label,text){const d=document.createElement('div');d.className='msg '+type;d.innerHTML='<div class="label">'+label+'</div><pre style="white-space:pre-wrap;margin:0">'+escHtml(text)+'</pre>';term.appendChild(d);term.scrollTop=term.scrollHeight;}
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+async function checkHealth(){try{const r=await fetch(document.getElementById('api-url').value+'/healthz');await r.json();statusEl.textContent='[ ON ]';}catch(e){statusEl.textContent='[ OFF ]';}}
+async function sendDecision(state,questions){
+  const base=document.getElementById('api-url').value;
+  const token=document.getElementById('api-token').value;
+  const mode=document.getElementById('api-mode').value;
+  const path=mode==='cloud'?'/api/cloud/decide':'/api/local/decide';
+  const url=base+path;
+  const headers={'Content-Type':'application/json','Authorization':'Bearer '+token};
+  const body={state,questions};
+  if(mode==='cloud')body.model='jev-latest';
+  const r=await fetch(url,{method:'POST',headers,body:JSON.stringify(body)});
+  return{status:r.status,data:await r.json()};
+}
+function parseQuestion(text){const l=text.toLowerCase().trim();if(l.startsWith('/help'))return{type:'help'};if(l.startsWith('/status'))return{type:'status'};if(l.startsWith('/test'))return{type:'test'};return{type:'noul',instructions:text};}
+
+async function handleInput(){
+  const text=input.value.trim();if(!text)return;
+  addMsg('user','> '+text,text);history.push(text);historyIdx=history.length;input.value='';
+  const q=parseQuestion(text);
+  if(q.type==='help'){addMsg('system','[CMD]','/help :: COMMANDS\n/status :: STATUS\n/test :: TEST\n<text> :: QUERY JEV');return;}
+  if(q.type==='status'){await checkHealth();addMsg('system','[SYS]','CONNECTION VERIFIED');return;}
+  if(q.type==='test'){addMsg('system','[...]','EXPLODING...');try{const r=await sendDecision('Test.',{test:{type:'noul',instructions:'Is this working?'}});addMsg('system','[RESP]',JSON.stringify(r.data,null,2));}catch(e){addMsg('error','[ERR]',e.message);}return;}
+  addMsg('system','[...]','ANALYZING...');
+  try{
+    const res=await sendDecision(text,{judgment:{type:'noul',instructions:text}});
+    term.removeChild(term.lastChild);
+    if(res.status===400){addMsg('error','[BLOCKED]',JSON.stringify(res.data,null,2));}
+    else{
+      const d=res.data;let answer='UNKNOWN';
+      if(d&&d.answers){
+        const firstKey=Object.keys(d.answers)[0];
+        const firstAns=d.answers[firstKey];
+        if(firstAns&&firstAns.text){answer=firstAns.text;}
+        else if(d.answers.judgment){const j=d.answers.judgment;const n=j.noul||j.prob||0;const c=j.confidence||0;answer='['+(n>0.5?'TRUE':'FALSE')+']\nPROB: '+Math.round(n*100)+'%\nCONF: '+Math.round(c*100)+'%';}
+      }
+      addMsg('system','[JEV]',answer);
+    }
+  }catch(e){if(term.lastChild)term.removeChild(term.lastChild);addMsg('error','[ERR]',e.message);}
+}
+
+input.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();handleInput();}
+  else if(e.key==='ArrowUp'){e.preventDefault();if(historyIdx>0){historyIdx--;input.value=history[historyIdx]||'';}}
+  else if(e.key==='ArrowDown'){e.preventDefault();if(historyIdx<history.length-1){historyIdx++;input.value=history[historyIdx]||'';}else{historyIdx=history.length;input.value='';}}
+});
+document.getElementById('send').onclick=handleInput;
+document.getElementById('clear-btn').onclick=()=>{term.innerHTML='';};
+
+addMsg('system','[INIT]','MATRIX EXPLODED\n4D TESSERACT ACTIVE\nTYPE /help');
+checkHealth();setInterval(checkHealth,10000);
+
+// ─── 4D EXPLODING TESSERACT ───
+const canvas=document.getElementById('fourd-bg');
+const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});
+renderer.setSize(window.innerWidth,window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,100);
+camera.position.z=8;
+
+function tesseractVerts(){const v=[];for(let i=0;i<16;i++){v.push({x:(i&1)?1:-1,y:(i&2)?1:-1,z:(i&4)?1:-1,w:(i&8)?1:-1});}return v;}
+
+function project4Dto3D(v,rx,ry,rz,explode){
+  let x=v.x,y=v.y,z=v.z,w=v.w;
+  const cx=Math.cos(rx),sx=Math.sin(rx);const nx=x*cx-w*sx,nw=x*sx+w*cx;x=nx;w=nw;
+  const cy=Math.cos(ry),sy=Math.sin(ry);const ny=y*cy-z*sy,nz=y*sy+z*cy;y=ny;z=nz;
+  const cx2=Math.cos(rz),sx2=Math.sin(rz);const nx2=x*cx2-w*sx2,nw2=x*sx2+w*cx2;x=nx2;w=nw2;
+  // EXPLODE effect
+  const explodeScale=explode;
+  x*=explodeScale;y*=explodeScale;z*=explodeScale;w*=explodeScale;
+  const f=3;const s=f/(f+w);return{x:x*s,y:y*s,z:z*s};
+}
+
+const verts=tesseractVerts();
+const edges=[];
+for(let i=0;i<16;i++){for(let j=i+1;j<16;j++){let diff=0;for(let k=0;k<4;k++)if((((i>>k)&1)^((j>>k)&1))===1)diff++;if(diff===1)edges.push([i,j]);}}
+
+const lineMat=new THREE.LineBasicMaterial({color:0x00ff88,transparent:true,opacity:0.9});
+const lineSegments=[];
+edges.forEach(([i,j])=>{const g=new THREE.BufferGeometry();const pos=new Float32Array(6);g.setAttribute('position',new THREE.BufferAttribute(pos,3));const l=new THREE.Line(g,lineMat.clone());scene.add(l);lineSegments.push({line:l,i,j});});
+
+// Inner wireframe cube (3D projection for depth)
+const innerEdges=[];
+for(let i=0;i<8;i++){for(let j=i+1;j<8;j++){let diff=0;for(let k=0;k<3;k++)if((((i>>k)&1)^((j>>k)&1))===1)diff++;if(diff===1)innerEdges.push([i,j]);}}
+const innerLineMat=new THREE.LineBasicMaterial({color:0x00ffaa,transparent:true,opacity:0.5});
+const innerLineSegments=[];
+innerEdges.forEach(([i,j])=>{const g=new THREE.BufferGeometry();const pos=new Float32Array(6);g.setAttribute('position',new THREE.BufferAttribute(pos,3));const l=new THREE.Line(g,innerLineMat.clone());scene.add(l);innerLineSegments.push({line:l,i,j});});
+
+// Particles
+const particleGeo=new THREE.BufferGeometry();
+const pCount=300;
+const pPos=new Float32Array(pCount*3);
+for(let i=0;i<pCount;i++){pPos[i*3]=(Math.random()-0.5)*30;pPos[i*3+1]=(Math.random()-0.5)*30;pPos[i*3+2]=(Math.random()-0.5)*30;}
+particleGeo.setAttribute('position',new THREE.BufferAttribute(pPos,3));
+const particleMat=new THREE.PointsMaterial({color:0x00ff88,size:0.08,transparent:true,opacity:0.5});
+scene.add(new THREE.Points(particleGeo,particleMat));
+
+// Glowing center sphere
+const sphereGeo=new THREE.SphereGeometry(0.15,16,16);
+const sphereMat=new THREE.MeshBasicMaterial({color:0x00ff88,transparent:true,opacity:0.8});
+const sphere=new THREE.Mesh(sphereGeo,sphereMat);
+scene.add(sphere);
+
+let angle=0;
+let explodePhase=0;
+let explodeIntensity=1;
+let lastExplosionTime=Date.now();
+const EXPLODE_INTERVAL=2500;
+
+function animate(){
+  requestAnimationFrame(animate);
+  const now=Date.now();
+  // Check for explosion
+  if(now-lastExplosionTime>EXPLODE_INTERVAL){
+    explodePhase=1;
+    lastExplosionTime=now;
+  }
+  // Decay explosion
+  if(explodePhase>0){explodePhase-=0.02;if(explodePhase<0)explodePhase=0;}
+  explodeIntensity=1+explodePhase*3;
+  
+  angle+=0.008;
+  const rx=angle*0.7;const ry=angle*0.5;const rz=angle*0.3;
+
+  // Update tesseract lines
+  lineSegments.forEach(({line,i,j})=>{
+    const p1=project4Dto3D(verts[i],rx,ry,rz,explodeIntensity);
+    const p2=project4Dto3D(verts[j],rx,ry,rz,explodeIntensity);
+    const pos=line.geometry.attributes.position.array;
+    pos[0]=p1.x;pos[1]=p1.y;pos[2]=p1.z;pos[3]=p2.x;pos[4]=p2.y;pos[5]=p2.z;
+    line.geometry.attributes.position.needsUpdate=true;
+    // Glow effect during explosion
+    line.material.opacity=0.5+explodePhase*0.5;
+  });
+
+  // Update inner cube
+  innerLineSegments.forEach(({line,i,j})=>{
+    const v1={x:(i&1)?1:-1,y:(i&2)?1:-1,z:(i&4)?1:-1,w:0};
+    const v2={x:(j&1)?1:-1,y:(j&2)?1:-1,z:(j&4)?1:-1,w:0};
+    const p1=project4Dto3D(v1,rx,ry,rz,explodeIntensity);
+    const p2=project4Dto3D(v2,rx,ry,rz,explodeIntensity);
+    const pos=line.geometry.attributes.position.array;
+    pos[0]=p1.x;pos[1]=p1.y;pos[2]=p1.z;pos[3]=p2.x;pos[4]=p2.y;pos[5]=p2.z;
+    line.geometry.attributes.position.needsUpdate=true;
+    line.material.opacity=0.3+explodePhase*0.7;
+  });
+
+  // Rotate particles outward during explosion
+  const positions=particleGeo.attributes.position.array;
+  for(let i=0;i<pCount;i++){
+    const ix=positions[i*3];const iy=positions[i*3+1];const iz=positions[i*3+2];
+    const dist=Math.sqrt(ix*ix+iy*iy+iz*iz);
+    const nx=ix/dist||0,ny=iy/dist||0,nz=iz/dist||0;
+    positions[i*3]+=nx*explodePhase*0.5;
+    positions[i*3+1]+=ny*explodePhase*0.5;
+    positions[i*3+2]+=nz*explodePhase*0.5;
+    positions[i*3+1]+=Math.sin(angle+i)*0.002;
+  }
+  particleGeo.attributes.position.needsUpdate=true;
+
+  // Pulse sphere
+  const sScale=1+explodePhase*2;
+  sphere.scale.set(sScale,sScale,sScale);
+  sphere.material.opacity=0.5+explodePhase*0.5;
+
+  // Update camera shake during explosion
+  camera.position.x=Math.sin(angle*2)*explodePhase*0.5;
+  camera.position.y=Math.cos(angle*3)*explodePhase*0.3;
+
+  renderer.render(scene,camera);
+}
+animate();
+
+window.addEventListener('resize',()=>{camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight);});
+</script>
+</body>
+</html>

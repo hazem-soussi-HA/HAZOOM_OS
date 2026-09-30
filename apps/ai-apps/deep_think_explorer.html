@@ -341,12 +341,12 @@
 
             <div class="stats-panel">
                 <div class="stat-item">
-                    <div class="stat-value" id="confidenceScore">0%</div>
-                    <div class="stat-label">System Confidence</div>
+                    <div class="stat-value" id="modelLabel" style="font-size: 15px;">—</div>
+                    <div class="stat-label">Active Model</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-value" id="stepCount">0</div>
-                    <div class="stat-label">Reasoning Steps</div>
+                    <div class="stat-value" id="tokenCount">0</div>
+                    <div class="stat-label">Tokens Streamed</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-value" id="timeTaken">0.0s</div>
@@ -366,130 +366,153 @@
     </div>
 
     <!-- Import Engine -->
-    <script src="../core/deep_think_engine.js"></script>
 
     <script>
-        const engine = new DeepThinkEngine();
         const stepsContainer = document.getElementById('stepsContainer');
         const loader = document.getElementById('loader');
         const queryInput = document.getElementById('queryInput');
+        const TOKEN_KEY = 'hazoom_intel_token';
+        const USER_KEY = 'hazoom_intel_user';
+        const USER_PASS = 'hazoom-local';
 
         // Allow Enter key
         queryInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') startDeepThink();
         });
 
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, c => (
+                { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+            ));
+        }
+
+        function authHeaders(token) {
+            return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+        }
+
+        // Reasoning is a privileged, metered capability, so it requires a session
+        // token. Reuse the stored one, or provision a local loopback identity.
+        async function ensureToken() {
+            const existing = localStorage.getItem(TOKEN_KEY);
+            if (existing) return existing;
+            const username = localStorage.getItem(USER_KEY) || 'reasoner';
+            let res = await fetch('/api/v1/auth/register', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password: USER_PASS })
+            });
+            if (!res.ok && res.status !== 409) throw new Error('Cannot provision local reasoning session');
+            res = await fetch('/api/v1/auth/login', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password: USER_PASS })
+            });
+            if (!res.ok) throw new Error('Local reasoning session refused');
+            const data = await res.json();
+            if (!data.token) throw new Error('No session token issued');
+            localStorage.setItem(TOKEN_KEY, data.token);
+            localStorage.setItem(USER_KEY, username);
+            return data.token;
+        }
+
+        async function showModel() {
+            try {
+                const res = await fetch('/api/v1/intelligence/health');
+                const data = await res.json();
+                document.getElementById('modelLabel').textContent = data.model || (data.status === 'online' ? 'local' : 'offline');
+            } catch (e) {
+                document.getElementById('modelLabel').textContent = 'unreachable';
+            }
+        }
+        showModel();
+
+        function resetStats() {
+            document.getElementById('modelLabel').textContent = '…';
+            document.getElementById('tokenCount').innerText = '0';
+            document.getElementById('timeTaken').innerText = '0.0s';
+        }
+
+        function renderAnswer(text, model, offline) {
+            stepsContainer.innerHTML = '';
+            const div = document.createElement('div');
+            div.className = 'step-card';
+            div.innerHTML = `
+                <div class="step-header">
+                    <span>${offline ? 'UNAVAILABLE' : 'REASONING RESULT'}</span>
+                    <span>${escapeHtml(model || '')}</span>
+                </div>
+                <div class="step-content">${escapeHtml(text)}</div>
+            `;
+            stepsContainer.appendChild(div);
+        }
+
         async function startDeepThink() {
             const query = queryInput.value.trim();
             if (!query) return;
 
-            // Reset UI
             stepsContainer.innerHTML = '';
             loader.classList.add('active');
+            resetStats();
+            const started = performance.now();
 
-            // Execute Think
             try {
-                // Determine mode based on complexity (simulated)
-                const mode = query.length > 20 ? 'parallel' : 'sequential';
-
-                const result = await engine.think(query, {
-                    mode: mode,
-                    maxPaths: 3,
-                    selfCorrect: true
+                const token = await ensureToken();
+                const res = await fetch('/api/v1/intelligence/stream', {
+                    method: 'POST',
+                    headers: authHeaders(token),
+                    body: JSON.stringify({ prompt: query })
                 });
 
-                loader.classList.remove('active');
-                renderResults(result);
-            } catch (e) {
-                console.error(e);
-                loader.classList.remove('active');
-                stepsContainer.innerHTML = `<div class="step-card" style="border-color: #ff4444;">Error: ${e.message}</div>`;
-            }
-        }
-
-        function renderResults(result) {
-            // Update Stats
-            animateValue('confidenceScore', 0, result.confidence || result.overallConfidence, 1000, '%');
-            document.getElementById('stepCount').innerText = result.reasoningChain.length;
-            document.getElementById('timeTaken').innerText = result.thinkTime + 's';
-
-            // Render Steps
-            let delay = 0;
-            result.reasoningChain.forEach(step => {
-                setTimeout(() => {
-                    renderStep(step);
-                    // Scroll to bottom
-                    stepsContainer.scrollTop = stepsContainer.scrollHeight;
-                }, delay);
-                delay += 300; // Stagger effect
-            });
-        }
-
-        function renderStep(step) {
-            const div = document.createElement('div');
-            // Determine class based on style or type
-            let className = 'step-card';
-            if (step.style) className += ` ${step.style}`;
-            if (step.type && step.type.includes('correction')) className += ' correction';
-
-            let typeLabel = step.style || step.type || 'System';
-            let confidence = step.confidence ? Math.round(step.confidence * 100) : 0;
-
-            let html = `
-                <div class="step-header">
-                    <span>${typeLabel}</span>
-                    <span>${new Date(step.timestamp).toLocaleTimeString()}</span>
-                </div>
-                <div class="step-content">
-                    ${step.description}
-                    ${step.thought ? `<div style="margin-top: 5px; color: rgba(255,255,255,0.8); font-style: italic;">"${step.thought}"</div>` : ''}
-                    ${step.corrections ? renderCorrections(step.corrections) : ''}
-                </div>
-            `;
-
-            if (step.confidence) {
-                html += `
-                    <div class="confidence-meter">
-                        <span style="font-size: 10px; width: 30px;">${confidence}%</span>
-                        <div class="meter-bar">
-                            <div class="meter-fill" style="width: ${confidence}%"></div>
-                        </div>
-                    </div>
-                `;
-            }
-
-            div.className = className;
-            div.innerHTML = html;
-            stepsContainer.appendChild(div);
-        }
-
-        function renderCorrections(corrections) {
-            return `
-                <div style="margin-top: 10px; padding: 10px; background: rgba(255,68,68,0.1); border-radius: 8px; border-left: 3px solid #ff4444;">
-                    <div style="font-size: 11px; color: #ff8888; font-weight: 600; margin-bottom: 5px;">SELF-CORRECTION APPLIED</div>
-                    ${corrections.map(c => `
-                        <div style="font-size: 13px;">⚠️ ${c.issues.map(i => i.description).join(', ')}</div>
-                        <div style="font-size: 13px; color: #ffaaaa;">💡 Fix: ${c.suggestedFix}</div>
-                    `).join('')}
-                </div>
-            `;
-        }
-
-        function animateValue(id, start, end, duration, suffix = '') {
-            if (start === end) return;
-            const range = end - start;
-            let current = start;
-            const increment = end > start ? 1 : -1;
-            const stepTime = Math.abs(Math.floor(duration / range));
-            const obj = document.getElementById(id);
-            const timer = setInterval(function () {
-                current += increment;
-                obj.innerHTML = current + suffix;
-                if (current == end || (increment > 0 && current >= end) || (increment < 0 && current <= end)) {
-                    clearInterval(timer);
-                    obj.innerHTML = end + suffix; // Ensure final value
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.error || `Reasoning failed (HTTP ${res.status})`);
                 }
-            }, Math.min(stepTime, 70)); // Cap speed
+
+                // Stream tokens straight from the real model into the transcript.
+                const reader = res.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+                let full = '';
+                let model = null;
+                let offline = false;
+                let tokens = 0;
+                let live = document.createElement('div');
+                live.className = 'step-card';
+                stepsContainer.appendChild(live);
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    buffer += decoder.decode(value, { stream: true });
+                    let idx;
+                    while ((idx = buffer.indexOf('\n\n')) >= 0) {
+                        const raw = buffer.slice(0, idx);
+                        buffer = buffer.slice(idx + 2);
+                        const typeLine = raw.match(/^event: (.+)$/m);
+                        const dataLine = raw.match(/^data: (.+)$/m);
+                        if (!typeLine || !dataLine) continue;
+                        let evt;
+                        try { evt = JSON.parse(dataLine[1]); } catch (e) { continue; }
+                        if (typeLine[1] === 'token') {
+                            full += evt.token || '';
+                            tokens++;
+                            live.innerHTML = `<div class="step-content">${escapeHtml(full)}</div>`;
+                            document.getElementById('tokenCount').innerText = String(tokens);
+                            stepsContainer.scrollTop = stepsContainer.scrollHeight;
+                        } else if (typeLine[1] === 'done') {
+                            model = evt.model;
+                            offline = evt.offline === true;
+                            if (model) document.getElementById('modelLabel').textContent = model;
+                        }
+                    }
+                }
+
+                if (full.trim()) renderAnswer(full.trim(), model, offline);
+                else renderAnswer('The model returned an empty response.', model, true);
+            } catch (e) {
+                renderAnswer(e.message, null, true);
+            } finally {
+                document.getElementById('timeTaken').innerText = ((performance.now() - started) / 1000).toFixed(1) + 's';
+                loader.classList.remove('active');
+            }
         }
 
         // Auto-run if perceptron is in URL? No, keep it clean.

@@ -2,10 +2,10 @@
  * smoke.test.js — Isolated end-to-end check of the Hazoom backend.
  * Uses a throwaway SQLite file (TMP_DB) so it never touches app data.
  */
-process.env.JWT_SECRET = 'test_secret_123';
+process.env.JWT_SECRET = require('crypto').randomBytes(32).toString('hex');
 process.env.SQLITE_PATH = require('path').join(require('os').tmpdir(), 'hazoom_smoke.db');
 process.env.SEED_ADMIN_EMAIL = 'admin@test.local';
-process.env.SEED_ADMIN_PASSWORD = 'Admin123!';
+process.env.SEED_ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD || 'Admin123!';
 
 const fs = require('fs');
 const net = require('net');
@@ -94,7 +94,7 @@ const PORT = 4123;
   assert('my orders', mine.body.orders.some(o=>o.id===oid));
 
   // 11. admin seed + guard
-  const adminLogin = await req({ path: '/api/auth/login', method:'POST' }, { email:'admin@test.local', password:'Admin123!' });
+  const adminLogin = await req({ path: '/api/auth/login', method:'POST' }, { email:'admin@test.local', password: process.env.SEED_ADMIN_PASSWORD });
   const adminToken = adminLogin.body.token;
   assert('admin seeded', !!adminToken);
   const adminOrders = await req({ path: '/api/orders/all/list', headers:{ Authorization:'Bearer '+adminToken } });

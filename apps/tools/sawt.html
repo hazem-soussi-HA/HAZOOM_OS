@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>صوت — HAZOOM OS</title>
+<style>
+:root{--bg:#07090c;--pnl:#141821;--line:#242a36;--fg:#e8ecf2;--dim:#8b95a6;--dim2:#5b6474;
+      --cy:#22d3ee;--vi:#a78bfa;--or:#fb923c;--gr:#34d399;--rd:#f87171;
+      --mono:ui-monospace,Menlo,Consolas,monospace;
+      --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font:15px/1.7 var(--sans);min-height:100vh;
+     display:flex;align-items:center;justify-content:center;padding:28px 20px 60px}
+.w{width:100%;max-width:560px}
+header{text-align:center;margin-bottom:20px}
+h1{font-size:20px;font-weight:600;letter-spacing:-.01em;margin-bottom:5px}
+.sub{color:var(--dim2);font-size:12.5px;font-family:var(--mono)}
+.card{background:var(--pnl);border:1px solid var(--line);border-radius:15px;padding:20px}
+#sil{display:block;width:100%;max-width:280px;margin:0 auto 6px}
+#log{max-height:290px;overflow-y:auto;margin:16px 0;display:flex;flex-direction:column;gap:10px}
+.m{max-width:86%;padding:10px 13px;border-radius:13px;font-size:14.5px;line-height:1.65;white-space:pre-wrap}
+.m.u{align-self:flex-start;background:linear-gradient(135deg,#0e7490,#0b5c72);color:#e0fbff;border-bottom-left-radius:4px}
+.m.a{align-self:flex-end;background:#1b202b;border:1px solid var(--line);border-bottom-right-radius:4px}
+.m.sys{align-self:center;background:transparent;border:0;color:var(--dim2);font-size:12px;
+        font-family:var(--mono);text-align:center;padding:2px 0}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap;justify-content:center}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);
+       background:#1a1f2a;color:var(--fg);padding:10px 16px;transition:.15s}
+button:hover:not(:disabled){background:#222836;border-color:#31394a}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.mic{border-radius:50%;width:66px;height:66px;font-size:25px;padding:0;
+           background:linear-gradient(135deg,#0e7490,#0891b2);border:0}
+button.mic.live{background:linear-gradient(135deg,#b91c1c,#dc2626);
+                animation:pulse 1.25s ease-in-out infinite}
+button.spk{background:linear-gradient(135deg,#7c3aed,#a78bfa);border:0;font-weight:600}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.55)}50%{box-shadow:0 0 0 16px rgba(220,38,38,0)}}
+textarea{width:100%;background:#0e1117;border:1px solid var(--line);border-radius:12px;
+         padding:12px 14px;color:var(--fg);font:inherit;resize:none;outline:none;margin-top:14px}
+textarea:focus{border-color:#0e7490}
+select{background:#0e1117;border:1px solid var(--line);border-radius:8px;color:var(--fg);
+       padding:6px 9px;font:12px var(--mono)}
+.hint{color:var(--dim2);font-size:12px;text-align:center;margin-top:14px;line-height:1.8}
+.warn{background:#1a1610;border:1px solid #3b3118;border-radius:10px;padding:11px 13px;
+      color:#fbbf24;font-size:12.5px;margin-top:14px;line-height:1.7}
+.ok{color:var(--gr)}
+#stage{height:3px;background:#1a1f2a;border-radius:3px;overflow:hidden;margin-top:14px}
+#fill{height:100%;width:0;background:linear-gradient(90deg,var(--cy),var(--vi),var(--or));
+      border-radius:3px;transition:width .12s linear}
+</style>
+</head>
+<body>
+<div class="w">
+
+<header>
+  <h1>تحدّث معي</h1>
+  <div class="sub">اضغط الميكروفون وتحدّث، أو اكتب</div>
+</header>
+
+<div class="card">
+  <img id="sil" src="/assets/silhouette.svg" alt="silhouette">
+
+  <div class="row">
+    <button class="mic" id="mic" title="تحدّث">🎙️</button>
+    <button class="spk" id="say" title="اقرأ النص">🔊 اقرأ</button>
+    <select id="voice">
+      <option value="ar">عربي</option>
+      <option value="fr">français</option>
+      <option value="en">english</option>
+    </select>
+    <select id="rate">
+      <option value="120">بطيء</option>
+      <option value="145" selected>عادي</option>
+      <option value="175">سريع</option>
+    </select>
+  </div>
+
+  <div id="stage"><div id="fill"></div></div>
+  <div class="hint" id="micHint">الإدخال الصوتي يحتاج Chrome أو Edge — فَيَرفُكس لا يدعمه.</div>
+
+  <div id="log"></div>
+
+  <textarea id="in" rows="2" placeholder="اكتب هنا…"></textarea>
+  <div class="row" style="margin-top:11px">
+    <button id="send">إرسال</button>
+    <button id="greet">تحيّة</button>
+    <button id="clear">مسح</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const log = $('#log');
+
+/* ── auth ─────────────────────────────────────────── */
+let TOKEN = null;
+async function auth(){
+  try{
+    const r = await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:'hazem',password:'hazem'})});
+    const d = await r.json(); TOKEN = d.token || d.accessToken || null;
+  }catch(e){}
+  msg('لم يتم الاتصال بالخادم','sys');
+}
+
+/* ── log ──────────────────────────────────────────── */
+function msg(text, who){
+  const d = document.createElement('div');
+  d.className = 'm ' + (who||'a'); d.textContent = text;
+  log.appendChild(d); log.scrollTop = log.scrollHeight; return d;
+}
+
+/* ── speak: server-side espeak-ng, played here ────── */
+let audio = null;
+async function speak(text, voice){
+  if(!text?.trim()) return;
+  const v = voice || $('#voice').value;
+  const rate = +$('#rate').value;
+  msg(text, 'u');
+  const pending = msg('…', 'a');
+  try{
+    const r = await fetch('/api/speak',{method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+      body:JSON.stringify({text, voice:v, rate})});
+    if(!r.ok){ const j = await r.json().catch(()=>({}));
+      pending.className='m sys'; pending.textContent='تعذّر النطق: '+(j.error||r.status); return; }
+    const blob = await r.blob();
+    if(audio){ audio.pause(); }
+    audio = new Audio(URL.createObjectURL(blob));
+    $('#fill').style.width = '0%';
+    audio.play().catch(e=>{ pending.className='m sys';
+      pending.textContent='التشغيل مرفوض من المتصفح — انقر مرة على الصفحة'; });
+    audio.ontimeupdate = ()=>{ if(audio.duration)
+      $('#fill').style.width = (audio.currentTime/audio.duration*100)+'%'; };
+    audio.onended = ()=>{ pending.remove(); $('#fill').style.width='0%'; };
+  }catch(e){
+    pending.className='m sys'; pending.textContent='خطأ: '+e.message;
+  }
+}
+
+/* ── listen: Web Speech API where it exists ───────── */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, listening = false;
+if(!SR){
+  $('#mic').disabled = true;
+  $('#micHint').innerHTML = '<span style="color:#f87171">هذا المتصفح لا يدعم الإدخال الصوتي.</span><br>'+
+    'استعمل Chrome أو Edge للتحدّث، أو اكتب بالأسفل. الخرج الصوتي يعمل في كل المتصفحات.';
+}
+$('#mic').onclick = ()=>{
+  if(!SR) return;
+  if(listening){ rec && rec.stop(); return; }
+  rec = new SR();
+  rec.lang = 'ar-TN';
+  rec.interimResults = true;
+  rec.continuous = false;
+  rec.onstart = ()=>{ listening=true; $('#mic').classList.add('live'); msg('أستمع…','sys'); };
+  rec.onresult = e=>{
+    let txt='';
+    for(let i=e.resultIndex;i<e.results.length;i++) txt += e.results[i][0].transcript;
+    txt = txt.trim();
+    if(txt) msg(txt,'u');
+  };
+  rec.onerror = e=>{ msg('خطأ في التعرّف: '+e.error,'sys'); };
+  rec.onend = ()=>{ listening=false; $('#mic').classList.remove('live'); };
+  try{ rec.start(); }catch(e){ msg('تعذّر بدء الميكروفون','sys'); }
+};
+
+/* ── wiring ───────────────────────────────────────── */
+function send(){ const t=$('#in').value.trim(); if(!t) return; $('#in').value=''; speak(t); }
+$('#send').onclick = send;
+$('#in').addEventListener('keydown', e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); send(); } });
+$('#say').onclick = ()=>{ const t=$('#in').value.trim(); if(t) speak(t); else msg('اكتب شيئًا أولًا','sys'); };
+$('#clear').onclick = ()=>{ log.innerHTML=''; };
+$('#greet').onclick = ()=>speak('السلام عليكم. أنا هنا. تكلّم معي بالعربية، أو اكتب لي. كيف أستطيع أن أساعدك؟');
+
+(async()=>{ await auth(); msg('جاهز. اضغط الميكروفون وتحدّث، أو اكتب.','sys'); })();
+</script>
+</body>
+</html>

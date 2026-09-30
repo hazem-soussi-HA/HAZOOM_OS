@@ -59,6 +59,7 @@ HAZOOM_OS/
 ```bash
 ./start.sh simulation
 # Open http://localhost:3000
+# Visual showcase: http://localhost:3000/showcase
 ```
 
 ### Full Docker Stack

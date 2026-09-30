@@ -9,7 +9,7 @@ class APIRouter {
         this.kernel = kernel;
         this.router = express.Router();
         this.logger = config.logger || console;
-        this.auth = new AuthManager(kernel);
+        this.auth = config.authManager || new AuthManager(kernel);
         this._registerRoutes();
     }
 
@@ -91,16 +91,21 @@ class APIRouter {
         const $ = this.auth;
         const protect = $.authenticate.bind($);
         const adminOnly = [protect, $.requireRole('admin').bind($)];
+        const registrationEnabled = process.env.NODE_ENV !== 'production' || process.env.ALLOW_REGISTRATION === 'true';
+        const asyncHandler = handler => (req, res, next) => {
+            Promise.resolve(handler(req, res, next)).catch(next);
+        };
 
         // ── AUTH (unauthenticated) ────────────────────────────
 
         r.post('/api/v1/auth/register', (req, res) => {
-            const { username, password, role } = req.body;
+            if (!registrationEnabled) return this._error(res, 403, 'Public registration is disabled', 'REGISTRATION_DISABLED');
+            const { username, password } = req.body;
             const validation = this._requireFields(req.body, ['username', 'password']);
             if (!validation.valid) {
                 return this._error(res, 400, `Missing fields: ${validation.missing.join(', ')}`, 'VALIDATION');
             }
-            const result = $.register(username, password, role);
+            const result = $.register(username, password, 'user');
             if (result.error) return this._error(res, 409, result.error, 'CONFLICT');
             res.status(201).json(result);
         });
@@ -136,12 +141,13 @@ class APIRouter {
 
         // Legacy non-versioned auth routes
         r.post('/api/auth/register', (req, res) => {
-            const { username, password, role } = req.body;
+            if (!registrationEnabled) return res.status(403).json({ error: 'Public registration is disabled', code: 'REGISTRATION_DISABLED' });
+            const { username, password } = req.body;
             const validation = this._requireFields(req.body, ['username', 'password']);
             if (!validation.valid) {
                 return res.status(400).json({ error: `Missing fields: ${validation.missing.join(', ')}` });
             }
-            const result = $.register(username, password, role);
+            const result = $.register(username, password, 'user');
             if (result.error) return res.status(409).json({ error: result.error });
             res.status(201).json(result);
         });
@@ -184,22 +190,23 @@ class APIRouter {
             res.json(this.getKernelState());
         });
 
-        r.post('/api/boot', protect, (req, res) => {
+        r.post('/api/boot', adminOnly, (req, res) => {
+            if (k.running) return this._error(res, 409, 'Kernel is already running', 'ALREADY_RUNNING');
             res.json(k.boot());
         });
 
-        r.post('/api/shutdown', protect, (req, res) => {
+        r.post('/api/shutdown', adminOnly, (req, res) => {
             res.json(k.shutdown());
         });
 
-        r.post('/api/tick', protect, (req, res) => {
+        r.post('/api/tick', adminOnly, (req, res) => {
             const count = Math.min(parseInt(req.query.count) || 1, 100);
             const results = [];
             for (let i = 0; i < count; i++) results.push(k.tick());
             res.json({ ticks: results.length, last: results[results.length - 1] });
         });
 
-        r.get('/api/log', protect, (req, res) => {
+        r.get('/api/log', adminOnly, (req, res) => {
             const lines = parseInt(req.query.lines) || 50;
             const level = req.query.level;
             let logs = k.logBuffer || [];
@@ -243,13 +250,13 @@ class APIRouter {
             res.json({ groups: Array.from(k.processManager.groups?.entries() || []) });
         });
 
-        r.post('/api/v1/processes/ipc/send', protect, (req, res) => {
+        r.post('/api/v1/processes/ipc/send', adminOnly, (req, res) => {
             const { pid, message } = req.body;
             if (!pid || !message) return res.status(400).json({ error: 'pid and message required' });
             res.json(k.processManager.sendMessage(pid, message));
         });
 
-        r.get('/api/v1/processes/ipc/receive', protect, (req, res) => {
+        r.get('/api/v1/processes/ipc/receive', adminOnly, (req, res) => {
             const pid = parseInt(req.query.pid) || 0;
             if (!pid) return res.status(400).json({ error: 'pid required' });
             res.json({ messages: k.processManager.receiveMessage(pid) });
@@ -257,11 +264,11 @@ class APIRouter {
 
         r.get('/health', (req, res) => {
             const mm = k.memoryManager;
-            res.json({
+            res.status(k.running ? 200 : 503).json({
                 status: k.running ? 'online' : 'offline',
                 version: k.version,
                 uptime: k.uptime,
-                processes: k.processManager.processes.size,
+                processes: k.processManager.getProcessList().length,
                 memoryUsage: mm.getStats().usagePercent + '%'
             });
         });
@@ -280,23 +287,23 @@ class APIRouter {
             });
         });
 
-        r.post('/api/processes/create', protect, (req, res) => {
+        r.post('/api/processes/create', adminOnly, (req, res) => {
             const { name, priority, parentPid } = req.body;
             if (!name && !req.body.name) return this._error(res, 400, 'Process name required', 'VALIDATION');
             res.json(k.processManager.createProcess(name || 'unknown', priority || 5, parentPid || 0));
         });
 
-        r.post('/api/processes/:pid/terminate', protect, (req, res) => {
+        r.post('/api/processes/:pid/terminate', adminOnly, (req, res) => {
             const pid = parseInt(req.params.pid);
             if (isNaN(pid)) return this._error(res, 400, 'Invalid PID', 'VALIDATION');
             res.json(k.processManager.terminateProcess(pid));
         });
 
-        r.post('/api/processes/:pid/block', protect, (req, res) => {
+        r.post('/api/processes/:pid/block', adminOnly, (req, res) => {
             res.json(k.processManager.blockProcess(parseInt(req.params.pid)));
         });
 
-        r.post('/api/processes/:pid/unblock', protect, (req, res) => {
+        r.post('/api/processes/:pid/unblock', adminOnly, (req, res) => {
             res.json(k.processManager.unblockProcess(parseInt(req.params.pid)));
         });
 
@@ -306,7 +313,7 @@ class APIRouter {
             res.json(k.memoryManager.getStats());
         });
 
-        r.post('/api/memory/allocate', protect, (req, res) => {
+        r.post('/api/memory/allocate', adminOnly, (req, res) => {
             const { size, pid } = req.body;
             if (!size && !req.body.size) return this._error(res, 400, 'Size required', 'VALIDATION');
             res.json(k.memoryManager.allocate(size || 4096, pid || 1));
@@ -331,19 +338,19 @@ class APIRouter {
             res.json({ path: filePath, content: result.content, size: result.size });
         });
 
-        r.post('/api/fs/write', protect, (req, res) => {
+        r.post('/api/fs/write', adminOnly, (req, res) => {
             const { path: filePath, content } = req.body;
             if (!filePath) return this._error(res, 400, 'Path required', 'VALIDATION');
             res.json(k.fileSystem.writeFile(filePath, content || ''));
         });
 
-        r.post('/api/fs/mkdir', protect, (req, res) => {
+        r.post('/api/fs/mkdir', adminOnly, (req, res) => {
             const { path: dirPath } = req.body;
             if (!dirPath) return this._error(res, 400, 'Path required', 'VALIDATION');
             res.json(k.fileSystem.mkdir(dirPath));
         });
 
-        r.post('/api/fs/delete', protect, (req, res) => {
+        r.post('/api/fs/delete', adminOnly, (req, res) => {
             const { path: targetPath } = req.body;
             if (!targetPath) return this._error(res, 400, 'Path required', 'VALIDATION');
             res.json(k.fileSystem.delete(targetPath));
@@ -464,14 +471,14 @@ class APIRouter {
 
         // ── SERVICES ──────────────────────────────────────
 
-        r.get('/api/services', protect, async (req, res) => {
+        r.get('/api/services', protect, asyncHandler(async (req, res) => {
             if (!k.serviceManager) return this._error(res, 404, 'ServiceManager not loaded', 'NOT_LOADED');
             const list = k.serviceManager.list();
             const health = await k.serviceManager.health();
             res.json({ stats: k.serviceManager.getStats(), list, health });
-        });
+        }));
 
-        r.get('/api/services/constellation', async (req, res, next) => {
+        r.get('/api/services/constellation', asyncHandler(async (req, res, next) => {
             try {
             if (!k.serviceManager) return this._error(res, 404, 'ServiceManager not loaded', 'NOT_LOADED');
             const health = await k.serviceManager.health();
@@ -512,28 +519,28 @@ class APIRouter {
             } catch (error) {
                 next(error);
             }
-        });
+        }));
 
-        r.post('/api/services/start', protect, async (req, res) => {
+        r.post('/api/services/start', adminOnly, asyncHandler(async (req, res) => {
             if (!k.serviceManager) return this._error(res, 404, 'ServiceManager not loaded', 'NOT_LOADED');
             res.json(await k.serviceManager.startAll());
-        });
+        }));
 
-        r.post('/api/services/stop', protect, async (req, res) => {
+        r.post('/api/services/stop', adminOnly, asyncHandler(async (req, res) => {
             if (!k.serviceManager) return this._error(res, 404, 'ServiceManager not loaded', 'NOT_LOADED');
             res.json(await k.serviceManager.stopAll());
-        });
+        }));
 
-        r.post('/api/services/restart', protect, async (req, res) => {
+        r.post('/api/services/restart', adminOnly, asyncHandler(async (req, res) => {
             if (!k.serviceManager) return this._error(res, 404, 'ServiceManager not loaded', 'NOT_LOADED');
             res.json(await k.serviceManager.restartAll());
-        });
+        }));
 
-        r.post('/api/services/:name/toggle', protect, async (req, res) => {
+        r.post('/api/services/:name/toggle', adminOnly, asyncHandler(async (req, res) => {
             if (!k.serviceManager) return this._error(res, 404, 'ServiceManager not loaded', 'NOT_LOADED');
             const enabled = req.body.enabled !== false;
             res.json(k.serviceManager.setEnabled(req.params.name, enabled));
-        });
+        }));
 
         // ── Q-LEARNING ────────────────────────────────────
 
@@ -556,7 +563,7 @@ class APIRouter {
             res.json({ history: paginated.items, total: history.length, pagination: { total: paginated.total, offset, limit, hasMore: paginated.hasMore } });
         });
 
-        r.post('/api/qlearner/config', protect, (req, res) => {
+        r.post('/api/qlearner/config', adminOnly, (req, res) => {
             if (!k.qLearner) return this._error(res, 404, 'Q-Learning not loaded', 'NOT_LOADED');
             const { mode, tabular, dqn } = req.body;
             if (mode) k.qLearner.mode = mode;
@@ -565,7 +572,7 @@ class APIRouter {
             res.json(k.qLearner.getStatus());
         });
 
-        r.post('/api/qlearner/reset', protect, (req, res) => {
+        r.post('/api/qlearner/reset', adminOnly, (req, res) => {
             if (!k.qLearner) return this._error(res, 404, 'Q-Learning not loaded', 'NOT_LOADED');
             k.qLearner.reset();
             res.json({ status: 'reset', qLearning: k.qLearner.getStatus() });
@@ -593,8 +600,11 @@ class APIRouter {
             const state = this.getKernelState();
             res.json({
                 timestamp: Date.now(),
+                status: state.running ? 'online' : 'offline',
+                running: state.running,
+                scope: 'virtual-kernel',
                 cpu: {
-                    utilization: Math.min(100, (state.processCount / 50) * 30 + Math.random() * 20),
+                    utilization: Math.min(100, (state.readyQueue / Math.max(1, k.processManager.maxProcesses)) * 100),
                     processCount: state.processCount,
                     readyQueue: state.readyQueue,
                     blockedQueue: state.blockedQueue
@@ -613,19 +623,19 @@ class APIRouter {
             res.json(k.intelligence.getStatus());
         });
 
-        r.get('/api/intelligence/health', protect, async (req, res) => {
+        r.get('/api/intelligence/health', protect, asyncHandler(async (req, res) => {
             if (!k.intelligence) return this._error(res, 404, 'Intelligence Core not loaded', 'NOT_LOADED');
             res.json(await k.intelligence.health());
-        });
+        }));
 
-        r.post('/api/intelligence/think', protect, async (req, res) => {
+        r.post('/api/intelligence/think', protect, asyncHandler(async (req, res) => {
             if (!k.intelligence) return this._error(res, 404, 'Intelligence Core not loaded', 'NOT_LOADED');
             const { input, model } = req.body || {};
             if (!input) return this._error(res, 400, 'No input provided', 'VALIDATION');
             res.json(await k.intelligence.think(input, { model }));
-        });
+        }));
 
-        r.post('/api/intelligence/stream', protect, async (req, res) => {
+        r.post('/api/intelligence/stream', protect, asyncHandler(async (req, res) => {
             if (!k.intelligence) return this._error(res, 404, 'Intelligence Core not loaded', 'NOT_LOADED');
             const { input, model } = req.body || {};
             if (!input) return this._error(res, 400, 'No input provided', 'VALIDATION');
@@ -633,7 +643,7 @@ class APIRouter {
             res.setHeader('Cache-Control', 'no-store');
             const out = await k.intelligence.streamThink(input, (delta) => res.write(delta), { model });
             res.end();
-        });
+        }));
 
         r.post('/api/intelligence/reset', protect, (req, res) => {
             if (!k.intelligence) return this._error(res, 404, 'Intelligence Core not loaded', 'NOT_LOADED');
@@ -703,7 +713,7 @@ class APIRouter {
         // Real-time shell observation between GitHub and the OS.
         // POST webhook is HMAC-verified; reads are public (repo is public).
 
-        r.post('/api/github/webhook', async (req, res) => {
+        r.post('/api/github/webhook', asyncHandler(async (req, res) => {
             const bridge = k.githubBridge;
             if (!bridge) return this._error(res, 404, 'GitHub bridge not loaded', 'NOT_LOADED');
 
@@ -721,7 +731,7 @@ class APIRouter {
                 bridge.runOpsCommands(event).catch(() => {});
             }
             res.status(202).json({ ok: true, received: eventType, observed: !!event });
-        });
+        }));
 
         r.get('/api/github/events', (req, res) => {
             const bridge = k.githubBridge;
@@ -730,17 +740,17 @@ class APIRouter {
             res.json(bridge.getEvents(offset, limit));
         });
 
-        r.get('/api/github/status', async (req, res) => {
+        r.get('/api/github/status', asyncHandler(async (req, res) => {
             const bridge = k.githubBridge;
             if (!bridge) return this._error(res, 404, 'GitHub bridge not loaded', 'NOT_LOADED');
             res.json(await bridge.getStatus());
-        });
+        }));
 
-        r.post('/api/github/sync', async (req, res) => {
+        r.post('/api/github/sync', adminOnly, asyncHandler(async (req, res) => {
             const bridge = k.githubBridge;
             if (!bridge) return this._error(res, 404, 'GitHub bridge not loaded', 'NOT_LOADED');
             res.json(await bridge.sync());
-        });
+        }));
 
         r.get('/api/github/stats', (req, res) => {
             const bridge = k.githubBridge;
@@ -751,7 +761,7 @@ class APIRouter {
         // ── SHELL OBSERVATION (gated allowlist) ───────────────
         // Read-only + safe git ops only. See core/shell.js.
 
-        r.post('/api/shell/exec', async (req, res) => {
+        r.post('/api/shell/exec', adminOnly, asyncHandler(async (req, res) => {
             const shell = k.shellExecutor;
             if (!shell) return this._error(res, 404, 'Shell executor not loaded', 'NOT_LOADED');
             const { command } = req.body || {};
@@ -759,16 +769,16 @@ class APIRouter {
                 return this._error(res, 400, 'No command provided', 'VALIDATION');
             }
             res.json(await shell.execute(command));
-        });
+        }));
 
-        r.get('/api/shell/log', (req, res) => {
+        r.get('/api/shell/log', adminOnly, (req, res) => {
             const shell = k.shellExecutor;
             if (!shell) return this._error(res, 404, 'Shell executor not loaded', 'NOT_LOADED');
             const { offset, limit } = this._paginate(req.query);
             res.json(shell.getLog(offset, limit));
         });
 
-        r.get('/api/shell/stats', (req, res) => {
+        r.get('/api/shell/stats', adminOnly, (req, res) => {
             const shell = k.shellExecutor;
             if (!shell) return this._error(res, 404, 'Shell executor not loaded', 'NOT_LOADED');
             res.json(shell.getStats());
@@ -780,8 +790,11 @@ class APIRouter {
             const state = this.getKernelState();
             res.json({
                 timestamp: Date.now(),
+                status: state.running ? 'online' : 'offline',
+                running: state.running,
+                scope: 'virtual-kernel',
                 cpu: {
-                    utilization: Math.min(100, (state.processCount / 50) * 30 + Math.random() * 20),
+                    utilization: Math.min(100, (state.readyQueue / Math.max(1, k.processManager.maxProcesses)) * 100),
                     processCount: state.processCount,
                     readyQueue: state.readyQueue,
                     blockedQueue: state.blockedQueue
@@ -820,11 +833,11 @@ class APIRouter {
 
         r.get('/api/v1/health', (req, res) => {
             const mm = k.memoryManager;
-            res.json({
+            res.status(k.running ? 200 : 503).json({
                 status: k.running ? 'online' : 'offline',
                 version: k.version,
                 uptime: k.uptime,
-                processes: k.processManager.processes.size,
+                processes: k.processManager.getProcessList().length,
                 memoryUsage: mm.getStats().usagePercent + '%'
             });
         });
@@ -847,12 +860,12 @@ class APIRouter {
             memoryUtilization: mm.getStats().usagePercent,
             pageFaultRate: mm.pageFaults ? (mm.pageFaults / Math.max(1, mm.totalPages)) * 100 : 0,
             swapUsage: mm.swapUsed ? (mm.swapUsed / mm.swapSize) * 100 : 0,
-            diskIOPS: mm.diskIOPS || Math.floor(Math.random() * 500),
-            networkBandwidth: Math.random() * 50,
+            diskIOPS: mm.diskIOPS || 0,
+            networkBandwidth: mm.networkBandwidth || 0,
             threatLevel: k.security?.threatLevel || 0,
             failedLogins: k.security?.failedLogins || 0,
-            aiLatency: k.consciousness ? 200 : 9999,
-            aetherBusLoad: k.pascalEngine ? Math.random() * 30 : 0
+            aiLatency: k.consciousness ? 0 : 9999,
+            aetherBusLoad: 0
         };
     }
 

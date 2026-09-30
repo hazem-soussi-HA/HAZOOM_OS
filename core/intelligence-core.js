@@ -41,10 +41,14 @@ class IntelligenceCore {
         // intelligent and offline, instead of claiming ornith "thinks" while it hangs.
         this.preferredModel = opts.model || process.env.OLLAMA_MODEL || 'hazoom-omega:v3';
         // Order = preference if multiple respond (fast-first). Tiny models win on CPU.
-        this.candidateOrder = ['tinyllama:1.1b', 'gemma:2b', 'qwen2.5-coder:3b', 'phi3:mini', 'llama3.1:8b', this.preferredModel];
+        this.candidateOrder = ['tinyllama:1.1b', 'gemma:2b', 'llama3.2:3b', 'qwen2.5-coder:3b', 'phi3:mini', 'llama3.1:8b', this.preferredModel];
         this.model = null;               // resolved at boot via _selectModel()
         this.probeTimeoutMs = opts.probeTimeoutMs || 30000;  // per-model responsiveness probe
         this.timeoutMs = opts.timeoutMs || 90000;
+        // A model only counts as usable if Ollama reports it installed. Cold-loading
+        // a multi-GB model into RAM can exceed any short probe window, so presence in
+        // /api/tags — not a timed generation sample — is the honest availability signal.
+        this.requireModelInstalled = opts.requireModelInstalled !== false;
 
         // Rolling memory (recent turns) — the OS's working context.
         this.maxHistory = opts.maxHistory || 20;
@@ -66,63 +70,108 @@ class IntelligenceCore {
     }
 
     /**
-     * Probe Ollama for available models and pick the *fastest responsive* one.
-     * Runs candidates in PARALLEL with a hard overall cap so OS boot never hangs
-     * on a dead large model (e.g. a 35B model on CPU that never emits a token).
-     * Sets this.model. Returns the chosen model name (or null if none respond).
+     * Resolve which local model to reason with.
+     *
+     * Honesty rule: a model is "available" when Ollama reports it as installed.
+     * A timed generation sample is NOT used as the availability gate, because
+     * cold-loading multi-GB weights into RAM routinely exceeds any short probe
+     * window on CPU and previously produced false "no responsive model" results
+     * while a perfectly working model sat installed. Measured latency is still
+     * collected, but asynchronously, as telemetry rather than a verdict.
      */
     async _selectModel() {
-        let list = [];
+        let models = [];
         try {
             const ctrl = new AbortController();
             const to = setTimeout(() => ctrl.abort(), 5000);
             const r = await fetch(`${this.baseUrl}/api/tags`, { signal: ctrl.signal });
             clearTimeout(to);
-            if (r.ok) { const j = await r.json(); list = (j.models || []).map(m => m.name); }
-        } catch (e) { this.offline = true; this.lastError = e.message; return null; }
-        if (!list.length) { this.offline = true; this.lastError = 'no local models'; return null; }
-        if (list.includes(this.preferredModel)) {
-            this.model = this.preferredModel;
-            this.offline = false;
-            this.lastError = null;
-            return this.model;
-        }
-
-        // Candidate order: fast-first preference, only those present locally.
-        const order = this.candidateOrder.filter(m => list.includes(m) || list.some(x => x.startsWith(m.split(':')[0])));
-        if (this.preferredModel && !order.includes(this.preferredModel)) order.push(this.preferredModel);
-
-        // Probe all candidates concurrently; first to respond (fastest) wins.
-        const overallCap = Math.min(this.probeTimeoutMs * 2, 60000);
-        const race = order.map(m => (async () => {
-            try {
-                const ctrl = new AbortController();
-                const to = setTimeout(() => ctrl.abort(), this.probeTimeoutMs);
-                const r = await fetch(`${this.baseUrl}/api/chat`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl.signal,
-                    body: JSON.stringify({ model: m, messages: [{ role: 'user', content: 'Say: OK' }], stream: false, options: { num_predict: 4 } })
-                });
-                clearTimeout(to);
-                if (r.ok) { const j = await r.json(); if (j.message && j.message.content) return m; }
-            } catch (e) { /* try next */ }
+            if (r.ok) models = (await r.json()).models || [];
+        } catch (e) {
+            this.offline = true;
+            this.lastError = e.message;
             return null;
-        })());
-
-        // Hard wall-clock cap so we never block boot indefinitely.
-        const capped = Promise.race([
-            Promise.all(race),
-            new Promise(res => setTimeout(() => res([]), overallCap))
-        ]);
-        const results = await capped;
-        const winners = results.filter(Boolean);
-        if (winners.length) {
-            this.model = winners[0];   // order is fast-first, so winner[0] is the preferred responsive one
-            this.offline = false;
-            return this.model;
         }
-        this.offline = true;
-        this.lastError = 'no responsive local model (all timed out)';
-        return null;
+
+        if (!models.length) {
+            this.offline = true;
+            this.lastError = 'no local models installed';
+            return null;
+        }
+
+        this.installedModels = models.map(m => m.name);
+        this.modelDetails = Object.fromEntries(models.map(m => [m.name, m.details || {}]));
+
+        // An explicitly configured model wins, but only if it is really installed.
+        if (this.preferredModel && this.installedModels.includes(this.preferredModel)) {
+            return this._commitModel(this.preferredModel, 'configured');
+        }
+        if (this.preferredModel && !this.installedModels.includes(this.preferredModel)) {
+            this.lastError = `configured model ${this.preferredModel} is not installed`;
+        }
+
+        const known = this.candidateOrder.filter(name => this.installedModels.includes(name));
+        const pool = known.length ? known : [...this.installedModels];
+
+        // Weight size is the only honest speed proxy available before the model is
+        // resident in RAM. Recognised candidates rank ahead of unknown ones, and the
+        // project's own tuned hazoom-omega builds get a small bonus.
+        const score = name => {
+            const entry = models.find(m => m.name === name) || {};
+            const bytes = entry.size || Number.MAX_SAFE_INTEGER;
+            const recognised = this.candidateOrder.includes(name) ? 0.85 : 1;
+            const ownBuild = /^hazoom-omega/i.test(name) ? 0.92 : 1;
+            return bytes * recognised * ownBuild;
+        };
+
+        const chosen = [...pool].sort((a, b) => score(a) - score(b))[0];
+        return this._commitModel(chosen, 'auto');
+    }
+
+    _commitModel(name, source) {
+        this.model = name;
+        this.modelSource = source;
+        this.modelSelectedAt = Date.now();
+        this.offline = false;
+        this.lastError = null;
+        this.warmModel();
+        return name;
+    }
+
+    /**
+     * Measure real first-token latency without blocking boot or health checks.
+     * Purely observational: a failure here never changes availability.
+     */
+    warmModel() {
+        if (!this.model || this._warming) return;
+        this._warming = true;
+        const started = Date.now();
+        const ctrl = new AbortController();
+        const to = setTimeout(() => ctrl.abort(), this.timeoutMs);
+        fetch(`${this.baseUrl}/api/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            signal: ctrl.signal,
+            body: JSON.stringify({
+                model: this.model,
+                messages: [{ role: 'user', content: 'OK' }],
+                stream: false,
+                options: { num_predict: 1 }
+            })
+        })
+            .then(r => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+            .then(() => {
+                this.warmMs = Date.now() - started;
+                this.warm = 'ready';
+            })
+            .catch(e => {
+                this.warm = 'error';
+                this.warmMs = Date.now() - started;
+            })
+            .finally(() => {
+                clearTimeout(to);
+                this._warming = false;
+            });
     }
 
     _load() {
@@ -303,8 +352,13 @@ class IntelligenceCore {
             name: this.name,
             version: this.version,
             enabled: this.enabled,
+            available: this.enabled && !!(this.model || this.installedModels?.length),
             preferredModel: this.preferredModel,
             activeModel: this.model,
+            modelSource: this.modelSource || null,
+            installedModels: this.installedModels || [],
+            warm: this.warm || 'pending',
+            warmMs: this.warmMs ?? null,
             endpoint: this.baseUrl,
             offline: this.offline,
             lastError: this.lastError,

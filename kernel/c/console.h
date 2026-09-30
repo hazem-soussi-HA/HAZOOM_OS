@@ -35,6 +35,13 @@ extern uint16_t console_column;
 extern uint8_t  console_color;
 
 /* Function prototypes */
+
+/* Port I/O primitives. Shared here because the VGA driver, the PIT driver
+   and the PIC driver all need them, and duplicating `static inline` copies
+   in every driver is how drivers drift out of sync. */
+void outb(uint16_t port, uint8_t value);
+uint8_t inb(uint16_t port);
+
 void vga_clear(void);
 void vga_set_color(uint8_t fg, uint8_t bg);
 void vga_putchar(char c);

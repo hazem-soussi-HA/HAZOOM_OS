@@ -1,5 +1,4 @@
-// JS fallback implementations for when native binaries are unavailable.
-// These mirror the x86-64 assembly algorithms exactly.
+// JS reference implementations for when native binaries are unavailable.
 
 function hash2i(i, j) {
   return ((i * 127 + j * 311) ^ ((i * 269) + (j * 173))) & 0x7FFFFFFF;
@@ -25,12 +24,53 @@ function fbm(x, z, octaves = 6) {
   return v;
 }
 
-// ---- TERRAIN GENERATOR (mirrors terrain_gen.asm) ----
+function gridParam(params, key, fallback, maximum) {
+  const value = params[key] === undefined ? fallback : Number(params[key]);
+  if (!Number.isSafeInteger(value) || value < 1 || value > maximum) {
+    throw new RangeError(`${key} must be an integer between 1 and ${maximum}`);
+  }
+  return value;
+}
+
+function numberParam(params, key, fallback, minimum, maximum) {
+  const value = params[key] === undefined ? fallback : Number(params[key]);
+  if (!Number.isFinite(value) || value < minimum || value > maximum) {
+    throw new RangeError(`${key} must be between ${minimum} and ${maximum}`);
+  }
+  return value;
+}
+
+function makePreview(values, width, height, maxDimension = 32) {
+  if (!values || typeof values.length !== 'number' || values.length < width * height) return null;
+  const previewWidth = Math.min(maxDimension, width);
+  const previewHeight = Math.min(maxDimension, height);
+  let minimum = Infinity;
+  let maximum = -Infinity;
+  for (let index = 0; index < width * height; index++) {
+    const value = Number(values[index]);
+    if (!Number.isFinite(value)) return null;
+    if (value < minimum) minimum = value;
+    if (value > maximum) maximum = value;
+  }
+  const range = maximum - minimum;
+  const preview = new Array(previewWidth * previewHeight);
+  for (let y = 0; y < previewHeight; y++) {
+    const sourceY = Math.min(height - 1, Math.floor((y + 0.5) * height / previewHeight));
+    for (let x = 0; x < previewWidth; x++) {
+      const sourceX = Math.min(width - 1, Math.floor((x + 0.5) * width / previewWidth));
+      const value = Number(values[sourceY * width + sourceX]);
+      preview[y * previewWidth + x] = range > 1e-9 ? (value - minimum) / range : 0.5;
+    }
+  }
+  return { width: previewWidth, height: previewHeight, values: preview, min: minimum, max: maximum };
+}
+
+// ---- TERRAIN REFERENCE GENERATOR ----
 function generateTerrain(params = {}) {
-  const GW = params.gridW || 256;
-  const GH = params.gridH || 256;
-  const SC = params.scale || 20;
-  const HM = params.heightMul || 4;
+  const GW = gridParam(params, 'gridW', 256, 512);
+  const GH = gridParam(params, 'gridH', 256, 512);
+  const SC = numberParam(params, 'scale', 20, 0.1, 1000);
+  const HM = numberParam(params, 'heightMul', 4, 0.1, 100);
 
   const heightmap = new Float32Array(GW * GH);
   const normals = new Float32Array(GW * GH * 3);
@@ -157,10 +197,10 @@ function generateTerrain(params = {}) {
   };
 }
 
-// ---- EARTH SIMULATION (mirrors earth_sim.asm) ----
+// ---- EARTH REFERENCE GENERATOR ----
 function generateEarth(params = {}) {
-  const GW = params.gridW || 512;
-  const GH = params.gridH || 256;
+  const GW = gridParam(params, 'gridW', 512, 512);
+  const GH = gridParam(params, 'gridH', 256, 256);
 
   const plateSeedsX = [.15,.42,.73,.28,.88,.55,.05,.92,.33,.67,.12,.48,.79,.22,.61,.85];
   const plateSeedsY = [.25,.68,.42,.15,.82,.35,.58,.12,.92,.08,.55,.75,.32,.48,.18,.65];
@@ -308,4 +348,4 @@ function generateEarth(params = {}) {
   };
 }
 
-module.exports = { generateTerrain, generateEarth, hash2i, noise2d, fbm };
+module.exports = { generateTerrain, generateEarth, makePreview, hash2i, noise2d, fbm };

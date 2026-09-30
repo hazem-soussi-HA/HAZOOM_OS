@@ -6,8 +6,14 @@ uint16_t console_row = 0;
 uint16_t console_column = 0;
 uint8_t  console_color = 0x03;
 
-static inline void outb(uint16_t port, uint8_t value) {
+void outb(uint16_t port, uint8_t value) {
     __asm__ volatile("outb %0, %1" : : "a"(value), "Nd"(port));
+}
+
+uint8_t inb(uint16_t port) {
+    uint8_t ret;
+    __asm__ volatile("inb %1, %0" : "=a"(ret) : "Nd"(port));
+    return ret;
 }
 
 void vga_update_cursor(void) {

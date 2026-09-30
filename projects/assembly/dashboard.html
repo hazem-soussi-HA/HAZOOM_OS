@@ -234,10 +234,11 @@ async function checkStatus() {
   try {
     const r = await fetch(API + '/status');
     const s = await r.json();
-    document.getElementById('st-terrain').className = 'status-dot ' + (s.terrainBinary ? 'dot-on' : 'dot-off');
-    document.getElementById('st-earth').className = 'status-dot ' + (s.earthBinary ? 'dot-on' : 'dot-warn');
-    document.getElementById('mc-mode').textContent = s.terrainBinary ? 'Native (x86-64)' : 'JS Fallback';
-    document.getElementById('mc-binary').textContent = s.terrainBinary ? 'Available' : 'Not found';
+     document.getElementById('st-terrain').className = 'status-dot ' + (s.nativeTerrainEnabled ? 'dot-on' : 'dot-off');
+     document.getElementById('st-earth').className = 'status-dot dot-warn';
+     document.getElementById('mc-mode').textContent = s.nativeTerrainEnabled ? 'Native (x86-64)' : 'Reference (JS)';
+     document.getElementById('mc-binary').textContent = s.nativeTerrainEnabled ? 'Enabled' : 'Reference fallback';
+
   } catch(e) {
     document.getElementById('st-server').className = 'status-dot dot-off';
   }
@@ -293,7 +294,10 @@ async function generateTerrain() {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      useNative: execMode === 'native' ? true : execMode === 'js' ? false : undefined
+      gridW: 128,
+      gridH: 128,
+      useNative: execMode === 'native',
+      includeRaw: true
     })
   });
   const result = await r.json();
@@ -320,7 +324,10 @@ async function generateEarth() {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      useNative: execMode === 'native' ? true : execMode === 'js' ? false : undefined
+      gridW: 128,
+      gridH: 128,
+      useNative: execMode === 'native',
+      includeRaw: true
     })
   });
   const result = await r.json();

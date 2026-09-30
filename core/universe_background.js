@@ -12,16 +12,153 @@
     let time = 0;
     let animationId = null;
     let isInitialized = false;
+    let lastFrameTime = 0;
 
-    const STAR_COUNT = 15000;
-    const NEBULA_PARTICLES = 3000;
-    const DUST_COUNT = 5000;
+    const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const saveData = navigator.connection?.saveData;
+    const lowPower = (navigator.hardwareConcurrency || 8) <= 4;
+    const nanoModeSetting = localStorage.getItem('hazoom_nano_mode');
+    const NANO_MODE = reducedMotion || saveData || lowPower || nanoModeSetting !== 'full';
+
+    /* Background renderer selection.
+       full  - Three.js / WebGL galaxy (GPU, richest)
+       light - 2D canvas parallax starfield (no WebGL, ~1-2% of the cost)
+       off   - static gradient only
+
+       Nano defaults to 'light': on software rendering, or a machine without a
+       usable GPU, the WebGL galaxy can dominate the entire frame budget while
+       adding little. 'light' keeps the depth cue at a fraction of the price. */
+    const UNIVERSE_MODE = (() => {
+        try {
+            const stored = localStorage.getItem('hazoom_universe_mode');
+            if (stored === 'full' || stored === 'light' || stored === 'off') {
+                return reducedMotion ? 'off' : stored;
+            }
+        } catch (e) {}
+        if (reducedMotion) return 'off';
+        return NANO_MODE ? 'light' : 'full';
+    })();
+    const FRAME_INTERVAL = 1000 / (NANO_MODE ? 24 : 30);
+    const LIGHT_FRAME_INTERVAL = 1000 / 30;   // 2D path: a steady 30fps ceiling
+    const STAR_LAYER_COUNT = NANO_MODE ? 120 : 500;
+    const NEBULA_PARTICLES = NANO_MODE ? 180 : 450;
+    const DUST_COUNT = NANO_MODE ? 240 : 650;
 
     const COLORS = {
         star: [0xffffff, 0xfff4e6, 0xe6f0ff, 0xffebc8, 0xc8e8ff],
         nebula: [0x00e8ff, 0x8b5cf6, 0xffc940, 0x00e676, 0xff3d71],
         dust: [0xffffff, 0xffe0b0, 0xb0e0ff]
     };
+
+    /* ── Light 2D renderer ────────────────────────────────────────────
+       Same visual idea (layered parallax stars + a soft core glow) using only
+       Canvas2D. No WebGL context, no shader compilation, no per-frame buffer
+       uploads, so it stays cheap on machines where the galaxy is not worth the
+       GPU budget. */
+    let lightCtx = null, lightRaf = null, lightStars = [], lightGlow = null;
+    let lightW = 0, lightH = 0, lightT = 0, lightLast = 0, lightRunning = false;
+    let lightIntensity = 1;
+
+    function buildLightField(w, h) {
+        const count = Math.round(Math.min(260, Math.max(90, (w * h) / 9000)));
+        const rand = (a, b) => a + Math.random() * (b - a);
+        lightStars = new Array(count);
+        for (let i = 0; i < count; i++) {
+            const depth = Math.random();                     // 0 far .. 1 near
+            lightStars[i] = {
+                x: Math.random() * w,
+                y: Math.random() * h,
+                z: depth,
+                r: rand(0.4, 1.0) + depth * 1.1,
+                a: rand(0.25, 0.95) * (0.35 + depth * 0.65),
+                tw: Math.random() * Math.PI * 2,
+                vx: rand(-0.012, 0.012) * (0.3 + depth),
+                vy: rand(-0.010, 0.006) * (0.3 + depth),
+                hue: Math.random() < 0.18 ? (Math.random() < 0.5 ? '190,235,255' : '255,240,214') : '255,255,255'
+            };
+        }
+        if (!lightGlow) {
+            lightGlow = lightCtx.createRadialGradient(w * 0.5, h * 0.42, 0, w * 0.5, h * 0.42, Math.max(w, h) * 0.42);
+            lightGlow.addColorStop(0, 'rgba(90,150,255,0.13)');
+            lightGlow.addColorStop(0.45, 'rgba(120,80,220,0.07)');
+            lightGlow.addColorStop(1, 'rgba(0,0,0,0)');
+        }
+    }
+
+    function resizeLight() {
+        if (!lightCtx) return;
+        const w = window.innerWidth, h = window.innerHeight;
+        if (w === lightW && h === lightH) return;
+        lightW = w; lightH = h;
+        lightCtx.canvas.width = w;
+        lightCtx.canvas.height = h;
+        buildLightField(w, h);
+    }
+
+    function drawLight(dt) {
+        if (!lightCtx) return;
+        const ctx = lightCtx;
+        ctx.clearRect(0, 0, lightW, lightH);
+        if (lightGlow) { ctx.fillStyle = lightGlow; ctx.fillRect(0, 0, lightW, lightH); }
+
+        for (let i = 0; i < lightStars.length; i++) {
+            const s = lightStars[i];
+            s.x += s.vx * dt * 60 * lightIntensity;
+            s.y += s.vy * dt * 60 * lightIntensity;
+            if (s.x < -4) s.x = lightW + 4; else if (s.x > lightW + 4) s.x = -4;
+            if (s.y < -4) s.y = lightH + 4; else if (s.y > lightH + 4) s.y = -4;
+
+            // Near stars drift further with the pointer: cheap parallax.
+            s.x += (mouseX * 0.012 * s.z) - (targetX * 0.00012 * s.z);
+            s.y += (mouseY * 0.012 * s.z) - (targetY * 0.00012 * s.z);
+
+            const tw = 0.72 + 0.28 * Math.sin(lightT * 1.6 + s.tw);
+            ctx.fillStyle = `rgba(${s.hue},${(s.a * tw * lightIntensity).toFixed(3)})`;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    function lightLoop(ts) {
+        if (!lightRunning) return;
+        lightRaf = requestAnimationFrame(lightLoop);
+        const now = ts || performance.now();
+        if (lightLast && now - lightLast < LIGHT_FRAME_INTERVAL) return;
+        const dt = lightLast ? Math.min((now - lightLast) / 1000, 0.1) : 0.016;
+        lightLast = now;
+        lightT += dt;
+        targetX += (mouseX * 14 - targetX) * 0.06;
+        targetY += (mouseY * 14 - targetY) * 0.06;
+        drawLight(dt);
+    }
+
+    function initLightUniverse() {
+        const canvas = document.getElementById('desktop-canvas');
+        if (!canvas) { console.warn('[Universe] Canvas not found'); return; }
+        lightCtx = canvas.getContext('2d', { alpha: true });
+        if (!lightCtx) { console.warn('[Universe] 2D context unavailable'); return; }
+        lightW = 0; lightH = 0;
+        resizeLight();
+        lightRunning = true;
+        lightLast = 0;
+        lightRaf = requestAnimationFrame(lightLoop);
+        document.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('resize', resizeLight);
+        document.addEventListener('visibilitychange', handleLightVisibility);
+    }
+
+    function handleLightVisibility() {
+        if (document.hidden) {
+            lightRunning = false;
+            if (lightRaf) cancelAnimationFrame(lightRaf);
+            lightRaf = null;
+        } else if (!lightRunning) {
+            lightRunning = true;
+            lightLast = 0;
+            lightRaf = requestAnimationFrame(lightLoop);
+        }
+    }
 
     function initUniverse() {
         if (isInitialized) return;
@@ -30,6 +167,21 @@
         const canvas = document.getElementById('desktop-canvas');
         if (!canvas) {
             console.warn('[Universe] Canvas not found');
+            return;
+        }
+
+        if (UNIVERSE_MODE === 'off') {
+            canvas.style.display = 'none';
+            window.HAZOOM_UNIVERSE.ready = true;
+            window.HAZOOM_UNIVERSE.mode = 'off';
+            console.log('[Universe] background disabled');
+            return;
+        }
+        if (UNIVERSE_MODE === 'light') {
+            initLightUniverse();
+            window.HAZOOM_UNIVERSE.ready = true;
+            window.HAZOOM_UNIVERSE.mode = 'light';
+            console.log('[Universe] light 2D background initialized');
             return;
         }
 
@@ -52,12 +204,12 @@
         // Renderer
         renderer = new THREE.WebGLRenderer({
             canvas: canvas,
-            antialias: true,
+            antialias: !NANO_MODE,
             alpha: true,
             preserveDrawingBuffer: false
         });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setPixelRatio(NANO_MODE ? 1 : Math.min(window.devicePixelRatio, 1.5));
         renderer.setClearColor(0x000000, 0);
 
         // Create cosmic elements
@@ -71,17 +223,20 @@
         window.addEventListener('resize', onResize);
 
         // Start render loop
+        document.addEventListener('visibilitychange', handleVisibility);
         animate();
 
+        window.HAZOOM_UNIVERSE.ready = true;
+        window.HAZOOM_UNIVERSE.nanoMode = NANO_MODE;
         console.log('[Universe] 3D background initialized');
     }
 
     function createStars() {
         // Multiple layers for depth
         const layers = [
-            { count: 5000, size: 1.2, distance: 2000, opacity: 0.8, colorVariation: 0.3 },
-            { count: 5000, size: 0.8, distance: 4000, opacity: 0.5, colorVariation: 0.5 },
-            { count: 5000, size: 0.4, distance: 8000, opacity: 0.3, colorVariation: 0.7 }
+            { count: STAR_LAYER_COUNT, size: 1.0, distance: 2000, opacity: 0.35, colorVariation: 0.3 },
+            { count: STAR_LAYER_COUNT, size: 0.7, distance: 4000, opacity: 0.22, colorVariation: 0.5 },
+            { count: STAR_LAYER_COUNT, size: 0.4, distance: 8000, opacity: 0.14, colorVariation: 0.7 }
         ];
 
         layers.forEach((layer, layerIndex) => {
@@ -402,7 +557,7 @@
         camera.updateProjectionMatrix();
 
         renderer.setSize(width, height);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setPixelRatio(NANO_MODE ? 1 : Math.min(window.devicePixelRatio, 1.5));
     }
 
     // Animation state
@@ -410,11 +565,16 @@
     let targetStarOpacity = 0.6, currentStarOpacity = 0.6;
     let targetDustOpacity = 0.4, currentDustOpacity = 0.4;
 
-    function animate() {
+    function animate(timestamp = 0) {
         if (!isInitialized) return;
-
+        if (timestamp - lastFrameTime < FRAME_INTERVAL) {
+            animationId = requestAnimationFrame(animate);
+            return;
+        }
+        const delta = lastFrameTime ? Math.min((timestamp - lastFrameTime) / 1000, 0.1) : 0.016;
+        lastFrameTime = timestamp;
         animationId = requestAnimationFrame(animate);
-        time += 0.016;
+        time += delta;
 
         // Smooth camera follow mouse (parallax)
         targetX = mouseX * 15;
@@ -431,28 +591,25 @@
                 const phases = starLayer.userData.phases;
                 const baseDistance = starLayer.userData.baseDistance;
 
-                for (let i = 0; i < positions.length / 3; i++) {
-                    // Subtle twinkling
-                    const twinkle = Math.sin(time * 2 + phases[i]) * 0.15 + 0.85;
-                    starLayer.material.opacity = starLayer.material.opacity * 0.99 + twinkle * 0.01;
+                const count = positions.length / 3;
+                const wrapLimit = baseDistance * baseDistance * 2.25;   // squared, avoids per-star Math.sqrt
+
+                for (let i = 0; i < count; i++) {
+                    const i3 = i * 3;
 
                     // Slow drift
-                    positions[i * 3] += velocities[i * 3];
-                    positions[i * 3 + 1] += velocities[i * 3 + 1];
-                    positions[i * 3 + 2] += velocities[i * 3 + 2];
+                    positions[i3] += velocities[i3];
+                    positions[i3 + 1] += velocities[i3 + 1];
+                    positions[i3 + 2] += velocities[i3 + 2];
 
-                    // Wrap around
-                    const dist = Math.sqrt(
-                        positions[i * 3] ** 2 +
-                        positions[i * 3 + 1] ** 2 +
-                        positions[i * 3 + 2] ** 2
-                    );
-                    if (dist > baseDistance * 1.5) {
+                    // Wrap around (squared distance: no sqrt per particle)
+                    const dx = positions[i3], dy = positions[i3 + 1], dz = positions[i3 + 2];
+                    if (dx * dx + dy * dy + dz * dz > wrapLimit) {
                         const theta = Math.random() * Math.PI * 2;
                         const phi = Math.acos(2 * Math.random() - 1);
-                        positions[i * 3] = baseDistance * Math.sin(phi) * Math.cos(theta);
-                        positions[i * 3 + 1] = baseDistance * Math.sin(phi) * Math.sin(theta);
-                        positions[i * 3 + 2] = baseDistance * Math.cos(phi);
+                        positions[i3] = baseDistance * Math.sin(phi) * Math.cos(theta);
+                        positions[i3 + 1] = baseDistance * Math.sin(phi) * Math.sin(theta);
+                        positions[i3 + 2] = baseDistance * Math.cos(phi);
                     }
                 }
                 starLayer.geometry.attributes.position.needsUpdate = true;
@@ -588,6 +745,16 @@
         renderer.render(scene, camera);
     }
 
+    function handleVisibility() {
+        if (document.hidden) {
+            if (animationId) cancelAnimationFrame(animationId);
+            animationId = null;
+        } else if (isInitialized && !animationId) {
+            lastFrameTime = 0;
+            animationId = requestAnimationFrame(animate);
+        }
+    }
+
     // Auto-initialize when Three.js is loaded
     function waitForThree() {
         if (typeof THREE !== 'undefined') {
@@ -599,15 +766,27 @@
 
     // Expose API
     window.HAZOOM_UNIVERSE = {
+        ready: false,
+        nanoMode: NANO_MODE,
+        mode: UNIVERSE_MODE,
         init: initUniverse,
         destroy: () => {
             if (animationId) cancelAnimationFrame(animationId);
+            if (lightRaf) cancelAnimationFrame(lightRaf);
+            lightRunning = false;
+            lightRaf = null;
+            lightStars = [];
+            lightCtx = null;
             document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('visibilitychange', handleVisibility);
+            document.removeEventListener('visibilitychange', handleLightVisibility);
             window.removeEventListener('resize', onResize);
+            window.removeEventListener('resize', resizeLight);
             if (renderer) renderer.dispose();
             isInitialized = false;
         },
         setIntensity: (value) => {
+            if (lightCtx) { lightIntensity = Math.max(0, Math.min(1, value)); return; }
             if (stars) stars.forEach(s => s.material.opacity *= value);
             if (nebula) nebula.material.opacity *= value;
             if (dust) dust.material.opacity *= value;
@@ -688,10 +867,10 @@
             }
         },
 
-        currentPreset: 'focused',
+        currentPreset: 'minimal',
         moodSyncEnabled: true,
-        targetIntensity: 0.7,
-        currentIntensity: 0.7,
+        targetIntensity: 0.25,
+        currentIntensity: 0.25,
 
         setPreset: (preset) => {
             const p = window.HAZOOM_UNIVERSE.presets[preset];
@@ -762,11 +941,11 @@
         setMood: (mood) => {
             if (!window.HAZOOM_UNIVERSE.moodSyncEnabled) return;
             const moodToPreset = {
-                calm: 'calm',
-                creative: 'creative',
-                energetic: 'energetic',
-                focused: 'focused',
-                night: 'night',
+                calm: 'minimal',
+                creative: 'minimal',
+                energetic: 'focused',
+                focused: 'minimal',
+                night: 'minimal',
                 golden: 'golden'
             };
             const preset = moodToPreset[mood] || 'focused';
@@ -779,7 +958,9 @@
     };
 
     // Load Three.js if not present
-    if (typeof THREE === 'undefined') {
+    if (reducedMotion) {
+        createFallbackBackground();
+    } else if (typeof THREE === 'undefined') {
         const script = document.createElement('script');
         script.src = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js';
         script.onload = waitForThree;

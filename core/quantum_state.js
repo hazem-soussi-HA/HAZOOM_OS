@@ -67,9 +67,6 @@ class QuantumStateManager {
     // Start persistence
     this.startPersistence();
 
-    // Initialize component coherence from heat monitor if available
-    await this.syncWithHeatMonitor().catch(() => {});
-
     this.initialized = true;
     this.emit('initialized', { coherence: this.coherence });
 

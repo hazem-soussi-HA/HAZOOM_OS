@@ -23,22 +23,15 @@
 # =============================================================================
 set -uo pipefail
 
-# --- where this project root lives (PLANET EARTH dir on Windows-side) -------
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# --- where this project root lives -----------------------------------------
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 RUNTIME="$ROOT/.hazoom-os"
 LOGDIR="$RUNTIME/logs"
 PIDDIR="$RUNTIME/pids"
 mkdir -p "$LOGDIR" "$PIDDIR"
 
-# Linux-side project (HAZOOM_OS)
-HAZOOM_OS_DIR="/home/hazem/HAZOOM_OS"
-HAZOOM_POD_DIR="/home/hazem/hazoom"
-
-# Python interpreters
-PEN_VENV="$ROOT/planet_earth_news/.venv"
-PEN_PY="$PEN_VENV/bin/python"
-PY="$ROOT/.venv_omni/bin/python"   # shared env for CollaborativeBeat (created if missing)
-SYS_PY="/root/.main_env/bin/python3"
+# Python interpreter
+SYS_PY="$(command -v python3)"
 
 # -----------------------------------------------------------------------------
 #  SERVICE TABLE  (name  dir  kind  cmd  port  proto  logfile  pidfile)
@@ -61,38 +54,28 @@ add_service() { # name dir kind cmd port proto url
 }
 
 # 1) Planet Earth -- offline WebGL globe (8080)
-add_service "planet_earth"  "$ROOT"                                  python \
-  "$SYS_PY $ROOT/server.py"  8080 http "http://127.0.0.1:8080/"
+add_service "planet_earth"  "$ROOT/services/planet-earth"           python \
+  "$SYS_PY server.py" 8080 http "http://127.0.0.1:8080/"
 
-# 2) Planet Earth News -- sovereign local news (8000, https)
-#    Run directly from its venv (NOT serve.sh, whose inner supervisor can loop
-#    on a crash and self-report "running" while the port stays closed).
-add_service "planet_earth_news" "$ROOT/planet_earth_news" pyvenv \
-  "$PEN_PY serve.py" 8000 https "https://127.0.0.1:8000/"
+# 2) Planet Earth News -- sovereign local news (8001, http)
+add_service "planet_earth_news" "$ROOT/services/planet-earth-news" python \
+  "env PORT=8001 BIND=127.0.0.1 $SYS_PY serve.py" 8001 http "http://127.0.0.1:8001/"
 
 # 3) Birds Encyclopedia + Birds of Africa 3D atlas (4100; atlas at /atlas)
-add_service "birds_encyclopedia" "$ROOT/birds-encyclopedia" node \
+add_service "birds_encyclopedia" "$ROOT/services/birds-encyclopedia" node \
   "node server/server.js" 4100 http "http://127.0.0.1:4100/  (atlas: /atlas/)"
 
 # 4) Hazoom POD platform (4000)
-add_service "hazoom_pod" "$HAZOOM_POD_DIR" node \
+add_service "hazoom_pod" "$ROOT/services/hazoom-pod" node \
   "node server/server.js" 4000 http "http://127.0.0.1:4000/"
 
-# 5) HAZOOM OS simulation desktop (3000)
-add_service "hazoom_os" "$HAZOOM_OS_DIR" node \
-  "node server.js" 3000 http "http://127.0.0.1:3000/  (os: /os.html)"
-
 # 6) CollaborativeBeat -- local-first neural core (5000)
-add_service "collaborative_beat" "$ROOT/deepseek/CollaborativeBeat.py" python \
-  "$PY collaborative_beat_v4.py" 5000 http "http://127.0.0.1:5000/"
+add_service "collaborative_beat" "$ROOT/services/collaborative-beat" python \
+  "env PORT=5000 BIND=127.0.0.1 $SYS_PY server.py" 5000 http "http://127.0.0.1:5000/"
 
 # 7) ChatDev / Ornith -- loopback-only offline chatbox to local Ollama (5055)
-#    Reuses ChatDev's own run_ornith.sh (sets 127.0.0.1 bind + keep_alive).
-#    NOTE: defaults to ornith:35b which is DEAD on CPU-only hw (0 tokens/120s).
-#    On this box set ORNITH_MODEL to a small responsive model, e.g.:
-#      ORNITH_MODEL=tinyllama:1.1b bash hazoom-os-launch.sh start
-add_service "chatdev" "/home/hazem/chatdev" node \
-  "bash run_ornith.sh" 5055 http "http://127.0.0.1:5055/  (Ornith offline chatbox)"
+add_service "chatdev" "$ROOT/services/chatdev-ornith" python \
+  "env ORNITH_PORT=5055 $SYS_PY ornith_server.py" 5055 http "http://127.0.0.1:5055/  (Ornith offline chatbox)"
 
 # -----------------------------------------------------------------------------
 #  helpers
@@ -112,32 +95,6 @@ wait_for_port() { # port timeout
     sleep 1
   done
   exec 3>&- 2>/dev/null || true
-  return 0
-}
-
-# Ensure the shared Python env for CollaborativeBeat (flask/numpy/scipy/dotenv).
-# Runs only if missing; succeeds offline if wheels are already cached/present.
-ensure_cb_env() {
-  if [[ -x "$PY" ]] && "$PY" -c "import flask,numpy,scipy,dotenv" 2>/dev/null; then
-    return 0
-  fi
-  log "Creating shared Python env for CollaborativeBeat ($PY) ..."
-  if ! "$SYS_PY" -m venv "$ROOT/.venv_omni" 2>/dev/null; then
-    warn "Could not create venv; falling back to system Python for CollaborativeBeat."
-    PY="$SYS_PY"
-  fi
-  grep -qE "ollama|numpy|scipy|flask|dotenv" /dev/null 2>/dev/null || true
-  if ! "$PY" -c "import flask,numpy,scipy,dotenv" 2>/dev/null; then
-    log "Installing CollaborativeBeat deps (needs internet ONCE; offline-safe after)..."
-    if "$PY" -m pip install --quiet --disable-pip-version-check \
-        flask numpy scipy python-dotenv 2>>"$LOGDIR/pip.log"; then
-      ok "CollaborativeBeat deps installed."
-    else
-      warn "Offline or install failed. CollaborativeBeat needs flask/numpy/scipy to start."
-      warn "Run while online:  $PY -m pip install flask numpy scipy python-dotenv"
-      return 1
-    fi
-  fi
   return 0
 }
 
@@ -206,8 +163,6 @@ stop_one() { # idx
   if is_running "$pf"; then
     local pid; pid="$(cat "$pf")"
     kill "$pid" 2>/dev/null || true
-    # also catch child node/python if setsid reparented
-    pkill -f "${S_CMD[$i]%% *}" 2>/dev/null || true
     sleep 1
     if is_running "$pf"; then kill -9 "$pid" 2>/dev/null || true; fi
     rm -f "$pf"
@@ -229,10 +184,19 @@ do_start() {
   log "  Local-first . Loopback-only . Blackout-resistant ."
   log "==================================================================="
   echo
-  ensure_cb_env || warn "CollaborativeBeat may not start (see above)."
-  echo
+  local requested=("$@")
+  is_requested() {
+    local candidate="$1"
+    if [ "${#requested[@]}" -eq 0 ]; then return 0; fi
+    local item
+    for item in "${requested[@]}"; do
+      if [ "$item" = "$candidate" ]; then return 0; fi
+    done
+    return 1
+  }
   local i
   for (( i=0; i<${#S_NAME[@]}; i++ )); do
+    is_requested "${S_NAME[$i]}" || continue
     start_one "$i"
   done
   echo
@@ -240,6 +204,7 @@ do_start() {
   echo
   log "All services launched. Open these in your browser (127.0.0.1 only):"
   for (( i=0; i<${#S_NAME[@]}; i++ )); do
+    is_requested "${S_NAME[$i]}" || continue
     printf '   \033[35m%-22s\033[0m %s\n' "${S_NAME[$i]}" "${S_URL[$i]}"
   done
   echo
@@ -271,15 +236,15 @@ do_status() {
   report_llm
 }
 
-do_restart() { do_stop; sleep 1; do_start; }
+do_restart() { do_stop; sleep 1; do_start "$@"; }
 
 # -----------------------------------------------------------------------------
 #  dispatch
 # -----------------------------------------------------------------------------
 case "${1:-start}" in
-  start)   do_start ;;
+  start)   shift; do_start "$@" ;;
   stop)    do_stop ;;
-  restart) do_restart ;;
+  restart) shift; do_restart "$@" ;;
   status)  do_status ;;
   -h|--help|help)
     sed -n '1,40p' "${BASH_SOURCE[0]}" | grep -E '^\s*#\s' | sed 's/^ *# *//'

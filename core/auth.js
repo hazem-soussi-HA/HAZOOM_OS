@@ -4,7 +4,11 @@ const crypto = require('crypto');
 class AuthManager {
     constructor(kernel) {
         this.kernel = kernel;
-        this.secret = crypto.randomBytes(64).toString('hex');
+        const configuredSecret = process.env.SESSION_SECRET || process.env.JWT_SECRET;
+        if (process.env.NODE_ENV === 'production' && (!configuredSecret || configuredSecret.length < 32)) {
+            throw new Error('SESSION_SECRET must be at least 32 characters in production');
+        }
+        this.secret = configuredSecret || crypto.randomBytes(64).toString('hex');
         this.sessions = new Map();
         this.refreshTokens = new Map();
         this.blacklistedTokens = new Set();
@@ -18,8 +22,12 @@ class AuthManager {
     }
 
     _seedUsers() {
-        this.register('root', 'root', 'admin');
-        this.register('hazem', 'hazem', 'user');
+        const adminPassword = process.env.ADMIN_PASSWORD || process.env.ADMIN_PASS || 'root';
+        if (process.env.NODE_ENV === 'production' && adminPassword.length < 12) {
+            throw new Error('ADMIN_PASSWORD must be at least 12 characters in production');
+        }
+        this.register('root', adminPassword, 'admin');
+        this.register('hazem', process.env.USER_PASSWORD || 'hazem', 'user');
     }
 
     _hmac(payload) {
@@ -66,6 +74,14 @@ class AuthManager {
         } catch {
             return null;
         }
+    }
+
+    isAdminToken(token) {
+        if (typeof token !== 'string') return false;
+        const bearer = token.replace(/^Bearer\s+/i, '').trim();
+        if (!bearer) return false;
+        const decoded = this.verifyToken(bearer);
+        return decoded?.body?.role === 'admin';
     }
 
     hashPassword(password) {

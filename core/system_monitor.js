@@ -1,5 +1,5 @@
 /**
- * HAZOOM OS V3 — System Monitor Hook (from AlphaPony recovery)
+ * HAZOOM OS V6 — System Monitor Hook (from AlphaPony recovery)
  * Real-time system metrics with auto-polling, WebSocket support,
  * and mount-safety guards.
  */
@@ -8,20 +8,99 @@
     if (window.useSystemMonitor) return;
 
     const REFRESH_INTERVAL = 5000;
+    const BYTES_PER_MB = 1024 * 1024;
+    const MS_PER_SECOND = 1000;
 
     class SystemMonitor {
         constructor(options = {}) {
             this.interval = options.interval || REFRESH_INTERVAL;
             this.onUpdate = options.onUpdate || (() => {});
-            this._metrics = { cpu: 0, memory: 0, agents: 0, tasks: 0, uptime: 0 };
-            this._health = { status: 'unknown', score: 100 };
+            this._metrics = this._emptyMetrics();
+            this._health = this._emptyHealth();
             this._running = false;
             this._timer = null;
             this._ws = null;
+            this._polling = false;
         }
 
         get metrics() { return { ...this._metrics }; }
         get health() { return { ...this._health }; }
+
+        _emptyMetrics() {
+            return {
+                cpu: null,
+                memory: null,
+                totalMemory: null,
+                memoryBytes: null,
+                totalMemoryBytes: null,
+                processes: null,
+                uptime: null,
+                uptimeMs: null,
+                available: false,
+                status: 'unavailable'
+            };
+        }
+
+        _emptyHealth(error = null) {
+            return { status: 'unavailable', score: null, checks: [], error };
+        }
+
+        _number(value) {
+            if (value === null || value === undefined || value === '') return null;
+            const number = Number(value);
+            return Number.isFinite(number) ? number : null;
+        }
+
+        _normalize(data) {
+            const source = data && data.metrics && typeof data.metrics === 'object' ? data.metrics : data || {};
+            const cpu = this._number(source.cpu && typeof source.cpu === 'object' ? source.cpu.utilization : source.cpu);
+            const memory = source.memory && typeof source.memory === 'object' ? source.memory : {};
+            const usedBytes = this._number(memory.used ?? memory.usedMemory);
+            const totalBytes = this._number(memory.total ?? memory.totalMemory);
+            const processes = this._number(source.processes);
+            const uptimeMs = this._number(source.uptimeMs ?? source.uptime);
+            const running = source.running !== false && source.status !== 'offline';
+            const fields = [cpu, usedBytes, totalBytes, processes, uptimeMs];
+            const available = fields.every(value => value !== null);
+            return {
+                cpu,
+                memory: usedBytes === null ? null : Math.round(usedBytes / BYTES_PER_MB),
+                totalMemory: totalBytes === null ? null : Math.round(totalBytes / BYTES_PER_MB),
+                memoryBytes: usedBytes,
+                totalMemoryBytes: totalBytes,
+                processes,
+                uptime: uptimeMs === null ? null : Math.floor(uptimeMs / MS_PER_SECOND),
+                uptimeMs,
+                available,
+                running,
+                status: !running ? 'offline' : available ? 'online' : 'degraded'
+            };
+        }
+
+        _applyPayload(data) {
+            this._metrics = this._normalize(data);
+            const check = (name, value) => ({
+                name,
+                status: value === null ? 'unavailable' : 'ok',
+                value
+            });
+            this._health = {
+                status: this._metrics.status,
+                score: null,
+                error: this._metrics.status === 'online' ? null : 'Incomplete metrics payload',
+                checks: [
+                    check('CPU', this._metrics.cpu),
+                    check('Memory', this._metrics.memory),
+                    check('Processes', this._metrics.processes),
+                    check('Uptime', this._metrics.uptime)
+                ]
+            };
+        }
+
+        _setUnavailable(error) {
+            this._metrics = { ...this._emptyMetrics(), error };
+            this._health = this._emptyHealth(error);
+        }
 
         start() {
             if (this._running) return;
@@ -37,62 +116,48 @@
         }
 
         async _poll() {
+            if (this._polling) return;
+            this._polling = true;
             try {
-                const res = await fetch('/api/system/metrics');
-                if (res.ok) {
-                    const data = await res.json();
-                    this._metrics = data.metrics || this._generateMockMetrics();
-                    this._health = data.health || this._generateMockHealth();
+                const response = await fetch('/api/system/metrics', {
+                    cache: 'no-store',
+                    headers: { Accept: 'application/json' }
+                });
+                if (!response.ok) {
+                    this._setUnavailable(`HTTP ${response.status}`);
                 } else {
-                    this._metrics = this._generateMockMetrics();
-                    this._health = this._generateMockHealth();
+                    this._applyPayload(await response.json());
                 }
-            } catch {
-                this._metrics = this._generateMockMetrics();
-                this._health = this._generateMockHealth();
+            } catch (error) {
+                this._setUnavailable(error.message || 'Metrics unavailable');
+            } finally {
+                this._polling = false;
             }
             this.onUpdate(this._metrics, this._health);
         }
 
-        _generateMockMetrics() {
-            return {
-                cpu: Math.round(10 + Math.random() * 30),
-                memory: Math.round(300 + Math.random() * 200),
-                agents: Math.round(Math.random() * 5),
-                tasks: Math.round(Math.random() * 50),
-                uptime: Math.floor(performance.now() / 1000)
-            };
-        }
-
-        _generateMockHealth() {
-            const score = Math.round(75 + Math.random() * 25);
-            return {
-                status: score > 85 ? 'excellent' : score > 70 ? 'good' : 'warning',
-                score,
-                checks: [
-                    { name: 'CPU', status: score > 80 ? 'ok' : 'warn', value: Math.round(50 + Math.random() * 40) },
-                    { name: 'Memory', status: score > 75 ? 'ok' : 'warn', value: Math.round(40 + Math.random() * 50) },
-                    { name: 'Network', status: score > 85 ? 'ok' : 'warn', value: Math.round(60 + Math.random() * 35) },
-                    { name: 'Storage', status: score > 70 ? 'ok' : 'warn', value: Math.round(55 + Math.random() * 40) }
-                ]
-            };
-        }
-
-        // WebSocket for real-time pushes
         connectWebSocket(url) {
             if (this._ws) this._ws.close();
             try {
                 this._ws = new WebSocket(url);
-                this._ws.onmessage = (e) => {
+                this._ws.onmessage = (event) => {
                     try {
-                        const data = JSON.parse(e.data);
-                        if (data.metrics) this._metrics = { ...this._metrics, ...data.metrics };
-                        if (data.health) this._health = { ...this._health, ...data.health };
+                        this._applyPayload(JSON.parse(event.data));
                         this.onUpdate(this._metrics, this._health);
-                    } catch {}
+                    } catch (error) {
+                        this._setUnavailable(error.message || 'Invalid metrics payload');
+                        this.onUpdate(this._metrics, this._health);
+                    }
                 };
-                this._ws.onerror = () => { this._ws = null; };
-            } catch {}
+                this._ws.onerror = () => {
+                    this._setUnavailable('Metrics stream unavailable');
+                    this.onUpdate(this._metrics, this._health);
+                    this._ws = null;
+                };
+            } catch (error) {
+                this._setUnavailable(error.message || 'Metrics stream unavailable');
+                this.onUpdate(this._metrics, this._health);
+            }
         }
 
         destroy() { this.stop(); }

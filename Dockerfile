@@ -1,19 +1,18 @@
-# HAZOOM OS v6.0 — Dockerfile (optimized for local build)
-FROM node:20-alpine AS production
+FROM node:20-alpine
 WORKDIR /app
 
-# Copy everything including pre-installed node_modules
-COPY . .
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
 
-# Create data directory for Q-learning persistence
+COPY server.js start.sh ./
+COPY core/ ./core/
+COPY kernel/ ./kernel/
+COPY memory/ ./memory/
+COPY config/default.json ./config/
+COPY services/planet-earth/hazoom-os-launch.sh ./services/planet-earth/
+
 RUN mkdir -p /app/data/qlearner
-
-# Expose port
 EXPOSE 3000
-
-# Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget -qO- http://localhost:3000/health || exit 1
-
-# Start HAZOOM OS
 CMD ["node", "server.js"]

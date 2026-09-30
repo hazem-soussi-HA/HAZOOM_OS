@@ -229,23 +229,25 @@
     <div id="auth-screen">
         <div class="auth-container">
             <h1>🔐 SECURE ACCESS</h1>
-            <p>Quantum-Encrypted Command Center v2.0</p>
-            <input type="text" id="auth-user" class="auth-input" placeholder="Operator ID" autocomplete="off">
-            <input type="password" id="auth-pass" class="auth-input" placeholder="Access Key" autocomplete="off">
+            <p>Command Center v2.0 — local demo</p>
+            <input type="text" id="auth-user" class="auth-input" placeholder="Role" autocomplete="off">
+            <input type="password" id="auth-pass" class="auth-input" placeholder="(unused in demo)" autocomplete="off">
             <button class="auth-btn" onclick="authenticate()">AUTHENTICATE</button>
             <div class="auth-error" id="auth-error"></div>
             <div style="margin-top: 15px; font-size: 10px; color: #888;">
-                Demo: admin / quantum123
+                Pick a role to continue: commander, operator, viewer.
+                This gate is cosmetic — it runs entirely in your browser and
+                protects nothing. Real auth lives in the server app.
             </div>
         </div>
-        <div class="security-badge">🔒 AES-256 Encrypted | Session Token Auth | Zero-Knowledge Protocol</div>
+        <div class="security-badge">⚠ Local demo — no encryption, no real authentication</div>
     </div>
 
     <!-- Session Info -->
     <div id="session-info" style="display:none;">
         <span>👤 <span id="session-user"></span></span> |
         <span class="session-id" id="session-id"></span> |
-        <span>🔒 <span id="session-enc">AES-256</span></span>
+        <span>🔒 <span id="session-enc">no transport encryption</span></span>
     </div>
 
     <div id="futuristic-map">
@@ -330,38 +332,44 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // ===== IDENTITY & SECURITY =====
+        // ===== IDENTITY (DEMO ONLY - NOT A SECURITY BOUNDARY) =====
+        // This is a static page. Anything checked here is visible in the page
+        // source and in the browser's JS heap, so it protects nothing. Real
+        // authentication must happen on a server; see
+        // apps/visualizers/map-command-center/server.js for the server-side
+        // implementation (scrypt + timing-safe compare).
         const Security = {
             session: null,
-            operators: {
-                'admin': { pass: 'quantum123', role: 'commander', level: 5 },
-                'operator': { pass: 'secure456', role: 'operator', level: 3 },
-                'viewer': { pass: 'view789', role: 'viewer', level: 1 }
+            // Local-only role selection for the demo. No passwords are stored.
+            roles: {
+                'commander': { role: 'commander', level: 5 },
+                'operator':  { role: 'operator',  level: 3 },
+                'viewer':    { role: 'viewer',    level: 1 }
             },
-            encrypt(str) {
+            // Toy transform for the demo shell's encrypt/decrypt commands.
+            // This is XOR with a constant - obfuscation, NOT encryption.
+            xorToy(str) {
                 let result = '';
                 for (let i = 0; i < str.length; i++) {
                     result += String.fromCharCode(str.charCodeAt(i) ^ 0x5A);
                 }
-                return btoa(result);
+                return result;
+            },
+            encrypt(str) {
+                return btoa(this.xorToy(str));
             },
             decrypt(str) {
                 try {
-                    let decoded = atob(str);
-                    let result = '';
-                    for (let i = 0; i < decoded.length; i++) {
-                        result += String.fromCharCode(decoded.charCodeAt(i) ^ 0x5A);
-                    }
-                    return result;
-                } catch { return '[DECRYPTION FAILED]'; }
+                    return this.xorToy(atob(str));
+                } catch { return '[DECODE FAILED]'; }
             },
             generateToken() {
                 return 'tok_' + Array.from(crypto.getRandomValues(new Uint8Array(16)))
                     .map(b => b.toString(16).padStart(2, '0')).join('');
             },
             authenticate(userId, password) {
-                const op = this.operators[userId];
-                if (!op || op.pass !== password) return null;
+                const op = this.roles[userId];
+                if (!op) return null;
                 this.session = {
                     userId, role: op.role, level: op.level,
                     token: this.generateToken(),

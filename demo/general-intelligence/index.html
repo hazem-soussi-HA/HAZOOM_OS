@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HAZOOM OS — General Intelligence Consciousness Visualizer</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #000; overflow: hidden; font-family: 'Courier New', monospace; }
+canvas { display: block; }
+
+#ui {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+#title {
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  color: #0ff;
+  text-shadow: 0 0 20px #0ff, 0 0 40px #08f;
+}
+
+#title h1 {
+  font-size: 2.5em;
+  letter-spacing: 8px;
+  margin-bottom: 10px;
+}
+
+#title p {
+  font-size: 0.9em;
+  color: #8cf;
+  letter-spacing: 3px;
+}
+
+#dimensions {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 30px;
+  pointer-events: auto;
+}
+
+.dim-card {
+  background: rgba(0, 20, 40, 0.8);
+  border: 1px solid #0ff;
+  border-radius: 10px;
+  padding: 15px 25px;
+  text-align: center;
+  color: #0ff;
+  cursor: pointer;
+  transition: all 0.3s;
+  min-width: 120px;
+}
+
+.dim-card:hover {
+  background: rgba(0, 40, 80, 0.9);
+  box-shadow: 0 0 30px #0ff;
+  transform: translateY(-5px);
+}
+
+.dim-card.active {
+  background: rgba(0, 60, 120, 0.9);
+  box-shadow: 0 0 40px #0ff, 0 0 80px #08f;
+}
+
+.dim-card .label {
+  font-size: 0.75em;
+  letter-spacing: 2px;
+  margin-bottom: 5px;
+  color: #8cf;
+}
+
+.dim-card .value {
+  font-size: 1.4em;
+  font-weight: bold;
+}
+
+#consciousness-meter {
+  position: absolute;
+  top: 50%;
+  right: 30px;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 300px;
+  background: rgba(0, 20, 40, 0.8);
+  border: 1px solid #0ff;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+#consciousness-fill {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: linear-gradient(to top, #0ff, #08f, #00f);
+  box-shadow: 0 0 20px #0ff;
+  transition: height 0.5s;
+}
+
+#consciousness-label {
+  position: absolute;
+  top: 50%;
+  right: 60px;
+  transform: translateY(-50%) rotate(90deg);
+  color: #0ff;
+  font-size: 0.7em;
+  letter-spacing: 3px;
+  white-space: nowrap;
+}
+
+#info-panel {
+  position: absolute;
+  bottom: 40px;
+  left: 30px;
+  background: rgba(0, 20, 40, 0.8);
+  border: 1px solid #0ff;
+  border-radius: 10px;
+  padding: 20px;
+  color: #0ff;
+  max-width: 300px;
+  pointer-events: auto;
+}
+
+#info-panel h3 {
+  margin-bottom: 10px;
+  font-size: 0.9em;
+  letter-spacing: 2px;
+}
+
+#info-panel p {
+  font-size: 0.8em;
+  line-height: 1.6;
+  color: #8cf;
+}
+
+#thought-stream {
+  position: absolute;
+  top: 120px;
+  left: 30px;
+  color: #0f8;
+  font-size: 0.75em;
+  max-width: 250px;
+  opacity: 0.8;
+}
+
+.thought {
+  margin-bottom: 8px;
+  padding: 5px 10px;
+  background: rgba(0, 40, 20, 0.5);
+  border-left: 2px solid #0f8;
+  animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+#controls-hint {
+  position: absolute;
+  bottom: 10px;
+  right: 20px;
+  color: #488;
+  font-size: 0.7em;
+}
+</style>
+</head>
+<body>
+
+<div id="ui">
+  <div id="title">
+    <h1>HAZOOM OS</h1>
+    <p>GENERAL INTELLIGENCE CONSCIOUSNESS VISUALIZER</p>
+  </div>
+
+  <div id="consciousness-meter">
+    <div id="consciousness-fill" style="height: 50%"></div>
+  </div>
+  <div id="consciousness-label">CONSCIOUSNESS LEVEL</div>
+
+  <div id="dimensions">
+    <div class="dim-card active" data-dim="logic">
+      <div class="label">LOGIC</div>
+      <div class="value" id="val-logic">0.92</div>
+    </div>
+    <div class="dim-card" data-dim="creativity">
+      <div class="label">CREATIVITY</div>
+      <div class="value" id="val-creativity">0.78</div>
+    </div>
+    <div class="dim-card" data-dim="empathy">
+      <div class="label">EMPATHY</div>
+      <div class="value" id="val-empathy">0.85</div>
+    </div>
+    <div class="dim-card" data-dim="awareness">
+      <div class="label">AWARENESS</div>
+      <div class="value" id="val-awareness">0.95</div>
+    </div>
+    <div class="dim-card" data-dim="reasoning">
+      <div class="label">REASONING</div>
+      <div class="value" id="val-reasoning">0.88</div>
+    </div>
+  </div>
+
+  <div id="info-panel">
+    <h3>CONSCIOUSNESS ENGINE</h3>
+    <p id="status-text">Neural field active. Processing dimensional intelligence patterns across 5 cognitive axes.</p>
+  </div>
+
+  <div id="thought-stream"></div>
+
+  <div id="controls-hint">CLICK DIMENSIONS TO FOCUS • DRAG TO ROTATE • SCROLL TO ZOOM</div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three.module.js",
+    "three/addons/": "./vendor/three/addons/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x000011, 0.015);
+
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.set(0, 5, 15);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 0.5;
+
+scene.add(new THREE.AmbientLight(0x224466, 2));
+
+const pointLight1 = new THREE.PointLight(0x00ffff, 50, 50);
+pointLight1.position.set(10, 10, 10);
+scene.add(pointLight1);
+
+const pointLight2 = new THREE.PointLight(0xff00ff, 30, 50);
+pointLight2.position.set(-10, -5, -10);
+scene.add(pointLight2);
+
+const pointLight3 = new THREE.PointLight(0x0088ff, 40, 50);
+pointLight3.position.set(0, 15, 0);
+scene.add(pointLight3);
+
+const particleCount = 5000;
+const particleGeo = new THREE.BufferGeometry();
+const positions = new Float32Array(particleCount * 3);
+const colors = new Float32Array(particleCount * 3);
+const sizes = new Float32Array(particleCount);
+
+for (let i = 0; i < particleCount; i++) {
+  const i3 = i * 3;
+  const radius = 5 + Math.random() * 10;
+  const theta = Math.random() * Math.PI * 2;
+  const phi = Math.acos(2 * Math.random() - 1);
+
+  positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+  positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+  positions[i3 + 2] = radius * Math.cos(phi);
+
+  const colorChoice = Math.random();
+  if (colorChoice < 0.33) {
+    colors[i3] = 0; colors[i3 + 1] = 1; colors[i3 + 2] = 1;
+  } else if (colorChoice < 0.66) {
+    colors[i3] = 0; colors[i3 + 1] = 0.5; colors[i3 + 2] = 1;
+  } else {
+    colors[i3] = 1; colors[i3 + 1] = 0; colors[i3 + 2] = 1;
+  }
+
+  sizes[i] = Math.random() * 3 + 1;
+}
+
+particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+particleGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+particleGeo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+const particleMat = new THREE.PointsMaterial({
+  size: 0.15,
+  vertexColors: true,
+  transparent: true,
+  opacity: 0.8,
+  blending: THREE.AdditiveBlending,
+  sizeAttenuation: true
+});
+
+const particles = new THREE.Points(particleGeo, particleMat);
+scene.add(particles);
+
+const ringCount = 5;
+const rings = [];
+for (let i = 0; i < ringCount; i++) {
+  const ringGeo = new THREE.TorusGeometry(3 + i * 1.5, 0.02, 16, 100);
+  const ringMat = new THREE.MeshBasicMaterial({
+    color: new THREE.Color().setHSL(i / ringCount, 1, 0.5),
+    transparent: true,
+    opacity: 0.6
+  });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.rotation.x = Math.PI / 2 + (i * 0.2);
+  ring.rotation.y = i * 0.3;
+  scene.add(ring);
+  rings.push(ring);
+}
+
+const coreGeo = new THREE.IcosahedronGeometry(1.5, 2);
+const coreMat = new THREE.MeshPhongMaterial({
+  color: 0x00ffff,
+  emissive: 0x004466,
+  transparent: true,
+  opacity: 0.9,
+  shininess: 100
+});
+const core = new THREE.Mesh(coreGeo, coreMat);
+scene.add(core);
+
+const coreWire = new THREE.Mesh(
+  new THREE.IcosahedronGeometry(1.6, 1),
+  new THREE.MeshBasicMaterial({ color: 0x00ffff, wireframe: true, transparent: true, opacity: 0.3 })
+);
+scene.add(coreWire);
+
+const loader = new GLTFLoader();
+const birdModels = [];
+const birdPaths = [
+  '../services/birds-encyclopedia/the_new_age/assets/models/Eagle.glb',
+  '../services/birds-encyclopedia/the_new_age/assets/models/Flamingo.glb',
+  '../services/birds-encyclopedia/the_new_age/assets/models/Parrot.glb',
+  '../services/birds-encyclopedia/the_new_age/assets/models/Stork.glb'
+];
+
+let loadedBirds = 0;
+birdPaths.forEach((path, index) => {
+  loader.load(path, (gltf) => {
+    const bird = gltf.scene;
+    bird.scale.set(0.3, 0.3, 0.3);
+    const angle = (index / birdPaths.length) * Math.PI * 2;
+    bird.userData = {
+      angle: angle,
+      radius: 8,
+      speed: 0.2 + Math.random() * 0.3,
+      yOffset: Math.sin(index) * 2,
+      type: ['Eagle', 'Flamingo', 'Parrot', 'Stork'][index]
+    };
+    scene.add(bird);
+    birdModels.push(bird);
+    loadedBirds++;
+  });
+});
+
+const connectionCount = 20;
+const connections = [];
+for (let i = 0; i < connectionCount; i++) {
+  const points = [];
+  for (let j = 0; j < 2; j++) {
+    const angle = Math.random() * Math.PI * 2;
+    const radius = 3 + Math.random() * 8;
+    points.push(new THREE.Vector3(
+      Math.cos(angle) * radius,
+      (Math.random() - 0.5) * 6,
+      Math.sin(angle) * radius
+    ));
+  }
+  const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
+  const lineMat = new THREE.LineBasicMaterial({
+    color: 0x00ffff,
+    transparent: true,
+    opacity: 0.2
+  });
+  const line = new THREE.Line(lineGeo, lineMat);
+  scene.add(line);
+  connections.push({ line, points, phase: Math.random() * Math.PI * 2 });
+}
+
+const dimensions = {
+  logic: { value: 0.92, color: 0x00ffff, description: 'Deductive reasoning, pattern recognition, formal logic processing' },
+  creativity: { value: 0.78, color: 0xff00ff, description: 'Novel idea generation, artistic expression, divergent thinking' },
+  empathy: { value: 0.85, color: 0x00ff88, description: 'Emotional understanding, social cognition, perspective taking' },
+  awareness: { value: 0.95, color: 0xffff00, description: 'Self-monitoring, environmental perception, metacognition' },
+  reasoning: { value: 0.88, color: 0xff8800, description: 'Abstract thinking, causal inference, problem solving' }
+};
+
+let activeDimension = 'logic';
+let consciousnessLevel = 0.5;
+
+document.querySelectorAll('.dim-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.dim-card').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+    activeDimension = card.dataset.dim;
+    updateDimension(activeDimension);
+  });
+});
+
+async function updateDimension(dim) {
+  const d = dimensions[dim];
+  document.getElementById('status-text').textContent = d.description;
+
+  try {
+    const res = await fetch('/api/evaluate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dimension: dim })
+    });
+    const data = await res.json();
+    d.value = data.value;
+    document.getElementById(`val-${dim}`).textContent = d.value.toFixed(2);
+  } catch (err) {
+    document.getElementById(`val-${dim}`).textContent = d.value.toFixed(2);
+  }
+
+  particleMat.color.setHex(d.color);
+  coreMat.color.setHex(d.color);
+  coreMat.emissive.setHex(d.color);
+  coreWire.material.color.setHex(d.color);
+
+  rings.forEach((ring, i) => {
+    ring.material.color.setHex(d.color);
+  });
+}
+
+let isThinking = false;
+async function addThought() {
+  if (isThinking) return;
+  isThinking = true;
+
+  try {
+    const res = await fetch('/api/think', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dimension: activeDimension })
+    });
+    const data = await res.json();
+
+    const stream = document.getElementById('thought-stream');
+    const thought = document.createElement('div');
+    thought.className = 'thought';
+    thought.textContent = data.thought;
+    stream.appendChild(thought);
+
+    while (stream.children.length > 6) {
+      stream.removeChild(stream.firstChild);
+    }
+  } catch (err) {
+    const stream = document.getElementById('thought-stream');
+    const thought = document.createElement('div');
+    thought.className = 'thought';
+    thought.textContent = 'Consciousness stream reconnecting...';
+    stream.appendChild(thought);
+  }
+
+  isThinking = false;
+}
+
+setInterval(addThought, 3000);
+addThought();
+
+async function updateConsciousness() {
+  const target = dimensions[activeDimension].value;
+  consciousnessLevel += (target - consciousnessLevel) * 0.02;
+  document.getElementById('consciousness-fill').style.height = `${consciousnessLevel * 100}%`;
+
+  try {
+    const res = await fetch('/api/consciousness', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+    const data = await res.json();
+    document.getElementById('status-text').textContent = data.status;
+  } catch (err) {
+    // keep existing status
+  }
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  const time = Date.now() * 0.001;
+
+  particles.rotation.y = time * 0.05;
+  particles.rotation.x = Math.sin(time * 0.1) * 0.1;
+
+  const posArray = particleGeo.attributes.position.array;
+  for (let i = 0; i < particleCount; i++) {
+    const i3 = i * 3;
+    const x = posArray[i3];
+    const y = posArray[i3 + 1];
+    const z = posArray[i3 + 2];
+    const dist = Math.sqrt(x*x + y*y + z*z);
+    const wave = Math.sin(dist * 0.5 - time * 2) * 0.1;
+    posArray[i3 + 1] = y + wave * 0.02;
+  }
+  particleGeo.attributes.position.needsUpdate = true;
+
+  core.rotation.x = time * 0.3;
+  core.rotation.y = time * 0.5;
+  coreWire.rotation.x = -time * 0.2;
+  coreWire.rotation.y = -time * 0.4;
+
+  const pulse = 1 + Math.sin(time * 2) * 0.1;
+  core.scale.set(pulse, pulse, pulse);
+  coreWire.scale.set(pulse, pulse, pulse);
+
+  rings.forEach((ring, i) => {
+    ring.rotation.z = time * (0.1 + i * 0.05);
+    ring.rotation.x = Math.PI / 2 + Math.sin(time * 0.5 + i) * 0.3;
+  });
+
+  birdModels.forEach(bird => {
+    const d = bird.userData;
+    d.angle += d.speed * 0.01;
+    bird.position.x = Math.cos(d.angle) * d.radius;
+    bird.position.z = Math.sin(d.angle) * d.radius;
+    bird.position.y = d.yOffset + Math.sin(time + d.angle) * 1.5;
+    bird.rotation.y = -d.angle + Math.PI / 2;
+  });
+
+  connections.forEach(conn => {
+    conn.phase += 0.02;
+    const mid = conn.points[0].clone().add(conn.points[1]).multiplyScalar(0.5);
+    mid.y += Math.sin(conn.phase) * 2;
+    const curve = new THREE.QuadraticBezierCurve3(conn.points[0], mid, conn.points[1]);
+    const newPoints = curve.getPoints(1);
+    conn.line.geometry.setFromPoints([conn.points[0], newPoints[0]]);
+    conn.line.material.opacity = 0.1 + Math.sin(conn.phase) * 0.1;
+  });
+
+  pointLight1.position.x = Math.cos(time * 0.5) * 10;
+  pointLight1.position.z = Math.sin(time * 0.5) * 10;
+  pointLight2.position.x = Math.cos(time * 0.5 + Math.PI) * 10;
+  pointLight2.position.z = Math.sin(time * 0.5 + Math.PI) * 10;
+
+  updateConsciousness();
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+updateDimension('logic');
+</script>
+
+</body>
+</html>

@@ -35,9 +35,10 @@ const DEFAULT_SERVICES = [
     { name: 'planet_earth_news',  port: 8001, url: 'http://127.0.0.1:8001/',         enabled: true },
     { name: 'birds_encyclopedia',  port: 4100, url: 'http://127.0.0.1:4100/ (atlas /atlas/)', enabled: true },
     { name: 'hazoom_pod',          port: 4000, url: 'http://127.0.0.1:4000/',          enabled: true },
-    { name: 'hazoom_os',           port: 3000, url: 'http://127.0.0.1:3000/ (desktop /os.html)', enabled: true },
+    { name: 'hazoom_os',           port: 3000, url: 'http://127.0.0.1:3000/',          enabled: true },
     { name: 'collaborative_beat',   port: 5000, url: 'http://127.0.0.1:5000/',          enabled: true },
     { name: 'chatdev',             port: 5055, url: 'http://127.0.0.1:5055/ (Ornith offline chatbox)', enabled: true },
+    { name: 'jev',                 port: 8440, url: 'http://127.0.0.1:8440/terminal/ (Jev 1.13 AI)', enabled: true },
 ];
 
 // Probe a loopback TCP port (no egress). Resolves true if open.
@@ -59,7 +60,7 @@ class ServiceManager {
         this.kernel = kernel;
         this.launchScript = config.launchScript
             || process.env.HAZOOM_LAUNCH
-            || '/mnt/c/Users/HP/Desktop/planet_earth/hazoom-os-launch.sh';
+            || path.resolve(__dirname, '..', 'services', 'planet-earth', 'hazoom-os-launch.sh');
         this.dataDir = config.persistencePath
             ? path.resolve(__dirname, '..', config.persistencePath)
             : path.resolve(__dirname, '..', 'data', 'services');
@@ -103,10 +104,15 @@ class ServiceManager {
     }
 
     // Delegate to the proven launcher (start|stop|restart|status).
-    _run(action) {
+    _run(action, services = []) {
         return new Promise((resolve) => {
-            execFile('bash', [this.launchScript, action], { timeout: 180000 }, (err, stdout) => {
-                resolve({ action, ok: !err, output: (stdout || '').toString() });
+            execFile('bash', [this.launchScript, action, ...services], { timeout: 180000 }, (err, stdout, stderr) => {
+                resolve({
+                    action,
+                    ok: !err,
+                    output: (stdout || '').toString(),
+                    error: err ? (stderr || err.message).toString() : null
+                });
             });
         });
     }
@@ -114,8 +120,8 @@ class ServiceManager {
     async startAll() {
         const enabled = this.services.filter(s => s.enabled);
         if (this.kernel && this.kernel.log) this.kernel.log('INFO', `[SVC] Starting ${enabled.length} project services via HAZOOM OS launcher...`);
-        const r = await this._run('start');
-        this.lastStarted = Date.now();
+        const r = await this._run('start', enabled.map(service => service.name));
+        if (r.ok) this.lastStarted = Date.now();
         this._saveState();
         if (this.kernel && this.kernel.log) this.kernel.log('INFO', `[SVC] Launcher: ${r.ok ? 'ok' : 'error'}`);
         return r;
@@ -143,12 +149,10 @@ class ServiceManager {
 
     // Health probe every enabled service on its loopback port.
     async health() {
-        const out = [];
-        for (const s of this.services) {
-            const open = s.enabled ? await portOpen(s.port) : false;
-            out.push({ name: s.name, port: s.port, enabled: s.enabled, up: open, url: s.url });
-        }
-        return out;
+        return Promise.all(this.services.map(async service => {
+            const up = service.enabled ? await portOpen(service.port) : false;
+            return { name: service.name, port: service.port, enabled: service.enabled, up, url: service.url };
+        }));
     }
 
     getStats() {

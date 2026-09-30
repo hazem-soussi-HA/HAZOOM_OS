@@ -178,7 +178,7 @@ iframe.web {
 
 <div class="content">
     <div class="deep" id="deepPane"></div>
-    <iframe class="web" id="webFrame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+    <iframe class="web" id="webFrame" sandbox="allow-same-origin" referrerpolicy="no-referrer" loading="lazy"></iframe>
 </div>
 
 <div class="statusbar">
@@ -212,12 +212,32 @@ iframe.web {
     }
 
     function fmtTime(ms) {
-        if (!ms) return '—';
+        if (ms === null || ms === undefined) return '—';
         const s = Math.floor(ms / 1000);
         const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
         if (h > 0) return h + 'h ' + m + 'm';
         if (m > 0) return m + 'm ' + sec + 's';
         return sec + 's';
+    }
+
+    function memoryBytes(memory, key) {
+        if (!memory || typeof memory !== 'object') return null;
+        const value = key === 'total'
+            ? (memory.total ?? memory.totalMemory)
+            : key === 'used' ? (memory.used ?? memory.usedMemory) : memory[key];
+        if (value === null || value === undefined || value === '') return null;
+        const number = Number(value);
+        return Number.isFinite(number) ? number : null;
+    }
+
+    function memoryMb(memory, key) {
+        const bytes = memoryBytes(memory, key);
+        return bytes === null ? null : Math.round(bytes / 1048576);
+    }
+
+    function memoryLabel(memory, key) {
+        const value = memoryMb(memory, key);
+        return value === null ? '—' : value + ' MB';
     }
 
     function pct(v) {
@@ -236,6 +256,7 @@ iframe.web {
     async function fetchHealth() {
         try {
             const r = await fetch('/api/chat/health', { signal: AbortSignal.timeout(3000) });
+            if (!r.ok) return { ollama: 'offline' };
             return await r.json();
         } catch (e) {
             return { ollama: 'offline' };
@@ -289,8 +310,8 @@ iframe.web {
                     <h3>AI service</h3>
                     <div class="row"><span class="k">Ollama</span><span class="v">${ai.ollama === 'online' ? '<span class="pill up">ONLINE</span>' : '<span class="pill down">offline</span>'}</span></div>
                     <div class="row"><span class="k">Model</span><span class="v">${esc(ai.model || '—')}</span></div>
-                    <div class="row"><span class="k">Memory</span><span class="v">${Math.round((mem.used || 0) / 1048576)} MB / ${Math.round((mem.total || 0) / 1048576)} MB</span></div>
-                    <div class="meter"><i style="width:${mem.total ? Math.min(100, (mem.used / mem.total) * 100) : 0}%"></i></div>
+                    <div class="row"><span class="k">Memory</span><span class="v">${memoryLabel(mem, 'used')} / ${memoryLabel(mem, 'total')}</span></div>
+                    <div class="meter"><i style="width:${memoryBytes(mem, 'total') && memoryBytes(mem, 'used') !== null ? Math.min(100, (memoryBytes(mem, 'used') / memoryBytes(mem, 'total')) * 100) : 0}%"></i></div>
                 </div>
             </div>`;
         },
@@ -322,11 +343,11 @@ iframe.web {
             const mem = s.memory || {};
             const ql = s.qLearning || {};
             const rows = [
-                ['Total', Math.round((mem.total || 0) / 1048576) + ' MB'],
-                ['Used', Math.round((mem.used || 0) / 1048576) + ' MB'],
-                ['Free', Math.round((mem.free || 0) / 1048576) + ' MB'],
-                ['Swap total', Math.round((mem.swapTotal || 0) / 1048576) + ' MB'],
-                ['Swap used', Math.round((mem.swapUsed || 0) / 1048576) + ' MB'],
+                ['Total', memoryLabel(mem, 'total')],
+                ['Used', memoryLabel(mem, 'used')],
+                ['Free', memoryLabel(mem, 'free')],
+                ['Swap total', memoryLabel(mem, 'swapTotal')],
+                ['Swap used', memoryLabel(mem, 'swapUsed')],
                 ['Page size', mem.pageSize || '—'],
                 ['Allocations', mem.allocations ?? '—'],
                 ['Q-learning', esc(ql.mode || '—')]
@@ -399,13 +420,25 @@ iframe.web {
         },
 
         logs: () => {
-            const logs = (state.status.logLines || []).slice(-60).reverse();
-            const rows = logs.map(l =>
-                `<div class="logline"><span class="lvl">[${esc(l.level || 'LOG')}]</span> ${esc(l.message || l)}</div>`).join('') || '<div class="notice">no logs</div>';
+            const rawLogs = state.status.logLines;
+            const logs = Array.isArray(rawLogs) ? rawLogs.slice(-60).reverse() : [];
+            const numericLogs = typeof rawLogs === 'number'
+                ? rawLogs
+                : typeof rawLogs === 'string' && rawLogs.trim() !== '' ? Number(rawLogs) : NaN;
+            const logCount = Number.isFinite(numericLogs) ? numericLogs : null;
+            const rows = logs.map(log => {
+                const entry = log && typeof log === 'object' ? log : {};
+                const message = entry.message || log;
+                const level = entry.level || 'LOG';
+                return `<div class="logline"><span class="lvl">[${esc(level)}]</span> ${esc(message)}</div>`;
+            }).join('');
+            const count = logCount === null ? '' : ` (${logCount} reported)`;
+            const summary = logCount === null ? '' : `<div class="row"><span class="k">Reported lines</span><span class="v">${esc(logCount)}</span></div>`;
+            const empty = logCount === null ? 'no log data available' : 'log details unavailable';
             return `
             <div class="inner">
                 <div class="banner"><h1>📜 <em>LOGS</em></h1><p>the memory of every action</p></div>
-                <div class="card">${rows}</div>
+                <div class="card"><h3>Log stream${count}</h3>${summary}${rows || `<div class="notice">${empty}</div>`}</div>
             </div>`;
         },
 
@@ -461,11 +494,21 @@ iframe.web {
         }
     }
 
+    /* Web pages are fetched and rendered by the OS rather than dropped into a
+       raw iframe. Iframes are refused outright by most of the real web
+       (X-Frame-Options / frame-ancestors), and a same-origin iframe would hand
+       a third-party page access to this OS's own API. The server route does
+       the fetching, strips executable constructs and pins a script-src 'none'
+       CSP, so the page renders without gaining any privileges here. */
     function renderWeb(url) {
         const pane = $('deepPane'), frame = $('webFrame');
         pane.style.display = 'none';
         frame.style.display = 'block';
-        frame.src = url;
+        // The sandbox stays on permanently: allow-same-origin renders the
+        // document, while scripts, forms, popups and top-level navigation all
+        // remain blocked.
+        frame.setAttribute('sandbox', 'allow-same-origin');
+        frame.src = '/api/web/page?url=' + encodeURIComponent(url);
     }
 
     async function go(url) {
@@ -477,7 +520,8 @@ iframe.web {
         tab.hist.push(url);
         tab.idx = tab.hist.length - 1;
         $('addr').value = url;
-        $('protoTag').textContent = isDeep(url) ? 'mind://' : 'https://';
+        // The field already shows the full URL, so only deep links need a scheme tag.
+        $('protoTag').textContent = isDeep(url) ? 'mind://' : '';
         $('statusMsg').textContent = 'Navigating to ' + url + '…';
         if (isDeep(url)) await renderDeep(url);
         else renderWeb(url);

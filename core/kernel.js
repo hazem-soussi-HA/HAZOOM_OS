@@ -14,6 +14,8 @@
  *   - Security: Ring-based isolation (Ring 0 kernel, Ring 3 user)
  */
 
+const path = require('path');
+
 // ===== PROCESS MANAGER =====
 class ProcessManager {
     constructor() {
@@ -106,9 +108,17 @@ class ProcessManager {
         });
     }
 
+    getActiveProcessCount() {
+        let count = 0;
+        for (const process of this.processes.values()) {
+            if (process.state !== this.STATES.TERMINATED) count++;
+        }
+        return count;
+    }
+
     createProcess(name, priority = 5, parentPid = 0) {
-        if (this.processes.size >= this.maxProcesses) {
-            return { error: 'Max process limit reached (1024)' };
+        if (this.getActiveProcessCount() >= this.maxProcesses) {
+            return { error: `Max process limit reached (${this.maxProcesses})` };
         }
         const pid = this.pidCounter++;
         const pcb = this.PCBTemplate();
@@ -809,7 +819,7 @@ class ProcessManager {
             }
             return children.sort((a, b) => a.pid - b.pid);
         };
-        return { root: buildTree(0) };
+        return { root: buildTree(this.initPid) };
     }
 }
 
@@ -1291,8 +1301,9 @@ class SecurityManager {
 
 // ===== MAIN KERNEL =====
 class HazoomKernel {
-    constructor() {
-        this.version = '4.0.0';
+    constructor(config = {}) {
+        this._config = config && typeof config.toJSON === 'function' ? config.toJSON() : (config || {});
+        this.version = '6.0.0';
         this.name = 'HAZOOM OS';
         this.subtitle = 'Refactored Operating System';
         this.bootTime = null;
@@ -1319,9 +1330,10 @@ class HazoomKernel {
         this.serviceManager = null;
         try {
             const { ServiceManager } = require('./services');
+            const serviceConfig = this._config.services || {};
             this.serviceManager = new ServiceManager(this, {
                 launchScript: this._servicesLaunchScript(),
-                persistencePath: 'data/services',
+                persistencePath: serviceConfig.persistencePath || 'data/services',
             });
         } catch (e) {
             this.log('WARN', `[SVC] ServiceManager not loaded: ${e.message}`);
@@ -1398,7 +1410,7 @@ class HazoomKernel {
 
         // Kernel init
         this.bootStage = 'KERNEL_INIT';
-        this.log('INFO', '[KERNEL] HAZOOM Kernel v4.0.0 initializing...');
+        this.log('INFO', '[KERNEL] HAZOOM Kernel v6.0.0 initializing...');
         this.log('INFO', '[KERNEL] Setting up interrupt descriptor table (IDT)...');
         this.log('INFO', '[KERNEL] Setting up global descriptor table (GDT)...');
         this.log('INFO', '[KERNEL] Configuring CPU rings (Ring 0: kernel, Ring 3: user)...');
@@ -1605,9 +1617,10 @@ class HazoomKernel {
     _servicesLaunchScript() {
         // Single source of truth for launching the fullstack projects.
         // Override via env HAZOOM_LAUNCH or config services.launchScript.
-        if (process.env.HAZOOM_LAUNCH) return process.env.HAZOOM_LAUNCH;
-        const cfg = this._config && this._config.services && this._config.services.launchScript;
-        return cfg || '/mnt/c/Users/HP/Desktop/planet_earth/hazoom-os-launch.sh';
+        const launchScript = process.env.HAZOOM_LAUNCH
+            || (this._config.services && this._config.services.launchScript)
+            || 'services/planet-earth/hazoom-os-launch.sh';
+        return path.resolve(__dirname, '..', launchScript);
     }
 
     _formatBytes(bytes) {
@@ -1635,4 +1648,4 @@ if (typeof module !== 'undefined' && module.exports) {
 //
 // This keeps the base kernel clean while enabling AI superintelligence.
 
-console.log('[HAZOOM-OS] v4.0 — AI-Native Extension available (import ai-kernel.js to enable)');
+console.log('[HAZOOM-OS] v6.0 — AI-Native Extension available (import ai-kernel.js to enable)');

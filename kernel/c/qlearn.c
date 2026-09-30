@@ -119,8 +119,12 @@ void qlearn_dump_stats(void) {
     vga_putchar('0' + (qlearn_ctx.step_count / 10) % 10);
     vga_putchar('0' + (qlearn_ctx.step_count % 10));
     vga_print(" Epsilon: ");
-    /* Print epsilon as percentage */
-    vga_putchar('0' + (int)(qlearn_ctx.epsilon * 100) / 10);
-    vga_putchar('0' + (int)(qlearn_ctx.epsilon * 100) % 10);
+    /* Print epsilon as a 2-digit percentage.
+       NOTE: the original expression was ('0' + (int)(eps*100)) / 10 — since +
+       binds tighter than /, that emitted char((0x30+100)/10) = char(14) instead
+       of '1'. Parenthesise the cast, and round rather than truncate. */
+    int eps_pct = (int)(qlearn_ctx.epsilon * 100.0f + 0.5f);
+    vga_putchar('0' + eps_pct / 10);
+    vga_putchar('0' + eps_pct % 10);
     vga_print("%\n");
 }

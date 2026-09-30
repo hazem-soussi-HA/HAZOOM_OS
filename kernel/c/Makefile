@@ -54,7 +54,7 @@ LDFLAGS := -T linker.ld              \
            -static                    \
            -z max-page-size=0x1000
 
-C_SOURCES   := main.c gdt.c idt.c console.c pmm.c process.c qlearn.c pic.c serial.c
+C_SOURCES   := main.c gdt.c idt.c console.c pmm.c process.c qlearn.c pic.c pit.c serial.c
 ASM_SOURCES := entry.asm isr_stubs.asm
 
 C_OBJECTS   := $(C_SOURCES:.c=.o)

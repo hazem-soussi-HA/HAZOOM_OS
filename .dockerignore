@@ -1,4 +1,11 @@
 .git
 .venv
+node_modules
+.env
 *.log
-data/qlearner/state.json
+config/credentials.json
+config/crypto_config.json
+config/secure-config.json
+data
+memory
+ops

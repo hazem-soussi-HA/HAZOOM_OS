@@ -54,6 +54,12 @@ kernel/c/*.o
 kernel/*.o
 **/*.gch
 
+# Large binaries — keep the source, not the megabytes
+assets/*.mp4
+assets/*.mov
+assets/*.webm
+*.bak
+
 # Logs
 logs/
 *.log
@@ -94,3 +100,6 @@ iso_root/
 
 # Local secrets (webhook HMAC, machine-specific) — never commit
 config/local.json
+
+# HAZOOM: operator credential hashes - never commit
+apps/visualizers/map-command-center/config/operators.json

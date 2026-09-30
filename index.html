@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <!--
-      HAZOOM OS V4 — AI-Powered Euphoric Workspace
+      HAZOOM OS V6 — AI-Powered Euphoric Workspace
       Copyright © 2024-2026 Hazem Soussi. All Rights Reserved.
       Creator: Hazem Soussi
       GitHub: https://github.com/hazem-soussi-HA/HAZOOM_OS
@@ -11,8 +11,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HAZOOM OS — AI-Powered Workspace</title>
     <link rel="icon" type="image/svg+xml" href="/assets/logo.svg">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-primary: #030308;
@@ -21,6 +19,15 @@
             --glass-border: rgba(255, 255, 255, 0.07);
             --glass-hover: rgba(255, 255, 255, 0.08);
             --accent: #00e8ff;
+
+            /* Professional pointer set — crisp vector cursors themed to the OS. */
+            --icon-cell: 84px;    /* grid pitch used by the JS zone layout   */
+            --icon-glyph: 44px;   /* rendered icon artwork size             */
+            --dock-cell: 56px;
+            --dock-glyph: 42px;
+            --cursor-pointer: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2226%22 height=%2226%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M4 2 L4 20.2 L8.6 15.9 L11.5 21.8 L14.4 20.5 L11.5 14.7 L17.8 14.6 Z%22 fill=%22%230a0d14%22 stroke=%22%2300e8ff%22 stroke-width=%221.5%22 stroke-linejoin=%22round%22/%3E%3C/svg%3E") 3 2, pointer;
+            --cursor-grab: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2226%22 height=%2226%22 viewBox=%220 0 24 24%22%3E%3Cg stroke=%22%2300e8ff%22 stroke-width=%221.6%22 stroke-linecap=%22round%22 fill=%22none%22%3E%3Cpath d=%22M12 3 V21 M3 12 H21%22/%3E%3Cpath d=%22M9 6 L12 3 L15 6 M9 18 L12 21 L15 18 M6 9 L3 12 L6 15 M18 9 L21 12 L18 15%22/%3E%3C/g%3E%3C/svg%3E") 13 13, grab;
+            --cursor-grabbing: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2226%22 height=%2226%22 viewBox=%220 0 24 24%22%3E%3Cg stroke=%22%2300e8ff%22 stroke-width=%222%22 stroke-linecap=%22round%22%3E%3Cpath d=%22M12 3 V21 M3 12 H21%22/%3E%3Cpath d=%22M9 6 L12 3 L15 6 M9 18 L12 21 L15 18 M6 9 L3 12 L6 15 M18 9 L21 12 L18 15%22/%3E%3C/g%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%222.4%22 fill=%22%2300e8ff%22/%3E%3C/svg%3E") 13 13, grabbing;
             --accent-glow: rgba(0, 232, 255, 0.35);
             --accent-soft: rgba(0, 232, 255, 0.08);
             --gold: #ffc940;
@@ -248,7 +255,7 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.04);
         }
 
-        .topbar-left { display: flex; align-items: center; gap: 14px; }
+        .topbar-left { display: flex; align-items: center; gap: 14px; min-width: 0; }
         .topbar-start {
             width: 28px;
             height: 28px;
@@ -307,7 +314,14 @@
         }
         @keyframes statusPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-        .topbar-right { display: flex; align-items: center; gap: 14px; }
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            min-width: 0;
+            flex: 0 1 auto;
+        }
+        .topbar-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
         .topbar-clock {
             font-size: 0.75rem;
             font-weight: 500;
@@ -333,6 +347,16 @@
             cursor: default;
         }
         .tray-item:hover { background: rgba(255,255,255,0.06); }
+        #notification-container {
+            position: fixed;
+            top: 50px;
+            right: 20px;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-width: calc(100vw - 40px);
+        }
 
         /* ═══════════════════════════════════════════
            QUANTUM WIDGET — Topbar Coherence Indicator
@@ -379,6 +403,7 @@
         .quantum-pulse {
             position: absolute;
             inset: -2px;
+            max-width: 100%;
             border-radius: 10px;
             border: 1px solid var(--accent);
             opacity: 0;
@@ -429,34 +454,83 @@
             padding: 10px 8px;
             border-radius: 14px;
             cursor: pointer;
-            width: 80px;
-            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            width: var(--icon-cell);
+            max-width: var(--icon-cell);
+            /* Never transition geometry: animating left/top makes the icon lag
+               behind the cursor mid-drag. Feedback is colour/shadow only. */
+            transition: background 0.15s ease, box-shadow 0.2s ease, outline-color 0.15s ease;
             position: relative;
         }
         .desktop-icon:hover {
-            transform: translateY(-4px) scale(1.05);
             background: rgba(255,255,255,0.06);
         }
         .desktop-icon:active {
-            transform: translateY(-1px) scale(0.98);
-            transition-duration: 0.1s;
+            background: rgba(0, 232, 255, 0.10);
+        }
+        .desktop-icon:focus-visible,
+        .dock-item:focus-visible,
+        .start-app-item:focus-visible,
+        .start-menu-category:focus-visible,
+        .topbar-start:focus-visible,
+        .quantum-widget:focus-visible,
+        .start-menu-power:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
         }
         .desktop-icon.dragging {
-            opacity: 0.6;
-            transform: scale(1.15) rotate(3deg);
-            box-shadow: 0 12px 40px rgba(0,232,255,0.3), 0 0 60px rgba(0,232,255,0.1);
+            opacity: 0.75;
+            background: rgba(0, 232, 255, 0.10);
+            outline: 1px solid var(--accent);
+            outline-offset: -1px;
+            box-shadow: 0 12px 40px rgba(0,232,255,0.28);
             z-index: 9999;
-            cursor: grabbing;
+            cursor: var(--cursor-grabbing);
+            transition: none;
         }
 
+        /* ── Selection: marquee rectangle + per-icon state ── */
+        #matrix-selector {
+            position: fixed;
+            display: none;
+            z-index: 9000;
+            pointer-events: none;
+            background: rgba(0, 232, 255, 0.10);
+            border: 1px solid rgba(0, 232, 255, 0.85);
+            border-radius: 3px;
+            box-shadow: 0 0 22px rgba(0, 232, 255, 0.28), inset 0 0 22px rgba(0, 232, 255, 0.10);
+        }
+
+        .desktop-icon.selected {
+            background: rgba(0, 232, 255, 0.14);
+            outline: 1px solid rgba(0, 232, 255, 0.55);
+            outline-offset: -1px;
+        }
+        .desktop-icon.selected .desktop-icon-img {
+            border-color: var(--accent);
+            box-shadow: 0 0 16px var(--accent-glow), 0 0 0 1px rgba(0, 232, 255, 0.5) inset;
+        }
+        .desktop-icon.selected .desktop-icon-label {
+            color: #fff;
+            text-shadow: 0 0 10px rgba(0, 232, 255, 0.8), 0 1px 6px rgba(0, 0, 0, 0.9);
+        }
+
+        /* ── Professional pointer ── */
+        #desktop, #desktop-icons, .desktop-icon, .dock-item, .topbar-start,
+        button, a, .start-app-item, .start-menu-category, .zone-label, .tray-item {
+            cursor: var(--cursor-pointer);
+        }
+        .desktop-icon { cursor: var(--cursor-grab); }
+        .desktop-icon.dragging { cursor: var(--cursor-grabbing); }
+        input, textarea, [contenteditable="true"] { cursor: text; }
+
         .desktop-icon-img {
-            width: 48px;
-            height: 48px;
+            width: var(--icon-glyph);
+            height: var(--icon-glyph);
             border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: calc(var(--icon-glyph) * 0.55);
             background: rgba(255,255,255,0.04);
             border: 1px solid rgba(255,255,255,0.06);
             transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -473,7 +547,6 @@
         .desktop-icon:hover .desktop-icon-img {
             border-color: var(--accent);
             box-shadow: 0 0 20px var(--accent-glow), 0 4px 16px rgba(0,0,0,0.3);
-            transform: scale(1.08);
         }
 
         .desktop-icon-label {
@@ -484,19 +557,54 @@
             line-height: 1.2;
         }
 
+        /* ── Contextual app icon art ──
+           The <img> is the real icon; the <i> monogram is a hidden fallback
+           revealed only if an asset fails to load. */
+        .app-glyph {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            line-height: 1;
+            pointer-events: none;
+        }
+        .app-glyph img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45));
+        }
+        .app-glyph i {
+            display: none;
+            font-style: normal;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+        }
+
         /* ═══════════════════════════════════════════
            DOCK — macOS-Style Magnification
            ═══════════════════════════════════════════ */
         #dock {
             position: absolute;
-            bottom: 12px;
+            bottom: max(12px, env(safe-area-inset-bottom, 0px));
             left: 50%;
             transform: translateX(-50%);
             z-index: 100;
             display: flex;
             align-items: flex-end;
+            justify-content: flex-start;
             gap: 4px;
             padding: 8px 14px;
+            /* Never wider than the screen: scroll internally instead of
+               forcing the whole page to scroll sideways on phones. */
+            max-width: calc(100vw - 16px);
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-width: none;
+            overscroll-behavior-x: contain;
+            -webkit-overflow-scrolling: touch;
             background: rgba(12, 12, 28, 0.65);
             backdrop-filter: blur(32px) saturate(1.6);
             -webkit-backdrop-filter: blur(32px) saturate(1.6);
@@ -505,6 +613,7 @@
             box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 1px rgba(255,255,255,0.1), inset 0 1px 0 rgba(255,255,255,0.04);
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
+        #dock::-webkit-scrollbar { display: none; }
         #dock:hover {
             box-shadow: 0 12px 50px rgba(0,0,0,0.6), 0 0 2px rgba(0,232,255,0.15), inset 0 1px 0 rgba(255,255,255,0.06);
         }
@@ -515,6 +624,7 @@
             align-items: center;
             gap: 3px;
             cursor: pointer;
+            min-width: var(--dock-cell);
             padding: 6px;
             border-radius: 12px;
             transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -530,13 +640,14 @@
         }
 
         .dock-icon {
-            width: 44px;
-            height: 44px;
+            width: var(--dock-glyph);
+            height: var(--dock-glyph);
+            max-width: 100%;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
+            font-size: calc(var(--dock-glyph) * 0.5);
             background: rgba(255,255,255,0.04);
             border: 1px solid rgba(255,255,255,0.06);
             transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -824,7 +935,12 @@
             left: 50%;
             transform: translateX(-50%) translateY(10px);
             width: 420px;
-            max-height: 540px;
+            /* Must never exceed the space above the taskbar, or the header
+               (search + category tabs) is clipped off the top of the screen
+               with no way to scroll to it. `bottom` is 80px; 120px leaves
+               breathing room. Verified: 1024x480 previously put the menu at
+               y = -140px with the search box and tabs unreachable. */
+            max-height: min(540px, calc(100vh - 120px));
             background: rgba(10, 10, 24, 0.92);
             backdrop-filter: blur(40px) saturate(1.6);
             -webkit-backdrop-filter: blur(40px) saturate(1.6);
@@ -854,6 +970,7 @@
             gap: 12px;
             padding: 16px 20px;
             border-bottom: 1px solid rgba(255,255,255,0.04);
+            flex: 0 0 auto;
         }
         .start-menu-logo {
             width: 34px;
@@ -870,7 +987,7 @@
         }
         .start-menu-title { font-size: 0.95rem; font-weight: 700; letter-spacing: 1px; }
 
-        .start-menu-search { padding: 12px 16px 8px; }
+        .start-menu-search { padding: 12px 16px 8px; flex: 0 0 auto; }
         .start-menu-search input {
             width: 100%;
             background: rgba(255,255,255,0.04);
@@ -893,6 +1010,10 @@
             gap: 5px;
             padding: 0 16px 10px;
             overflow-x: auto;
+            /* Chrome, not a squeeze target. As a flex item in the column this
+               was shrinking under height pressure and clipping the tabs in
+               half, which also wrapped the active pill onto a second row. */
+            flex: 0 0 auto;
         }
         .start-menu-category {
             padding: 5px 12px;
@@ -912,11 +1033,16 @@
         }
 
         .start-menu-apps {
-            flex: 1;
+            flex: 1 1 auto;
+            /* min-height:0 is required — a flex item defaults to min-height:auto,
+               which refuses to shrink below content and silently breaks the
+               scroll once the menu is height-constrained. */
+            min-height: 0;
             overflow-y: auto;
             padding: 0 12px 12px;
             display: grid;
             grid-template-columns: repeat(3, 1fr);
+            align-content: start;
             gap: 6px;
         }
         .start-app-item {
@@ -959,6 +1085,7 @@
             align-items: center;
             padding: 10px 20px;
             border-top: 1px solid rgba(255,255,255,0.04);
+            flex: 0 0 auto;
         }
         .start-menu-version { font-size: 0.65rem; color: var(--text-muted); }
         .start-menu-power {
@@ -988,6 +1115,7 @@
         .stat-value.accent { color: var(--accent); }
         .stat-value.gold { color: var(--gold); }
         .stat-value.green { color: var(--green); }
+        .stat-value.red { color: var(--red); }
 
         .app-terminal {
             font-family: 'JetBrains Mono', monospace;
@@ -1165,42 +1293,318 @@
         /* ═══════════════════════════════════════════
            RESPONSIVE
            ═══════════════════════════════════════════ */
-        @media (max-width: 900px) {
-            .desktop-icon { width: 65px; padding: 8px 5px; }
-            .desktop-icon-img { width: 38px; height: 38px; font-size: 18px; }
+        /* ═══════════════════════════════════════════
+           RESPONSIVE SCALE
+           One source of truth: --icon-cell is both the CSS box width AND
+           the grid pitch the JS zone layout reads back, so the rendered
+           grid can never disagree with the stylesheet.
+           ═══════════════════════════════════════════ */
+        @media (max-width: 1600px) {
+            :root { --icon-cell: 84px; --icon-glyph: 44px; --dock-cell: 56px; --dock-glyph: 42px; }
+        }
+        @media (max-width: 1280px) {
+            :root { --icon-cell: 78px; --icon-glyph: 42px; --dock-cell: 50px; --dock-glyph: 38px; }
+            .start-menu { width: min(440px, 92vw); }
+        }
+        @media (max-width: 1024px) {
+            :root { --icon-cell: 72px; --icon-glyph: 40px; --dock-cell: 46px; --dock-glyph: 34px; }
+            .start-menu { width: min(400px, 92vw); }
+            .start-menu-apps { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 820px) {
+            :root { --icon-cell: 66px; --icon-glyph: 38px; --dock-cell: 42px; --dock-glyph: 30px; }
+            .desktop-icon { padding: 8px 4px; gap: 4px; }
             .desktop-icon-label { font-size: 0.55rem; }
-            .dock-item { min-width: 36px; padding: 4px 6px; }
-            .dock-icon { width: 36px; height: 36px; font-size: 18px; }
+            .os-window { min-width: 260px; min-height: 170px; }
+        }
+        /* Between the widest and narrowest layouts the tray can still crowd the
+           restart control off the edge; drop it before it can force a scrollbar. */
+        @media (max-width: 720px) {
+            .topbar-action-btn { display: none; }
+            .topbar-right { gap: 10px; }
+        }
+        @media (max-width: 640px) {
+            :root { --icon-cell: 60px; --icon-glyph: 34px; --dock-cell: 38px; --dock-glyph: 26px; }
+            .desktop-icon { padding: 6px 3px; gap: 3px; }
+            .desktop-icon-img { border-radius: 11px; }
+            .desktop-icon-label { font-size: 0.5rem; }
+            .dock-item { min-width: var(--dock-cell); padding: 4px; }
             .dock-label { display: none; }
             .topbar-logo { display: none; }
-            .os-window { min-width: 280px; min-height: 180px; }
-            .start-menu { width: 320px; }
-        }
-        @media (max-width: 600px) {
-            #desktop-icons { flex-direction: row; flex-wrap: wrap; top: 36px; left: 4px; right: 4px; justify-content: center; }
-            .desktop-icon { width: 52px; padding: 4px 2px; }
-            .desktop-icon-img { width: 32px; height: 32px; font-size: 16px; }
-            .desktop-icon-label { font-size: 0.5rem; max-width: 50px; overflow: hidden; text-overflow: ellipsis; }
-            .dock-item { min-width: 30px; padding: 3px 4px; }
-            .dock-icon { font-size: 16px; }
-            #topbar { padding: 4px 8px; }
-            .topbar-clock { display: none; }
-            .start-menu { width: 92vw; max-height: 70vh; }
+            .start-menu { width: min(360px, 94vw); max-height: 68vh; }
+            .start-menu-apps { grid-template-columns: repeat(3, 1fr); }
             .os-window { border-radius: 10px; }
             .window-header { padding: 6px 10px; }
             .window-title { font-size: 0.7rem; }
         }
-        @media (min-width: 1600px) {
-            .desktop-icon { width: 88px; padding: 12px 10px; }
-            .desktop-icon-img { width: 52px; height: 52px; font-size: 26px; }
-            .dock-item { min-width: 56px; }
-            .dock-icon { width: 50px; height: 50px; font-size: 24px; }
+        @media (max-width: 480px) {
+            :root { --icon-cell: 54px; --icon-glyph: 30px; --dock-cell: 34px; --dock-glyph: 24px; }
+            /* Shed non-essential topbar content before anything can overflow. */
+            #topbar { padding: 0 8px; gap: 6px; }
+            .topbar-right { gap: 8px; }
+            .topbar-tray #tray-processes,
+            .topbar-tray #tray-windows { display: none; }
+            .quantum-coherence { display: none; }
+            .topbar-status { max-width: 52vw; overflow: hidden; white-space: nowrap; }
+            /* compact status carries its own glyphs, so drop the leading dot */
+            .topbar-status::before { display: none; }
+            .topbar-left { flex: 0 1 auto; min-width: 0; }
+            .topbar-action-btn { display: none; }
+            /* min-width:80px on the base rule cannot be beaten by max-width,
+               so the floor itself has to be overridden. */
+            .quantum-widget {
+                min-width: 0;
+                width: 32px;
+                max-width: 32px;
+                padding: 4px 2px;
+                gap: 0;
+                overflow: hidden;
+                justify-content: center;
+            }
+            .quantum-widget .quantum-pulse { display: none; }
+            .desktop-icon { padding: 5px 2px; }
+            .desktop-icon-label { font-size: 0.45rem; }
+            .topbar-clock { display: none; }
+            .start-menu { width: 94vw; }
+            .start-menu-apps { grid-template-columns: repeat(2, 1fr); }
+        }
+        /* Landscape phones have almost no vertical room: shrink the dock and
+           let the icon grid scroll inside its own pane instead of the page. */
+        @media (max-height: 560px) and (orientation: landscape) {
+            :root { --dock-cell: 32px; --dock-glyph: 22px; --icon-glyph: 28px; --icon-cell: 64px; }
+            #dock { padding: 4px 8px; bottom: max(6px, env(safe-area-inset-bottom, 0px)); }
+            #topbar { height: 30px; }
+            .desktop-icon { padding: 4px 2px; gap: 2px; }
+            .desktop-icon-label { font-size: 0.45rem; }
+            .zone-label { font-size: 9px !important; margin-bottom: 4px !important; }
+        }
+        @media (min-width: 1601px) {
+            :root { --icon-cell: 92px; --icon-glyph: 52px; --dock-cell: 62px; --dock-glyph: 48px; }
             .start-menu { width: 460px; }
             .start-menu-apps { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        /* ═══════════════════════════════════════════
+           SPLASH / POWER ON
+           ═══════════════════════════════════════════ */
+        #splash {
+            position: fixed;
+            inset: 0;
+            z-index: 100000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(120% 90% at 50% 42%, #0b1020 0%, #04060c 55%, #010204 100%);
+            overflow: hidden;
+            transition: opacity 0.55s ease, visibility 0.55s;
+        }
+        #splash.splash-done { opacity: 0; visibility: hidden; pointer-events: none; }
+
+        .splash-grid {
+            position: absolute; inset: -20%;
+            background-image:
+                linear-gradient(rgba(0,232,255,0.07) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,232,255,0.07) 1px, transparent 1px);
+            background-size: 54px 54px;
+            transform: perspective(700px) rotateX(62deg) translateY(12%);
+            mask-image: radial-gradient(70% 60% at 50% 55%, #000 0%, transparent 78%);
+            -webkit-mask-image: radial-gradient(70% 60% at 50% 55%, #000 0%, transparent 78%);
+            animation: splashGridDrift 14s linear infinite;
+            opacity: 0.75;
+        }
+        .splash-glow {
+            position: absolute;
+            width: min(70vmin, 620px);
+            aspect-ratio: 1;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0,232,255,0.16), rgba(139,92,246,0.10) 45%, transparent 70%);
+            filter: blur(30px);
+            animation: splashPulse 5.5s ease-in-out infinite;
+        }
+        .splash-inner {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 24px;
+            max-width: 92vw;
+        }
+        .splash-mark { width: clamp(64px, 16vmin, 96px); animation: splashFloat 5s ease-in-out infinite; }
+        .splash-mark svg { width: 100%; height: auto; }
+        .splash-title {
+            margin: 18px 0 6px;
+            font-size: clamp(30px, 7.2vmin, 58px);
+            font-weight: 900;
+            letter-spacing: 0.16em;
+            line-height: 1;
+            background: linear-gradient(100deg, #00e8ff, #8b5cf6 55%, #ffc940);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .splash-title span { display: block; font-size: 0.34em; letter-spacing: 0.5em; margin-top: 10px; opacity: 0.85; }
+        .splash-tag {
+            margin: 0 0 30px;
+            font-size: clamp(0.6rem, 1.5vmin, 0.78rem);
+            letter-spacing: 0.26em;
+            text-transform: uppercase;
+            color: rgba(234,250,255,0.5);
+        }
+        .splash-power {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 30px;
+            border-radius: 999px;
+            border: 1px solid rgba(0,232,255,0.45);
+            background: rgba(0,232,255,0.07);
+            color: #eafcff;
+            font: inherit;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            cursor: var(--cursor-pointer);
+            transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .splash-power:hover, .splash-power:focus-visible {
+            background: rgba(0,232,255,0.15);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0,232,255,0.25);
+            outline: none;
+        }
+        .splash-power:active { transform: translateY(0); }
+        .splash-power-glyph { display: inline-flex; color: var(--accent); }
+        .splash-power-ring {
+            position: absolute; inset: -6px;
+            border-radius: 999px;
+            border: 1px solid rgba(0,232,255,0.28);
+            animation: splashRing 2.8s ease-out infinite;
+            pointer-events: none;
+        }
+        .splash-hint {
+            margin: 20px 0 0;
+            font-size: 0.68rem;
+            letter-spacing: 0.14em;
+            color: rgba(234,250,255,0.42);
+        }
+        .splash-hint kbd {
+            font: inherit;
+            padding: 2px 7px;
+            border-radius: 5px;
+            border: 1px solid rgba(255,255,255,0.18);
+            background: rgba(255,255,255,0.06);
+        }
+        .splash-foot {
+            margin-top: 34px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .splash-sound {
+            padding: 6px 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.14);
+            background: rgba(255,255,255,0.04);
+            color: rgba(234,250,255,0.75);
+            font: inherit;
+            font-size: 0.68rem;
+            letter-spacing: 0.1em;
+            cursor: var(--cursor-pointer);
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+        .splash-sound:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .splash-meta { font-size: 0.62rem; letter-spacing: 0.18em; color: rgba(234,250,255,0.3); }
+
+        @keyframes splashGridDrift { from { background-position: 0 0, 0 0; } to { background-position: 0 54px, 54px 0; } }
+        @keyframes splashPulse { 0%,100% { transform: scale(1); opacity: 0.85; } 50% { transform: scale(1.12); opacity: 1; } }
+        @keyframes splashFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+        @keyframes splashRing { 0% { transform: scale(1); opacity: 0.7; } 100% { transform: scale(1.14); opacity: 0; } }
+
+        @media (prefers-reduced-motion: reduce) {
+            .splash-grid, .splash-glow, .splash-mark, .splash-power-ring { animation: none; }
+        }
+        @media (max-height: 520px) {
+            .splash-mark { width: 52px; }
+            .splash-title { margin: 10px 0 4px; }
+            .splash-tag { margin-bottom: 16px; }
+            .splash-foot { margin-top: 18px; }
+        }
+
+        /* ═══════════════════════════════════════════
+           POINTER SYSTEM — applied last so it wins over
+           component-level cursor declarations.
+           ═══════════════════════════════════════════ */
+        body, #desktop, #desktop-icons, #dock, #topbar, #windows-container,
+        button, a, label, summary, .dock-item, .desktop-icon, .start-app-item,
+        .start-menu-category, .topbar-start, .tray-item, .ctx-item, .quantum-widget,
+        .start-menu-power, .track-item, .setting-row, .zone-label, .os-window,
+        .window-header, .dock-icon, .taskbar-item, .modal-close, .metric-card {
+            cursor: var(--cursor-pointer) !important;
+        }
+        .desktop-icon { cursor: var(--cursor-grab) !important; }
+        .desktop-icon.dragging,
+        .desktop-icon:active { cursor: var(--cursor-grabbing) !important; }
+        .window-resize-n, .window-resize-s { cursor: var(--cursor-grab) !important; }
+        .window-resize-n:hover, .window-resize-s:hover { cursor: var(--cursor-grabbing) !important; }
+        .window-resize-e, .window-resize-w { cursor: var(--cursor-grab) !important; }
+        .window-resize-nw, .window-resize-se { cursor: var(--cursor-grab) !important; }
+        .window-resize-ne, .window-resize-sw { cursor: var(--cursor-grab) !important; }
+
+        /* Text entry keeps the native I-beam. */
+        input:not([type="button"]):not([type="submit"]),
+        textarea, select, [contenteditable="true"] {
+            cursor: text !important;
         }
     </style>
 </head>
 <body>
+
+    <noscript>
+        <!-- No JS means no Power On handler; do not trap the user behind the splash. -->
+        <style>#splash{display:none !important;}</style>
+    </noscript>
+
+    <!-- Splash / Power On -->
+    <div id="splash" role="dialog" aria-label="HAZOOM OS startup">
+        <div class="splash-grid" aria-hidden="true"></div>
+        <div class="splash-glow" aria-hidden="true"></div>
+        <div class="splash-inner">
+            <div class="splash-mark" aria-hidden="true">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="splashGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#00e8ff"/>
+                            <stop offset="50%" style="stop-color:#8b5cf6"/>
+                            <stop offset="100%" style="stop-color:#ffc940"/>
+                        </linearGradient>
+                    </defs>
+                    <polygon points="50,8 85,30 85,70 50,92 15,70 15,30" fill="none" stroke="url(#splashGrad)" stroke-width="2" opacity="0.55"/>
+                    <polygon points="50,18 75,34 75,66 50,82 25,66 25,34" fill="none" stroke="url(#splashGrad)" stroke-width="1.4" opacity="0.3"/>
+                    <text x="50" y="60" text-anchor="middle" font-size="36" font-weight="900" font-family="JetBrains Mono,monospace" fill="url(#splashGrad)">H</text>
+                </svg>
+            </div>
+            <h1 class="splash-title">HAZOOM<span>OS</span></h1>
+            <p class="splash-tag">Sovereign · Local-first · Offline-capable</p>
+            <button id="splash-power" class="splash-power" type="button" aria-label="Power on HAZOOM OS">
+                <span class="splash-power-ring" aria-hidden="true"></span>
+                <span class="splash-power-glyph" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="26" height="26"><path d="M12 3v9" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none"/><path d="M7 6.5a8 8 0 1010 0" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none"/></svg>
+                </span>
+                <span class="splash-power-label">Power On</span>
+            </button>
+            <p class="splash-hint">Press <kbd>Enter</kbd> or tap to begin</p>
+            <div class="splash-foot">
+                <button id="splash-sound" class="splash-sound" type="button" aria-pressed="true">Sound: On</button>
+                <span class="splash-meta">v6.0.0 · Hazem Soussi</span>
+            </div>
+        </div>
+    </div>
 
     <!-- Boot Screen -->
     <div id="boot-screen">
@@ -1241,23 +1645,24 @@
     <!-- Top Bar -->
     <div id="topbar">
         <div class="topbar-left">
-            <div class="topbar-start" onclick="HAZOOM.toggleStartMenu()">H</div>
+            <div class="topbar-start" role="button" tabindex="0" aria-label="Open Start menu" aria-haspopup="menu" aria-expanded="false" onclick="HAZOOM.toggleStartMenu()" onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); HAZOOM.toggleStartMenu(); }">H</div>
             <span class="topbar-logo">HAZOOM</span>
-            <span class="topbar-status" id="topbar-status">Online</span>
+            <span class="topbar-status" id="topbar-status">Kernel checking · AI offline</span>
         </div>
         <div class="topbar-right">
             <div class="topbar-tray">
-                <span class="tray-item" id="tray-cpu">⚡ 0%</span>
-                <span class="tray-item" id="tray-mem">💾 0MB</span>
-                <span class="tray-item" id="tray-windows">📱 0</span>
+                <span class="tray-item" id="tray-cpu">K —</span>
+                <span class="tray-item" id="tray-mem">M —</span>
+                <span class="tray-item" id="tray-processes">P —</span>
+                <span class="tray-item" id="tray-windows">W 0</span>
             </div>
-            <div class="tray-item quantum-widget" id="quantum-widget" onclick="HAZOOM.openApp('quantum-portal')" title="Quantum State — Click for Portal">
-                <span class="quantum-icon">⚛️</span>
+            <div class="tray-item quantum-widget" id="quantum-widget" role="button" tabindex="0" aria-label="Open Dashboard quantum state" onclick="HAZOOM.openApp('dashboard')" onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); HAZOOM.openApp('dashboard'); }" title="Quantum State — Click for Dashboard">
+                <span class="quantum-icon">Q</span>
                 <span class="quantum-coherence" id="quantum-coherence">100%</span>
                 <span class="quantum-pulse"></span>
             </div>
             <span class="topbar-clock" id="topbar-clock"></span>
-            <button class="topbar-action-btn" onclick="HAZOOM.restart()" title="Restart OS" style="background:none;border:1px solid rgba(255,255,255,0.06);color:var(--text-dim);padding:3px 8px;border-radius:5px;font-size:0.7rem;cursor:pointer;transition:all 0.2s;">⏻</button>
+            <button class="topbar-action-btn" aria-label="Restart OS" onclick="HAZOOM.restart()" title="Restart OS" style="background:none;border:1px solid rgba(255,255,255,0.06);color:var(--text-dim);padding:3px 8px;border-radius:5px;font-size:0.7rem;cursor:pointer;transition:all 0.2s;">↻</button>
         </div>
     </div>
 
@@ -1285,17 +1690,19 @@
             <input type="text" id="start-search" placeholder="Search apps..." oninput="HAZOOM.filterStartMenu(this.value)">
         </div>
         <div class="start-menu-categories">
-            <div class="start-menu-category" onclick="HAZOOM.filterStartMenuCategory('all')">All</div>
-            <div class="start-menu-category" onclick="HAZOOM.filterStartMenuCategory('core')">Core</div>
-            <div class="start-menu-category" onclick="HAZOOM.filterStartMenuCategory('ai')">AI</div>
-            <div class="start-menu-category" onclick="HAZOOM.filterStartMenuCategory('tools')">Tools</div>
-            <div class="start-menu-category" onclick="HAZOOM.filterStartMenuCategory('games')">Games</div>
-            <div class="start-menu-category" onclick="HAZOOM.filterStartMenuCategory('visualizers')">Visualizers</div>
+            <div class="start-menu-category active" data-category="all" role="button" tabindex="0" aria-pressed="true" onclick="HAZOOM.filterStartMenuCategory('all', this)" onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); HAZOOM.filterStartMenuCategory('all', this); }">All</div>
+            <div class="start-menu-category" data-category="core" role="button" tabindex="0" aria-pressed="false" onclick="HAZOOM.filterStartMenuCategory('core', this)" onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); HAZOOM.filterStartMenuCategory('core', this); }">Core</div>
+            <div class="start-menu-category" data-category="ai" role="button" tabindex="0" aria-pressed="false" onclick="HAZOOM.filterStartMenuCategory('ai', this)" onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); HAZOOM.filterStartMenuCategory('ai', this); }">AI</div>
+            <div class="start-menu-category" data-category="tools" role="button" tabindex="0" aria-pressed="false" onclick="HAZOOM.filterStartMenuCategory('tools', this)" onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); HAZOOM.filterStartMenuCategory('tools', this); }">Tools</div>
+            <div class="start-menu-category" data-category="games" role="button" tabindex="0" aria-pressed="false" onclick="HAZOOM.filterStartMenuCategory('games', this)" onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); HAZOOM.filterStartMenuCategory('games', this); }">Games</div>
+            <div class="start-menu-category" data-category="docs" role="button" tabindex="0" aria-pressed="false" onclick="HAZOOM.filterStartMenuCategory('docs', this)" onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); HAZOOM.filterStartMenuCategory('docs', this); }">Docs</div>
+            <div class="start-menu-category" data-category="visualizers" role="button" tabindex="0" aria-pressed="false" onclick="HAZOOM.filterStartMenuCategory('visualizers', this)" onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); HAZOOM.filterStartMenuCategory('visualizers', this); }">Visualizers</div>
+            <div class="start-menu-category" data-category="services" role="button" tabindex="0" aria-pressed="false" onclick="HAZOOM.filterStartMenuCategory('services', this)" onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); HAZOOM.filterStartMenuCategory('services', this); }">Services</div>
         </div>
         <div class="start-menu-apps" id="start-menu-apps"></div>
         <div class="start-menu-footer">
-            <span class="start-menu-version">v4.0.0</span>
-            <span class="start-menu-power" onclick="HAZOOM.restart()">Restart</span>
+            <span class="start-menu-version">v6.0.0</span>
+            <span class="start-menu-power" role="button" tabindex="0" aria-label="Restart HAZOOM OS" onclick="HAZOOM.restart()" onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); HAZOOM.restart(); }">Restart</span>
         </div>
     </div>
 
@@ -1312,6 +1719,7 @@
     <script src="core/deep_think_engine.js"></script>
     <script src="core/system_monitor.js"></script>
     <script src="core/os-desktop.js"></script>
+    <script src="core/boot_audio.js"></script>
     <script>
         window.onerror = function(msg, url, line, col, err) {
             var el = document.createElement('div');
@@ -1343,8 +1751,21 @@
             }
         })();
 
+        // If a script error prevents startup, don't leave the splash covering
+        // the desktop forever - recover and boot directly.
+        window.addEventListener('error', (e) => {
+            try {
+                const splash = document.getElementById('splash');
+                if (splash && !window.HAZOOM?._booted) {
+                    splash.remove();
+                    HAZOOM._dismissSplash && HAZOOM._dismissSplash();
+                    HAZOOM.startup();
+                }
+            } catch (_) {}
+        });
+
         document.addEventListener('DOMContentLoaded', () => {
-            HAZOOM.boot();
+            HAZOOM.startup();
             
             // Initialize Quantum Systems
             setTimeout(async () => {
@@ -1368,6 +1789,7 @@
                     }
                     
                     // Update quantum widget from state
+                    let lastQuantumMood = null;
                     const updateQuantumWidget = () => {
                         const widget = document.getElementById('quantum-widget');
                         const coherenceEl = document.getElementById('quantum-coherence');
@@ -1386,7 +1808,10 @@
                             const mood = coherence > 80 ? 'focused' : 
                                        coherence > 60 ? 'calm' : 
                                        coherence > 30 ? 'energetic' : 'night';
-                            window.HAZOOM_UNIVERSE.setMood(mood);
+                            if (mood !== lastQuantumMood) {
+                                window.HAZOOM_UNIVERSE.setMood(mood);
+                                lastQuantumMood = mood;
+                            }
                         }
                     };
                     
@@ -1413,6 +1838,7 @@
             const startBtn = document.querySelector('.topbar-start');
             if (startMenu && startMenu.classList.contains('show') && !startMenu.contains(e.target) && e.target !== startBtn && !startBtn?.contains(e.target)) {
                 startMenu.classList.remove('show');
+                startBtn?.setAttribute('aria-expanded', 'false');
             }
         });
     </script>

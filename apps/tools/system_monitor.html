@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HAZOOM System Monitor</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -18,32 +19,41 @@ body{background:#030308;color:#e8e8f0;font-family:'JetBrains Mono',monospace;hei
 .metric{flex:1;min-width:140px;padding:10px;background:rgba(255,255,255,0.02);border-radius:8px;position:relative;overflow:hidden}
 .metric-label{font-size:0.6rem;color:rgba(255,255,255,0.4);margin-bottom:4px}
 .metric-value{font-size:1.4rem;font-weight:700}
+.metric-value.unavailable{color:#6b7280!important}
+.metric-detail{font-size:0.55rem;color:rgba(255,255,255,0.3);margin-top:4px;line-height:1.4}
 .metric-bar{height:3px;background:rgba(255,255,255,0.1);border-radius:2px;margin-top:6px;overflow:hidden}
 .metric-bar-fill{height:100%;border-radius:2px;transition:width 0.5s}
 .chart-wrap{height:140px;padding:12px;border-bottom:1px solid rgba(255,255,255,0.06)}
-.chart-wrap canvas{width:100%;height:100%}
+.chart-wrap canvas{width:100%;height:100%;display:block}
 .panel{flex:1;overflow-y:auto;padding:12px}
 table{width:100%;border-collapse:collapse;font-size:0.7rem}
 th{text-align:left;padding:6px 10px;color:rgba(255,255,255,0.4);border-bottom:1px solid rgba(255,255,255,0.08);font-weight:400;position:sticky;top:0;background:#030308}
 td{padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.03)}
 .pid{color:#ffd700}
 .mem{color:#8b5cf6}
-.action-btn{padding:2px 8px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:3px;color:#ef4444;font-size:0.6rem;cursor:pointer;font-family:inherit}
-.action-btn:hover{background:rgba(239,68,68,0.3)}
+.panel-message{color:rgba(255,255,255,0.55);font-size:0.7rem;line-height:1.7;padding:18px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:6px}
+.panel-message-title{color:#e8e8f0;font-size:0.8rem;margin-bottom:6px}
+.panel-message.error{border-color:rgba(239,68,68,0.35);color:#fca5a5}
+.panel-note{color:rgba(255,255,255,0.45);font-size:0.65rem;margin:2px 0 10px}
+.kernel-summary{display:flex;gap:12px;padding:0 0 12px;flex-wrap:wrap}
+.kernel-summary .metric{min-width:120px}
+.status-ok{color:#10b981}
+.status-offline{color:#ef4444}
+.status-unavailable{color:#6b7280}
 </style>
 </head>
 <body>
 <div class="header">
-    <h1>📊 HAZOOM SYSTEM MONITOR</h1>
-    <span style="font-size:0.65rem;color:rgba(255,255,255,0.3)" id="uptime-display">Uptime: 0:00:00</span>
+    <h1>HAZOOM SYSTEM MONITOR</h1>
+    <span style="font-size:0.65rem;color:rgba(255,255,255,0.3)" id="uptime-display">Uptime: Unavailable</span>
 </div>
 <div class="main">
     <div class="sidebar">
-        <div class="sb-btn active" onclick="setTab('overview')">📊 Overview</div>
-        <div class="sb-btn" onclick="setTab('processes')">⚙️ Processes</div>
-        <div class="sb-btn" onclick="setTab('network')">🌐 Network</div>
-        <div class="sb-btn" onclick="setTab('storage')">💾 Storage</div>
-        <div class="sb-btn" onclick="setTab('kernel')">🧠 Kernel</div>
+        <button class="sb-btn active" type="button" data-tab="overview">Overview</button>
+        <button class="sb-btn" type="button" data-tab="processes">Processes</button>
+        <button class="sb-btn" type="button" data-tab="network">Network</button>
+        <button class="sb-btn" type="button" data-tab="storage">Storage</button>
+        <button class="sb-btn" type="button" data-tab="kernel">Kernel</button>
     </div>
     <div class="content">
         <div class="metrics-row" id="metrics-row"></div>
@@ -52,227 +62,545 @@ td{padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.03)}
     </div>
 </div>
 <script>
-const PROCESSES = [
-    {pid:1,name:'hazoom-init',cpu:0.1,mem:12,status:'running',type:'system'},
-    {pid:2,name:'pascal-kernel',cpu:0.3,mem:45,status:'running',type:'kernel'},
-    {pid:3,name:'neural-bridge',cpu:1.2,mem:89,status:'running',type:'ai'},
-    {pid:4,name:'content-filter',cpu:0.2,mem:23,status:'running',type:'security'},
-    {pid:5,name:'window-manager',cpu:0.5,mem:34,status:'running',type:'system'},
-    {pid:6,name:'event-bus',cpu:0.1,mem:8,status:'running',type:'system'},
-    {pid:7,name:'app-registry',cpu:0.0,mem:5,status:'running',type:'system'},
-    {pid:8,name:'security-daemon',cpu:0.4,mem:28,status:'running',type:'security'},
-    {pid:9,name:'notification-mgr',cpu:0.1,mem:6,status:'running',type:'system'},
-    {pid:10,name:'quantum-kernel',cpu:0.8,mem:52,status:'running',type:'kernel'},
-    {pid:11,name:'websocket-server',cpu:0.3,mem:18,status:'running',type:'network'},
-    {pid:12,name:'api-gateway',cpu:0.6,mem:42,status:'running',type:'network'},
-    {pid:13,name:'filesystem-mgr',cpu:0.1,mem:15,status:'running',type:'system'},
-    {pid:14,name:'privacy-browser',cpu:0.0,mem:0,status:'idle',type:'app'},
-    {pid:15,name:'ai-orchestrator',cpu:2.1,mem:124,status:'running',type:'ai'},
-    {pid:16,name:'knowledge-system',cpu:0.7,mem:67,status:'running',type:'ai'},
-    {pid:17,name:'consciousness-core',cpu:1.5,mem:95,status:'running',type:'ai'},
-    {pid:18,name:'tcp-ip-stack',cpu:0.2,mem:22,status:'running',type:'network'},
-    {pid:19,name:'firewall-engine',cpu:0.3,mem:19,status:'running',type:'security'},
-    {pid:20,name:'vault-service',cpu:0.1,mem:11,status:'running',type:'security'},
-];
+'use strict';
 
-let cpuHistory = Array(60).fill(12);
-let memHistory = Array(60).fill(450);
-let uptime = 0;
+const REQUEST_TIMEOUT = 5000;
+const MAX_HISTORY = 60;
+const canvas = document.getElementById('chartCanvas');
+const ctx = canvas.getContext('2d');
+const tabButtons = Array.from(document.querySelectorAll('[data-tab]'));
+const state = {
+    metrics: null,
+    metricsError: null,
+    status: null,
+    statusError: null,
+    activeTab: 'overview',
+    polling: false
+};
+let cpuHistory = [];
+let memHistory = [];
 
-function getMetricColor(val, max) {
-    const pct = val/max;
-    if(pct < 0.5) return '#10b981';
-    if(pct < 0.8) return '#f59e0b';
+function byId(id) {
+    return document.getElementById(id);
+}
+
+function isRecord(value) {
+    return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function finiteNumber(value) {
+    if (typeof value === 'boolean' || value === null || value === undefined) return null;
+    if (typeof value === 'string' && value.trim() === '') return null;
+    try {
+        const number = Number(value);
+        return Number.isFinite(number) ? number : null;
+    } catch {
+        return null;
+    }
+}
+
+function firstFinite(...values) {
+    for (const value of values) {
+        const number = finiteNumber(value);
+        if (number !== null) return number;
+    }
+    return null;
+}
+
+function firstBoolean(...values) {
+    for (const value of values) {
+        if (typeof value === 'boolean') return value;
+    }
+    return null;
+}
+
+function primitiveText(value) {
+    if (value === null || value === undefined) return 'Unavailable';
+    if (typeof value === 'object' || typeof value === 'function') return 'Unavailable';
+    return String(value);
+}
+
+function formatNumber(value) {
+    const number = finiteNumber(value);
+    if (number === null) return 'Unavailable';
+    return Number.isInteger(number) ? String(number) : number.toFixed(1);
+}
+
+function formatPercent(value) {
+    const number = finiteNumber(value);
+    return number === null ? 'Unavailable' : `${number.toFixed(1)}%`;
+}
+
+function formatBytes(value) {
+    const number = finiteNumber(value);
+    if (number === null) return 'Unavailable';
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    let amount = Math.max(0, number);
+    let unit = 0;
+    while (amount >= 1024 && unit < units.length - 1) {
+        amount /= 1024;
+        unit += 1;
+    }
+    const digits = unit === 0 ? 0 : amount >= 100 ? 0 : amount >= 10 ? 1 : 2;
+    return `${amount.toFixed(digits)} ${units[unit]}`;
+}
+
+function formatDuration(value) {
+    const number = finiteNumber(value);
+    if (number === null) return 'Unavailable';
+    const totalSeconds = Math.max(0, Math.floor(number / 1000));
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+function getMetricColor(value, max) {
+    const number = finiteNumber(value);
+    const limit = finiteNumber(max);
+    if (number === null || limit === null || limit <= 0) return '#6b7280';
+    const ratio = Math.max(0, Math.min(1, number / limit));
+    if (ratio < 0.5) return '#10b981';
+    if (ratio < 0.8) return '#f59e0b';
     return '#ef4444';
 }
 
-function renderMetrics() {
-    const cpu = cpuHistory[cpuHistory.length-1];
-    const mem = memHistory[memHistory.length-1];
-    const memPct = Math.round(mem/16384*100);
-    const disk = 23;
-    const net = Math.floor(Math.random()*500)+100;
-    const processes = PROCESSES.filter(p=>p.status==='running').length;
-    
-    document.getElementById('metrics-row').innerHTML = `
-        <div class="metric"><div class="metric-label">CPU</div><div class="metric-value" style="color:${getMetricColor(cpu,100)}">${cpu.toFixed(1)}%</div><div class="metric-bar"><div class="metric-bar-fill" style="width:${cpu}%;background:${getMetricColor(cpu,100)}"></div></div></div>
-        <div class="metric"><div class="metric-label">MEMORY</div><div class="metric-value" style="color:${getMetricColor(mem,16384)}">${mem} MB</div><div class="metric-bar"><div class="metric-bar-fill" style="width:${memPct}%;background:${getMetricColor(mem,16384)}"></div></div><div style="font-size:0.55rem;color:rgba(255,255,255,0.3);margin-top:2px">${memPct}% of 16 GB</div></div>
-        <div class="metric"><div class="metric-label">DISK</div><div class="metric-value" style="color:${getMetricColor(100-disk,100)}">${disk}%</div><div class="metric-bar"><div class="metric-bar-fill" style="width:${disk}%;background:#06b6d4"></div></div></div>
-        <div class="metric"><div class="metric-label">NETWORK</div><div class="metric-value" style="color:#06b6d4">${net} KB/s</div><div style="font-size:0.55rem;color:rgba(255,255,255,0.3);margin-top:4px">↑ ${Math.floor(net*0.3)} ↓ ${Math.floor(net*0.7)}</div></div>
-        <div class="metric"><div class="metric-label">PROCESSES</div><div class="metric-value" style="color:#a855f7">${processes}</div><div style="font-size:0.55rem;color:rgba(255,255,255,0.3);margin-top:4px">${PROCESSES.length} total</div></div>
-        <div class="metric"><div class="metric-label">KERNEL MODS</div><div class="metric-value" style="color:#ffd700">4/4</div><div style="font-size:0.55rem;color:rgba(255,255,255,0.3);margin-top:4px">Pascal loaded</div></div>
-    `;
+function visualPercent(value) {
+    const number = finiteNumber(value);
+    return number === null ? null : Math.max(0, Math.min(100, number));
 }
 
-const canvas = document.getElementById('chartCanvas');
-const ctx = canvas.getContext('2d');
+function statusColor(value) {
+    if (value === true) return '#10b981';
+    if (value === false) return '#ef4444';
+    return '#6b7280';
+}
+
+function createElement(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+}
+
+function metricCard(label, value, color, percentage, detail) {
+    const card = createElement('div', 'metric');
+    card.appendChild(createElement('div', 'metric-label', label));
+    const valueNode = createElement('div', 'metric-value', value);
+    valueNode.style.color = color;
+    if (value === 'Unavailable') valueNode.classList.add('unavailable');
+    card.appendChild(valueNode);
+    const barValue = visualPercent(percentage);
+    if (barValue !== null) {
+        const bar = createElement('div', 'metric-bar');
+        const fill = createElement('div', 'metric-bar-fill');
+        fill.style.width = `${barValue}%`;
+        fill.style.background = color;
+        bar.appendChild(fill);
+        card.appendChild(bar);
+    }
+    if (detail !== undefined && detail !== '') card.appendChild(createElement('div', 'metric-detail', detail));
+    return card;
+}
+
+function normalizeMetrics(data) {
+    if (!isRecord(data)) throw new Error('Invalid metrics response');
+    const cpu = isRecord(data.cpu) ? data.cpu : {};
+    const memory = isRecord(data.memory) ? data.memory : {};
+    const cpuValue = firstFinite(cpu.utilization, cpu.percent, cpu.usage, isRecord(data.cpu) ? null : data.cpu);
+    const memoryUsed = firstFinite(memory.used, memory.usedMemory, memory.usedBytes);
+    const memoryTotal = firstFinite(memory.total, memory.totalMemory, memory.totalBytes);
+    let memoryPercent = firstFinite(memory.usagePercent, memory.percent, memory.utilization);
+    if (memoryPercent === null && memoryUsed !== null && memoryTotal !== null && memoryTotal > 0) {
+        memoryPercent = (memoryUsed / memoryTotal) * 100;
+    }
+    const processCount = Array.isArray(data.processes) ? data.processes.length : firstFinite(data.processes, cpu.processCount);
+    const uptime = firstFinite(data.uptimeMs, data.uptime);
+    const missing = [];
+    if (cpuValue === null) missing.push('CPU');
+    if (memoryUsed === null) missing.push('memory usage');
+    if (memoryTotal === null) missing.push('memory total');
+    if (memoryPercent === null) missing.push('memory percentage');
+    return {
+        raw: data,
+        cpu: cpuValue,
+        memoryUsed,
+        memoryTotal,
+        memoryPercent,
+        processCount,
+        uptime,
+        running: typeof data.running === 'boolean' ? data.running : null,
+        scope: primitiveText(data.scope),
+        timestamp: firstFinite(data.timestamp),
+        missing
+    };
+}
+
+function normalizeStatus(data) {
+    if (!isRecord(data)) throw new Error('Invalid status response');
+    const required = ['version', 'running', 'uptime', 'tickCount', 'readyQueue', 'blockedQueue'];
+    const missing = required.filter(key => data[key] === null || data[key] === undefined);
+    return { raw: data, missing };
+}
+
+function requestError(error) {
+    if (error && error.name === 'AbortError') return 'Request timed out';
+    if (error && error.message) return String(error.message);
+    return 'Request failed';
+}
+
+async function fetchJson(path) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+    try {
+        const response = await fetch(path, {
+            cache: 'no-store',
+            credentials: 'same-origin',
+            headers: { Accept: 'application/json' },
+            signal: controller.signal
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return await response.json();
+    } finally {
+        clearTimeout(timeout);
+    }
+}
+
+function renderHeader() {
+    const uptime = firstFinite(state.status && state.status.uptime, state.metrics && state.metrics.uptime);
+    byId('uptime-display').textContent = `Uptime: ${formatDuration(uptime)}`;
+}
+
+function renderMetrics() {
+    const row = byId('metrics-row');
+    row.replaceChildren();
+    const metrics = state.metrics;
+    const status = state.status;
+    const cpu = metrics ? metrics.cpu : null;
+    const memoryUsed = metrics ? metrics.memoryUsed : null;
+    const memoryTotal = metrics ? metrics.memoryTotal : null;
+    const memoryPercent = metrics ? metrics.memoryPercent : null;
+    const processCount = firstFinite(metrics && metrics.processCount, status && status.processCount);
+    const ready = firstFinite(metrics && metrics.raw && metrics.raw.cpu && metrics.raw.cpu.readyQueue, status && status.readyQueue);
+    const blocked = firstFinite(metrics && metrics.raw && metrics.raw.cpu && metrics.raw.cpu.blockedQueue, status && status.blockedQueue);
+    const running = firstBoolean(
+        status && status.running,
+        metrics && metrics.running
+    );
+    const version = status ? primitiveText(status.version) : 'Unavailable';
+    const cpuColor = getMetricColor(cpu, 100);
+    const memoryColor = getMetricColor(memoryPercent, 100);
+    const memoryValue = memoryUsed !== null
+        ? formatBytes(memoryUsed)
+        : memoryPercent !== null ? formatPercent(memoryPercent) : 'Unavailable';
+    const memoryDetail = memoryUsed === null && memoryTotal === null
+        ? memoryPercent === null ? 'Memory metrics unavailable' : `${formatPercent(memoryPercent)} reported; used and total unavailable`
+        : `${memoryUsed === null ? 'Used unavailable' : formatBytes(memoryUsed)} / ${memoryTotal === null ? 'Total unavailable' : formatBytes(memoryTotal)}`;
+    const processDetail = ready === null && blocked === null
+        ? 'Queue metrics unavailable'
+        : `Ready ${formatNumber(ready)} · Blocked ${formatNumber(blocked)}`;
+
+    row.appendChild(metricCard('CPU', cpu === null ? 'Unavailable' : formatPercent(cpu), cpuColor, cpu, metrics ? metrics.scope : 'Metrics API unavailable'));
+    row.appendChild(metricCard('MEMORY', memoryValue, memoryColor, memoryPercent, memoryDetail));
+    row.appendChild(metricCard('PROCESS COUNT', formatNumber(processCount), '#a855f7', null, processDetail));
+    row.appendChild(metricCard('KERNEL', running === null ? 'Unavailable' : running ? 'Running' : 'Offline', statusColor(running), null, version));
+    row.appendChild(metricCard('NETWORK', 'Not collected', '#6b7280', null, 'No interface data collected'));
+    row.appendChild(metricCard('STORAGE', 'Not collected', '#6b7280', null, 'No disk data collected'));
+}
 
 function resizeChart() {
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+    canvas.width = Math.max(1, canvas.offsetWidth);
+    canvas.height = Math.max(1, canvas.offsetHeight);
 }
-window.addEventListener('resize', resizeChart);
-resizeChart();
+
+window.addEventListener('resize', () => {
+    resizeChart();
+    drawChart();
+});
+
+function drawSeries(values, color) {
+    if (!values.length || !ctx) return;
+    const width = canvas.width;
+    const height = canvas.height;
+    const offset = MAX_HISTORY - values.length;
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    values.forEach((value, index) => {
+        const number = finiteNumber(value);
+        if (number === null) return;
+        const x = (offset + index) * (width / Math.max(1, MAX_HISTORY - 1));
+        const y = height - (Math.max(0, Math.min(100, number)) / 100) * height;
+        if (index === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    if (values.length === 1) {
+        const number = finiteNumber(values[0]);
+        if (number !== null) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(width, height - (Math.max(0, Math.min(100, number)) / 100) * height, 2, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+}
 
 function drawChart() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    // Grid
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = 'rgba(255,255,255,0.03)';
-    for(let i=0;i<5;i++){
-        const y = i*canvas.height/4;
-        ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();
+    for (let index = 0; index < 5; index += 1) {
+        const y = index * canvas.height / 4;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
     }
-    // CPU line
-    ctx.beginPath();
-    ctx.strokeStyle = '#10b981';
-    ctx.lineWidth = 1.5;
-    cpuHistory.forEach((v,i)=>{
-        const x = i*(canvas.width/60);
-        const y = canvas.height - (v/100)*canvas.height;
-        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
-    });
-    ctx.stroke();
-    // Memory line
-    ctx.beginPath();
-    ctx.strokeStyle = '#8b5cf6';
-    ctx.lineWidth = 1.5;
-    memHistory.forEach((v,i)=>{
-        const x = i*(canvas.width/60);
-        const y = canvas.height - (v/16384)*canvas.height;
-        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
-    });
-    ctx.stroke();
-    // Legend
+    if (!cpuHistory.length && !memHistory.length) {
+        ctx.font = '10px JetBrains Mono';
+        ctx.fillStyle = state.metricsError ? '#fca5a5' : 'rgba(255,255,255,0.4)';
+        ctx.fillText(state.metricsError ? 'Metrics unavailable' : 'Waiting for metrics', 8, 24);
+        return;
+    }
+    drawSeries(cpuHistory, '#10b981');
+    drawSeries(memHistory, '#8b5cf6');
     ctx.font = '9px JetBrains Mono';
-    ctx.fillStyle = '#10b981'; ctx.fillText('● CPU', 8, 12);
-    ctx.fillStyle = '#8b5cf6'; ctx.fillText('● RAM', 60, 12);
+    ctx.fillStyle = '#10b981';
+    ctx.fillText('● CPU', 8, 12);
+    ctx.fillStyle = '#8b5cf6';
+    ctx.fillText('● RAM', 60, 12);
+    if (state.metricsError) {
+        ctx.font = '9px JetBrains Mono';
+        ctx.fillStyle = '#fca5a5';
+        ctx.fillText('Last available samples', 8, canvas.height - 8);
+    }
 }
 
-function updateData() {
-    uptime++;
-    const h = Math.floor(uptime/3600);
-    const m = Math.floor((uptime%3600)/60);
-    const s = uptime%60;
-    document.getElementById('uptime-display').textContent = `Uptime: ${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-    
-    const lastCpu = cpuHistory[cpuHistory.length-1];
-    const newCpu = Math.max(2, Math.min(95, lastCpu + (Math.random()-0.5)*8));
-    cpuHistory.push(newCpu);
-    cpuHistory.shift();
-    
-    const lastMem = memHistory[memHistory.length-1];
-    const newMem = Math.max(350, Math.min(14000, lastMem + (Math.random()-0.5)*100));
-    memHistory.push(Math.round(newMem));
-    memHistory.shift();
-    
-    // Fluctuate process CPU
-    PROCESSES.forEach(p => {
-        if(p.status==='running') {
-            p.cpu = Math.max(0, p.cpu + (Math.random()-0.5)*0.3);
-            p.mem = Math.max(1, Math.round(p.mem + (Math.random()-0.5)*5));
-        }
-    });
-    
-    renderMetrics();
-    drawChart();
-    
-    // Refresh process table if visible
-    if(document.getElementById('proc-table')) renderProcesses();
+function renderPanelMessage(title, detail, error) {
+    const panel = byId('panel-area');
+    const message = createElement('div', `panel-message${error ? ' error' : ''}`);
+    message.appendChild(createElement('div', 'panel-message-title', title));
+    message.appendChild(createElement('div', '', detail));
+    panel.appendChild(message);
+}
+
+function renderOverview() {
+    const panel = byId('panel-area');
+    panel.replaceChildren();
+    let message = 'Live CPU and memory metrics are sourced from /api/system/metrics.';
+    if (state.metricsError) message = `Metrics unavailable: ${state.metricsError}`;
+    else if (state.statusError) message = `Kernel status unavailable: ${state.statusError}`;
+    const box = createElement('div', 'panel-message');
+    box.appendChild(createElement('div', 'panel-message-title', 'System overview'));
+    box.appendChild(createElement('div', '', message));
+    box.appendChild(createElement('div', '', 'Network and storage data are not collected by the available APIs.'));
+    panel.appendChild(box);
+}
+
+function createTable(headers) {
+    const table = createElement('table');
+    const head = createElement('thead');
+    const headRow = createElement('tr');
+    headers.forEach(header => headRow.appendChild(createElement('th', '', header)));
+    head.appendChild(headRow);
+    table.appendChild(head);
+    table.appendChild(createElement('tbody'));
+    return table;
+}
+
+function addCell(row, value, className, color) {
+    const cell = createElement('td', className || '', value);
+    if (color) cell.style.color = color;
+    row.appendChild(cell);
+    return cell;
+}
+
+function processStateColor(value) {
+    if (typeof value !== 'string') return '#6b7280';
+    const stateName = value.toUpperCase();
+    if (stateName === 'RUNNING') return '#10b981';
+    if (stateName === 'BLOCKED' || stateName === 'WAITING') return '#f59e0b';
+    if (stateName === 'TERMINATED') return '#ef4444';
+    return '#06b6d4';
+}
+
+function availableProcesses() {
+    if (state.status && Array.isArray(state.status.processes)) return state.status.processes;
+    if (state.metrics && state.metrics.raw && Array.isArray(state.metrics.raw.processes)) return state.metrics.raw.processes;
+    return null;
 }
 
 function renderProcesses() {
-    const c = document.getElementById('panel-area');
-    c.innerHTML = `<table><thead><tr><th>PID</th><th>Process</th><th>CPU %</th><th>Memory</th><th>Type</th><th>Status</th><th>Action</th></tr></thead><tbody id="proc-table">
-    ${PROCESSES.map(p=>`<tr>
-        <td class="pid">${p.pid}</td>
-        <td><strong>${p.name}</strong></td>
-        <td style="color:${getMetricColor(p.cpu,10)}">${p.cpu.toFixed(1)}%</td>
-        <td class="mem">${p.mem} MB</td>
-        <td style="color:${p.type==='ai'?'#a855f7':p.type==='security'?'#ef4444':p.type==='kernel'?'#ffd700':'#06b6d4'}">${p.type}</td>
-        <td><span style="color:${p.status==='running'?'#10b981':'#6b7280'}">● ${p.status}</span></td>
-        <td><button class="action-btn" onclick="killProc(${p.pid})" ${p.type==='kernel'?'disabled style="opacity:0.3"':''}>Kill</button></td>
-    </tr>`).join('')}
-    </tbody></table>`;
-}
-
-function killProc(pid) {
-    const idx = PROCESSES.findIndex(p=>p.pid===pid);
-    if(idx>=0 && PROCESSES[idx].type!=='kernel') {
-        PROCESSES[idx].status = 'killed';
-        setTimeout(() => PROCESSES.splice(idx,1), 500);
-        renderProcesses();
+    const panel = byId('panel-area');
+    panel.replaceChildren();
+    const processes = availableProcesses();
+    if (!processes) {
+        const detail = state.statusError || state.metricsError || 'The available API responses did not include a process list.';
+        renderPanelMessage('Process list unavailable', detail, true);
+        return;
     }
+    const source = state.status && Array.isArray(state.status.processes) ? '/api/status' : '/api/system/metrics';
+    panel.appendChild(createElement('div', 'panel-note', `${processes.length} kernel process${processes.length === 1 ? '' : 'es'} reported by ${source}`));
+    if (state.statusError && source === '/api/status') panel.appendChild(createElement('div', 'panel-note', state.statusError));
+    if (state.metricsError && source === '/api/system/metrics') panel.appendChild(createElement('div', 'panel-note', state.metricsError));
+    const table = createTable(['PID', 'PPID', 'Process', 'State', 'CPU time', 'Memory', 'Priority']);
+    const body = table.querySelector('tbody');
+    processes.forEach(process => {
+        const row = createElement('tr');
+        const source = isRecord(process) ? process : {};
+        const pid = finiteNumber(source.pid);
+        const ppid = finiteNumber(source.ppid);
+        const cpuTime = finiteNumber(source.cpuTime);
+        const priority = finiteNumber(source.priority);
+        addCell(row, formatNumber(pid), 'pid');
+        addCell(row, formatNumber(ppid));
+        addCell(row, primitiveText(source.name));
+        addCell(row, primitiveText(source.state), '', processStateColor(source.state));
+        addCell(row, formatNumber(cpuTime));
+        addCell(row, formatBytes(source.memory), 'mem');
+        addCell(row, formatNumber(priority));
+        body.appendChild(row);
+    });
+    if (!processes.length) {
+        const row = createElement('tr');
+        const cell = createElement('td', '', 'No kernel processes reported.');
+        cell.colSpan = 7;
+        row.appendChild(cell);
+        body.appendChild(row);
+    }
+    panel.appendChild(table);
 }
 
 function renderNetwork() {
-    document.getElementById('panel-area').innerHTML = `
-    <table><tr><th>Interface</th><th>IP</th><th>Status</th><th>RX</th><th>TX</th><th>Errors</th></tr>
-    <tr><td>lo</td><td>127.0.0.1</td><td style="color:#10b981">UP</td><td>45 KB</td><td>45 KB</td><td>0</td></tr>
-    <tr><td>eth0</td><td>192.168.1.100</td><td style="color:#10b981">UP</td><td>2.4 MB</td><td>890 KB</td><td>0</td></tr>
-    <tr><td>wlan0</td><td>192.168.1.101</td><td style="color:#06b6d4">UP (WiFi)</td><td>1.1 MB</td><td>340 KB</td><td>2</td></tr>
-    <tr><td>docker0</td><td>172.17.0.1</td><td style="color:#6b7280">DOWN</td><td>—</td><td>—</td><td>0</td></tr>
-    <tr><td>hazoom0</td><td>10.0.0.1</td><td style="color:#10b981">UP (Virtual)</td><td>890 KB</td><td>1.2 MB</td><td>0</td></tr>
-    </table>
-    <div style="margin-top:12px;font-size:0.7rem;color:rgba(255,255,255,0.5)">
-    <strong style="color:#00f0ff">Active Connections: 6</strong><br>
-    192.168.1.100:3000 → LISTEN<br>
-    192.168.1.100:9004 → LISTEN<br>
-    192.168.1.100:52431 → 140.82.121.4:443 (ESTABLISHED)<br>
-    192.168.1.100:52432 → 151.101.1.140:443 (ESTABLISHED)<br>
-    127.0.0.1:9004 → 127.0.0.1:9004 (LOCAL)<br>
-    192.168.1.100:8080 → LISTEN<br>
-    </div>`;
+    const panel = byId('panel-area');
+    panel.replaceChildren();
+    renderPanelMessage('Network data is not collected', 'The available system APIs do not provide network interface, address, traffic, or error metrics.');
 }
 
 function renderStorage() {
-    document.getElementById('panel-area').innerHTML = `
-    <div class="metrics-row" style="padding:0;border:none">
-        <div class="metric"><div class="metric-label">NVMe SSD</div><div class="metric-value" style="color:#10b981">23%</div><div class="metric-bar"><div class="metric-bar-fill" style="width:23%;background:#06b6d4"></div></div><div style="font-size:0.55rem;color:rgba(255,255,255,0.3)">120 GB / 512 GB</div></div>
-        <div class="metric"><div class="metric-label">RAM</div><div class="metric-value">${memHistory[memHistory.length-1]} MB</div><div class="metric-bar"><div class="metric-bar-fill" style="width:${Math.round(memHistory[memHistory.length-1]/16384*100)}%;background:#8b5cf6"></div></div></div>
-        <div class="metric"><div class="metric-label">SWAP</div><div class="metric-value" style="color:#10b981">0%</div><div class="metric-bar"><div class="metric-bar-fill" style="width:0%;background:#6b7280"></div></div></div>
-    </div>
-    <table><tr><th>Mount</th><th>Device</th><th>Size</th><th>Used</th><th>Type</th></tr>
-    <tr><td>/</td><td>/dev/nvme0n1p2</td><td>512 GB</td><td>120 GB</td><td>ext4</td></tr>
-    <tr><td>/boot</td><td>/dev/nvme0n1p1</td><td>1 GB</td><td>120 MB</td><td>fat32</td></tr>
-    <tr><td>/home</td><td>/dev/nvme0n1p3</td><td>2 TB</td><td>890 GB</td><td>ext4</td></tr>
-    <tr><td>/dev/shm</td><td>tmpfs</td><td>8 GB</td><td>45 MB</td><td>tmpfs</td></tr>
-    </table>`;
+    const panel = byId('panel-area');
+    panel.replaceChildren();
+    renderPanelMessage('Storage data is not collected', 'The available system APIs do not provide disk, mount, capacity, or filesystem metrics.');
+}
+
+function subsystemPresence(status, key) {
+    return isRecord(status) && Object.prototype.hasOwnProperty.call(status, key) && status[key] !== null && status[key] !== false;
 }
 
 function renderKernel() {
-    document.getElementById('panel-area').innerHTML = `
-    <div class="metrics-row" style="padding:0;border:none">
-        <div class="metric"><div class="metric-label">Modules</div><div class="metric-value" style="color:#ffd700">4/4</div></div>
-        <div class="metric"><div class="metric-label">Uptime</div><div class="metric-value" style="color:#10b981">${Math.floor(uptime/3600)}h ${Math.floor((uptime%3600)/60)}m</div></div>
-        <div class="metric"><div class="metric-label">Resonance</div><div class="metric-value" style="color:#a855f7">852 Hz</div></div>
-    </div>
-    <table><tr><th>Module</th><th>Type</th><th>Version</th><th>Status</th><th>Description</th></tr>
-    <tr><td><span style="color:#ffd700">⬡</span> aether_engine</td><td>Protocol</td><td>3.0.0</td><td style="color:#10b981">loaded</td><td>Quantum communication engine</td></tr>
-    <tr><td><span style="color:#a855f7">⬡</span> consciousness</td><td>Core</td><td>3.0.0</td><td style="color:#10b981">loaded</td><td>Consciousness simulation layer</td></tr>
-    <tr><td><span style="color:#ec4899">⬡</span> deep_consciousness</td><td>AI</td><td>3.0.0</td><td style="color:#10b981">loaded</td><td>Deep thinking & reasoning</td></tr>
-    <tr><td><span style="color:#00f0ff">⬡</span> neural_core</td><td>Neural</td><td>3.0.0</td><td style="color:#10b981">loaded</td><td>Neural bridge to AI models</td></tr>
-    </table>
-    <div style="margin-top:12px;font-size:0.65rem;color:rgba(255,255,255,0.4);line-height:1.8">
-    <strong style="color:#ffd700">Kernel Command:</strong> run /sbin/hazoom-os.sh [start|stop|restart]<br>
-    <strong style="color:#ffd700">Boot Args:</strong> quiet splash hazoom.consciousness=enabled<br>
-    <strong style="color:#ffd700">Secure Boot:</strong> <span style="color:#10b981">Enabled (HAZOOM Trust Authority)</span><br>
-    </div>`;
+    const panel = byId('panel-area');
+    panel.replaceChildren();
+    if (!state.status) {
+        renderPanelMessage('Kernel status unavailable', state.statusError || 'The /api/status response is unavailable.', true);
+        return;
+    }
+    const status = state.status;
+    const running = typeof status.running === 'boolean' ? status.running : null;
+    const summary = createElement('div', 'kernel-summary');
+    summary.appendChild(metricCard('VERSION', primitiveText(status.version), '#ffd700'));
+    summary.appendChild(metricCard('STATE', running === null ? 'Unavailable' : running ? 'Running' : 'Offline', statusColor(running), null, 'From /api/status'));
+    summary.appendChild(metricCard('UPTIME', formatDuration(status.uptime), '#10b981'));
+    summary.appendChild(metricCard('TICKS', formatNumber(status.tickCount), '#06b6d4'));
+    summary.appendChild(metricCard('READY QUEUE', formatNumber(status.readyQueue), '#a855f7'));
+    summary.appendChild(metricCard('BLOCKED QUEUE', formatNumber(status.blockedQueue), '#f59e0b'));
+    panel.appendChild(summary);
+    if (state.statusError) panel.appendChild(createElement('div', 'panel-note', state.statusError));
+
+    const subsystemTable = createTable(['Subsystem', 'Presence']);
+    const subsystemBody = subsystemTable.querySelector('tbody');
+    const subsystems = [
+        ['pascalEngine', 'Pascal engine'],
+        ['consciousness', 'Consciousness'],
+        ['qLearning', 'Q-Learning'],
+        ['services', 'Services'],
+        ['intelligence', 'Intelligence']
+    ];
+    subsystems.forEach(([key, label]) => {
+        const row = createElement('tr');
+        const loaded = subsystemPresence(status, key);
+        addCell(row, label);
+        addCell(row, loaded ? 'Loaded' : 'Not loaded', loaded ? 'status-ok' : 'status-unavailable');
+        subsystemBody.appendChild(row);
+    });
+    panel.appendChild(subsystemTable);
 }
 
-function setTab(t) {
-    document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('active'));
-    event.target.classList.add('active');
-    if(t==='overview') { renderMetrics(); document.getElementById('panel-area').innerHTML='<div style="color:rgba(255,255,255,0.3);padding:20px">System overview — all metrics updating in real-time</div>'; }
-    if(t==='processes') renderProcesses();
-    if(t==='network') renderNetwork();
-    if(t==='storage') renderStorage();
-    if(t==='kernel') renderKernel();
+function renderCurrentPanel() {
+    if (state.activeTab === 'processes') renderProcesses();
+    else if (state.activeTab === 'network') renderNetwork();
+    else if (state.activeTab === 'storage') renderStorage();
+    else if (state.activeTab === 'kernel') renderKernel();
+    else renderOverview();
 }
 
-// Init
+function setTab(tab, button) {
+    const selected = button || tabButtons.find(candidate => candidate.dataset.tab === tab);
+    tabButtons.forEach(candidate => candidate.classList.toggle('active', candidate === selected));
+    state.activeTab = tab;
+    renderCurrentPanel();
+}
+
+async function updateData() {
+    if (state.polling) return;
+    state.polling = true;
+    const results = await Promise.allSettled([
+        fetchJson('/api/system/metrics'),
+        fetchJson('/api/status')
+    ]);
+    const metricsResult = results[0];
+    const statusResult = results[1];
+    if (metricsResult.status === 'fulfilled') {
+        try {
+            state.metrics = normalizeMetrics(metricsResult.value);
+            state.metricsError = state.metrics.missing.length ? 'Incomplete metrics response' : null;
+            if (finiteNumber(state.metrics.cpu) !== null) {
+                cpuHistory.push(state.metrics.cpu);
+                if (cpuHistory.length > MAX_HISTORY) cpuHistory.shift();
+            }
+            if (finiteNumber(state.metrics.memoryPercent) !== null) {
+                memHistory.push(state.metrics.memoryPercent);
+                if (memHistory.length > MAX_HISTORY) memHistory.shift();
+            }
+        } catch (error) {
+            state.metrics = null;
+            state.metricsError = requestError(error);
+        }
+    } else {
+        state.metrics = null;
+        state.metricsError = requestError(metricsResult.reason);
+    }
+    if (statusResult.status === 'fulfilled') {
+        try {
+            const normalized = normalizeStatus(statusResult.value);
+            state.status = normalized.raw;
+            state.statusError = normalized.missing.length ? 'Incomplete status response' : null;
+        } catch (error) {
+            state.status = null;
+            state.statusError = requestError(error);
+        }
+    } else {
+        state.status = null;
+        state.statusError = requestError(statusResult.reason);
+    }
+    state.polling = false;
+    renderHeader();
+    renderMetrics();
+    renderCurrentPanel();
+    drawChart();
+}
+
+tabButtons.forEach(button => {
+    button.addEventListener('click', () => setTab(button.dataset.tab, button));
+});
+
+resizeChart();
+renderHeader();
 renderMetrics();
-renderProcesses();
-setInterval(updateData, 1000);
+setTab('overview', tabButtons[0]);
+drawChart();
+setInterval(updateData, 2000);
+updateData();
 </script>
 </body>
 </html>

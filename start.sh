@@ -11,7 +11,7 @@ bash scripts/contract-check.sh || { echo "boot refused: contract enforcement fai
 
 print_banner() {
     echo "╔══════════════════════════════════════════════════════════════╗"
-    echo "║              HAZOOM OS v6.0                                ║"
+    echo "║              HAZOOM OS v6.0.0                              ║"
     echo "║         Full-Stack Intelligent Operating System             ║"
     echo "║         Creator: Hazem Soussi (HA) © 2024-2026             ║"
     echo "╚══════════════════════════════════════════════════════════════╝"
@@ -32,9 +32,7 @@ case "$MODE" in
         fi
         echo "[INFO] Starting HAZOOM OS in browser simulation mode..."
         echo "[INFO] Access the OS at http://localhost:3000"
-        echo "[INFO] Dashboard: http://localhost:3000/os.html"
-        echo "[INFO] v5 Desktop: http://localhost:3000/os-v5.html"
-        echo "[INFO] v3 Desktop: http://localhost:3000/index.html"
+        echo "[INFO] Visual showcase: http://localhost:3000/showcase"
         exec node server.js
         ;;
 
@@ -66,6 +64,32 @@ case "$MODE" in
             echo "[INFO] Creating .env from .env.example..."
             cp .env.example .env
         fi
+        if ! command -v node &> /dev/null; then
+            echo "[ERROR] Node.js is required to initialize local secrets"
+            exit 1
+        fi
+        node - "$PWD/.env" <<'NODE'
+const crypto = require('crypto');
+const fs = require('fs');
+const file = process.argv[2];
+const values = {
+    SESSION_SECRET: crypto.randomBytes(32).toString('hex'),
+    JWT_SECRET: crypto.randomBytes(32).toString('hex'),
+    ADMIN_PASSWORD: crypto.randomBytes(24).toString('hex'),
+    USER_PASSWORD: crypto.randomBytes(16).toString('hex')
+};
+let content = fs.readFileSync(file, 'utf8');
+for (const [key, generated] of Object.entries(values)) {
+    const pattern = new RegExp(`^${key}=.*$`, 'm');
+    const match = content.match(pattern);
+    if (!match || !match[0].split('=').slice(1).join('=') || match[0].includes('change-this')) {
+        content = pattern.test(content)
+            ? content.replace(pattern, `${key}=${generated}`)
+            : `${content.trimEnd()}\n${key}=${generated}\n`;
+    }
+}
+fs.writeFileSync(file, content, {mode: 0o600});
+NODE
         docker compose up --build -d
         echo "[INFO] All services started."
         echo "[INFO] Frontend:         http://localhost:80"
@@ -73,7 +97,7 @@ case "$MODE" in
         echo "[INFO] AI API:           http://localhost:8000"
         echo "[INFO] Gateway:          http://localhost:8080"
         echo "[INFO] WS:               ws://localhost:9090"
-        echo "[INFO] Planet Earth:     http://localhost:8080"
+        echo "[INFO] Planet Earth:     http://localhost:8081"
         echo "[INFO] Planet News:      http://localhost:8001"
         echo "[INFO] Planet History:   http://localhost:8002"
         echo "[INFO] Hazoom POD:       http://localhost:4000"

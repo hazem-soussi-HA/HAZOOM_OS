@@ -1,5 +1,6 @@
 const https = require('https');
 const fs = require('fs');
+const path = require('path');
 const WebSocket = require('ws');
 const crypto = require('crypto');
 
@@ -59,11 +60,81 @@ const gameState = {
 };
 
 const clients = new Map();
-const operators = {
-  'admin': { pass: 'quantum123', role: 'commander', level: 5 },
-  'operator': { pass: 'secure456', role: 'operator', level: 3 },
-  'viewer': { pass: 'view789', role: 'viewer', level: 1 }
-};
+
+// Operator credentials are never stored in source. They are loaded from
+// MAPCC_OPERATORS_FILE (JSON, mode 0600) or the MAPCC_OPERATORS env var.
+// Each entry holds a scrypt hash + salt, never a plaintext password.
+// Generate with: node scripts/gen-operators.js
+const OPERATORS_FILE = process.env.MAPCC_OPERATORS_FILE
+  || path.join(__dirname, 'config', 'operators.json');
+const SCRYPT_PARAMS = { N: 16384, r: 8, p: 1, keylen: 64 };
+
+function loadOperators() {
+  try {
+    const raw = process.env.MAPCC_OPERATORS
+      || fs.readFileSync(OPERATORS_FILE, 'utf8');
+    const parsed = JSON.parse(raw);
+    const out = {};
+    for (const [id, rec] of Object.entries(parsed)) {
+      if (!rec || !rec.salt || !rec.hash) {
+        throw new Error(`operator "${id}" missing salt/hash`);
+      }
+      out[id] = { salt: rec.salt, hash: rec.hash,
+                  role: rec.role || 'viewer', level: rec.level | 0 };
+    }
+    if (Object.keys(out).length === 0) throw new Error('no operators defined');
+    return out;
+  } catch (err) {
+    console.error(`[auth] FATAL: cannot load operator credentials: ${err.message}`);
+    console.error(`[auth] expected file: ${OPERATORS_FILE}`);
+    console.error('[auth] run: node scripts/gen-operators.js');
+    process.exit(1);
+  }
+}
+
+const operators = loadOperators();
+
+// Constant-time verification against the stored scrypt hash.
+function verifyPassword(userId, password) {
+  const op = operators[userId];
+  if (!op || typeof password !== 'string' || password.length === 0) return false;
+  let candidate;
+  try {
+    // salt is persisted as hex, so decode it back to bytes before deriving
+    const salt = Buffer.from(op.salt, 'hex');
+    if (salt.length === 0) return false;
+    candidate = crypto.scryptSync(password, salt, SCRYPT_PARAMS.keylen, {
+      N: SCRYPT_PARAMS.N, r: SCRYPT_PARAMS.r, p: SCRYPT_PARAMS.p
+    });
+  } catch {
+    return false;
+  }
+  const expected = Buffer.from(op.hash, 'hex');
+  if (expected.length !== candidate.length) return false;
+  return crypto.timingSafeEqual(candidate, expected);
+}
+
+// Throttle repeated auth failures per connection to blunt online guessing.
+const authFailures = new Map();
+const AUTH_MAX_FAILURES = 5;
+const AUTH_WINDOW_MS = 60000;
+function authRateLimited(clientId) {
+  const rec = authFailures.get(clientId);
+  if (!rec) return false;
+  if (Date.now() - rec.first > AUTH_WINDOW_MS) {
+    authFailures.delete(clientId);
+    return false;
+  }
+  return rec.count >= AUTH_MAX_FAILURES;
+}
+function recordAuthFailure(clientId) {
+  const rec = authFailures.get(clientId);
+  if (!rec || Date.now() - rec.first > AUTH_WINDOW_MS) {
+    authFailures.set(clientId, { count: 1, first: Date.now() });
+  } else {
+    rec.count += 1;
+  }
+}
 
 function simulateSystemBehavior(system) {
   const volatility = { stable: 2, volatile: 5, unstable: 8, chaotic: 12 };
@@ -141,8 +212,13 @@ wss.on('connection', (ws, req) => {
       
       switch (msg.type) {
         case 'auth': {
-          const op = operators[msg.userId];
-          if (op && op.pass === msg.password) {
+          if (authRateLimited(clientId)) {
+            ws.send(JSON.stringify({ type: 'auth-fail', message: 'Too many attempts' }));
+            return;
+          }
+          const op = typeof msg.userId === 'string' ? operators[msg.userId] : null;
+          if (op && verifyPassword(msg.userId, msg.password)) {
+            authFailures.delete(clientId);
             client.authenticated = true;
             client.session = {
               userId: msg.userId,
@@ -157,6 +233,7 @@ wss.on('connection', (ws, req) => {
               gameState
             }));
           } else {
+            recordAuthFailure(clientId);
             ws.send(JSON.stringify({ type: 'auth-fail', message: 'Invalid credentials' }));
           }
           break;

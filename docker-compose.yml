@@ -25,6 +25,10 @@ services:
       - LOG_LEVEL=info
       - QLEARNING_ENABLED=true
       - QLEARNING_MODE=hybrid
+      - SESSION_SECRET=${SESSION_SECRET:-}
+      - JWT_SECRET=${JWT_SECRET:-}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-}
+      - USER_PASSWORD=${USER_PASSWORD:-}
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
       interval: 30s
@@ -145,13 +149,16 @@ services:
 
   # ─── Planet Earth ────────────────────────────────────────────────
   planet-earth:
-    build:
-      context: ./services/planet-earth
-      dockerfile: Dockerfile
+    image: python:3.12-alpine
+    profiles: ["optional"]
+    working_dir: /app
     container_name: hazoom-planet-earth
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "8081:8080"
+    environment:
+      - PORT=8080
+      - BIND=0.0.0.0
     volumes:
       - ./services/planet-earth:/app
     command: python3 server.py
@@ -167,6 +174,9 @@ services:
     restart: unless-stopped
     ports:
       - "8001:8001"
+    environment:
+      - PORT=8001
+      - BIND=0.0.0.0
     volumes:
       - ./services/planet-earth-news:/app
     command: python3 serve.py
@@ -175,18 +185,19 @@ services:
 
   # ─── Planet Earth History ────────────────────────────────────────
   planet-earth-history:
-    build:
-      context: ./services/planet-earth-history
-      dockerfile: Dockerfile
+    image: python:3.12-slim
+    profiles: ["optional"]
+    working_dir: /app
     container_name: hazoom-planet-history
     restart: unless-stopped
-    ports:
-      - "8002:8002"
+    network_mode: host
+    environment:
+      - PEH_HOST=127.0.0.1
+      - PEH_PORT=8002
+      - PEH_TLS=
     volumes:
       - ./services/planet-earth-history:/app
-    command: python3 serve.py
-    networks:
-      - hazoom-net
+    command: sh -c "pip install --no-cache-dir -r requirements.txt && python3 serve.py"
 
   # ─── Birds Encyclopedia ──────────────────────────────────────────
   birds-encyclopedia:
@@ -205,16 +216,16 @@ services:
 
   # ─── Hazoom POD (Print-on-Demand) ────────────────────────────────
   hazoom-pod:
-    build:
-      context: ./services/hazoom-pod
-      dockerfile: Dockerfile
+    image: node:20-alpine
+    profiles: ["optional"]
+    working_dir: /app
     container_name: hazoom-pod
     restart: unless-stopped
     ports:
       - "4000:4000"
     volumes:
       - ./services/hazoom-pod:/app
-    command: node server/server.js
+    command: sh -c "npm install --omit=dev && node server/server.js"
     networks:
       - hazoom-net
 
@@ -222,11 +233,12 @@ services:
   chatdev-ornith:
     build:
       context: ./services/chatdev-ornith
-      dockerfile: Dockerfile
     container_name: hazoom-chatdev
     restart: unless-stopped
     ports:
       - "5055:5055"
+    environment:
+      - BIND=0.0.0.0
     volumes:
       - ./services/chatdev-ornith:/app
     command: python3 ornith_server.py
@@ -235,13 +247,16 @@ services:
 
   # ─── Collaborative Beat ──────────────────────────────────────────
   collaborative-beat:
-    build:
-      context: ./services/collaborative-beat
-      dockerfile: Dockerfile
+    image: python:3.12-alpine
+    profiles: ["optional"]
+    working_dir: /app
     container_name: hazoom-collab-beat
     restart: unless-stopped
     ports:
       - "5000:5000"
+    environment:
+      - PORT=5000
+      - BIND=0.0.0.0
     volumes:
       - ./services/collaborative-beat:/app
     command: python3 server.py
@@ -252,11 +267,13 @@ services:
   descer:
     build:
       context: ./services/descer
-      dockerfile: Dockerfile
     container_name: hazoom-descer
     restart: unless-stopped
     ports:
       - "6000:6000"
+    environment:
+      - PORT=6000
+      - BIND=0.0.0.0
     volumes:
       - ./services/descer:/app
     command: python3 server.py
@@ -265,9 +282,9 @@ services:
 
   # ─── Sovereign State ─────────────────────────────────────────────
   sovereign-state:
-    build:
-      context: ./services/sovereign-state
-      dockerfile: Dockerfile
+    image: python:3.12-alpine
+    profiles: ["optional"]
+    working_dir: /app
     container_name: hazoom-sovereign
     restart: unless-stopped
     ports:
@@ -291,6 +308,7 @@ services:
       - ./services/bouzelfa-ndhifa:/app
     environment:
       - PORT=7000
+      - BIND=0.0.0.0
     networks:
       - hazoom-net
 
@@ -303,6 +321,8 @@ services:
     restart: unless-stopped
     ports:
       - "8003:8003"
+    environment:
+      - PORT=8003
     volumes:
       - ./services/hazoom-intelligence:/app
     command: node server.js
@@ -311,9 +331,9 @@ services:
 
   # ─── Serotonin Engine ────────────────────────────────────────────
   serotonin-engine:
-    build:
-      context: ./services/serotonin-engine
-      dockerfile: Dockerfile
+    image: python:3.12-alpine
+    profiles: ["optional"]
+    working_dir: /app
     container_name: hazoom-serotonin
     restart: unless-stopped
     ports:
@@ -326,9 +346,9 @@ services:
 
   # ─── Mario GTA6 ──────────────────────────────────────────────────
   mario-gta6:
-    build:
-      context: ./services/mario-gta6
-      dockerfile: Dockerfile
+    image: python:3.12-alpine
+    profiles: ["optional"]
+    working_dir: /app
     container_name: hazoom-mario-gta6
     restart: unless-stopped
     ports:
@@ -369,12 +389,6 @@ services:
     networks:
       - hazoom-net
 
-volumes:
-  hazoom_data:
-    driver: local
-  hazoom_config:
-    driver: local
-
   # ─── DeepSeek Knowledge ──────────────────────────────────────────
   deepseek-knowledge:
     build:
@@ -404,6 +418,12 @@ volumes:
     command: python3 server.py
     networks:
       - hazoom-net
+
+volumes:
+  hazoom_data:
+    driver: local
+  hazoom_config:
+    driver: local
 
 networks:
   hazoom-net:
