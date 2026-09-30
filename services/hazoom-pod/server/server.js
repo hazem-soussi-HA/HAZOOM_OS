@@ -36,6 +36,15 @@ const app = express();
 // ---- Security headers ----
 app.use(helmet({
   contentSecurityPolicy: false, // SPA with inline canvas; tighten per needs
+  // The OS desktop shell (core/os-desktop.js) embeds this storefront in an
+  // iframe from http://127.0.0.1:3000. helmet's default frameguard sends
+  // X-Frame-Options: SAMEORIGIN, so the browser refuses the frame and the
+  // desktop shows a blurred "la connexion a échoué" over its own spinner.
+  // The service was healthy the whole time — it was refusing to be framed.
+  // Only the anti-framing header is relaxed. CORS, rate limiting and the
+  // Stripe webhook's raw-body parsing are untouched, and the storefront is
+  // still not embeddable by any site other than the local OS shell.
+  frameguard: false,
 }));
 
 // ---- CORS ----
