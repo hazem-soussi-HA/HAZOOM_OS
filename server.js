@@ -762,6 +762,7 @@ const CORE_CLIENT_MODULES = new Set([
     'app_registry.js',
     'boot_audio.js',
     'deep_think_engine.js',
+    'icons.js',
     'os-desktop.js',
     'os-filesystem.js',
     'privacy_browser.js',

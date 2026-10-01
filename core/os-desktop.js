@@ -907,12 +907,24 @@
                assets/icons/ that depicts what the app actually does.
                If the asset is ever missing we degrade to a text monogram
                instead of showing a broken image. */
-            appIcon(app) {
+            appIcon(app, variant) {
+                // Two families, chosen by optical budget rather than taste.
+                //   'glyph' — 24x24 line art, inherits currentColor. Correct
+                //             from 12px up: headers, menus, alt-tab, lists.
+                //   'tile'  — 64x64 gradient tile. Needs >=40px: desktop, dock.
+                // Asking for 'glyph' when an app has no glyph falls through to
+                // the tile so nothing ever renders empty.
                 const key = this._iconAssetId(app);
+                const alt = (app.name || app.id || 'app').replace(/"/g, '');
+
+                if (variant === 'glyph') {
+                    const g = window.HAZOOM_ICONS && window.HAZOOM_ICONS.glyphForApp(app);
+                    if (g) return window.HAZOOM_ICONS.glyph(app, { force: g });
+                }
+
                 const fallback = String(app.name || app.id || '?')
                     .split(/\s+/).filter(Boolean).slice(0, 2)
                     .map(part => part[0]).join('').toUpperCase().slice(0, 2) || '?';
-                const alt = (app.name || app.id || 'app').replace(/"/g, '');
                 if (!key) return `<span class="app-glyph"><i>${fallback}</i></span>`;
                 return `<span class="app-glyph">`
                     + `<i>${fallback}</i>`
@@ -1052,7 +1064,7 @@
                 win.innerHTML = `
                     ${handles}
                     <div class="window-header" data-window-id="${id}">
-                        <div class="window-title">${this.appIcon(app)} · ${app.name}</div>
+                        <div class="window-title"><span class="window-icon">${this.appIcon(app, 'glyph')}</span><span class="window-label">${app.name}</span></div>
                         <div class="window-controls">
                             <button class="window-btn minimize" onclick="HAZOOM.minimizeWindow(${id})" title="Minimize"></button>
                             <button class="window-btn maximize" onclick="HAZOOM.maximizeWindow(${id})" title="Maximize"></button>
@@ -2222,7 +2234,7 @@
                     item.tabIndex = 0;
                     item.setAttribute('aria-label', `Open ${app.name}`);
                     item.innerHTML = `
-                        <div class="start-app-icon" style="border-color:${app.color}30;">${this.appIcon(app)}</div>
+                        <div class="start-app-icon" style="border-color:${app.color}30;">${this.appIcon(app, 'glyph')}</div>
                         <div class="start-app-name">${app.name}</div>
                     `;
                     const activate = () => {
@@ -2644,7 +2656,7 @@
                     const card = document.createElement('div');
                     card.className = 'alt-tab-card';
                     card.style.cssText = 'background:rgba(10,10,26,0.9);border:2px solid ' + (i === this._altTabIndex ? 'var(--accent)' : 'var(--glass-border)') + ';border-radius:12px;padding:16px 24px;text-align:center;transition:all 0.2s;min-width:120px;cursor:pointer;';
-                    card.innerHTML = '<div style="font-size:20px;font-weight:700;margin-bottom:8px;">' + this.appIcon(app) + '</div><div style="font-size:0.8rem;color:var(--text);white-space:nowrap;">' + (app.name || w.appId) + '</div>';
+                    card.innerHTML = '<div class="alt-tab-icon">' + this.appIcon(app, 'glyph') + '</div><div style="font-size:0.8rem;color:var(--text);white-space:nowrap;">' + (app.name || w.appId) + '</div>';
                     card.onclick = () => { this.focusWindow(w.id); this._closeAltTab(); };
                     overlay.appendChild(card);
                 });
@@ -3492,7 +3504,7 @@
                 
                 menu.innerHTML = `
                     <div class="ctx-app-info" style="border-bottom-color: ${accentColor}40">
-                        <div class="ctx-app-name" style="color: ${accentColor}">${this.appIcon(app)} · ${app.name}</div>
+                        <div class="ctx-app-name" style="color: ${accentColor}"><span class="ctx-icon-slot">${this.appIcon(app, 'glyph')}</span>${app.name}</div>
                         <div class="ctx-app-type">${app.category || 'app'} ${badge ? `<span class="ctx-badge ${badge}">${app.category}</span>` : ''}</div>
                         <div class="ctx-app-stats">
                             <span>ID: ${app.id}</span>
@@ -3519,7 +3531,7 @@
                 
                 menu.innerHTML = `
                     <div class="ctx-app-info" style="border-bottom-color: ${accentColor}40">
-                        <div class="ctx-app-name" style="color: ${accentColor}">${this.appIcon(app)} · ${app.name}</div>
+                        <div class="ctx-app-name" style="color: ${accentColor}"><span class="ctx-icon-slot">${this.appIcon(app, 'glyph')}</span>${app.name}</div>
                         <div class="ctx-app-type">Window #${win.id}</div>
                         <div class="ctx-app-stats">
                             <span>${win.minimized ? 'Minimized' : 'Active'}</span>
