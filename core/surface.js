@@ -159,6 +159,24 @@ async function verifyApp(app, category) {
 
     if (t.kind === 'file') {
         const s = statTarget(t.rel);
+
+        // A console app is a script you run, not a page you load. It is real if
+        // the file exists and declares a run command; there is no port to probe
+        // and no HTML to serve, so treating it as either would report a working
+        // interface as broken.
+        if (s.exists && (app.kind === 'console' || app.run)) {
+            return {
+                ...base,
+                state: 'live',
+                served: null,
+                kind: 'console',
+                run: app.run || ('python3 ' + t.rel),
+                entry: t.rel,
+                bytes: s.bytes || null,
+                reason: null
+            };
+        }
+
         if (!s.exists) {
             return { ...base, state: 'missing', reason: `no such file: ${t.rel}` };
         }

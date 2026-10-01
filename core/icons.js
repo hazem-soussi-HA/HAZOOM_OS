@@ -151,6 +151,7 @@ const GLYPH_MAP = {
     'prompt-engineering': 'guide',     'tool-transistor-studio': 'transistor',
     'transistor-studio': 'transistor',
     'tool-convergence': 'quantum',     'convergence': 'quantum',
+    'ai-alpha-pony': 'memory',          'alpha-pony': 'memory',
     'xp-desktop': 'kernel',            'xp-liberty': 'rocket',
     'xp-dimensions': 'aspects',        'xp-brain3d': 'brain'
 };

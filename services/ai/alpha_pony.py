@@ -18,6 +18,13 @@ import threading
 import imaplib
 import email
 import socket
+
+# hazoom_philosophy and power_nano_mind live beside this file. Without this,
+# `python3 services/ai/alpha_pony.py` from anywhere but that directory dies with
+# ModuleNotFoundError before it prints a single line — which is why this
+# service could never actually be launched, and why the OS reported it as
+# present-but-not-running rather than as a failure.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import requests
 from datetime import datetime
 from email.header import decode_header
@@ -195,12 +202,50 @@ class AetherBridge:
 
 
 class OllamaEngine:
-    def __init__(self):
+    """
+    Local model access for Alpha Pony.
+
+    Model selection defers to the OS. This used to take `models[0]` from the
+    Ollama tag list, which is whatever happens to be installed first and is
+    frequently a small embedding-ish or base model that answers badly. The
+    IntelligenceCore in core/intelligence-core.js already probes the installed
+    models and picks the fastest one that actually responds, so ask it rather
+    than guessing. If it cannot be reached, fall back to the old behaviour
+    rather than refusing to run.
+    """
+
+    def __init__(self, os_model=None):
         self.host = 'localhost'
         self.port = 11434
         self.model = 'llama3:latest'
         self.connected = False
-    
+        self.model_source = 'fallback'
+        self._os_model = os_model
+
+    def _model_from_os(self):
+        """
+        Ask the running OS which model it selected. Never raises.
+
+        Uses /api/v1/intelligence/health, which is deliberately unauthenticated:
+        it reports the active model name and nothing sensitive, and it is the
+        same route the desktop badge uses. The fuller /api/intelligence/status
+        is behind auth on purpose, and this process has no business holding a
+        user's token just to learn a model name.
+        """
+        if not self._os_model:
+            return None
+        try:
+            url = f'http://127.0.0.1:{self._os_model.get("port", 3000)}/api/v1/intelligence/health'
+            resp = requests.get(url, timeout=2)
+            if resp.status_code != 200:
+                return None
+            data = resp.json()
+            if data.get('status') != 'online':
+                return None
+            return data.get('model') or None
+        except Exception:
+            return None
+
     def check(self):
         try:
             resp = requests.get(f'http://{self.host}:{self.port}/api/tags', timeout=2)
@@ -208,10 +253,23 @@ class OllamaEngine:
             if self.connected:
                 data = resp.json()
                 models = data.get('models', [])
-                if models:
+
+                chosen = self._model_from_os()
+                if chosen:
+                    # only trust it if Ollama actually has that model
+                    names = {m.get('name') for m in models}
+                    if not names or chosen in names:
+                        self.model = chosen
+                        self.model_source = 'os-intelligence-core'
+                    else:
+                        self.model_source = 'os-model-not-installed'
+                if self.model_source in ('fallback', 'os-model-not-installed') and models:
                     self.model = models[0].get('name', self.model)
+                    self.model_source = 'first-installed'
+                elif not models:
+                    self.model_source = 'none'
             return self.connected
-        except:
+        except Exception:
             self.connected = False
             return False
     
@@ -279,7 +337,11 @@ class AlphaPonyInterface:
         self.quantum = QuantumState()
         self.bypass = NeuralBypass()
         self.aether = AetherBridge()
-        self.ollama = OllamaEngine()
+        # Ask the OS which local model it already selected, so Alpha Pony and
+        # the desktop reason with the same brain instead of a different one.
+        self.ollama = OllamaEngine(os_model={
+            'port': os.environ.get('HAZOOM_OS_PORT', '3000')
+        })
         self.deep_think = DeepThink()
         self.running = True
         self.nano_mind = None

@@ -4,7 +4,7 @@
     "by": "DevSecOps MOE agent",
     "note": "Unified HAZOOM ecosystem — single source of truth. Every 'path' MUST be 127.0.0.1/localhost or an OS-served relative path. No LAN/external egress. HAZOOM XP is integrated as a SEPARATE WORK (GPL-3.0-only) and is never copied in — see docs/MIGRATION-XP.md.",
     "security": "loopback-only",
-    "updated": "2026-10-01 — planet-earth news + history removed from the OS"
+    "updated": "2026-10-01 — Alpha Pony registered and made launchable"
   },
   "categories": [
     {
@@ -94,6 +94,16 @@
       "id": "ai",
       "name": "AI & Reasoning",
       "apps": [
+        {
+          "id": "ai-alpha-pony",
+          "name": "Alpha Pony",
+          "icon": "🦄",
+          "path": "services/ai/alpha_pony.py",
+          "source": "services/ai/alpha_pony.py",
+          "kind": "console",
+          "run": "python3 services/ai/alpha_pony.py",
+          "note": "Interactive console interface. Quantum resonance, neural bypass, aether bridge, deep think. Uses the model the OS already selected rather than the first one installed. Open in the OS Terminal — it reads from stdin, so it is not a port service."
+        },
         {
           "id": "ai-intelligence",
           "name": "Intelligence Core",
