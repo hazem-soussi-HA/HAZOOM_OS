@@ -99,7 +99,8 @@ const GLYPHS = {
     help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4 2c-1 .7-1.5 1.2-1.5 2.5M12 17h.01"/>',
     user: '<circle cx="12" cy="8" r="3"/><path d="M5 20a7 7 0 0 1 14 0"/>',
     matrix: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h3v3H7zM14 7h3v3h-3zM7 14h3v3H7zM14 14h3v3h-3z"/>',
-    perception: '<path d="M12 5c-5 0-9 4.5-10 7 1 2.5 5 7 10 7s9-4.5 10-7c-1-2.5-5-7-10-7z"/><circle cx="12" cy="12" r="3"/>'
+    perception: '<path d="M12 5c-5 0-9 4.5-10 7 1 2.5 5 7 10 7s9-4.5 10-7c-1-2.5-5-7-10-7z"/><circle cx="12" cy="12" r="3"/>',
+    aspects: '<path d="m12 3 9 9-9 9-9-9z"/><path d="m12 8 4 4-4 4-4-4z"/><path d="M12 3v18" opacity=".45"/>'
 };
 
 /**
@@ -148,7 +149,10 @@ const GLYPH_MAP = {
     'quantum-travel': 'rocket',        'universe': 'atom',
     'growflow': 'energy',              'cartoon': 'art',
     'prompt-engineering': 'guide',     'tool-transistor-studio': 'transistor',
-    'transistor-studio': 'transistor'
+    'transistor-studio': 'transistor',
+    'tool-convergence': 'quantum',     'convergence': 'quantum',
+    'xp-desktop': 'kernel',            'xp-liberty': 'rocket',
+    'xp-dimensions': 'aspects',        'xp-brain3d': 'brain'
 };
 
 const ALIASES = {

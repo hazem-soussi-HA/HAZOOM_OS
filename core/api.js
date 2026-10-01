@@ -96,6 +96,13 @@ class APIRouter {
             Promise.resolve(handler(req, res, next)).catch(next);
         };
 
+        // Service availability feeds the learner's threat signal. Probed on a
+        // slow timer because _getOSState is synchronous and runs every tick.
+        this._serviceUp = new Map();
+        this._serviceProbe = setInterval(() => this._refreshServiceAvailability(), 15000);
+        if (this._serviceProbe.unref) this._serviceProbe.unref();
+        this._refreshServiceAvailability();
+
         // ── AUTH (unauthenticated) ────────────────────────────
 
         r.post('/api/v1/auth/register', (req, res) => {
@@ -623,6 +630,29 @@ class APIRouter {
             res.json(k.intelligence.getStatus());
         });
 
+        // ── VALUE BENCHMARK ────────────────────────────────
+        // Live measurement of what exists and what actually runs. Recomputed
+        // per request from the filesystem, git, the service ports and the
+        // model registry — nothing is asserted from a hardcoded number, so it
+        // is designed to disagree with a stale README.
+        r.get('/api/benchmark', protect, asyncHandler(async (req, res) => {
+            try {
+                const benchmark = require('./benchmark.js');
+                // getStatus() is the measured surface — `available`, `warm` and
+                // `warmMs` live there, not on the instance. Reading the
+                // instance directly made the core look offline when it was
+                // serving. health() probes every port, so it is awaited rather
+                // than assumed: a benchmark that guesses is worse than none.
+                const intel = k.intelligence ? k.intelligence.getStatus() : null;
+                const svc = k.serviceManager
+                    ? { list: k.serviceManager.list(), health: await k.serviceManager.health() }
+                    : { list: [], health: [] };
+                res.json(benchmark.build(intel, svc));
+            } catch (err) {
+                this._error(res, 500, 'Benchmark failed: ' + err.message, 'BENCHMARK_ERROR');
+            }
+        }));
+
         r.get('/api/intelligence/health', protect, asyncHandler(async (req, res) => {
             if (!k.intelligence) return this._error(res, 404, 'Intelligence Core not loaded', 'NOT_LOADED');
             res.json(await k.intelligence.health());
@@ -853,6 +883,39 @@ class APIRouter {
         const pm = k.processManager;
         const mm = k.memoryManager;
 
+        // Measured AI latency, not a placeholder. This used to be
+        // `k.consciousness ? 0 : 9999` — a constant, which meant the Q-learner
+        // was training its policy on a fabricated signal and could never
+        // converge on anything real. warmMs comes from an actual first-token
+        // probe; until one has happened we report the offline ceiling rather
+        // than a flattering zero.
+        let aiLatency = 9999;
+        if (k.intelligence) {
+            if (typeof k.intelligence.warmMs === 'number') aiLatency = k.intelligence.warmMs;
+            else if (k.intelligence.lastError) aiLatency = 9999;
+        }
+
+        // Service availability is a real threat signal: services going down is
+        // the OS degrading, and the policy should be able to see it. The probe
+        // is async, so it is cached and refreshed on a timer rather than
+        // awaited inside the synchronous tick that _getOSState runs on.
+        this._serviceUp = this._serviceUp || new Map();
+        let threatLevel = (k.security && k.security.threatLevel) || 0;
+        if (!threatLevel && k.serviceManager) {
+            const list = k.serviceManager.list();
+            if (list.length) {
+                let down = 0;
+                for (const s of list) {
+                    if (!s.enabled) continue;
+                    if (this._serviceUp.get(s.port) === false) down++;
+                }
+                const ratio = down / list.length;
+                if (ratio >= 0.5) threatLevel = 3;
+                else if (ratio >= 0.25) threatLevel = 2;
+                else if (ratio > 0) threatLevel = 1;
+            }
+        }
+
         return {
             processCount: pm.processes.size,
             cpuUtilization: Math.min(100, (pm.readyQueue.length / pm.maxProcesses) * 100),
@@ -862,11 +925,29 @@ class APIRouter {
             swapUsage: mm.swapUsed ? (mm.swapUsed / mm.swapSize) * 100 : 0,
             diskIOPS: mm.diskIOPS || 0,
             networkBandwidth: mm.networkBandwidth || 0,
-            threatLevel: k.security?.threatLevel || 0,
-            failedLogins: k.security?.failedLogins || 0,
-            aiLatency: k.consciousness ? 0 : 9999,
+            threatLevel,
+            failedLogins: (k.security && k.security.failedLogins) || 0,
+            aiLatency,
             aetherBusLoad: 0
         };
+    }
+
+    /**
+     * Refresh the service-availability cache the learner reads.
+     *
+     * Kept out of _getOSState on purpose: that runs synchronously on every
+     * kernel heartbeat, and a TCP probe per service per tick would block the
+     * event loop for no benefit. This runs on its own slow timer and the
+     * learner reads whatever the last answer was.
+     */
+    async _refreshServiceAvailability() {
+        const k = this.kernel;
+        if (!k || !k.serviceManager) return;
+        try {
+            const health = await k.serviceManager.health();
+            if (!this._serviceUp) this._serviceUp = new Map();
+            for (const h of health) this._serviceUp.set(h.port, !!h.up);
+        } catch (e) { /* keep the previous reading rather than fabricate one */ }
     }
 
     getMiddleware() {

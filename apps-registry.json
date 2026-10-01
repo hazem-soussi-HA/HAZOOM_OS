@@ -2,8 +2,9 @@
   "_meta": {
     "generated": "2026-09-26",
     "by": "DevSecOps MOE agent",
-    "note": "Unified HAZOOM ECOSYSTEM — Single source of truth for all services, apps, games, AI, and tools. Every 'path' MUST be 127.0.0.1/localhost. No LAN/external egress. Updated by live review.",
-    "security": "loopback-only"
+    "note": "Unified HAZOOM ecosystem — single source of truth. Every 'path' MUST be 127.0.0.1/localhost or an OS-served relative path. No LAN/external egress. HAZOOM XP is integrated as a SEPARATE WORK (GPL-3.0-only) and is never copied in — see docs/MIGRATION-XP.md.",
+    "security": "loopback-only",
+    "updated": "2026-10-01 convergence pass"
   },
   "categories": [
     {
@@ -200,6 +201,14 @@
       "name": "Tools",
       "apps": [
         {
+          "id": "tool-convergence",
+          "name": "Convergence",
+          "icon": "◈",
+          "path": "apps/system/convergence.html",
+          "source": "apps/system/convergence.html",
+          "note": "Live value benchmark. Measures kernel, intelligence and surface from disk, git and live ports."
+        },
+        {
           "id": "tool-terminal",
           "name": "Terminal",
           "icon": "⌨️",
@@ -267,6 +276,46 @@
           "icon": "⚡",
           "path": "apps/visualizers/human-energy/index.html",
           "source": "apps/visualizers/human-energy/"
+        }
+      ]
+    },
+    {
+      "name": "HAZOOM XP (separate work)",
+      "note": "GPL-3.0-only. NOT copied into this repository — see docs/MIGRATION-XP.md. Its own repo, licence and history are intact and it is developed independently.",
+      "apps": [
+        {
+          "id": "xp-desktop",
+          "name": "HAZOOM XP Desktop",
+          "icon": "🚀",
+          "path": "http://127.0.0.1:8100/public/xp.html",
+          "source": "maze-ship (separate git worktree)",
+          "licence": "GPL-3.0-only",
+          "apps": 44,
+          "note": "The XP shell itself. 44 apps: 7 games, 8 views, 9 matrix, 6 system, 4 accessories, 10 shell. Plus the hzOS inter-app bus, session memory, and the graphics power layer. Served by scripts/serve-xp.sh on port 8100 straight from its own checkout — never copied in."
+        },
+        {
+          "id": "xp-liberty",
+          "name": "Liberty 2.5D",
+          "icon": "🏇",
+          "path": "http://127.0.0.1:8100/liberty.html",
+          "source": "maze-ship/hazoom/liberty.html",
+          "licence": "GPL-3.0-only"
+        },
+        {
+          "id": "xp-dimensions",
+          "name": "Dimensions",
+          "icon": "📐",
+          "path": "http://127.0.0.1:8100/dimensions.html",
+          "source": "maze-ship/dimensions.html",
+          "licence": "GPL-3.0-only"
+        },
+        {
+          "id": "xp-brain3d",
+          "name": "Brain 3D",
+          "icon": "🧠",
+          "path": "http://127.0.0.1:8100/brain-3d.html",
+          "source": "maze-ship/brain-3d.html",
+          "licence": "GPL-3.0-only"
         }
       ]
     }
