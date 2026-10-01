@@ -9,7 +9,12 @@
     -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="HAZOOM OS — the local-first AI operating system. Real kernel, local intelligence, no cloud dependency.">
+    <meta name="theme-color" content="#00e8ff">
     <title>HAZOOM OS — AI-Powered Workspace</title>
+    <!-- Installable and offline-capable: local-first has to survive losing the network. -->
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/assets/icons/consciousness-core.svg" type="image/svg+xml">
     <link rel="icon" type="image/svg+xml" href="/assets/logo.svg">
     <style>
         :root {
@@ -1899,6 +1904,47 @@
                 startBtn?.setAttribute('aria-expanded', 'false');
             }
         });
+    </script>
+
+    <!--
+      Service worker registration.
+      Skipped entirely on plain http:// on a non-loopback host, because a
+      service worker will not register there and a failed registration is just
+      a console error that teaches the reader to ignore the console.
+    -->
+    <script>
+    (function () {
+        if (!('serviceWorker' in navigator)) return;
+        // On loopback the OS is its own origin and SW works. Elsewhere the OS
+        // is only ever reached through a secure context, so both must hold.
+        var secure = window.isSecureContext
+            || location.hostname === '127.0.0.1'
+            || location.hostname === 'localhost';
+        if (!secure) return;
+
+        window.addEventListener('load', function () {
+            navigator.serviceWorker.register('/sw.js', { scope: '/' })
+                .then(function (reg) {
+                    // let the worker warm the secondary apps deliberately
+                    if (navigator.serviceWorker.controller) {
+                        navigator.serviceWorker.controller.postMessage('warm');
+                    }
+                    reg.addEventListener('updatefound', function () {
+                        var sw = reg.installing;
+                        if (!sw) return;
+                        sw.addEventListener('statechange', function () {
+                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+                                window.HAZOOM_OFFLINE_READY = true;
+                            }
+                        });
+                    });
+                })
+                .catch(function (e) {
+                    // offline support is an enhancement, never a precondition
+                    if (window.console) console.warn('[hazoom] service worker not registered:', e.message);
+                });
+        });
+    })();
     </script>
 </body>
 </html>

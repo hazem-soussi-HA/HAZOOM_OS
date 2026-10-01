@@ -92,12 +92,17 @@
   const stat = (n, l, cls) => `<div class="stat ${cls||''}"><div class="n">${esc(n)}</div><div class="l">${esc(l)}</div></div>`;
   const row = (k, v, cls) => `<div class="row"><span class="k">${esc(k)}</span><span class="v ${cls||''}">${v}</span></div>`;
 
-  let d;
+  let d, sf;
   try{
     const t = token();
-    const r = await fetch('/api/benchmark', t ? { headers:{ Authorization:'Bearer '+t } } : {});
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    d = await r.json();
+    const h = t ? { headers:{ Authorization:'Bearer '+t } } : {};
+    const [r1, r2] = await Promise.all([
+      fetch('/api/benchmark', h),
+      fetch('/api/surface', h)
+    ]);
+    if(!r1.ok) throw new Error('benchmark HTTP '+r1.status);
+    d = await r1.json();
+    sf = r2.ok ? await r2.json() : null;
   }catch(e){
     out.innerHTML = `<div class="card">${row('benchmark unavailable', esc(e.message)+' — log in through the desktop shell and reload', 'bad')}</div>`;
     return;
@@ -115,7 +120,8 @@
     ${stat(k.bootsInQemu ? 'BOOTS' : 'NO KERNEL', 'kernel', k.bootsInQemu?'ok':'bad')}
     ${stat(i.modelsInstalled, 'local models', i.modelsInstalled?'ok':'bad')}
     ${stat(svcUp + '/' + svcTotal, 'services up', svcUp===svcTotal?'ok':(svcUp?'warn':'bad'))}
-    ${stat(f.totalApps, 'apps in registry', 'ok')}
+    ${stat(sf ? sf.integrity + '%' : '—', 'promises kept', sf ? (sf.integrity===100?'ok':'warn') : '')}
+    ${stat(sf ? sf.runningIntegrity + '%' : '—', 'apps usable now', sf ? (sf.runningIntegrity>=70?'ok':'warn') : '')}
     ${stat(f.nonLoopbackApps.length === 0 ? '100%' : 'LEAK', 'loopback-only', f.nonLoopbackApps.length===0?'ok':'bad')}
   </div>
 
@@ -165,6 +171,27 @@
     ${row('superseded drafts', (d.history.archived || []).length + ' archived, read-only, nothing deleted', 'ok')}
     <div class="note">${esc(d.history.note)} Full reasoning in <code>docs/MIGRATION-XP.md</code> &mdash; including why no XP source was copied into this repository.</div>
   </div>
+
+  ${sf ? `
+  <h2>Surface &mdash; every promise, checked against the machine</h2>
+  <div class="card">
+    ${row('registry entries', esc(sf.total))}
+    ${row('promises kept', sf.integrity + '% &mdash; entry points that resolve to something real', sf.integrity===100?'ok':'bad')}
+    ${row('usable right now', sf.runningIntegrity + '%', sf.runningIntegrity>=70?'ok':'warn')}
+    ${meter('promise integrity', sf.tally.live + sf.tally.present, sf.total, sf.total)}
+    ${meter('usable right now', sf.tally.live, sf.total, sf.total)}
+    <div class="note">A promise is kept if the app resolves to a file the OS serves or a port that answers.
+    ${sf.broken.length ? `<b style="color:var(--bad)">${sf.broken.length} broken &mdash; these are real bugs:</b><br>` + sf.broken.map(a=>esc(a.name) + ' &mdash; ' + esc(a.reason)).join('<br>') : 'Nothing is broken.'}</div>
+  </div>
+
+  ${sf.notRunning.length ? `
+  <h2>Built, not running &mdash; ${sf.notRunning.length}</h2>
+  <div class="card">
+    <div class="note" style="border:0;padding:0 0 10px 0">This is the honest middle category, and it is the one that matters most.
+    <b>Half-built is not worthless.</b> Each of these has real code on disk and is one launch away from running &mdash;
+    calling them "broken" is how a large body of work starts to feel like a lie.</div>
+    ${sf.notRunning.map(a=>row(esc(a.name), esc(a.reason||'present'), 'warn')).join('')}
+  </div>` : ''}` : ''}
 
   <div class="foot">
     Convergence score is deliberately conservative: only what is proven counts.

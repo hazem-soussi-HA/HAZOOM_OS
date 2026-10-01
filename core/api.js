@@ -630,6 +630,20 @@ class APIRouter {
             res.json(k.intelligence.getStatus());
         });
 
+        // ── SURFACE VERIFICATION ─────────────────────────────
+        // Proves every registry entry against reality: ports are opened and
+        // files are stat'd at request time. Separates "live", "present" and
+        // "missing" so a large body of work is never mistaken for a broken
+        // promise — or for a finished one.
+        r.get('/api/surface', protect, asyncHandler(async (req, res) => {
+            try {
+                const surface = require('./surface.js');
+                res.json(await surface.verifyAll(surface.loadRegistry()));
+            } catch (err) {
+                this._error(res, 500, 'Surface verification failed: ' + err.message, 'SURFACE_ERROR');
+            }
+        }));
+
         // ── VALUE BENCHMARK ────────────────────────────────
         // Live measurement of what exists and what actually runs. Recomputed
         // per request from the filesystem, git, the service ports and the

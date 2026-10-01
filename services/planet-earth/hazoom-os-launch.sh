@@ -69,6 +69,14 @@ add_service "birds_encyclopedia" "$ROOT/services/birds-encyclopedia" node \
 add_service "hazoom_pod" "$ROOT/services/hazoom-pod" node \
   "node server/server.js" 4000 http "http://127.0.0.1:4000/"
 
+# 5) DESCER -- drum machine, synthesized in the browser, no audio files (6000)
+#    Restored to the manifest. It was in apps-registry.json and docker-compose
+#    and had a working server.py all along, but was never passed to
+#    add_service, so port 6000 could never open and the desktop showed a dead
+#    app. Registry, compose and launcher had drifted apart; this closes it.
+add_service "descer" "$ROOT/services/descer" python \
+  "env PORT=6000 BIND=127.0.0.1 $SYS_PY server.py" 6000 http "http://127.0.0.1:6000/"
+
 # 6) CollaborativeBeat -- local-first neural core (5000)
 add_service "collaborative_beat" "$ROOT/services/collaborative-beat" python \
   "env PORT=5000 BIND=127.0.0.1 $SYS_PY server.py" 5000 http "http://127.0.0.1:5000/"

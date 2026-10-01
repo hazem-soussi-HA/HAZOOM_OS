@@ -1,12 +1,12 @@
 {
   "name": "hazoom-os",
   "version": "6.0.0-alpha.1",
-  "description": "HAZOOM OS v6.0 \u2014 CONVERGENCE \u2014 Real OS + Full-Stack Cloud Ecosystem",
+  "description": "HAZOOM OS v6.0 \u2014 CONVERGENCE \u2014 the local-first AI OS with a real kernel",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "check": "node --check server.js && node --check core/api.js && node --check core/auth.js && node --check core/boot_audio.js && node --check core/html_sanitizer.js && node --check core/config.js && node --check core/intelligence_api.js && node --check core/intelligence-core.js && node --check core/kernel.js && node --check core/os-desktop.js && node --check core/quantum_state.js && node --check core/services.js && node --check core/system_monitor.js && node --check core/universe_background.js && node --check core/web_fetch.js && node --check core/websocket.js && node --check core/icons.js && node scripts/check-icons.js",
+    "check": "node --check server.js && node --check core/api.js && node --check core/auth.js && node --check core/boot_audio.js && node --check core/html_sanitizer.js && node --check core/config.js && node --check core/intelligence_api.js && node --check core/intelligence-core.js && node --check core/kernel.js && node --check core/os-desktop.js && node --check core/quantum_state.js && node --check core/services.js && node --check core/system_monitor.js && node --check core/universe_background.js && node --check core/web_fetch.js && node --check core/websocket.js && node --check core/icons.js && node --check core/benchmark.js && node --check core/surface.js && node scripts/check-icons.js",
     "test": "bash scripts/smoke-test.sh"
   },
   "dependencies": {

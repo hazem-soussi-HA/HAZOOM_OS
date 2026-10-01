@@ -1,0 +1,48 @@
+{
+  "name": "HAZOOM OS — Local-First AI Operating System",
+  "short_name": "HAZOOM OS",
+  "description": "The local-first AI OS. Real kernel, local intelligence, no cloud dependency.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#04060c",
+  "theme_color": "#00e8ff",
+  "categories": ["utilities", "productivity", "developer"],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/assets/icons/console.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icons/consciousness-core.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Convergence",
+      "short_name": "Benchmark",
+      "url": "/apps/system/convergence.html",
+      "description": "Live value benchmark"
+    },
+    {
+      "name": "Deep Browser",
+      "short_name": "Browser",
+      "url": "/apps/core-apps/deep-browser.html",
+      "description": "In-OS browser"
+    },
+    {
+      "name": "Terminal",
+      "short_name": "Shell",
+      "url": "/apps/core-apps/terminal.html",
+      "description": "Gated shell"
+    }
+  ]
+}

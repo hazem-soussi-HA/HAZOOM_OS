@@ -2,7 +2,6 @@
   "name": "birds-encyclopedia",
   "version": "1.0.0",
   "description": "A full-stack, multi-user encyclopedia for learning about birds: taxonomy, identification, behavior, habitats, conservation, and curated learning tracks.",
-  "type": "module",
   "main": "server/server.js",
   "scripts": {
     "start": "node server/server.js",

@@ -1,0 +1,50 @@
+[Unit]
+Description=HAZOOM OS — local-first AI operating system
+Documentation=https://github.com/hazem-soussi-HA/HAZOOM_OS
+After=network-online.target ollama.service
+Wants=network-online.target
+
+[Service]
+# HAZOOM OS is a local-first system: it needs the loopback interface and the
+# local model server, and nothing else. It deliberately does not require
+# network-online for its own operation — that dependency is only here so that
+# a machine with a local model daemon starts the OS after it.
+Type=simple
+User=hazoom
+Group=hazoom
+WorkingDirectory=/opt/hazoom-os
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=5
+KillSignal=SIGINT
+TimeoutStopSec=20
+
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=3000
+EnvironmentFile=-/etc/hazoom/os.env
+
+# The shell allowlist and the contract guard both refuse to run as root: a
+# gated shell plus a root-owned web process is a root shell. If you run this
+# unit as root, the gated shell is the whole security model, gone.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/opt/hazoom-os/data /opt/hazoom-os/logs /opt/hazoom-os/memory
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=false
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+
+# Loopback only. A local-first OS that binds 0.0.0.0 is not local-first.
+IPAddressAllow=localhost
+IPAddressDeny=any
+
+[Install]
+WantedBy=multi-user.target

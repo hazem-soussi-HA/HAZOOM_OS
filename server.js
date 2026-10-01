@@ -793,6 +793,20 @@ app.use('/core', (req, res, next) => {
 app.use('/core', express.static(path.join(HAZOOM_DIR, 'core'), staticOptions));
 app.use('/projects', express.static(path.join(HAZOOM_DIR, 'projects'), staticOptions));
 
+// PWA surface. Deliberately two named files, not an open root: the static
+// roots above are an allowlist so a stray file cannot be served by accident,
+// and a service worker is exactly the kind of file that must not become one.
+app.get('/manifest.json', (req, res) => {
+    res.sendFile(path.join(HAZOOM_DIR, 'manifest.json'), staticOptions);
+});
+app.get('/sw.js', (req, res) => {
+    // A worker served from the wrong scope is silently useless, so the scope
+    // header is explicit rather than left to inference.
+    res.set('Service-Worker-Allowed', '/');
+    res.set('Cache-Control', 'no-cache');
+    res.sendFile(path.join(HAZOOM_DIR, 'sw.js'), staticOptions);
+});
+
 // ── 12. 404 HANDLER ──────────────────────────────────────────────
 
 app.use((req, res) => {
