@@ -193,6 +193,25 @@
     ${sf.notRunning.map(a=>row(esc(a.name), esc(a.reason||'present'), 'warn')).join('')}
   </div>` : ''}` : ''}
 
+  <h2>Learning &mdash; is the policy actually learning?</h2>
+  ${(() => {
+    const L = d.learning;
+    if (!L || !L.present) return `<div class="card">${row('learner', 'not present', 'bad')}</div>`;
+    if (L.error) return `<div class="card">${row('learner error', esc(L.error), 'bad')}</div>`;
+    const since = L.recentReward;
+    const before = L.avgReward;
+    return `<div class="card">
+    ${row('mode', esc(L.mode))}
+    ${row('decisions', esc(L.totalDecisions.toLocaleString()) + ' &middot; ' + esc(L.statesExplored) + ' states, ' + esc(L.tabularUpdates.toLocaleString()) + ' tabular updates')}
+    ${row('reward, now', '<span class="' + (since > before ? 'ok' : 'warn') + '">' + since + '</span> &nbsp;vs lifetime average ' + before)}
+    ${row('total reward', esc(L.totalReward))}
+    ${row('dqn', esc(L.dqnSteps.toLocaleString()) + ' steps &middot; loss ' + esc(L.dqnLoss))}
+    ${row('actions', esc(L.actionsAvailable) + ' &mdash; executed for real, with rate limits and rollback')}
+    <div class="note">${esc(L.note)} A policy handed a constant reward has no gradient to follow and cannot learn,
+    however many transitions it accumulates &mdash; so the recent figure is the one that proves anything, not the lifetime average.</div>
+  </div>`;
+  })()}
+
   <div class="foot">
     Convergence score is deliberately conservative: only what is proven counts.
     A number here is measured from disk, git, the model registry or a live port probe at the moment you loaded this page.

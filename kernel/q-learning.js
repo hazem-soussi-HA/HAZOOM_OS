@@ -619,9 +619,33 @@ class DoubleDeepQNetwork extends DeepQNetwork {
 
 // ─── REWARD FUNCTION ─────────────────────────────────────────────
 
-function computeReward(prevState, action, nextState) {
+/**
+ * Reward has two halves, and the second half is the one that was missing.
+ *
+ * The delta terms reward *improvement*: CPU went down, threat went down, so
+ * that is good. That works fine on a system whose state actually moves.
+ *
+ * But this kernel's state is near-constant tick to tick — CPU at 0.39%, zero
+ * page faults, threat pinned at 2, no swap. Every delta is exactly zero, so
+ * every reward is exactly zero, and 69,000 decisions produced an average
+ * reward of 0.0013. A policy handed a constant reward has no gradient to
+ * descend and cannot learn anything, however many transitions it accumulates.
+ *
+ * So the shaping terms below reward *being in a good state* in absolute terms,
+ * independent of whether the previous tick was better or worse. That gives the
+ * learner a reachable target: a healthy OS is worth something to be, and a
+ * degraded one is worth negative. This is standard potential-based shaping
+ * territory rather than a novel scheme, and the magnitudes are deliberately
+ * small so shaping cannot dominate the real signal.
+ *
+ * @param health optional rolling mean from the ActionExecutor. When supplied
+ *               the absolute terms use a smoothed measurement, which is far
+ *               less noisy than a single tick.
+ */
+function computeReward(prevState, action, nextState, health) {
     let reward = 0;
 
+    // ── delta terms: did this action improve anything? ──────────────
     // CPU: lower utilization after action = good (if was overloaded)
     if (prevState.cpuUtilization > 80) {
         reward += (prevState.cpuUtilization - nextState.cpuUtilization) * 0.1;
@@ -644,7 +668,32 @@ function computeReward(prevState, action, nextState) {
     // Swap pressure: reducing swap = good
     reward += (prevState.swapUsage - nextState.swapUsage) * 0.15;
 
-    // Action-specific shaping
+    // ── absolute terms: is the system in a good state at all? ───────
+    // Without these the reward is a constant zero on a stable machine, and a
+    // constant reward is indistinguishable from a broken reward.
+    const cpu = health && health.cpu != null ? health.cpu : nextState.cpuUtilization;
+    const mem = health && health.mem != null ? health.mem : nextState.memoryUtilization;
+    const threat = health && health.threat != null ? health.threat : nextState.threatLevel;
+    const ai = health && health.ai != null ? health.ai : nextState.aiLatency;
+
+    // CPU headroom: 0% used earns a small positive, 100% earns a penalty.
+    reward += (50 - Math.min(100, cpu)) * 0.002;
+
+    // Memory headroom, same shape.
+    reward += (60 - Math.min(100, mem)) * 0.002;
+
+    // Threat is the strongest standing signal: a quiet machine is worth
+    // reaching for, a threatened one is worth avoiding.
+    reward -= threat * 0.05;
+
+    // Responsiveness, on a log-ish curve so 500ms and 50s are not equivalent.
+    if (ai >= 9999) {
+        reward -= 0.5;                       // intelligence unreachable
+    } else if (ai > 0) {
+        reward -= Math.min(0.4, Math.log10(ai / 100 + 1) * 0.15);
+    }
+
+    // ── action-specific shaping ────────────────────────────────────
     if (action === 'lockdown' && prevState.threatLevel >= 3) {
         reward += 0.5;  // lockdown is correct when threat is high
     }
@@ -653,6 +702,10 @@ function computeReward(prevState, action, nextState) {
     }
     if (action === 'scale_ai_up' && prevState.aiLatency > 5000) {
         reward += 0.3;  // scaling up when latency is high is smart
+    }
+    // An action that refused to act should not be rewarded as if it had.
+    if (action === 'kill_suspicious' && prevState.threatLevel < 3) {
+        reward -= 0.1;  // reaching for the most dangerous tool with no threat
     }
 
     return reward;
@@ -738,7 +791,14 @@ class HazoomQLearner {
     onTick(prevState, currentState, kernelActionExecutor) {
         // 1. If we have a previous action, compute reward and learn
         if (this.lastAction !== null && this.lastState !== null) {
-            const reward = computeReward(this.lastState, this.lastAction, currentState);
+            // Absolute state health, supplied by the executor when one is
+            // wired in. Without it the reward is a pure delta of a state that
+            // barely moves, and the average reward sits at ~0 forever.
+            const health = kernelActionExecutor && typeof kernelActionExecutor.health === 'function'
+                ? kernelActionExecutor.health()
+                : null;
+            const reward = computeReward(this.lastState, this.lastAction, currentState, health);
+            this.lastReward = reward;
 
             // Learn in both systems (even if hybrid routing)
             this.tabular.update(this.lastState, this.lastAction, reward, currentState);
@@ -755,6 +815,8 @@ class HazoomQLearner {
             this.dqn.train();
 
             this.totalReward += reward;
+        } else {
+            this.lastReward = 0;
         }
 
         // 2. Choose next action

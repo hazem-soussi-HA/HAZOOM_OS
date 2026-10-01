@@ -105,6 +105,12 @@ function measureKernel() {
 
 /** Layer 2 — can it think, and on what. */
 function measureIntelligence(intel) {
+    // `intel` is the getStatus() *result*, not the IntelligenceCore instance,
+    // so only fields on that object may be read here. Calling a method on it
+    // is a type error, not a missing feature.
+    const observed = intel && typeof intel.observedLatencyMs === 'number'
+        ? intel.observedLatencyMs
+        : (intel && typeof intel.warmMs === 'number' ? intel.warmMs : null);
     return {
         core: 'core/intelligence-core.js',
         api: 'core/intelligence_api.js',
@@ -114,7 +120,9 @@ function measureIntelligence(intel) {
         activeModel: intel && intel.activeModel ? intel.activeModel : null,
         available: !!(intel && intel.available),
         warm: intel && intel.warm ? intel.warm : 'unknown',
-        warmMs: intel && typeof intel.warmMs === 'number' ? intel.warmMs : null,
+        // the figure that is actually current, not the one-shot boot probe
+        latencyMs: observed,
+        latencySamples: intel && typeof intel.latencySamples === 'number' ? intel.latencySamples : 0,
         localOnly: true,
         qLearning: 'hybrid tabular/DQN — learns from observed outcomes',
         note: 'Counts come from the live model registry. If a model is not in the list it is not installed.'
@@ -236,7 +244,55 @@ function score(b) {
  * @param intel   result of IntelligenceCore.getStatus() — the measured surface
  * @param services { list, health } from ServiceManager, health already awaited
  */
-function build(intel, services) {
+/** The learner, measured. A policy that cannot change anything is not learning. */
+function measureLearning(kernel) {
+    const q = kernel && kernel.qLearner;
+    if (!q) return { present: false };
+
+    // HazoomQLearner exposes getStatus(), not getStats(). Calling the wrong
+    // name returns undefined, and a `|| {}` fallback then renders a page of
+    // confident zeros — the exact failure this whole module exists to
+    // prevent. So the reader is chosen explicitly and a miss is reported.
+    const reader = typeof q.getStatus === 'function' ? 'getStatus'
+        : (typeof q.getStats === 'function' ? 'getStats' : null);
+    if (!reader) {
+        return { present: true, error: 'learner exposes no status reader', mode: q.mode || null };
+    }
+    const s = q[reader]() || {};
+    return {
+        present: true,
+        mode: q.mode,
+        totalDecisions: numberOr(s.totalDecisions, 0),
+        totalReward: round(s.totalReward),
+        // lifetime average is dominated by history; recentReward is the truth
+        avgReward: round(s.avgReward, 5),
+        recentReward: round(q.lastReward, 5),
+        statesExplored: (s.tabular && s.tabular.statesExplored) || 0,
+        tabularUpdates: (s.tabular && s.tabular.totalUpdates) || 0,
+        dqnSteps: (s.dqn && s.dqn.stepCount) || 0,
+        dqnLoss: (s.dqn && s.dqn.avgLoss) != null ? Number(Number(s.dqn.avgLoss).toFixed(6)) : null,
+        actionsAvailable: 12,
+        note: 'Actions are executed by core/action_executor.js with per-action rate limits and rollback.'
+    };
+}
+
+function numberOr(v, fallback) {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : fallback;
+}
+
+function round(v, digits) {
+    // getStatus() returns totalReward and avgReward as *strings* (it calls
+    // toFixed for display), so this must coerce rather than reject. Returning
+    // null for a perfectly good "105.1578" would print a hole where the
+    // headline number belongs.
+    const n = typeof v === 'string' ? Number(v) : v;
+    if (typeof n !== 'number' || !Number.isFinite(n)) return null;
+    const f = Math.pow(10, digits == null ? 4 : digits);
+    return Math.round(n * f) / f;
+}
+
+function build(intel, services, kernel) {
     const b = {
         generatedAt: new Date().toISOString(),
         product: 'HAZOOM OS',
@@ -249,6 +305,7 @@ function build(intel, services) {
         kernel: measureKernel(),
         intelligence: measureIntelligence(intel),
         surface: measureSurface(services),
+        learning: measureLearning(kernel),
         siblings: measureSiblings(),
         history: { archived: SIBLINGS[1].repos, note: 'Archived 2026-10-01. Renamed -archived, read-only, history intact, nothing deleted.' }
     };
@@ -256,4 +313,4 @@ function build(intel, services) {
     return b;
 }
 
-module.exports = { build, measureKernel, measureIntelligence, measureSurface, measureSiblings, SIBLINGS };
+module.exports = { build, measureKernel, measureIntelligence, measureSurface, measureLearning, measureSiblings, SIBLINGS };

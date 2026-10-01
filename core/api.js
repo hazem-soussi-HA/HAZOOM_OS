@@ -661,7 +661,7 @@ class APIRouter {
                 const svc = k.serviceManager
                     ? { list: k.serviceManager.list(), health: await k.serviceManager.health() }
                     : { list: [], health: [] };
-                res.json(benchmark.build(intel, svc));
+                res.json(benchmark.build(intel, svc, k));
             } catch (err) {
                 this._error(res, 500, 'Benchmark failed: ' + err.message, 'BENCHMARK_ERROR');
             }

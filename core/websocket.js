@@ -48,10 +48,27 @@ class WebSocketHandler {
         let qAction = null;
         if (this.kernel.qLearner) {
             const state = this.apiRouter._getOSState();
+
+            // The executor used to be `null` here, so the learner picked one of
+            // twelve actions every tick and discarded it. The policy was
+            // trained on rewards from actions that never ran, which is why the
+            // average reward sat at 0.0013 across 69,000 decisions.
+            if (!this._actionExecutor) {
+                try {
+                    const { ActionExecutor } = require('./action_executor');
+                    this._actionExecutor = new ActionExecutor(this.kernel, { logger: this.logger });
+                } catch (e) {
+                    this.logger ? this.logger.warn(`[QL] executor unavailable: ${e.message}`) : null;
+                }
+            }
+            if (this._actionExecutor) this._actionExecutor.observe(state);
+
             qAction = this.kernel.qLearner.onTick(
                 this.kernel.qLearner.lastState || state,
                 state,
-                null
+                this._actionExecutor
+                    ? (action) => this._actionExecutor.execute(action, state)
+                    : null
             );
         }
 
