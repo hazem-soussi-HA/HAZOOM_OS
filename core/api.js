@@ -898,15 +898,16 @@ class APIRouter {
         const mm = k.memoryManager;
 
         // Measured AI latency, not a placeholder. This used to be
-        // `k.consciousness ? 0 : 9999` — a constant, which meant the Q-learner
-        // was training its policy on a fabricated signal and could never
-        // converge on anything real. warmMs comes from an actual first-token
-        // probe; until one has happened we report the offline ceiling rather
-        // than a flattering zero.
+        // `k.consciousness ? 0 : 9999` — a constant, so the Q-learner trained
+        // its policy on a fabricated signal and could never converge on
+        // anything real. It now reads observed latency, which is the median of
+        // real inferences. warmMs is deliberately NOT used: it is a one-shot
+        // boot probe, and trusting it made the policy learn from a
+        // cold-start number that never moved.
         let aiLatency = 9999;
-        if (k.intelligence) {
-            if (typeof k.intelligence.warmMs === 'number') aiLatency = k.intelligence.warmMs;
-            else if (k.intelligence.lastError) aiLatency = 9999;
+        if (k.intelligence && typeof k.intelligence.observedLatencyMs === 'function') {
+            const observed = k.intelligence.observedLatencyMs();
+            if (typeof observed === 'number') aiLatency = observed;
         }
 
         // Service availability is a real threat signal: services going down is

@@ -64,9 +64,39 @@ class IntelligenceCore {
         this.totalInferences = 0;
         this.enabled = opts.enabled !== false;
 
+        // Rolling latency over real inferences.
+        //
+        // warmMs alone is not enough: warmModel() runs once at boot, so warmMs
+        // is a cold-start snapshot that never moves. Reporting it as "the"
+        // latency made /api/v1/intelligence/health show 52 seconds forever
+        // while the model was answering in 891ms — and because the Q-learner
+        // reads this field as aiLatency, the policy was training on a number
+        // that had been stale since boot. A measured value nobody re-measures
+        // is worse than no value.
+        this.latencySamples = [];
+        this.maxLatencySamples = 20;
+        this.lastLatencyMs = null;
+
         // Persist conversation across restarts (filesystem-backed memory)
         this.memPath = path.join(__dirname, '..', 'memory', 'intelligence-core.json');
         this._load();
+    }
+
+    /** Record a real inference latency and keep a rolling window. */
+    _recordLatency(ms) {
+        if (typeof ms !== 'number' || !Number.isFinite(ms) || ms < 0) return;
+        this.lastLatencyMs = ms;
+        this.latencySamples.push(ms);
+        if (this.latencySamples.length > this.maxLatencySamples) {
+            this.latencySamples.shift();
+        }
+    }
+
+    /** Median of recent real inferences, or the boot warm-up figure if none yet. */
+    observedLatencyMs() {
+        if (!this.latencySamples.length) return this.warmMs ?? null;
+        const sorted = [...this.latencySamples].sort((a, b) => a - b);
+        return sorted[Math.floor(sorted.length / 2)];
     }
 
     /**
@@ -269,7 +299,9 @@ class IntelligenceCore {
             this._pushHistory('assistant', text);
             this.totalInferences++;
             this.offline = false;
-            return { text: text.trim(), model, offline: false, latencyMs: Date.now() - start };
+            const latency = Date.now() - start;
+            this._recordLatency(latency);
+            return { text: text.trim(), model, offline: false, latencyMs: latency };
         } catch (e) {
             this.offline = true;
             this.lastError = e.message;
@@ -359,6 +391,11 @@ class IntelligenceCore {
             installedModels: this.installedModels || [],
             warm: this.warm || 'pending',
             warmMs: this.warmMs ?? null,
+            // the number that is actually current
+            observedLatencyMs: this.observedLatencyMs(),
+            lastLatencyMs: this.lastLatencyMs,
+            latencySamples: this.latencySamples.length,
+            warmNote: 'warmMs is a single boot-time probe and is cold-start. observedLatencyMs is the median of real inferences and is the figure to trust.',
             endpoint: this.baseUrl,
             offline: this.offline,
             lastError: this.lastError,
