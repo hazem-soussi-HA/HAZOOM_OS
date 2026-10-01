@@ -1,12 +1,8 @@
 {
-  "lastStarted": 1790478651190,
+  "lastStarted": 1790815754725,
   "services": [
     {
       "name": "planet_earth",
-      "enabled": true
-    },
-    {
-      "name": "planet_earth_news",
       "enabled": true
     },
     {

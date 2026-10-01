@@ -10,7 +10,7 @@ HAZOOM OS is a unified platform that integrates all projects under one roof:
 - **Real OS** — Bare-metal kernel (C, x86-64) with Q-Learning scheduler
 - **Web Desktop** — Browser-based shell with app launcher
 - **AI Engine** — Multi-model local AI (Ollama). No cloud required
-- **Microservices** — 22 service directories, 7 wired into the launcher
+- **Microservices** — 20 service directories, 6 wired into the launcher
 - **Deployment** — Docker Compose, Kubernetes, LXC, systemd, bare metal
 
 ### What is true right now
@@ -36,13 +36,11 @@ HAZOOM_OS/
 ├── core/            # OS core modules (JS — the shell)
 ├── server.js        # Main Express entry point
 ├── apps/            # Desktop web apps (AI, tools, games, docs)
-├── services/        # 22 service directories
+├── services/        # 20 service directories
 │   ├── ai/          # AI reasoning engine
 │   ├── api-gateway/ # API gateway & auth
 │   ├── orchestrator/# Service orchestrator
 │   ├── planet-earth/         # 3D Earth visualization
-│   ├── planet-earth-news/    # RSS news aggregator
-│   ├── planet-earth-history/ # Historical timeline
 │   ├── birds-encyclopedia/   # Interactive bird DB
 │   ├── hazoom-pod/           # Print-on-demand e-commerce
 │   ├── chatdev-ornith/       # AI chat (Ollama)
@@ -86,7 +84,7 @@ HAZOOM_OS/
 
 ### Local services only
 ```bash
-bash services/planet-earth/hazoom-os-launch.sh start          # the 7 wired services
+bash services/planet-earth/hazoom-os-launch.sh start          # the 6 wired services
 bash services/planet-earth/hazoom-os-launch.sh status         # what is actually up
 ```
 
@@ -106,14 +104,12 @@ truth — `/api/surface` is truth.
 |------|---------|-------------|--------|
 | 3000 | HAZOOM OS | Shell + kernel API | always up |
 | 8080 | Planet Earth | 3D globe visualization | wired to launcher |
-| 8001 | Planet News | RSS news aggregator | wired to launcher |
 | 4100 | Birds | Bird species encyclopedia | wired to launcher |
 | 4000 | Hazoom POD | Print-on-demand store | wired to launcher |
 | 6000 | DESCER | Drum machine composer | wired to launcher |
 | 5055 | Ornith Chat | Local-model AI chat | wired to launcher |
 | 5000 | Collab Beat | AI collaborative music | wired to launcher |
 | 8100 | HAZOOM XP | Separate work, GPL-3.0-only | `scripts/serve-xp.sh` |
-| 8002 | Planet History | Historical events timeline | code present, needs a token |
 | 4747 | Sovereign State | AI ledger system | code present, not launched |
 | 7000 | Bouzelfa | Web community platform | code present, needs `npm install` |
 | 8003 | Hazoom Intel | Business intelligence | code present, needs `npm install` |

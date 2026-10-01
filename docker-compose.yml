@@ -165,39 +165,7 @@ services:
     networks:
       - hazoom-net
 
-  # ─── Planet Earth News ───────────────────────────────────────────
-  planet-earth-news:
-    build:
-      context: ./services/planet-earth-news
-      dockerfile: Dockerfile
-    container_name: hazoom-planet-news
-    restart: unless-stopped
-    ports:
-      - "8001:8001"
-    environment:
-      - PORT=8001
-      - BIND=0.0.0.0
-    volumes:
-      - ./services/planet-earth-news:/app
-    command: python3 serve.py
-    networks:
-      - hazoom-net
 
-  # ─── Planet Earth History ────────────────────────────────────────
-  planet-earth-history:
-    image: python:3.12-slim
-    profiles: ["optional"]
-    working_dir: /app
-    container_name: hazoom-planet-history
-    restart: unless-stopped
-    network_mode: host
-    environment:
-      - PEH_HOST=127.0.0.1
-      - PEH_PORT=8002
-      - PEH_TLS=
-    volumes:
-      - ./services/planet-earth-history:/app
-    command: sh -c "pip install --no-cache-dir -r requirements.txt && python3 serve.py"
 
   # ─── Birds Encyclopedia ──────────────────────────────────────────
   birds-encyclopedia:

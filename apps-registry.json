@@ -4,7 +4,7 @@
     "by": "DevSecOps MOE agent",
     "note": "Unified HAZOOM ecosystem — single source of truth. Every 'path' MUST be 127.0.0.1/localhost or an OS-served relative path. No LAN/external egress. HAZOOM XP is integrated as a SEPARATE WORK (GPL-3.0-only) and is never copied in — see docs/MIGRATION-XP.md.",
     "security": "loopback-only",
-    "updated": "2026-10-01 convergence pass"
+    "updated": "2026-10-01 — planet-earth news + history removed from the OS"
   },
   "categories": [
     {
@@ -17,20 +17,6 @@
           "icon": "🌍",
           "path": "http://127.0.0.1:8080/",
           "source": "services/planet-earth/"
-        },
-        {
-          "id": "svc-planet-news",
-          "name": "Planet Earth News",
-          "icon": "📰",
-          "path": "http://127.0.0.1:8001/",
-          "source": "services/planet-earth-news/"
-        },
-        {
-          "id": "svc-planet-history",
-          "name": "Planet Earth History",
-          "icon": "📜",
-          "path": "http://127.0.0.1:8002/",
-          "source": "services/planet-earth-history/"
         },
         {
           "id": "svc-birds",

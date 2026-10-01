@@ -57,19 +57,15 @@ add_service() { # name dir kind cmd port proto url
 add_service "planet_earth"  "$ROOT/services/planet-earth"           python \
   "$SYS_PY server.py" 8080 http "http://127.0.0.1:8080/"
 
-# 2) Planet Earth News -- sovereign local news (8001, http)
-add_service "planet_earth_news" "$ROOT/services/planet-earth-news" python \
-  "env PORT=8001 BIND=127.0.0.1 $SYS_PY serve.py" 8001 http "http://127.0.0.1:8001/"
-
-# 3) Birds Encyclopedia + Birds of Africa 3D atlas (4100; atlas at /atlas)
+# 2) Birds Encyclopedia + Birds of Africa 3D atlas (4100; atlas at /atlas)
 add_service "birds_encyclopedia" "$ROOT/services/birds-encyclopedia" node \
   "node server/server.js" 4100 http "http://127.0.0.1:4100/  (atlas: /atlas/)"
 
-# 4) Hazoom POD platform (4000)
+# 3) Hazoom POD platform (4000)
 add_service "hazoom_pod" "$ROOT/services/hazoom-pod" node \
   "node server/server.js" 4000 http "http://127.0.0.1:4000/"
 
-# 5) DESCER -- drum machine, synthesized in the browser, no audio files (6000)
+# 4) DESCER -- drum machine, synthesized in the browser, no audio files (6000)
 #    Restored to the manifest. It was in apps-registry.json and docker-compose
 #    and had a working server.py all along, but was never passed to
 #    add_service, so port 6000 could never open and the desktop showed a dead
@@ -77,11 +73,11 @@ add_service "hazoom_pod" "$ROOT/services/hazoom-pod" node \
 add_service "descer" "$ROOT/services/descer" python \
   "env PORT=6000 BIND=127.0.0.1 $SYS_PY server.py" 6000 http "http://127.0.0.1:6000/"
 
-# 6) CollaborativeBeat -- local-first neural core (5000)
+# 5) CollaborativeBeat -- local-first neural core (5000)
 add_service "collaborative_beat" "$ROOT/services/collaborative-beat" python \
   "env PORT=5000 BIND=127.0.0.1 $SYS_PY server.py" 5000 http "http://127.0.0.1:5000/"
 
-# 7) ChatDev / Ornith -- loopback-only offline chatbox to local Ollama (5055)
+# 6) ChatDev / Ornith -- loopback-only offline chatbox to local Ollama (5055)
 add_service "chatdev" "$ROOT/services/chatdev-ornith" python \
   "env ORNITH_PORT=5055 $SYS_PY ornith_server.py" 5055 http "http://127.0.0.1:5055/  (Ornith offline chatbox)"
 

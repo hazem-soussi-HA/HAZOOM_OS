@@ -1,6 +1,0 @@
-# Planet Earth News — pinned runtime dependencies
-# Install into a venv:  python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
-flask>=3.0,<4.0
-feedparser>=6.0,<7.0
-pyyaml>=6.0,<7.0
-waitress>=3.0,<4.0

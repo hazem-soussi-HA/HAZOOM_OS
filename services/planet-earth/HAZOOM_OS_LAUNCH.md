@@ -20,7 +20,6 @@ All services detach from the terminal (setsid) and are tracked by PID files in
 | Service              | Port   | URL                                              |
 |----------------------|--------|--------------------------------------------------|
 | planet_earth (globe) | 8080   | http://127.0.0.1:8080/                          |
-| planet_earth_news    | 8000   | https://127.0.0.1:8000/  (self-signed TLS)       |
 | birds_encyclopedia   | 4100   | http://127.0.0.1:4100/  (atlas: /atlas/)        |
 | hazoom_pod           | 4000   | http://127.0.0.1:4000/                          |
 | hazoom_os            | 3000   | http://127.0.0.1:3000/  (desktop at root /)     |
@@ -44,7 +43,9 @@ All services detach from the terminal (setsid) and are tracked by PID files in
 
 ## Climate / atmosphere / birds (the mission)
 
-- The globe (`planet_earth`) and PEN give the real-Earth + real-news surface.
+- The globe (`planet_earth`) gives the real-Earth surface. The news feed (PEN)
+  was removed from the OS on 2026-10-01; it was complete and independently
+  runnable, and is recoverable from the `pre-removal-planet-earth` tag.
 - Birds Encyclopedia + the "Birds of Africa" 3D atlas are the natural-voice layer
   (`the_new_age/src/audioBird.js`, `soundProfiles.js`). Natural bird audio is
   referenced but no .wav/.mp3 assets ship in the repo yet — that is the next
